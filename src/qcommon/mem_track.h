@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct meminfo_t // sizeof=0x1C0
 {                                       // XREF: .data:g_info/r
@@ -18,7 +19,7 @@ struct mem_track_t // sizeof=0x98
                                         // _memmove:UnwindDown1/o ...
     char name[128];                     // XREF: track_init(void)+11A/w
                                         // track_init(void)+126/w ...
-    const char *filename;               // XREF: .rdata:00DC1F9E/o
+    Ptr32<const char> filename;               // XREF: .rdata:00DC1F9E/o
     int size[2];                        // XREF: G_GetPlayerViewOrigin_Internal(playerState_s const *,float * const,bool):off_600000/o
                                         // track_z_alloc(int,char const *,int,void *,int,int)+4B/r ...
     int pos;                            // XREF: track_userhunk_freerange(void *,uint)+4B/r

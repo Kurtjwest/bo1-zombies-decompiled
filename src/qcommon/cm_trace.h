@@ -32,11 +32,11 @@ struct col_context_t // sizeof=0x28
                                         // Turret_PlaceTurret_UpdateFooting/r ...
     int mask;                           // XREF: turret_SightTrace(float const * const,float const * const,int,int,gentity_s *):loc_6A21DC/r
                                         // turret_SightTrace(float const * const,float const * const,int,int,gentity_s *)+92/w ...
-    const struct col_prim_t *prims;            // XREF: PM_trace(pmove_t *,trace_t *,float const * const,float const * const,float const * const,float const * const,int,int)+AC/w
+    Ptr32<const struct col_prim_t> prims;            // XREF: PM_trace(pmove_t *,trace_t *,float const * const,float const * const,float const * const,float const * const,int,int)+AC/w
                                         // PM_playerTrace(pmove_t *,trace_t *,float const * const,float const * const,float const * const,float const * const,int,int)+BD/w ...
     int nprims;                         // XREF: PM_trace(pmove_t *,trace_t *,float const * const,float const * const,float const * const,float const * const,int,int)+B8/w
                                         // PM_playerTrace(pmove_t *,trace_t *,float const * const,float const * const,float const * const,float const * const,int,int)+C9/w ...
-    IgnoreEntParams *ignoreEntParams;   // XREF: CG_ScanForCrosshairEntityInternal+2FB/w
+    Ptr32<IgnoreEntParams> ignoreEntParams;   // XREF: CG_ScanForCrosshairEntityInternal+2FB/w
                                         // G_LocationalTrace(trace_t *,float const * const,float const * const,int,int,uchar *,int (*)(int,col_context_t &))+25/w ...
     int passEntityNum0;                 // XREF: FlashbangBlastEnt+80/w
                                         // G_RunCorpseMove(gentity_s *)+60D/w ...
@@ -44,9 +44,9 @@ struct col_context_t // sizeof=0x28
                                         // Player_GetUseList+E04/w ...
     int staticmodels;
     int locational;
-    unsigned __int8 *priorityMap;       // XREF: G_LocationalTrace(trace_t *,float const * const,float const * const,int,int,uchar *,int (*)(int,col_context_t &))+37/w
+    Ptr32<unsigned __int8> priorityMap;       // XREF: G_LocationalTrace(trace_t *,float const * const,float const * const,int,int,uchar *,int (*)(int,col_context_t &))+37/w
                                         // G_LocationalTraceAllowChildren(trace_t *,float const * const,float const * const,int,int,uchar *)+3B/w
-    int (__cdecl *collide_entity_func)(int, col_context_t *);
+    Ptr32<int __cdecl(int, col_context_t *)> collide_entity_func;
                                         // XREF: G_LocationalTrace(trace_t *,float const * const,float const * const,int,int,uchar *,int (*)(int,col_context_t &))+3D/w
 
     col_context_t();
@@ -89,13 +89,13 @@ struct pointtrace_t // sizeof=0x40
                                         // Flame_Client_Trace/r ...
     TraceExtents extents;               // XREF: CG_TracePoint+390/w
                                         // CG_TracePoint+39D/w ...
-    const IgnoreEntParams *ignoreEntParams; // XREF: CG_TracePoint+407/w
+    Ptr32<const IgnoreEntParams> ignoreEntParams; // XREF: CG_TracePoint+407/w
                                         // DynEntCl_DynEntImpactEvent(int,int,float const * const,float const * const,int,bool)+284/w ...
     int contentmask;                    // XREF: CG_TracePoint+40D/w
                                         // DynEntCl_DynEntImpactEvent(int,int,float const * const,float const * const,int,bool)+28B/w ...
     int bLocational;                    // XREF: CG_TracePoint+414/w
                                         // DynEntCl_DynEntImpactEvent(int,int,float const * const,float const * const,int,bool)+292/w ...
-    unsigned __int8 *priorityMap;       // XREF: CG_TracePoint+417/w
+    Ptr32<unsigned __int8> priorityMap;       // XREF: CG_TracePoint+417/w
                                         // DynEntCl_DynEntImpactEvent(int,int,float const * const,float const * const,int,bool)+299/w ...
 };
 
@@ -112,16 +112,16 @@ enum TraceHitType : __int32
 struct TraceCheckCount // sizeof=0x8
 {                                                                             // XREF: TraceThreadInfo/r
     int global;
-    int *partitions;
+    Ptr32<int> partitions;
 };
 
 struct TraceThreadInfo // sizeof=0x14
 {                                                                             // XREF: .data:TraceThreadInfo * g_traceThreadInfo/r
     TraceCheckCount checkcount;
-    struct cbrush_t *box_brush;                                // XREF: CM_Trace(trace_t *,float const * const,float const * const,float const * const,float const * const,uint,int,col_context_t &)+66E/r
+    Ptr32<struct cbrush_t> box_brush;                                // XREF: CM_Trace(trace_t *,float const * const,float const * const,float const * const,float const * const,uint,int,col_context_t &)+66E/r
     // CM_Trace(trace_t *,float const * const,float const * const,float const * const,float const * const,uint,int,col_context_t &)+94C/r ...
-    struct cmodel_t *box_model;
-    struct PhysGeomList **geoms;
+    Ptr32<struct cmodel_t> box_model;
+    Ptr32<Ptr32<struct PhysGeomList>> geoms;
 };
 
 struct trace_t // sizeof=0x38
@@ -155,7 +155,7 @@ struct trace_t // sizeof=0x38
 // padding byte
 // padding byte
 // padding byte
-    struct cStaticModel_s *staticModel;                // XREF: Phys_FindAndRenderBulletMesh(float const * const,float const * const,int,bool)+47/w
+    Ptr32<struct cStaticModel_s> staticModel;                // XREF: Phys_FindAndRenderBulletMesh(float const * const,float const * const,int,bool)+47/w
     // Phys_FindAndRenderBulletMesh(float const * const,float const * const,int,bool)+334/r ...
     int hitPartition;                                     // XREF: Mount_CheckLedge+10/w
     // BG_CheckProne(playerState_s const *,int,float const * const,float,float,float,float *,float *,bool,bool,bool,uchar,proneCheckType_t,float)+10/w ...
@@ -239,7 +239,7 @@ struct leafList_s // sizeof=0x2C
     // CM_PositionTest+258/w ...
     int overflowed;                     // XREF: CM_BoxLeafnums(float const * const,float const * const,ushort *,int,int *)+6E/w
     // CM_PositionTest+278/w ...
-    unsigned __int16 *list;             // XREF: CM_BoxLeafnums(float const * const,float const * const,ushort *,int,int *)+64/w
+    Ptr32<unsigned __int16> list;             // XREF: CM_BoxLeafnums(float const * const,float const * const,ushort *,int,int *)+64/w
     // CM_PositionTest+268/w ...
     float bounds[2][3];                 // XREF: CM_BoxLeafnums(float const * const,float const * const,ushort *,int,int *)+D/w
     // CM_BoxLeafnums(float const * const,float const * const,ushort *,int,int *)+1A/w ...
@@ -491,7 +491,7 @@ struct BulletTraceResults // sizeof=0x50
 {                                                                             // XREF: Bullet_FireExtended/r
     trace_t trace;                                            // XREF: BulletTrace_Start(int,BulletFireParams *,uint,centity_s const *,float * const,bool,bool)+1C/w
     // BulletTrace_Start(int,BulletFireParams *,uint,centity_s const *,float * const,bool,bool)+29/w ...
-    struct gentity_s *hitEnt;                                    // XREF: Bullet_FireExtended:loc_5F3D1A/r
+    Ptr32<struct gentity_s> hitEnt;                                    // XREF: Bullet_FireExtended:loc_5F3D1A/r
     // Bullet_FireExtended+174/r ...
     float hitPos[3];                                        // XREF: FireBulletPenetrate+DE5/o
     // FireBulletPenetrate+10E4/o ...

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <DemonWare/bdCore/bdReference/bdReferencable.h>
 #include "bdBitBuffer.h"
@@ -6,9 +7,9 @@
 struct __declspec(align(2)) bdByteBuffer : bdReferencable // sizeof=0x1C
 {                                       // XREF: bdTaskByteBuffer/r
     unsigned int m_size;
-    unsigned __int8 *m_data;
-    unsigned __int8 *m_readPtr;
-    unsigned __int8 *m_writePtr;
+    Ptr32<unsigned __int8> m_data;
+    Ptr32<unsigned __int8> m_readPtr;
+    Ptr32<unsigned __int8> m_writePtr;
     bool m_typeChecked;
     bool m_typeCheckedCopy;
     bool m_allocatedData;

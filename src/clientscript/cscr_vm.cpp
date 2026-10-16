@@ -2084,10 +2084,12 @@ unsigned __int16 __cdecl Scr_ReadUnsignedShort(const char **pos)
     return v2;
 }
 
-uintptr_t Scr_ReadUnsigned(const char **pos)
+unsigned int Scr_ReadUnsigned(const char **pos)
 {
-    uintptr_t value = *(reinterpret_cast<const uintptr_t *>(*pos));
-    *pos += sizeof(uintptr_t);
+    // a 32-bit operand (switch case values, parameter counts), as the compiler emits it
+    unsigned int value;
+    memcpy(&value, *pos, sizeof(value));
+    *pos += sizeof(value);
     return value;
 }
 
@@ -2129,6 +2131,30 @@ const char *__cdecl Scr_ReadCodePos(scriptInstance_t inst, const char **pos)
     *pos += 4;
     return (const char *)BO1_I2P(v3);
 }
+
+#if BO1_PTR32_IS_CLASS
+// The running code position is kept in 32-bit fields (function_stack_t::pos): read through a native cursor.
+template <typename R, typename... A> static inline R Scr_ReadAdvance(Ptr32<const char> *pos, R (*read)(const char **, A...), A... a)
+{
+    const char *p = *pos;
+    R r = read(&p, a...);
+    *pos = p;
+    return r;
+}
+static inline unsigned __int16 Scr_ReadUnsignedShort(Ptr32<const char> *pos) { return Scr_ReadAdvance(pos, &Scr_ReadUnsignedShort); }
+static inline unsigned int Scr_ReadUnsigned(Ptr32<const char> *pos) { return Scr_ReadAdvance(pos, &Scr_ReadUnsigned); }
+static inline const float *Scr_ReadVector(Ptr32<const char> *pos) { return Scr_ReadAdvance(pos, &Scr_ReadVector); }
+static inline float Scr_ReadFloat(Ptr32<const char> *pos) { return Scr_ReadAdvance(pos, &Scr_ReadFloat); }
+static inline int Scr_ReadInt(Ptr32<const char> *pos) { return Scr_ReadAdvance(pos, &Scr_ReadInt); }
+static inline const unsigned int *Scr_ReadIntArray(Ptr32<const char> *pos, int count) { return Scr_ReadAdvance(pos, &Scr_ReadIntArray, count); }
+static inline const char *Scr_ReadCodePos(scriptInstance_t inst, Ptr32<const char> *pos)
+{
+    const char *p = *pos;
+    const char *r = Scr_ReadCodePos(inst, &p);
+    *pos = p;
+    return r;
+}
+#endif
 
 unsigned int __cdecl GetDummyObject(scriptInstance_t inst)
 {

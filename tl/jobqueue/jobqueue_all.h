@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <tl/tl_system.h>
 
@@ -23,7 +24,7 @@ struct tlAtomicMutex // sizeof=0x10
 {                                       // XREF: .data:tlAtomicMutex g_prolog_task_mutex/r
     volatile LONG64 ThreadId;          // XREF: jqInit(void)+58/w
     int LockCount;                      // XREF: jqInit(void)+64/w
-    tlAtomicMutex *ThisPtr;             // XREF: jqInit(void)+4E/w
+    Ptr32<tlAtomicMutex> ThisPtr;             // XREF: jqInit(void)+4E/w
 
     tlAtomicMutex()
     {
@@ -44,7 +45,7 @@ struct tlAtomicMutex // sizeof=0x10
 
 struct tlAtomicMutexLocker // sizeof=0x4
 {
-    tlAtomicMutex *Mutex;
+    Ptr32<tlAtomicMutex> Mutex;
 };
 
 struct jqAtomicHeap // sizeof=0x110
@@ -55,17 +56,17 @@ struct jqAtomicHeap // sizeof=0x110
         unsigned int BlockSize;
         int NBlocks;
         int NCells;
-        unsigned __int64 *CellAvailable;
-        unsigned __int64 *CellAllocated;
+        Ptr32<unsigned __int64> CellAvailable;
+        Ptr32<unsigned __int64> CellAllocated;
     };
-    jqAtomicHeap *ThisPtr;
+    Ptr32<jqAtomicHeap> ThisPtr;
     // padding byte
     // padding byte
     // padding byte
     // padding byte
     tlAtomicMutex Mutex;                // XREF: _dynamic_initializer_for__jqPool__+48/w
                                         // _dynamic_initializer_for__jqPool__+52/w ...
-    unsigned __int8 *HeapBase;          // XREF: _dynamic_initializer_for__jqPool__+61/w
+    Ptr32<unsigned __int8> HeapBase;          // XREF: _dynamic_initializer_for__jqPool__+61/w
     unsigned int HeapSize;              // XREF: jqGetBatchDataAvailable(void)+5/r
                                         // _dynamic_initializer_for__jqPool__+66/w
     unsigned int BlockSize;             // XREF: _dynamic_initializer_for__jqPool__+6B/w
@@ -73,7 +74,7 @@ struct jqAtomicHeap // sizeof=0x110
     volatile unsigned int TotalBlocks;
     int NLevels;
     jqAtomicHeap::LevelInfo Levels[11];
-    unsigned __int8 *LevelData;         // XREF: jqSetBatchDataHeapSize(uint,uint):loc_A0A4F6/r
+    Ptr32<unsigned __int8> LevelData;         // XREF: jqSetBatchDataHeapSize(uint,uint):loc_A0A4F6/r
                                         // _dynamic_initializer_for__jqPool__+70/w
 
     ~jqAtomicHeap();
@@ -110,7 +111,7 @@ struct tlSharedAtomicMutex // sizeof=0x10
                                         // jqInit(void)+37/w ...
     volatile int LockCount;             // XREF: jqInit(void)+42/w
                                         // _dynamic_initializer_for__jqPool__+11/w ...
-    tlSharedAtomicMutex *ThisPtr;       // XREF: jqInit(void)+27/w
+    Ptr32<tlSharedAtomicMutex> ThisPtr;       // XREF: jqInit(void)+27/w
 
     tlSharedAtomicMutex()
     {
@@ -155,11 +156,11 @@ static_assert(alignof(jqBatchGroup) == 8, "jqBatchGroup must be 8-byte aligned f
 struct jqModule // sizeof=0x18
 {                                       // XREF: .data:jqModule bp_env_jq_module1Module/r
                                         // .data:jqModule bp_env_jq_module2Module/r ...
-    const char *Name;                   // XREF: _dynamic_initializer_for__fx_add_markModule__+6/w
+    Ptr32<const char> Name;                   // XREF: _dynamic_initializer_for__fx_add_markModule__+6/w
                                         // _dynamic_initializer_for__nuge_physicsModule__+6/w ...
     jqWorkerType Type;                  // XREF: _dynamic_initializer_for__fx_add_markModule__+10/w
                                         // _dynamic_initializer_for__nuge_physicsModule__+10/w ...
-    int (__cdecl *Code)(struct jqBatch *);     // XREF: _dynamic_initializer_for__fx_add_markModule__+1A/w
+    Ptr32<int __cdecl(struct jqBatch *)> Code;     // XREF: _dynamic_initializer_for__fx_add_markModule__+1A/w
                                         // _dynamic_initializer_for__nuge_physicsModule__+1A/w ...
     // padding byte
     // padding byte
@@ -176,17 +177,17 @@ struct _jqBatch // sizeof=0x0
 struct __declspec(align(4)) jqBatch // sizeof=0x7C
 {                                       // XREF: .data:jqBatch g_phys_task_manager_batch/r
                                         // jqAtomicQueue<jqBatch,32>::NodeType/r ...
-    void *p3x_info;                     // XREF: jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+19/w
+    Ptr32<void> p3x_info;                     // XREF: jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+19/w
                                         // jqWorkerLoop(jqWorker *,jqBatchGroup *,bool,unsigned __int64 *)+50/w ...
-    void *Input;                        // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+2E/w
+    Ptr32<void> Input;                        // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+2E/w
                                         // jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+2E/w ...
-    void *Output;                       // XREF: jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+31/w
+    Ptr32<void> Output;                       // XREF: jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+31/w
                                         // jqWorkerLoop(jqWorker *,jqBatchGroup *,bool,unsigned __int64 *)+5C/w ...
-    jqModule *Module;                   // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+39/w
+    Ptr32<jqModule> Module;                   // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+39/w
                                         // R_InitWorkerCmds(void)+34/w ...
-    jqBatchGroup *GroupID;              // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+3C/w
+    Ptr32<jqBatchGroup> GroupID;              // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+3C/w
                                         // jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+34/w ...
-    void *ConditionalAddress;           // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+4E/w
+    Ptr32<void> ConditionalAddress;           // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+4E/w
                                         // jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+20/w ...
     unsigned int ConditionalValue;      // XREF: Sys_AddWorkerCmdInternal(jqWorkerCmd *,void *,WorkerCmdConditional *)+57/w
                                         // jqAddBatch(jqModule const &,void *,void *,jqBatchGroup *,jqQueue *,void *,int)+27/w ...
@@ -206,29 +207,29 @@ struct __declspec(align(8)) jqAtomicQueue//<jqBatch,32> // sizeof=0x50
 {                                       // XREF: jqQueue/r
     struct NodeType // sizeof=0x80
     {
-        jqAtomicQueue<T, SIZE>::NodeType *Next;
+        Ptr32<jqAtomicQueue<T, SIZE>::NodeType> Next;
         jqBatch Data;
     };
 
     struct NodeBlockEntry//<jqBatch,32>::NodeBlockEntry // sizeof=0x8
     {
-        void *Addr;
-        jqAtomicQueue<T,SIZE>::NodeBlockEntry *Next;
+        Ptr32<void> Addr;
+        Ptr32<jqAtomicQueue<T,SIZE>::NodeBlockEntry> Next;
     };
 
-    NodeType **FreeListPtr;
-    NodeType *_FreeList;
-    NodeBlockEntry *NodeBlockListHead;
-    NodeType *Head; // XREF: jqInit(void)+9C/w
-    NodeType *Tail; // XREF: jqInit(void)+97/w
+    Ptr32<Ptr32<NodeType>> FreeListPtr;
+    Ptr32<NodeType> _FreeList;
+    Ptr32<NodeBlockEntry> NodeBlockListHead;
+    Ptr32<NodeType> Head; // XREF: jqInit(void)+9C/w
+    Ptr32<NodeType> Tail; // XREF: jqInit(void)+97/w
     tlSharedAtomicMutex FreeLock;       // XREF: jqInit(void)+27/w
     tlAtomicMutex HeadLock;             // XREF: jqInit(void)+4E/w
     tlAtomicMutex TailLock;             // XREF: jqInit(void)+6A/w
-    jqAtomicQueue<T,SIZE> *ThisPtr; // XREF: jqInit(void)+D/w
+    Ptr32<jqAtomicQueue<T,SIZE>> ThisPtr; // XREF: jqInit(void)+D/w
 
     void Init(jqAtomicQueue<T, SIZE> *SharedFreeList)
     {
-        NodeType **p_FreeList = &_FreeList;
+        Ptr32<NodeType> *p_FreeList = &_FreeList;
         ThisPtr = this;
         *p_FreeList = nullptr;
 
@@ -339,7 +340,7 @@ typedef jqAtomicQueue<jqBatch, 32> jqAtomicQueueType;
 struct jqQueue // sizeof=0x60
 {                                       // XREF: .data:jqQueue jqGlobalQueue/r
                                         // .data:jqQueue localQueue/r ...
-    jqQueue *ThisPtr;                   // XREF: jqPopNextBatch+22/r
+    Ptr32<jqQueue> ThisPtr;                   // XREF: jqPopNextBatch+22/r
                                         // jqStart(void)+2C6/w ...
     // padding byte
     // padding byte
@@ -358,12 +359,12 @@ struct jqQueue // sizeof=0x60
 struct __declspec(align(8)) jqWorkerCmd // sizeof=0x20
 {                                       // XREF: .data:jqWorkerCmd fx_add_markWorkerCmd/r
                                         // .data:jqWorkerCmd nuge_physicsWorkerCmd/r ...
-    jqModule *module;
+    Ptr32<jqModule> module;
     unsigned int dataSize;
     volatile unsigned int ppu_fence;
     volatile unsigned int spu_fence;
-    volatile unsigned int *spuThreadLimit;
-    jqQueue *queue;
+    Ptr32<volatile unsigned int> spuThreadLimit;
+    Ptr32<jqQueue> queue;
     unsigned int string_table;
     // padding byte
     // padding byte
@@ -374,7 +375,7 @@ struct __declspec(align(8)) jqWorkerCmd // sizeof=0x20
 struct __declspec(align(4)) _jqWorker // sizeof=0x10
 {                                       // XREF: jqWorker/r
     jqWorkerType Type;
-    void *Thread;
+    Ptr32<void> Thread;
     unsigned int ThreadId;
     bool Idle;
     // padding byte
@@ -384,19 +385,19 @@ struct __declspec(align(4)) _jqWorker // sizeof=0x10
 
 struct jqWorker : _jqWorker // sizeof=0xA8
 {                                       // XREF: .data:jqWorker jqMainThreadWorker/r
-    jqWorker *ThisPtr;
+    Ptr32<jqWorker> ThisPtr;
     int Processor;
     int WorkerID;
     int NumQueues;
     jqQueue WorkerSpecific;             // XREF: _dynamic_initializer_for__jqMainThreadWorker__+2/w
                                         // _dynamic_initializer_for__jqMainThreadWorker__+7/w ...
-    jqQueue *Queues[8];
+    Ptr32<jqQueue> Queues[8];
     unsigned __int64 WorkTime;
 };
 
 struct jqBatchPool // sizeof=0x180
 {                                       // XREF: .data:jqBatchPool jqPool/r
-    jqBatchPool *ThisPtr;               // XREF: jqInit(void)+3/w
+    Ptr32<jqBatchPool> ThisPtr;               // XREF: jqInit(void)+3/w
                                         // jqPopNextBatchFromQueue+189/r ...
     // padding byte
     // padding byte

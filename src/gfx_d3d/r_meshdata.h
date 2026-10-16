@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "r_buffers.h"
 #include "rb_state.h"
@@ -8,10 +9,10 @@ struct r_double_index_t;
 struct GfxMeshData // sizeof=0x24
 {                                       // XREF: .data:GfxMeshData * g_codeMesh/r
                                         // GfxQuadMeshData/r ...
-    GfxMeshData *thisPtr;
+    Ptr32<GfxMeshData> thisPtr;
     unsigned int indexCount;
     unsigned int totalIndexCount;
-    unsigned __int16 *indices;
+    Ptr32<unsigned __int16> indices;
     GfxVertexBufferState vb;            // XREF: R_InitRenderBuffers(void)+5D/w
     // R_InitGlassRenderBuffers(int,int,int)+64/w ...
     unsigned int vertSize;

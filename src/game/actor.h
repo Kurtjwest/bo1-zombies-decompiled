@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <bgame/bg_public.h>
 #include <bgame/bg_actor_prone.h>
 #include "pathnode.h"
@@ -201,8 +202,8 @@ struct actor_goal_s // sizeof=0x28
     float ang[3];
     float radius;
     float height;
-    pathnode_t *node;
-    gentity_s *volume;
+    Ptr32<pathnode_t> node;
+    Ptr32<gentity_s> volume;
 };
 
 struct ActorCoverArrivalInfo // sizeof=0x20
@@ -235,8 +236,8 @@ struct actor_sentient_info_array
 struct actor_s // sizeof=0x2780
 {                                       // XREF: .data:actor_s * g_actors/r
                                         // actor_array_t/r ...
-    gentity_s *ent;
-    sentient_s *sentient;
+    Ptr32<gentity_s> ent;
+    Ptr32<sentient_s> sentient;
     AISpecies species;
     int legsAnim;
     int legsTimer;
@@ -293,7 +294,7 @@ struct actor_s // sizeof=0x2780
     // padding byte
     ai_stance_e eAllowedStances;
     unsigned int AnimScriptHandle; // mod: was unsigned __int16 + 2 padding bytes (same offset and size); server thread ids pass 0xFFFF with bo1_mod_scriptvars 2+
-    scr_animscript_t *pAnimScriptFunc;
+    Ptr32<scr_animscript_t> pAnimScriptFunc;
     scr_animscript_t AnimScriptSpecific;
     ai_traverse_mode_t eTraverseMode;
     ai_movemode_t moveMode;
@@ -311,8 +312,8 @@ struct actor_s // sizeof=0x2780
     int pathWaitTime;
     int iTeamMoveWaitTime;
     int iTeamMoveDodgeTime;
-    actor_s *pPileUpActor;
-    gentity_s *pPileUpEnt;
+    Ptr32<actor_s> pPileUpActor;
+    Ptr32<gentity_s> pPileUpEnt;
     int bDontAvoidPlayer;
     float sideMove;
     unsigned __int8 keepClaimedNode;
@@ -352,7 +353,7 @@ struct actor_s // sizeof=0x2780
     int iPacifistWait;
     int numCoverNodesInGoal;
     int iPotentialCoverNodeCount;
-    pathnode_t *pPotentialReacquireNode[10];
+    Ptr32<pathnode_t> pPotentialReacquireNode[10];
     int iPotentialReacquireNodeCount;
     ActorCoverArrivalInfo arrivalInfo;
     float fovDot;
@@ -369,7 +370,7 @@ struct actor_s // sizeof=0x2780
     float anglesToLikelyEnemyPath[3];
     int faceLikelyEnemyPathNeedCheckTime;
     int faceLikelyEnemyPathNeedRecalculateTime;
-    const pathnode_t *faceLikelyEnemyPathNode;
+    Ptr32<const pathnode_t> faceLikelyEnemyPathNode;
     int ignoreSuppression;
     int suppressionWait;
     int suppressionDuration;
@@ -415,8 +416,8 @@ struct actor_s // sizeof=0x2780
     int flashBanged;
     float flashBangedStrength;
     int flashBangImmunity;
-    const char *pszDebugInfo;
-    pathnode_t *pPotentialCoverNode[1000];
+    Ptr32<const char> pszDebugInfo;
+    Ptr32<pathnode_t> pPotentialCoverNode[1000];
     int ikPriority;
 };
 
@@ -427,13 +428,13 @@ struct actor_s // sizeof=0x2780
 // Not added here: the struct stays MP-sized (no layout changes) and nothing in KB calls it yet.
 struct ai_funcs_t // sizeof=0x1C
 {                                       // XREF: .rdata:AIDogFuncTable/r
-    bool (__fastcall *pfnStart)(actor_s *, ai_state_t);
-    void (__fastcall *pfnFinish)(actor_s *, ai_state_t);
-    void (__fastcall *pfnSuspend)(actor_s *, ai_state_t);
-    bool (__fastcall *pfnResume)(actor_s *, ai_state_t);
-    actor_think_result_t (__fastcall *pfnThink)(actor_s *);
-    void (__fastcall *pfnTouch)(actor_s *, gentity_s *);
-    void (__fastcall *pfnPain)(actor_s *, gentity_s *, int, const float *, const int, const float *, const hitLocation_t);
+    Ptr32<bool __fastcall(actor_s *, ai_state_t)> pfnStart;
+    Ptr32<void __fastcall(actor_s *, ai_state_t)> pfnFinish;
+    Ptr32<void __fastcall(actor_s *, ai_state_t)> pfnSuspend;
+    Ptr32<bool __fastcall(actor_s *, ai_state_t)> pfnResume;
+    Ptr32<actor_think_result_t __fastcall(actor_s *)> pfnThink;
+    Ptr32<void __fastcall(actor_s *, gentity_s *)> pfnTouch;
+    Ptr32<void __fastcall(actor_s *, gentity_s *, int, const float *, const int, const float *, const hitLocation_t)> pfnPain;
 };
 
 constexpr float actorMins[3] = { -15.0, -15.0, 0.0 };

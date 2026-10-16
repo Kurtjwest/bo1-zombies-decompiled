@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_dpvs.h"
 #include "r_init.h"
 #include "r_gfx.h"
@@ -19,9 +20,9 @@ struct __declspec(align(4)) GfxSceneBrush // sizeof=0x2C
 {                                       // XREF: GfxScene/r
     BModelDrawInfo info;
     unsigned __int16 entnum;
-    const GfxBrushModel *bmodel;
+    Ptr32<const GfxBrushModel> bmodel;
     GfxPlacement placement;
-    const ShaderConstantSet *brushConstantSet;
+    Ptr32<const ShaderConstantSet> brushConstantSet;
     unsigned __int8 reflectionProbeIndex;
     // padding byte
     // padding byte
@@ -43,19 +44,19 @@ struct GfxSceneDpvs // sizeof=0x38
 {                                       // XREF: GfxScene/r
     int localClientNum;                 // XREF: R_DrawAllSceneEnt(GfxViewInfo const *)+7/r
                                         // R_DrawAllSceneEnt(GfxViewInfo const *)+4E/r ...
-    unsigned __int8 *entVisData[7];     // XREF: R_AddSceneDObj(uint,uint)+37/r
+    Ptr32<unsigned __int8> entVisData[7];     // XREF: R_AddSceneDObj(uint,uint)+37/r
                                         // R_DrawAllSceneEnt(GfxViewInfo const *)+161/r ...
-    unsigned __int16 *sceneXModelIndex; // XREF: R_InitSceneBuffers(void)+9F/w
+    Ptr32<unsigned __int16> sceneXModelIndex; // XREF: R_InitSceneBuffers(void)+9F/w
                                         // R_ShutdownSceneBuffers(void):loc_A46243/r ...
-    unsigned __int16 *sceneDObjIndex;   // XREF: R_InitSceneBuffers(void)+B9/w
+    Ptr32<unsigned __int16> sceneDObjIndex;   // XREF: R_InitSceneBuffers(void)+B9/w
                                         // R_ShutdownSceneBuffers(void)+41/r ...
-    union GfxEntCellRefInfo *entInfo[4];      // XREF: R_FilterEntIntoCells_r+246/r
+    Ptr32<union GfxEntCellRefInfo> entInfo[4];      // XREF: R_FilterEntIntoCells_r+246/r
                                         // R_ShowCull(float const * const)+310/r ...
 };
 
 struct GfxSkinnedXModelSurfs // sizeof=0x4
 {                                       // XREF: GfxSceneEntityCull/r
-    void *firstSurf;
+    Ptr32<void> firstSurf;
 };
 
 struct GfxSceneEntityCull // sizeof=0x40
@@ -69,8 +70,8 @@ struct GfxSceneEntityCull // sizeof=0x40
 
 union GfxSceneEntityInfo // sizeof=0x4
 {                                       // XREF: GfxSceneEntity/r
-    cpose_t *pose;
-    unsigned __int16 *cachedLightingHandle;
+    Ptr32<cpose_t> pose;
+    Ptr32<unsigned __int16> cachedLightingHandle;
 };
 
 struct __declspec(align(4)) GfxSceneEntity // sizeof=0x84
@@ -80,7 +81,7 @@ struct __declspec(align(4)) GfxSceneEntity // sizeof=0x84
     GfxSceneEntityCull cull;
     unsigned __int16 gfxEntIndex;
     unsigned __int16 entnum;
-    DObj *obj;
+    Ptr32<DObj> obj;
     GfxSceneEntityInfo info;
     float lightingOriginToleranceSq;
     unsigned __int16 gfxEntIndex2;
@@ -102,13 +103,13 @@ struct XModelDrawInfo // sizeof=0x4
 struct __declspec(align(2)) GfxSceneModel // sizeof=0x4C
 {                                       // XREF: GfxScene/r
     XModelDrawInfo info;
-    const XModel *model;
-    const DObj *obj;
+    Ptr32<const XModel> model;
+    Ptr32<const DObj> obj;
     GfxScaledPlacement placement;
     unsigned __int16 gfxEntIndex;
     unsigned __int16 entnum;
     float radius;
-    unsigned __int16 *cachedLightingHandle;
+    Ptr32<unsigned __int16> cachedLightingHandle;
     float lightingOrigin[3];
     float lightingOriginToleranceSq;
     unsigned __int8 modelShaderConstantSetIndex;
@@ -120,8 +121,8 @@ struct __declspec(align(2)) GfxSceneModel // sizeof=0x4C
 struct __declspec(align(2)) GfxSceneGlassBrush // sizeof=0x28
 {                                       // XREF: GfxScene/r
     GfxPlacement placement;
-    const GfxBrushModel *bmodel;
-    Material *altStreamingMaterial;
+    Ptr32<const GfxBrushModel> bmodel;
+    Ptr32<Material> altStreamingMaterial;
     BModelDrawInfo info;
     unsigned __int8 reflectionProbeIndex;
     // padding byte
@@ -201,7 +202,7 @@ struct __declspec(align(64)) GfxScene // sizeof=0x1B0000
                                         // R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+3B/r ...
     volatile unsigned int drawSurfCount[39];     // XREF: R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+96D/w
                                         // R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+9DE/w ...
-    GfxDrawSurf *drawSurfs[39];         // XREF: R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+18/r
+    Ptr32<GfxDrawSurf> drawSurfs[39];         // XREF: R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+18/r
                                         // R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+26/r ...
     // padding byte
     // padding byte
@@ -233,7 +234,7 @@ struct __declspec(align(64)) GfxScene // sizeof=0x1B0000
                                         // R_GetBspSpotLightSurfs+12C/w ...
     GfxVisibleLight visLightShadow[2];  // XREF: R_GenerateSortedDrawSurfs+153E/o
                                         // R_GetPointLightPartitions(GfxLight *)+194/w ...
-    unsigned int *entOverflowedDrawBuf; // XREF: R_AddAllSceneEntSurfacesSpotShadow(GfxViewInfo const *,uint,uint)+27F/r
+    Ptr32<unsigned int> entOverflowedDrawBuf; // XREF: R_AddAllSceneEntSurfacesSpotShadow(GfxViewInfo const *,uint,uint)+27F/r
                                         // R_DrawAllSceneEnt(GfxViewInfo const *)+C4E/r ...
     volatile unsigned int sceneDObjCount;        // XREF: R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+B6/r
                                         // R_AddAllSceneEntSurfacesCamera(GfxViewInfo const *)+CB/r ...
@@ -363,7 +364,7 @@ struct GfxSceneParms // sizeof=0x14E0
     GfxViewport sceneViewport;
     GfxViewport displayViewport;
     GfxViewport scissorViewport;
-    const GfxLight *primaryLights;
+    Ptr32<const GfxLight> primaryLights;
     float sceneX;
     float sceneY;
     float sceneW;
@@ -384,7 +385,7 @@ struct GfxSceneDynBrush // sizeof=0x4
 
 struct SceneEntCmd // sizeof=0x4
 {                                       // XREF: R_GenerateSortedDrawSurfs/r
-    const GfxViewInfo *viewInfo;        // XREF: R_GenerateSortedDrawSurfs+14BE/w
+    Ptr32<const GfxViewInfo> viewInfo;        // XREF: R_GenerateSortedDrawSurfs+14BE/w
 };
 
 struct GfxLodParms;

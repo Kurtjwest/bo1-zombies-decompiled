@@ -88,14 +88,14 @@ struct DestructibleState // sizeof=0x1C
 struct __declspec(align(4)) Destructible // sizeof=0xAC
 {
     int entNum;
-    DESTRUCTIBLE_PIECE_INFO *pieceArray;
+    Ptr32<DESTRUCTIBLE_PIECE_INFO> pieceArray;
     int oldestBurnTime;
     unsigned __int8 destructiblePoseID;
     // padding byte
     // padding byte
     // padding byte
     int pieceCount;
-    DestructibleDef *ddef;
+    Ptr32<DestructibleDef> ddef;
     unsigned int flags;
     DestructibleState states[5];
     unsigned __int8 bHasBeenHit;
@@ -139,8 +139,8 @@ struct destructible_event_t // sizeof=0x34
         //destructible_event_t::<unnamed_tag>::<unnamed_type_ed> ed;
         struct //destructible_event_t::<unnamed_tag>::<unnamed_type_ed> // sizeof=0x30
         {                                       // XREF: $A8A2FEC27949F333955875D6EDC89019/r
-            centity_s *self;
-            const centity_s *attacker;
+            Ptr32<centity_s> self;
+            Ptr32<const centity_s> attacker;
             float dir[3];
             float point[3];
             int damage;
@@ -152,7 +152,7 @@ struct destructible_event_t // sizeof=0x34
         //destructible_event_t::<unnamed_tag>::<unnamed_type_erd> erd;
         struct //destructible_event_t::<unnamed_tag>::<unnamed_type_erd> // sizeof=0x20
         {                                       // XREF: $A8A2FEC27949F333955875D6EDC89019/r
-            centity_s *self;
+            Ptr32<centity_s> self;
             float point[3];
             float damgeInner;
             float damgeOuter;
@@ -165,7 +165,7 @@ struct destructible_event_t // sizeof=0x34
         {                                       // XREF: $A8A2FEC27949F333955875D6EDC89019/r
             int localClientNum;
             int event;
-            const entityState_s *es;
+            Ptr32<const entityState_s> es;
         } ehe;
     };
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "teams.h"
 #include "enthandle.h"
 #include "pathnode.h"
@@ -27,12 +28,12 @@ struct sentient_info_t // sizeof=0x28
     int lastKnownPosTime;
     int attackTime;
     float vLastKnownPos[3];
-    pathnode_t *pLastKnownNode;
+    Ptr32<pathnode_t> pLastKnownNode;
 };
 
 struct __declspec(align(4)) sentient_s // sizeof=0x90
 {                                       // XREF: sentient_t/r
-    gentity_s *ent;
+    Ptr32<gentity_s> ent;
     team_t eTeam;
     EntHandle scriptOwner;
     int iThreatBias;
@@ -59,11 +60,11 @@ struct __declspec(align(4)) sentient_s // sizeof=0x90
     bool turretInvulnerability;
     // padding byte
     // padding byte
-    pathnode_t *pClaimedNode;
-    pathnode_t *pPrevClaimedNode;
-    pathnode_t *pActualChainPos;
+    Ptr32<pathnode_t> pClaimedNode;
+    Ptr32<pathnode_t> pPrevClaimedNode;
+    Ptr32<pathnode_t> pActualChainPos;
     int iActualChainPosTime;
-    pathnode_t *pNearestNode;
+    Ptr32<pathnode_t> pNearestNode;
     unsigned __int8 bNearestNodeValid;
     unsigned __int8 bNearestNodeBad;
     // padding byte

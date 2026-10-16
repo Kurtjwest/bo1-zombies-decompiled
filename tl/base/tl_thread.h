@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 
@@ -10,7 +11,7 @@ struct __declspec(align(8)) tlAtomicReadWriteMutex // sizeof=0x18
                                         // _dynamic_initializer_for__g_auto_rigid_body_map_mutex__+D/w
     volatile unsigned int ReadLockCount;         // XREF: _dynamic_initializer_for__g_auto_rigid_body_map_mutex__+17/w
     volatile unsigned int WriteLockCount;        // XREF: _dynamic_initializer_for__g_auto_rigid_body_map_mutex__+21/w
-    tlAtomicReadWriteMutex *ThisPtr;    // XREF: auto_rigid_body::add(centity_s const *,gjk_physics_collision_visitor *,int)+15B/r
+    Ptr32<tlAtomicReadWriteMutex> ThisPtr;    // XREF: auto_rigid_body::add(centity_s const *,gjk_physics_collision_visitor *,int)+15B/r
                                         // _dynamic_initializer_for__g_auto_rigid_body_map_mutex__+2B/w ...
     // padding byte
     // padding byte

@@ -39,7 +39,7 @@ void __cdecl DObjCalcSkel(DObj *obj, int *partBits)
     int calcPartBits[5]; // [esp+88h] [ebp-38h] BYREF
     int ignorePartBits[5]; // [esp+9Ch] [ebp-24h] BYREF
     int i; // [esp+B0h] [ebp-10h]
-    XModel **models; // [esp+B4h] [ebp-Ch]
+    Ptr32<struct XModel> *models; // [esp+B4h] [ebp-Ch]
     bool bFinished; // [esp+BBh] [ebp-5h]
     const int *savedDuplicatePartBits; // [esp+BCh] [ebp-4h]
     int savedregs; // [esp+C0h] [ebp+0h] BYREF

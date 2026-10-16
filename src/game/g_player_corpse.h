@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <bgame/bg_public.h>
 #include <bgame/bg_local.h>
 
 struct corpseInfo_t // sizeof=0x5E0
 {
-    XAnimTree_s *tree;
+    Ptr32<XAnimTree_s> tree;
     int entnum;
     int time;
     // padding byte

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "phys_local.h"
 
@@ -7,7 +8,7 @@ struct phys_convex_hull // sizeof=0x20D60
     struct __declspec(align(8)) ch_triangle // sizeof=0x20
     {
         phys_vec3 m_normal;
-        phys_vec3 *m_verts[3];
+        Ptr32<phys_vec3> m_verts[3];
         // padding byte
         // padding byte
         // padding byte
@@ -31,7 +32,7 @@ struct phys_convex_hull // sizeof=0x20D60
     };
     struct ch_edge // sizeof=0x8
     {
-        phys_vec3 *m_verts[2];
+        Ptr32<phys_vec3> m_verts[2];
     };
     phys_static_array<phys_vec3, 6144> m_vertex_buffer;
     // XREF: generate_brush_chull(cbrush_t const *)+3B/r

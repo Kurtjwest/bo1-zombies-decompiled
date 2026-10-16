@@ -1,9 +1,10 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "cscr_main.h"
 
 struct OpcodeLookup // sizeof=0xC
 {
-    const char *codePos;
+    Ptr32<const char> codePos;
     unsigned int sourcePosIndex;
     unsigned int sourcePosCount;
 };
@@ -16,7 +17,7 @@ struct SourceLookup // sizeof=0x8
 
 struct SaveSourceBufferInfo // sizeof=0x8
 {
-    char *sourceBuf;
+    Ptr32<char> sourceBuf;
     int len;
 };
 
@@ -24,9 +25,9 @@ struct Scr_SourcePos_t;
 
 struct __declspec(align(4)) SourceBufferInfo // sizeof=0x18
 {
-    const char *codePos;
-    char *buf;
-    const char *sourceBuf;
+    Ptr32<const char> codePos;
+    Ptr32<char> buf;
+    Ptr32<const char> sourceBuf;
     int len;
     int sortedIndex;
     bool archive;
@@ -37,29 +38,29 @@ struct __declspec(align(4)) SourceBufferInfo // sizeof=0x18
 
 struct scrParserPub_t // sizeof=0x10
 {                                       // XREF: .data:scrParserPub_t * gScrParserPub/r
-    SourceBufferInfo *sourceBufferLookup;
+    Ptr32<SourceBufferInfo> sourceBufferLookup;
                                         // XREF: CheckThreadPosition+8C/r
                                         // Scr_ScriptWindow::SetScriptFile(scriptInstance_t,char const *)+38/r ...
     unsigned int sourceBufferLookupLen; // XREF: Scr_ScriptWindow::SetScriptFile(scriptInstance_t,char const *)+24/r
                                         // Scr_ScriptWindow::Init(scriptInstance_t)+41/r ...
-    const char *scriptfilename;         // XREF: Scr_LoadAnimTreeInternal+D8/r
+    Ptr32<const char> scriptfilename;         // XREF: Scr_LoadAnimTreeInternal+D8/r
                                         // Scr_LoadAnimTreeInternal+EA/w ...
-    const char *sourceBuf;              // XREF: Scr_LoadAnimTreeInternal+A3/r
+    Ptr32<const char> sourceBuf;              // XREF: Scr_LoadAnimTreeInternal+A3/r
                                         // Scr_LoadAnimTreeInternal+120/w ...
 };
 
 struct scrParserGlob_t // sizeof=0x34
 {
-    OpcodeLookup *opcodeLookup;
+    Ptr32<OpcodeLookup> opcodeLookup;
     unsigned int opcodeLookupMaxLen;
     unsigned int opcodeLookupLen;
-    SourceLookup *sourcePosLookup;
+    Ptr32<SourceLookup> sourcePosLookup;
     unsigned int sourcePosLookupMaxLen;
     unsigned int sourcePosLookupLen;
     unsigned int sourceBufferLookupMaxLen;
-    const unsigned __int8 *currentCodePos;
+    Ptr32<const unsigned __int8> currentCodePos;
     unsigned int currentSourcePosCount;
-    SaveSourceBufferInfo *saveSourceBufferLookup;
+    Ptr32<SaveSourceBufferInfo> saveSourceBufferLookup;
     unsigned int saveSourceBufferLookupLen;
     int delayedSourceIndex;
     int threadStartSourceIndex;

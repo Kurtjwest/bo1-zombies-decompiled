@@ -916,9 +916,9 @@ struct weaponParms // sizeof=0x44
                                         // GScr_MagicBullet(void)+103/w ...
     float gunForward[3];                // XREF: VEH_DebugAim(gentity_s *,float const * const,int)+83/w
                                         // VEH_DebugAim(gentity_s *,float const * const,int)+90/w ...
-    const WeaponVariantDef *weapVariantDef;
+    Ptr32<const WeaponVariantDef> weapVariantDef;
                                         // XREF: FireWeapon(gentity_s *,int,int):loc_697B7A/r
-    const WeaponDef *weapDef;           // XREF: G_UpdateWeapons+72/r
+    Ptr32<const WeaponDef> weapDef;           // XREF: G_UpdateWeapons+72/r
                                         // G_UpdateWeapons+7B/r ...
 };
 

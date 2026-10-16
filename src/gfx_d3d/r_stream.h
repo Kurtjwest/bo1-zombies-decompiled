@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_material.h"
 #include <tl/jobqueue/jobqueue_all.h>
 #include <universal/q_shared.h>
@@ -41,9 +42,9 @@ struct distance_data // sizeof=0x8
 
 struct StreamFrontendGlob
 {
-    void *mainBuffer;
+    Ptr32<void> mainBuffer;
     int mainBufferSize;
-    void *extraBuffer;
+    Ptr32<void> extraBuffer;
     int extraBufferSize;
     unsigned int frame;
     _BYTE gap14[108];
@@ -123,9 +124,9 @@ extern int s_streamImageWords; // s_streamImageParts / 32
 struct __declspec(align(4)) pendingRequest // sizeof=0x30
 {                                       // XREF: .data:s_pendingRequests/r
     int id[1];
-    GfxImage *image;
+    Ptr32<GfxImage> image;
     int imagePart;
-    unsigned __int8 *buffer;
+    Ptr32<unsigned __int8> buffer;
     int bufferSize;
     int startTime;
     float importance;
@@ -143,7 +144,7 @@ struct __declspec(align(4)) pendingRequest // sizeof=0x30
 struct StreamUpdateCmd // sizeof=0x1C
 {                                       // XREF: R_StreamUpdate_FindImageAndOptimize/r
                                         // ?R_StreamUpdatePerClient@@YAXQBM@Z/r
-    StreamFrontendGlob *frontend;       // XREF: R_StreamUpdate_FindImageAndOptimize:loc_AA38BC/w
+    Ptr32<StreamFrontendGlob> frontend;       // XREF: R_StreamUpdate_FindImageAndOptimize:loc_AA38BC/w
                                         // R_StreamUpdatePerClient(float const * const):loc_AA460A/w
     float viewPos[3];                   // XREF: R_StreamUpdate_FindImageAndOptimize+25A/w
                                         // R_StreamUpdate_FindImageAndOptimize+267/w ...
@@ -156,7 +157,7 @@ struct StreamUpdateCmd // sizeof=0x1C
 struct __declspec(align(4)) StreamSortCmd // sizeof=0x8
 {                                       // XREF: R_StreamUpdate_FindImageAndOptimize/r
                                         // ?R_StreamUpdate_End@@YAXXZ/r
-    StreamFrontendGlob *frontend;       // XREF: R_StreamUpdate_FindImageAndOptimize+154/w
+    Ptr32<StreamFrontendGlob> frontend;       // XREF: R_StreamUpdate_FindImageAndOptimize+154/w
                                         // R_StreamUpdate_End(void)+59/w
     bool diskOrder;                     // XREF: R_StreamUpdate_FindImageAndOptimize+15B/w
                                         // R_StreamUpdate_End(void)+65/w
@@ -167,7 +168,7 @@ struct __declspec(align(4)) StreamSortCmd // sizeof=0x8
 
 struct StreamCombineCmd // sizeof=0x4
 {                                       // XREF: ?R_StreamUpdate_End@@YAXXZ/r
-    StreamFrontendGlob *frontend;       // XREF: R_StreamUpdate_End(void)+3F/w
+    Ptr32<StreamFrontendGlob> frontend;       // XREF: R_StreamUpdate_End(void)+3F/w
 };
 
 struct DObj;

@@ -59,7 +59,7 @@ void __cdecl CG_ActorProcessSnapshot(int localClientNum, centity_s *cent)
 }
 
 // zombies: SP 0x00454430 (unnamed) - the client anim tree slot of an actor or actor corpse entity.
-static XAnimTree_s **CG_SP_GetActorClientTreeSlot(int localClientNum, centity_s *cent)
+static Ptr32<XAnimTree_s> *CG_SP_GetActorClientTreeSlot(int localClientNum, centity_s *cent)
 {
     if ( cent->nextState.eType == ET_ACTOR )
         return &BG_SP_GetActorInfo(&CG_GetLocalClientGlobals(localClientNum)->bgs, cent->nextState.lerp.u.actor.actorNum)->pXAnimTree;
@@ -84,7 +84,7 @@ static XAnim_s *CG_SP_GetActorClientAnims(const centity_s *cent)
 // actor / actor corpse client tree, rebuilt when its anims are not those of es.animtreeIndex (a dog's own tree).
 static XAnimTree_s *CG_SP_GetActorClientTree(int localClientNum, centity_s *cent)
 {
-    XAnimTree_s **slot = CG_SP_GetActorClientTreeSlot(localClientNum, cent);
+    Ptr32<XAnimTree_s> *slot = CG_SP_GetActorClientTreeSlot(localClientNum, cent);
     XAnim_s *anims = CG_SP_GetActorClientAnims(cent);
 
     // KB: XAnimGetAnims asserts on a null tree (SP reads *tree); an empty slot is rebuilt too.
@@ -135,7 +135,7 @@ static XAnimTree_s *CG_SP_GetServerAnimTree(int entnum, int eType)
 // 0x00525AB0). The serialized snapshot replay now supplies those commands; the copy retains SP's debug gate.
 void __cdecl CG_SP_ActorUseServerAnims(int localClientNum, centity_s *cent)
 {
-    XAnimTree_s **clientTreeSlot;
+    Ptr32<XAnimTree_s> *clientTreeSlot;
     XAnimTree_s *clientTree;
     XAnimTree_s *serverTree;
     XAnim_s *clientAnims;
@@ -210,7 +210,7 @@ void __cdecl CG_UpdateActorDObj(int localClientNum, centity_s *cent, actorInfo_t
         objExists = pDObj != 0;
         // zombies: SP CG_UpdateActorDObj (0x005F9920) takes the tree from 0x00454430, which rebuilds it for
         // es.animtreeIndex (dogs); ai is that same slot.
-        pAnimTree = zombiemode && zombiemode->current.enabled ? CG_SP_GetActorClientTree(localClientNum, cent) : ai->pXAnimTree;
+        pAnimTree = zombiemode && zombiemode->current.enabled ? CG_SP_GetActorClientTree(localClientNum, cent) : ai->pXAnimTree.get();
         model = CG_WhatModelShouldLocalPlayerSee(
                             localClientNum,
                             cgameGlob,

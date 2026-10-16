@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <qcommon/msg_mp.h>
 
@@ -23,10 +24,10 @@ inline DynEntityDrawType operator++(DynEntityDrawType &t, int)
 
 struct DynEntityAreaParms // sizeof=0x14
 {                                       // XREF: ?DynEntSv_AreaEntities@@YAGW4DynEntityDrawType@@QBM1HGPAG@Z/r
-    const float *mins;                  // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+C0/w
-    const float *maxs;                  // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+C6/w
+    Ptr32<const float> mins;                  // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+C0/w
+    Ptr32<const float> maxs;                  // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+C6/w
     int contentMask;                    // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+CC/w
-    unsigned __int16 *list;             // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+D2/w
+    Ptr32<unsigned __int16> list;             // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+D2/w
     unsigned __int16 maxCount;          // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+D9/w
     unsigned __int16 count;             // XREF: DynEntCl_AreaEntities(DynEntityDrawType,float const * const,float const * const,int,ushort,ushort *)+DF/w
 };

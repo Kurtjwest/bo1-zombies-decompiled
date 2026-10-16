@@ -1,4 +1,5 @@
-﻿#pragma once
+#include <universal/ptr32.h>
+#pragma once
 #include <universal/dvar.h>
 #include <gfx_d3d/r_material.h>
 
@@ -32,7 +33,7 @@ struct GlassRenderer // sizeof=0x4DF8
         {                                       // XREF: GlassRenderer::Action/r
             struct //GlassRenderer::Action::<unnamed_tag>::<unnamed_type_shatter> // sizeof=0x20
             {                                       // XREF: $F8734D8CD8D5548044E567214B041690/r
-                GlassClient *glass;
+                Ptr32<GlassClient> glass;
                 bool gameState;
                 // padding byte
                 // padding byte
@@ -107,14 +108,14 @@ struct GlassRenderer // sizeof=0x4DF8
     void *operator new(size_t size);
     void operator delete(void *ptr);
 
-    const dvar_s *cullShards;
-    const dvar_s *drawDebug;
-    const dvar_s *drawBBox;
-    const dvar_s *drawShardOutline;
-    const dvar_s *pickShards;
-    const dvar_s *debugSplit;
-    const dvar_s *freezeShards;
-    const dvar_s *broom;
+    Ptr32<const dvar_s> cullShards;
+    Ptr32<const dvar_s> drawDebug;
+    Ptr32<const dvar_s> drawBBox;
+    Ptr32<const dvar_s> drawShardOutline;
+    Ptr32<const dvar_s> pickShards;
+    Ptr32<const dvar_s> debugSplit;
+    Ptr32<const dvar_s> freezeShards;
+    Ptr32<const dvar_s> broom;
     struct //GlassRenderer::<unnamed_type_stat> // sizeof=0x10
     {                                       // XREF: GlassRenderer/r
         int numMovingShards;
@@ -152,46 +153,46 @@ struct GlassRenderer // sizeof=0x4DF8
     // padding byte
     // padding byte
     unsigned __int64 genVertsTimer;
-    const dvar_s *maxShardSplit;
-    const dvar_s *shardShatterSizeLimitScale;
-    const dvar_s *defragMemory;
-    const dvar_s *defragIndices;
-    const dvar_s *freeBuffersDelay;
-    const dvar_s *smpGlass;
-    const dvar_s *shardSplitDir;
-    const dvar_s *shardSplitDir2;
-    const dvar_s *shardEdgeSize;
-    const dvar_s *forceMultiplier;
-    const dvar_s *forceOriginMult;
-    const dvar_s *forceAttenuation;
-    const dvar_s *extraVelocity;
-    const dvar_s *doMaintenance;
-    const dvar_s *lowLodDist;
-    const dvar_s *maxShardLife;
-    const dvar_s *timeUntilDropRange;
-    const dvar_s *narrowShardRatio;
-    const dvar_s *shatterFxMaxDist;
-    const dvar_s *shatterFxMinEdgeLength;
+    Ptr32<const dvar_s> maxShardSplit;
+    Ptr32<const dvar_s> shardShatterSizeLimitScale;
+    Ptr32<const dvar_s> defragMemory;
+    Ptr32<const dvar_s> defragIndices;
+    Ptr32<const dvar_s> freeBuffersDelay;
+    Ptr32<const dvar_s> smpGlass;
+    Ptr32<const dvar_s> shardSplitDir;
+    Ptr32<const dvar_s> shardSplitDir2;
+    Ptr32<const dvar_s> shardEdgeSize;
+    Ptr32<const dvar_s> forceMultiplier;
+    Ptr32<const dvar_s> forceOriginMult;
+    Ptr32<const dvar_s> forceAttenuation;
+    Ptr32<const dvar_s> extraVelocity;
+    Ptr32<const dvar_s> doMaintenance;
+    Ptr32<const dvar_s> lowLodDist;
+    Ptr32<const dvar_s> maxShardLife;
+    Ptr32<const dvar_s> timeUntilDropRange;
+    Ptr32<const dvar_s> narrowShardRatio;
+    Ptr32<const dvar_s> shatterFxMaxDist;
+    Ptr32<const dvar_s> shatterFxMinEdgeLength;
     unsigned int frame;
     int timeLastUpdate;
     float deltaTime;
     GlassLock rendererLock;
     SmallAllocator smallAllocator;
     Allocator shardMemoryAllocator;
-    FixedSizeAllocator<ShardGroup*> *groupsAllocator;
-    FixedSizeAllocator<GlassShard*> *shardsAllocator;
-    FixedSizeAllocator<GlassPhysics*> *physicsAllocator;
-    GlassRenderer::SortedShardsList *colidingShards;
-    GlassRenderer::SortedShardsList *tempShardsList;
-    Material *usedMaterials[32];
+    Ptr32<FixedSizeAllocator<ShardGroup*>> groupsAllocator;
+    Ptr32<FixedSizeAllocator<GlassShard*>> shardsAllocator;
+    Ptr32<FixedSizeAllocator<GlassPhysics*>> physicsAllocator;
+    Ptr32<GlassRenderer::SortedShardsList> colidingShards;
+    Ptr32<GlassRenderer::SortedShardsList> tempShardsList;
+    Ptr32<Material> usedMaterials[32];
     unsigned int numUsedMaterials;
     float allBBoxMin[3];
     float allBBoxMax[3];
     float coordScale[3];
-    GlassShard *groupChanges[2048];
+    Ptr32<GlassShard> groupChanges[2048];
     int numGroupChanges;
     int maxNumGroupChanges;
-    GlassShardMeshVertex *vertexList[22];
+    Ptr32<GlassShardMeshVertex> vertexList[22];
     GlassRenderer::Action actions[200];
     volatile unsigned int actionInputIndex;
     volatile unsigned int actionOutputIndex;
@@ -233,7 +234,7 @@ struct GlassRenderer // sizeof=0x4DF8
         unsigned int packedPos,
         const GlassDef *glassDef);
     void __thiscall FreeShardGroup(ShardGroup *grp);
-    Allocator::Memory **__thiscall AllocateShardMemory(
+    Ptr32<Allocator::Memory> *__thiscall AllocateShardMemory(
         unsigned int size,
         GlassShard *shard);
     void __thiscall FreeShardMemory(unsigned int *ptr);

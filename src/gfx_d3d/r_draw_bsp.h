@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rb_state.h"
 #include "r_draw_cmdbuf.h"
 #include "r_pretess.h"
@@ -6,20 +7,20 @@
 struct GfxTrianglesDrawStream // sizeof=0x20
 {                                       // XREF: ?R_DrawBspDrawSurfsLit@@YAXPBIUGfxCmdBufContext@@1PBUGfxDrawSurfListInfo@@@Z/r
                                         // ?R_DrawBspDrawSurfs@@YAXPBIPAUGfxCmdBufState@@PBUGfxDrawSurfListInfo@@@Z/r
-    GfxTexture *whiteTexture;           // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+B2/w
-    const unsigned int *primDrawSurfPos;
+    Ptr32<GfxTexture> whiteTexture;           // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+B2/w
+    Ptr32<const unsigned int> primDrawSurfPos;
                                         // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+B8/w
                                         // R_DrawBspDrawSurfs(uint const *,GfxCmdBufState *,GfxDrawSurfListInfo const *)+9/w
-    const GfxTexture *reflectionProbeTexture;
+    Ptr32<const GfxTexture> reflectionProbeTexture;
                                         // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+85/w
                                         // R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+10E/r
-    const GfxTexture *lightmapPrimaryTexture;
+    Ptr32<const GfxTexture> lightmapPrimaryTexture;
                                         // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+91/w
                                         // R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+11A/r
-    const GfxTexture *lightmapSecondaryTexture;
+    Ptr32<const GfxTexture> lightmapSecondaryTexture;
                                         // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+9D/w
                                         // R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+126/r
-    const GfxTexture *lightmapSecondaryTextureB;
+    Ptr32<const GfxTexture> lightmapSecondaryTextureB;
                                         // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+A9/w
                                         // R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+132/r
     unsigned int customSamplerFlags;    // XREF: R_DrawBspDrawSurfsLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+C2/w
@@ -37,7 +38,7 @@ void __cdecl R_DrawTrianglesLit(
                 GfxCmdBufPrimState *prepassPrimState);
 void __cdecl R_DrawBspTris(GfxCmdBufPrimState *state, const srfTriangles_t *tris, unsigned int triCount);
 int __cdecl R_ReadBspDrawSurfs(
-                const unsigned int **primDrawSurfPos,
+                Ptr32<const unsigned int> *primDrawSurfPos,
                 const unsigned __int16 **list,
                 unsigned int *count);
 void __cdecl R_DrawBspDrawSurfsLitPreTess(const unsigned int *primDrawSurfPos, GfxCmdBufContext context);

@@ -136,7 +136,7 @@ void    auto_rigid_body::update()
     phys_mat44 dictator; // [esp-Ch] [ebp-8Ch] OVERLAPPED BYREF
     float axis[3][3]; // [esp+3Ch] [ebp-44h] BYREF
     auto_rigid_body *iter_next; // [esp+68h] [ebp-18h]
-    auto_rigid_body **prev_next; // [esp+6Ch] [ebp-14h]
+    Ptr32<auto_rigid_body> *prev_next; // [esp+6Ch] [ebp-14h]
     auto_rigid_body *iter; // [esp+70h] [ebp-10h]
     //_UNKNOWN *v8; // [esp+74h] [ebp-Ch]
     //int v9; // [esp+78h] [ebp-8h]
@@ -206,7 +206,7 @@ void __cdecl fixup_wheel_constraints_arb(auto_rigid_body *arb)
 void __cdecl auto_rigid_body::remove_ent(const centity_s *cent)
 {
     auto_rigid_body *m_tree_root; // [esp+144h] [ebp-Ch]
-    auto_rigid_body **prev_next; // [esp+148h] [ebp-8h]
+    Ptr32<auto_rigid_body> *prev_next; // [esp+148h] [ebp-8h]
 
     m_tree_root = g_auto_rigid_body_map.m_tree_root;
     while ( m_tree_root && cent != m_tree_root->cent )

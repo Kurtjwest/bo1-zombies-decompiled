@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <physics/phys_colgeom.h>
 #include <physics/phys_gjk.h>
@@ -63,7 +64,7 @@ struct actor_physics_t // sizeof=0x7D0
     unsigned __int8 bDeflected;
     // padding byte
     // padding byte
-    const gjkcc_input_t *m_gjkcc_input;
+    Ptr32<const gjkcc_input_t> m_gjkcc_input;
     colgeom_visitor_inlined_t<200> proximity_data;
                                         // XREF: AIPhys_StepSlideMove+49/o
                                         // AIPhys_StepSlideMove+133/w ...

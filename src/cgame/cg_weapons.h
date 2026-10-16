@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <sound/snd.h>
 #include <bgame/bg_weapons_def.h>
@@ -22,25 +23,25 @@ struct AnimRateOffset // sizeof=0x8
 
 struct weaponInfo_s // sizeof=0x24
 {                                       // XREF: weaponInfo_t/r
-    XModel *handModel;
-    XModel *gogglesModel;
-    XModel *rocketModel;
+    Ptr32<XModel> handModel;
+    Ptr32<XModel> gogglesModel;
+    Ptr32<XModel> rocketModel;
     unsigned __int8 weapModelIdx;
     // padding byte
     // padding byte
     // padding byte
     int registered;
-    const struct gitem_s *item;
-    const char *translatedDisplayName;
-    const char *translatedModename;
-    const char *translatedAIOverlayDescription;
+    Ptr32<const struct gitem_s> item;
+    Ptr32<const char> translatedDisplayName;
+    Ptr32<const char> translatedModename;
+    Ptr32<const char> translatedAIOverlayDescription;
 };
 BO1_LAYOUT32_ASSERT(sizeof(weaponInfo_s) == 0x24);
 
 struct weaponState_t // sizeof=0x90
 {                                       // XREF: ?ClientThink_real@@YAXPAUgentity_s@@PAUusercmd_s@@@Z/r
                                         // ?CG_AddViewWeapon@@YAXH@Z/r
-    const playerState_s *ps;            // XREF: ClientThink_real(gentity_s *,usercmd_s *):loc_5FA486/r
+    Ptr32<const playerState_s> ps;            // XREF: ClientThink_real(gentity_s *,usercmd_s *):loc_5FA486/r
                                         // ClientThink_real(gentity_s *,usercmd_s *)+B20/r
     float xyspeed;
     float frametime;
@@ -49,7 +50,7 @@ struct weaponState_t // sizeof=0x90
     int damageTime;
     float v_dmg_pitch;
     float v_dmg_roll;
-    int *weapIdleTime;
+    Ptr32<int> weapIdleTime;
     float baseAngles[3];
     float baseOrigin[3];
     float recoilAngles[3];

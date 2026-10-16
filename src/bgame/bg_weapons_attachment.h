@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/com_stringtable.h>
 
 enum eAttachment : __int32
@@ -75,14 +76,14 @@ enum eWeaponOptionGroup : __int32
 struct WeaponAttachmentTableEntry // sizeof=0x24
 {                                       // XREF: AttachmentTableEntry/r
                                         // WeaponOptionTableEntry/r ...
-    const char *displayName;            // XREF: BG_GetAttachmentDisplayName(eAttachment)+38/r
+    Ptr32<const char> displayName;            // XREF: BG_GetAttachmentDisplayName(eAttachment)+38/r
                                         // BG_GetWeaponOptionDisplayName(int)+38/r
-    const char *referenceName;          // XREF: BG_GetAttachmentReference(eAttachment)+38/r
+    Ptr32<const char> referenceName;          // XREF: BG_GetAttachmentReference(eAttachment)+38/r
                                         // BG_GetWeaponOptionReference(int)+38/r ...
-    const char *pointName;
-    const char *imageName;              // XREF: BG_GetAttachmentImage(eAttachment)+38/r
+    Ptr32<const char> pointName;
+    Ptr32<const char> imageName;              // XREF: BG_GetAttachmentImage(eAttachment)+38/r
                                         // BG_GetWeaponOptionImage(int)+38/r
-    const char *description;            // XREF: BG_GetAttachmentDesc(eAttachment)+38/r
+    Ptr32<const char> description;            // XREF: BG_GetAttachmentDesc(eAttachment)+38/r
     int cost;                           // XREF: BG_GetAttachmentCost(eAttachment)+38/r
                                         // BG_GetAttachmentPointCost(eAttachmentPoint)+28/r ...
     int count;

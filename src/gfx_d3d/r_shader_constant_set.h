@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rb_state.h"
 #include "r_gfx.h"
 
@@ -11,7 +12,7 @@ struct ShaderConstantSet // sizeof=0x78
 
 struct ScopedShaderConstantSetUndo // sizeof=0x7C
 {                                       // XREF: R_RenderDrawSurfListMaterial/r
-    GfxCmdBufSourceState *m_sourceState;
+    Ptr32<GfxCmdBufSourceState> m_sourceState;
     ShaderConstantSet m_scs;
 
 

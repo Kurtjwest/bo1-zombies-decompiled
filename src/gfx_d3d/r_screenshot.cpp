@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <CubeMapGenLib/CCubeMapProcessor.h>
 
 #include "r_screenshot.h"
@@ -33,9 +34,9 @@ unsigned int offsettable[64];
 
 struct //$069481853E63AB7B456FCC17924CBF75 // sizeof=0x48
 {                                       // XREF: .data:cubeShotGlob/r
-    unsigned __int8 *pixels[6];         // XREF: R_CubemapShotWriteTargaFile+BD/r
-    float *pixelsHDR[6];                // XREF: R_CopyCubemapShot+75/w
-    float *pixelsHDRcorrected[6];       // XREF: R_CopyCubemapShot+C5/w
+    Ptr32<unsigned __int8> pixels[6];         // XREF: R_CubemapShotWriteTargaFile+BD/r
+    Ptr32<float> pixelsHDR[6];                // XREF: R_CopyCubemapShot+75/w
+    Ptr32<float> pixelsHDRcorrected[6];       // XREF: R_CopyCubemapShot+C5/w
 } cubeShotGlob;
 
 unsigned __int8 *__cdecl R_TakeResampledScreenshot(int width, int height, int bytesPerPixel, int headerSize)
@@ -1573,7 +1574,7 @@ void __cdecl R_CubemapLighting(
                 int width,
                 int height,
                 const float *baseColor,
-                unsigned __int8 **pixels)
+                Ptr32<unsigned __int8> *pixels)
 {
     float dir[3]; // [esp+Ch] [ebp-18h] BYREF
     int faceIndex; // [esp+18h] [ebp-Ch]
@@ -1822,7 +1823,7 @@ void __cdecl R_CubemapLightingForDir(
 
 
 void __cdecl R_CubemapShotExtractLinearLight(
-    unsigned __int8 **pixels,
+    Ptr32<unsigned __int8> *pixels,
     int width,
     int height,
     float (**linearColors)[3])

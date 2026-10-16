@@ -62,7 +62,7 @@ flameChunk_s *__cdecl Flame_Class_Chunk_Alloc(bool is_server)
 void __cdecl Flame_Class_Chunk_Free(bool is_server, flameChunk_s *chunk)
 {
     if ( chunk->gen.stream )
-        Flame_List_Sub_Local(&chunk->gen, (flameGeneric_s **)&chunk->gen.stream->chunkList);
+        Flame_List_Sub_Local(&chunk->gen, (Ptr32<flameGeneric_s> *)&chunk->gen.stream->chunkList);
     if ( is_server )
     {
         Flame_List_Move_Global(&chunk->gen, (flameGeneric_s **)&sv_flameChunksUsed, (flameGeneric_s **)&sv_flameChunksFree);
@@ -195,7 +195,7 @@ void __cdecl Flame_Class_Chunk_Age(bool is_server, int time)
 flameChunk_s *__cdecl Flame_Class_Chunk_Spawn(
                 bool is_server,
                 flameChunkSpawnVars_t *spawnVars,
-                flameGeneric_s **chunkList,
+                Ptr32<flameGeneric_s> *chunkList,
                 float *velocityAdd,
                 flameTable *fTable)
 {

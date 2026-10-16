@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_material.h"
 #include <win32/win_common.h>
 
 struct StreamAllocGlob // sizeof=0x109
 {                                       // XREF: .data:s_allocGlob/r
     FastCriticalSection lock;
-    GfxImage *tempImages[64];           // XREF: R_StreamAlloc_InitTempImages(void)+33/w
+    Ptr32<GfxImage> tempImages[64];           // XREF: R_StreamAlloc_InitTempImages(void)+33/w
                                         // R_StreamAlloc_InitTempImages(void)+3D/r ...
     bool tempImagesInit;                // XREF: R_StreamAlloc_InitTempImages(void)+6/r
 };

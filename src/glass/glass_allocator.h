@@ -1,12 +1,17 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <list>
 #include "glass_client.h"
 
+// Block size of the glass SmallAllocator: 16 bytes held an MSVC x86 std::list node; a 64-bit node (two links and
+// a pointer value) needs 24.
+constexpr unsigned int kGlassSmallAllocatorBlockSize = sizeof(void *) == 4 ? 16u : 32u;
+
 struct SmallAllocator // sizeof=0x18
 {                                       // XREF: GlassRenderer/r
-    void *memory;
-    void *freeHead;
+    Ptr32<void> memory;
+    Ptr32<void> freeHead;
     unsigned int blockSize;
     unsigned int numBlocks;
     unsigned int numUsed;
@@ -23,7 +28,7 @@ struct SmallAllocatorTemplate//<GlassPhysics * *> // sizeof=0x4
 {
     using value_type = T;
 
-    SmallAllocator *alloc;
+    Ptr32<SmallAllocator> alloc;
 
     SmallAllocatorTemplate(SmallAllocator *a) noexcept : alloc(a) {}
 
@@ -59,7 +64,7 @@ struct FixedSizeAllocator
     std::list<T, SmallAllocatorTemplate<T>> free;
 
     unsigned int maxUsed;
-    void *memory;
+    Ptr32<void> memory;
     // ...
 
     void *operator new(size_t size)
@@ -115,25 +120,25 @@ struct Allocator // sizeof=0x14
 {                                       // XREF: GlassRenderer/r
     struct Memory // sizeof=0x14
     {
-        Allocator::Memory *next;
-        Allocator::Memory *prev;
-        void *userData;
-        Allocator::Memory *nextFree;
-        Allocator::Memory *prevFree;
+        Ptr32<Allocator::Memory> next;
+        Ptr32<Allocator::Memory> prev;
+        Ptr32<void> userData;
+        Ptr32<Allocator::Memory> nextFree;
+        Ptr32<Allocator::Memory> prevFree;
 
         void __thiscall Init();
         char __thiscall MakeFree();
     };
-    void *buffer;
-    Allocator::Memory *head;
-    Allocator::Memory *tail;
-    Allocator::Memory *freeHead;
+    Ptr32<void> buffer;
+    Ptr32<Allocator::Memory> head;
+    Ptr32<Allocator::Memory> tail;
+    Ptr32<Allocator::Memory> freeHead;
     int maxUsed;
 
 
     void __thiscall Init(void *buf, int size);
     void __thiscall FreeAll();
-    Memory **__thiscall Allocate(int size, void *userData);
+    Ptr32<Memory> *__thiscall Allocate(int size, void *userData);
     void __thiscall Free(unsigned int *ptr);
     unsigned int __thiscall GetMemorySize(unsigned int *ptr);
     void __thiscall Split(Memory *mem, int size);

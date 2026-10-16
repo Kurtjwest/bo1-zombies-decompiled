@@ -100,7 +100,7 @@ FxImpactTable *__cdecl CG_RegisterImpactEffects_LoadObj(const char *mapname)
 
 // BO1TODO: template these ugly muthas
 int __cdecl CG_RegisterImpactEffects_Generic_31_char_const_____cdecl_int__(
-    const char **szEffectFile,
+    Ptr32<const char> *szEffectFile,
     const char *pszTypeName,
     Ptr32<const FxEffectDef> *fx,
     const char *(__cdecl *typeToNameFunc)(int),
@@ -138,7 +138,7 @@ int __cdecl CG_RegisterImpactEffects_Generic_31_char_const_____cdecl_int__(
 }
 
 int __cdecl CG_RegisterImpactEffects_NonFlesh(
-                const char **szEffectFile,
+                Ptr32<const char> *szEffectFile,
                 const char *pszTypeName,
                 Ptr32<const FxEffectDef> *fx)
 {
@@ -151,7 +151,7 @@ int __cdecl CG_RegisterImpactEffects_NonFlesh(
 }
 
 int __cdecl CG_RegisterImpactEffects_Generic_4_char_const_____cdecl_int__(
-    const char **szEffectFile,
+    Ptr32<const char> *szEffectFile,
     const char *pszTypeName,
     Ptr32<const FxEffectDef> *fx,
     const char *(__cdecl *typeToNameFunc)(int),
@@ -189,7 +189,7 @@ int __cdecl CG_RegisterImpactEffects_Generic_4_char_const_____cdecl_int__(
 }
 
 int __cdecl CG_RegisterImpactEffects_Flesh(
-                const char **szEffectFile,
+                Ptr32<const char> *szEffectFile,
                 const char *pszTypeName,
                 Ptr32<const FxEffectDef> *fx,
                 char *defaultEffectName)

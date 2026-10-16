@@ -3391,7 +3391,7 @@ void __cdecl ConDrawInput_DetailedDvarMatch(char *str)
         conDrawInputGlob.y = conDrawInputGlob.y + conDrawInputGlob.fontHeight;
         conDrawInputGlob.x = conDrawInputGlob.leftX;
         if ( dvar->type == DVAR_TYPE_ENUM && Cmd_Argc() == 2 )
-            ConDrawInput_AutoCompleteArg(dvar->domain.enumeration.strings, dvar->domain.enumeration.stringCount);
+            ConDrawInput_AutoCompleteArg(BO1_NATIVE_ARRAY(dvar->domain.enumeration.strings, dvar->domain.enumeration.stringCount), dvar->domain.enumeration.stringCount);
     }
 }
 

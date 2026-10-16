@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <qcommon/bitarray.h>
 
@@ -16,7 +17,7 @@ struct SavedDObjModel // sizeof=0x2
 struct SavedDObj // sizeof=0x68
 {                                       // XREF: ?DObjArchive@@YAXPAUDObj@@@Z/r
     SavedDObjModel dobjModels[32];
-    struct XModel **models;                    // XREF: DObjArchive(DObj *)+43/w
+    Ptr32<Ptr32<struct XModel>> models;                    // XREF: DObjArchive(DObj *)+43/w
                                         // DObjUnarchive(DObj *)+8A/r ...
     unsigned int ignoreCollision;       // XREF: DObjArchive(DObj *)+33/w
                                         // DObjArchive(DObj *)+111/r ...
@@ -30,7 +31,7 @@ struct SavedDObj // sizeof=0x68
                                         // DObjUnarchive(DObj *)+D8/r
     // padding byte
     // padding byte
-    struct XAnimTree_s *tree;                  // XREF: DObjArchive(DObj *)+12/o
+    Ptr32<struct XAnimTree_s> tree;                  // XREF: DObjArchive(DObj *)+12/o
                                         // DObjUnarchive(DObj *)+10E/r
     unsigned int hidePartBits[5];       // XREF: DObjArchive(DObj *)+69/w
                                         // DObjArchive(DObj *)+72/w ...
@@ -74,8 +75,8 @@ struct DSkel // sizeof=0x44
         union //$E37E2D40D980A1CD669FE5FFE5D2594A // sizeof=0x4
         {                                                                             // XREF: DObjCalcBaseSkel(DObj const *,DObjAnimMat *,int * const)+64/w
                                                                                         // DSkel/r
-            DObjAnimMat *mat;
-            DObjAnimMat *localMat;
+            Ptr32<DObjAnimMat> mat;
+            Ptr32<DObjAnimMat> localMat;
         };
 };
 
@@ -84,8 +85,8 @@ struct DObj // sizeof=0x7C
         //$505CB099FB1B2F089675B7DC2E6E811F ___u0;
         union //$505CB099FB1B2F089675B7DC2E6E811F // sizeof=0x4
         {                                                                             // XREF: DObj/r
-                struct XAnimTree_s *localTree;
-                struct XAnimTree_s *tree;
+                Ptr32<struct XAnimTree_s> localTree;
+                Ptr32<struct XAnimTree_s> tree;
         };
         unsigned __int16 duplicateParts;
         unsigned __int16 entnum;
@@ -102,19 +103,19 @@ struct DObj // sizeof=0x7C
         unsigned __int8 flags;
         // padding byte
         // padding byte
-        unsigned __int8 *ikState;
+        Ptr32<unsigned __int8> ikState;
         //$5CBEAE0A843BDDEAC35D3349B6AE42EB ___u14;
         union //$5CBEAE0A843BDDEAC35D3349B6AE42EB // sizeof=0x4
         {                                                                             // XREF: DObj/r
-                struct XModel **localModels;
-                struct XModel **models;
+                Ptr32<Ptr32<struct XModel>> localModels;
+                Ptr32<Ptr32<struct XModel>> models;
         };
 };
 
 struct __declspec(align(2)) DObjModel_s // sizeof=0x8
 {                                                                             // XREF: DObjModel/r
                                                                                 // ?DObjArchive@@YAXPAUDObj@@@Z/r ...
-        XModel *model;                                            // XREF: BG_UpdatePlayerDObj(int,DObj *,entityState_s *,clientInfo_t *,int)+287/w
+        Ptr32<XModel> model;                                            // XREF: BG_UpdatePlayerDObj(int,DObj *,entityState_s *,clientInfo_t *,int)+287/w
                                                                                 // BG_UpdatePlayerDObj(int,DObj *,entityState_s *,clientInfo_t *,int)+294/r ...
         unsigned __int16 boneName;                    // XREF: BG_UpdatePlayerDObj(int,DObj *,entityState_s *,clientInfo_t *,int)+2CC/w
                                                                                 // BG_UpdatePlayerDObj(int,DObj *,entityState_s *,clientInfo_t *,int)+494/w ...

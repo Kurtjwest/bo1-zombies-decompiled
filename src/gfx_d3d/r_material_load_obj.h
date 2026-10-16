@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "r_material.h"
 
@@ -114,28 +115,28 @@ struct MaterialStateMapRuleSet // sizeof=0x24
 
 struct MaterialStateMap // sizeof=0x2C
 {
-    const char *name;
-    MaterialStateMapRuleSet *ruleSet[10];
+    Ptr32<const char> name;
+    Ptr32<MaterialStateMapRuleSet> ruleSet[10];
 };
 
 struct GfxCachedShaderText // sizeof=0xC
 {                                       // XREF: ??$_Insertion_sort1@PAUGfxCachedShaderText@@P6A_NABU1@0@ZU1@@std@@YAXPAUGfxCachedShaderText@@0P6A_NABU1@1@Z0@Z/r
-    const char *name;                   // XREF: std::_Insertion_sort1<GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText>(GfxCachedShaderText *,GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText *)+38/w
-    const char *text;                   // XREF: std::_Insertion_sort1<GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText>(GfxCachedShaderText *,GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText *)+3E/w
+    Ptr32<const char> name;                   // XREF: std::_Insertion_sort1<GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText>(GfxCachedShaderText *,GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText *)+38/w
+    Ptr32<const char> text;                   // XREF: std::_Insertion_sort1<GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText>(GfxCachedShaderText *,GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText *)+3E/w
     int textSize;                       // XREF: std::_Insertion_sort1<GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText>(GfxCachedShaderText *,GfxCachedShaderText *,bool (*)(GfxCachedShaderText const &,GfxCachedShaderText const &),GfxCachedShaderText *)+44/w
 };
 
 struct MtlStateMapBitName // sizeof=0x8
 {                                       // XREF: .rdata:s_alphaTestBitNames/r
-    const char *name;
+    Ptr32<const char> name;
     int bits;
 };
 
 struct MaterialTypeInfo // sizeof=0xC
 {                                       // XREF: .data:g_materialTypeInfo/r
-    const char *prefix;                 // XREF: Material_Load(char const *,int)+B3/r
+    Ptr32<const char> prefix;                 // XREF: Material_Load(char const *,int)+B3/r
                                         // Material_LoadRaw+BE/r
-    const char *techniqueSetPrefix;     // XREF: Material_LoadRaw+1C/r
+    Ptr32<const char> techniqueSetPrefix;     // XREF: Material_LoadRaw+1C/r
     unsigned int prefixLen;             // XREF: Material_Load(char const *,int)+A0/r
                                         // Material_LoadRaw+4E/r
 };
@@ -149,15 +150,15 @@ struct MaterialConstantDefRaw // sizeof=0x14
 struct MtlStateMapBitGroup // sizeof=0x10
 {                                       // XREF: .rdata:s_stateMapSrcBitGroup/r
                                         // .rdata:s_stateMapDstAlphaTestBitGroup/r ...
-    const char *name;                   // XREF: Material_ParseRuleSetConditionTest+1F/r
+    Ptr32<const char> name;                   // XREF: Material_ParseRuleSetConditionTest+1F/r
                                         // Material_ParseRuleSetConditionTest+32/r ...
-    const MtlStateMapBitName *bitNames; // XREF: Material_ParseRuleSetConditionTest+BF/r
+    Ptr32<const MtlStateMapBitName> bitNames; // XREF: Material_ParseRuleSetConditionTest+BF/r
     int stateBitsMask[2];               // XREF: Material_ParseRuleSetConditionTest+F5/r
 };
 
 struct ShaderVaryingDef // sizeof=0x8
 {                                       // XREF: ShaderParameterSet/r
-    const char *name;
+    Ptr32<const char> name;
     unsigned __int8 streamDest;
     unsigned __int8 resourceDest;
     bool isAssigned;
@@ -167,7 +168,7 @@ struct ShaderVaryingDef // sizeof=0x8
 struct __declspec(align(4)) ShaderUniformDef // sizeof=0x10
 {                                       // XREF: ShaderParameterSet/r
     ShaderParamType type;
-    const char *name;
+    Ptr32<const char> name;
     unsigned __int16 index;
     unsigned __int16 resourceDest;
     bool isTransposed;
@@ -198,7 +199,7 @@ struct GfxAssembledShaderTextFile // sizeof=0x108
 
 struct GfxAssembledShaderText // sizeof=0x8418
 {                                       // XREF: Material_CompileShader/r
-    char *string;
+    Ptr32<char> string;
     unsigned int used;
     unsigned int total;
     unsigned int currentDestLine;
@@ -230,29 +231,29 @@ struct ShaderArgumentSource // sizeof=0x14
     //ShaderArgumentSource::<unnamed_type_u> u;
     union //ShaderArgumentSource::<unnamed_type_u> // sizeof=0x4
     {                                       // XREF: Material_ParseShaderArguments+248/r
-        const float *literalConst;
+        Ptr32<const float> literalConst;
         unsigned __int16 codeIndex;
-        const char *name;
+        Ptr32<const char> name;
     } u;
 };
 
 struct CodeSamplerSource // sizeof=0x14
 {                                       // XREF: .rdata:s_lightSamplers/r
-    const char *name;
+    Ptr32<const char> name;
     MaterialTextureSource source;
-    const CodeSamplerSource *subtable;
+    Ptr32<const CodeSamplerSource> subtable;
     int arrayCount;
     int arrayStride;
 };
 
 struct CodeConstantSource // sizeof=0x14
 {                                       // XREF: .rdata:s_sunConsts/r
-    const char *name;
+    Ptr32<const char> name;
     unsigned __int8 source;
     // padding byte
     // padding byte
     // padding byte
-    const CodeConstantSource *subtable;
+    Ptr32<const CodeConstantSource> subtable;
     int arrayCount;
     int arrayStride;
 };
@@ -260,15 +261,15 @@ struct CodeConstantSource // sizeof=0x14
 struct ShaderArgumentDest // sizeof=0x10
 {
     ShaderIndexRange indexRange;
-    const char *paramName;
+    Ptr32<const char> paramName;
 };
 
 struct LayeredTechniqueSetName // sizeof=0x10
 {                                       // XREF: .rdata:s_lyrTechSetNames/r
-    const char *inputName;              // XREF: Material_GetLayeredTechniqueSetName+6D/r
-    const char *namePrefixRegister;
-    const char *namePrefixGenerate;
-    const char *nameChunk;
+    Ptr32<const char> inputName;              // XREF: Material_GetLayeredTechniqueSetName+6D/r
+    Ptr32<const char> namePrefixRegister;
+    Ptr32<const char> namePrefixGenerate;
+    Ptr32<const char> nameChunk;
 };
 
 struct MaterialInfoRaw // sizeof=0x28
@@ -310,7 +311,7 @@ struct MaterialWaterDef // sizeof=0x20
     float amplitude;
     float windSpeed;
     float windDirection[2];
-    water_t *map;
+    Ptr32<water_t> map;
 };
 
 struct MaterialTextureDefRaw // sizeof=0xC
@@ -334,12 +335,12 @@ struct ScriptableConstant // sizeof=0x8
     // padding byte
     // padding byte
     // padding byte
-    const char *sourceName;
+    Ptr32<const char> sourceName;
 };
 
 struct MaterialString // sizeof=0x8
 {                                       // XREF: $54435CF730F84DB67694F69169881761/r
-    const char *string;                 // XREF: Material_RegisterString+24/r
+    Ptr32<const char> string;                 // XREF: Material_RegisterString+24/r
                                         // Material_RegisterString+4E/r ...
     unsigned int hash;                  // XREF: Material_RegisterString+35/r
 };
@@ -373,7 +374,7 @@ char __cdecl Material_ParseRuleSet(
                 char **text,
                 const char *ruleSetName,
                 const MtlStateMapBitGroup *stateSet,
-                MaterialStateMapRuleSet **ruleSet);
+                Ptr32<MaterialStateMapRuleSet> *ruleSet);
 int __cdecl Material_ParseRuleSetCondition(const char **text, const char *token, MaterialStateMapRule *rule);
 int __cdecl Material_ParseRuleSetConditionTest(const char **text, const char *token, MaterialStateMapRule *rule);
 const MtlStateMapBitName *__cdecl Material_ParseValueForState(const char **text, const MtlStateMapBitName *bitNames);
@@ -763,7 +764,7 @@ bool __cdecl Material_HasImpactMaskTech(const Material *material);
 bool __cdecl Material_IsForSeeThruBulletHoleDecal(const Material *mat);
 bool __cdecl Material_IsSeeThruParallaxDecal(const Material *mat);
 void __cdecl Material_Sort();
-void __cdecl Material_SortInternal(Material **sortedMaterials, unsigned int materialCount);
+void __cdecl Material_SortInternal(Ptr32<Material> *sortedMaterials, unsigned int materialCount);
 unsigned int __cdecl R_DrawSurfStandardPrepassSortKey(const Material *material);
 bool __cdecl Material_Compare(const Material *mtl0, const Material *mtl1);
 void __cdecl Material_GetVertexShaderName(char *dest, const MaterialPass *pass, int destsize);

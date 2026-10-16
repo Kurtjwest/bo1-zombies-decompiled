@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "r_bsp.h"
 
@@ -93,7 +94,7 @@ struct GfxSModelCachedVertex // sizeof=0x20
 struct FxCodeMeshData // sizeof=0x10
 {                                       // XREF: GfxBackEndData/r
     unsigned int triCount;
-    unsigned __int16 *indices;
+    Ptr32<unsigned __int16> indices;
     unsigned __int16 argOffset;
     unsigned __int16 argCount;
     unsigned int lightHandle;
@@ -145,9 +146,9 @@ struct GfxEntity // sizeof=0x18
 
 struct GfxTextureOverride // sizeof=0x10
 {                                       // XREF: GfxBackEndData/r
-    const Material *material;
-    const GfxImage *img1;
-    const GfxImage *img2;
+    Ptr32<const Material> material;
+    Ptr32<const GfxImage> img1;
+    Ptr32<const GfxImage> img2;
     unsigned __int16 dobjModelMask;
     __int16 prev;
 };
@@ -155,7 +156,7 @@ struct GfxTextureOverride // sizeof=0x10
 struct FxMarkMeshData // sizeof=0x18
 {                                       // XREF: GfxBackEndData/r
     unsigned int triCount;
-    unsigned __int16 *indices;
+    Ptr32<unsigned __int16> indices;
     float normal[3];
     unsigned __int16 modelIndex;
     unsigned __int8 modelTypeAndSurf;
@@ -172,10 +173,10 @@ struct GfxCmdHeader // sizeof=0x4
 
 struct GfxCmdArray // sizeof=0x18
 {                                       // XREF: .data:g_frontEndCmds/r
-    unsigned __int8 *cmds;              // XREF: R_InitRenderCommands(void)+8F/w
+    Ptr32<unsigned __int8> cmds;              // XREF: R_InitRenderCommands(void)+8F/w
     int usedTotal;
     int usedCritical;
-    GfxCmdHeader *lastCmd;
+    Ptr32<GfxCmdHeader> lastCmd;
     int byteSize;                       // XREF: R_InitRenderCommands(void)+63/w
     int warnSize;                       // XREF: R_InitRenderCommands(void)+72/w
 };
@@ -191,17 +192,17 @@ struct GfxCullViewInfo // sizeof=0x170
 struct __declspec(align(4)) GfxDrawSurfListInfo // sizeof=0x50
 {                                       // XREF: PointLightPartition/r
                                         // GfxViewInfo/r ...
-    const GfxDrawSurf *drawSurfs;
+    Ptr32<const GfxDrawSurf> drawSurfs;
     unsigned int drawSurfCount;
     unsigned __int8 baseTechType;       // XREF: R_ShowTris(GfxCmdBufContext,GfxDrawSurfListInfo const *)+A2/w
                                         // R_DrawCloakPrePassCallbackHDR+BD/w ...
     // padding byte
     // padding byte
     // padding byte
-    const GfxViewInfo *viewInfo;
+    Ptr32<const GfxViewInfo> viewInfo;
     unsigned int viewInfoIndex;
     float viewOrigin[4];
-    const GfxLight *light;
+    Ptr32<const GfxLight> light;
     int cameraView;
     // padding byte
     // padding byte
@@ -266,8 +267,8 @@ struct GfxUI3DBackend // sizeof=0xE0
 struct DynSModelClient // sizeof=0x14
 {                                       // XREF: R_GenerateSortedDrawSurfs/r
     int localClientNum;                 // XREF: R_GenerateSortedDrawSurfs+16E3/w
-    unsigned int *visBitsCamera;        // XREF: R_GenerateSortedDrawSurfs+16E6/w
-    unsigned int *visBitsSunShadow;     // XREF: R_GenerateSortedDrawSurfs+16ED/w
+    Ptr32<unsigned int> visBitsCamera;        // XREF: R_GenerateSortedDrawSurfs+16E6/w
+    Ptr32<unsigned int> visBitsSunShadow;     // XREF: R_GenerateSortedDrawSurfs+16ED/w
     unsigned int numDynSModel;          // XREF: R_GenerateSortedDrawSurfs+1730/w
     unsigned int numDynSModelInMap;     // XREF: R_GenerateSortedDrawSurfs+173F/w
 };
@@ -363,9 +364,9 @@ struct __declspec(align(16)) GfxViewInfo // sizeof=0x38E0
     GfxCompositeFx electrifiedFx;
     GfxCompositeFx transportedFx;
     GfxSaveScreenFx saveScreenFx;
-    const void *cmds;
+    Ptr32<const void> cmds;
     float sunVisibility;
-    GfxQuadMeshData *fullSceneViewMesh;
+    Ptr32<GfxQuadMeshData> fullSceneViewMesh;
     // padding byte
     // padding byte
     // padding byte
@@ -393,8 +394,8 @@ struct __declspec(align(16)) GfxViewInfo // sizeof=0x38E0
     // padding byte
     // padding byte
     // padding byte
-    DynSModelClientView *dynSModelView;
-    DynSModelGfxState *dynSModelState;
+    Ptr32<DynSModelClientView> dynSModelView;
+    Ptr32<DynSModelGfxState> dynSModelState;
     // padding byte
     // padding byte
     // padding byte
@@ -424,10 +425,10 @@ struct GfxDebugPoly // sizeof=0x30
 struct PolySet // sizeof=0x18
 {                                       // XREF: .data:persistentPolySet/r
                                         // DebugGlobals/r
-    float (*verts)[3];                  // XREF: R_UpdatePersistentDebugPolys+56/r
+    Ptr32<float[3]> verts;                  // XREF: R_UpdatePersistentDebugPolys+56/r
     int vertCount;                      // XREF: R_ClearPersistentDebugPolygons(void)+D/w
     int vertLimit;                      // XREF: R_InitDebug(void)+10/w
-    GfxDebugPoly *polys;                // XREF: R_TransferDebugGlobals(DebugGlobals *)+ED/r
+    Ptr32<GfxDebugPoly> polys;                // XREF: R_TransferDebugGlobals(DebugGlobals *)+ED/r
                                         // R_UpdatePersistentDebugPolys+29/r ...
     int polyCount;                      // XREF: R_ClearPersistentDebugPolygons(void)+17/w
                                         // R_UpdatePersistentDebugPolys+1B/r
@@ -451,27 +452,27 @@ struct DebugGlobals // sizeof=0x6C
 {                                       // XREF: .data:debugGlobals/r
                                         // GfxBackEndData/r
     PolySet polySet;
-    trDebugString_t *strings;
+    Ptr32<trDebugString_t> strings;
     int stringCount;
     int stringLimit;
-    trDebugString_t *externStrings;
+    Ptr32<trDebugString_t> externStrings;
     int externStringCount;
     int externMaxStringCount;
-    trDebugLine_t *lines;
+    Ptr32<trDebugLine_t> lines;
     int lineCount;
     int lineLimit;
-    trDebugLine_t *externLines;
+    Ptr32<trDebugLine_t> externLines;
     int externLineCount;
     int externMaxLineCount;
-    GfxDebugPlume *plumes;              // XREF: R_TransferDebugGlobals(DebugGlobals *)+20/r
+    Ptr32<GfxDebugPlume> plumes;              // XREF: R_TransferDebugGlobals(DebugGlobals *)+20/r
                                         // R_TransferDebugGlobals(DebugGlobals *)+3A/r ...
     int plumeCount;                     // XREF: R_TransferDebugGlobals(DebugGlobals *)+12/r
                                         // R_TransferDebugGlobals(DebugGlobals *):loc_ABCE69/r ...
     int plumeLimit;                     // XREF: R_TransferDebugGlobals(DebugGlobals *)+9E/r
-    trDebugSphere_t *spheres;
+    Ptr32<trDebugSphere_t> spheres;
     int sphereCount;
     int sphereLimit;
-    trDebugSphere_t *externSpheres;
+    Ptr32<trDebugSphere_t> externSpheres;
     int externSphereCount;
     int externMaxSphereCount;
 };
@@ -530,7 +531,7 @@ struct __declspec(align(16)) GfxSpotShadow // sizeof=0x1D0
     unsigned __int8 shadowableLightIndex;
     unsigned __int8 flags;
     unsigned __int8 pad[2];
-    const GfxLight *light;
+    Ptr32<const GfxLight> light;
     float fade;
     // padding byte
     // padding byte
@@ -542,10 +543,10 @@ struct __declspec(align(16)) GfxSpotShadow // sizeof=0x1D0
     // padding byte
     // padding byte
     GfxViewport viewport;
-    GfxImage *image;
+    Ptr32<GfxImage> image;
     float pixelAdjust[4];
     int clearScreen;
-    GfxMeshData *clearMesh;
+    Ptr32<GfxMeshData> clearMesh;
     // padding byte
     // padding byte
     // padding byte
@@ -567,7 +568,7 @@ const struct __declspec(align(32)) GfxBackEndData // sizeof=0x186300
     float codeMeshArgs[256][4];
     GfxParticleCloud clouds[256];
     GfxDrawSurf drawSurfs[32768];
-    GfxMeshData *codeMeshPtr;
+    Ptr32<GfxMeshData> codeMeshPtr;
     // padding byte
     // padding byte
     // padding byte
@@ -637,22 +638,22 @@ const struct __declspec(align(32)) GfxBackEndData // sizeof=0x186300
     volatile unsigned int codeMeshArgsCount;
     volatile unsigned int markMeshCount;
     FxMarkMeshData markMeshes[1536];
-    volatile unsigned int *dynamicBufferCurrentFrame;
-    struct GfxVertexBufferState *skinnedCacheVb;
-    IDirect3DQuery9 *endFence;
-    unsigned __int8 *tempSkinBuf;
+    Ptr32<volatile unsigned int> dynamicBufferCurrentFrame;
+    Ptr32<struct GfxVertexBufferState> skinnedCacheVb;
+    Ptr32<IDirect3DQuery9> endFence;
+    Ptr32<unsigned __int8> tempSkinBuf;
     //volatile int tempSkinPos;
     volatile unsigned int tempSkinPos;
-    GfxIndexBufferState *preTessIb;
+    Ptr32<GfxIndexBufferState> preTessIb;
     int viewParmCount;
     GfxFog fogSettings;
-    GfxCmdArray *commands;
+    Ptr32<GfxCmdArray> commands;
     unsigned int viewInfoIndex;
     unsigned int viewInfoCount;
-    GfxViewInfo *viewInfo;
+    Ptr32<GfxViewInfo> viewInfo;
     GfxUI3DBackend rbUI3D;
-    const void *cmds;
-    const void *compositingCmds;
+    Ptr32<const void> cmds;
+    Ptr32<const void> compositingCmds;
     // padding byte
     // padding byte
     // padding byte
@@ -677,7 +678,7 @@ const struct __declspec(align(32)) GfxBackEndData // sizeof=0x186300
     // padding byte
     GfxLight emissiveSpotLight;
     int emissiveSpotDrawSurfCount;
-    GfxDrawSurf *emissiveSpotDrawSurfs;
+    Ptr32<GfxDrawSurf> emissiveSpotDrawSurfs;
     unsigned int emissiveSpotLightCount;
     bool extraCamLargeFrameSize;
     // padding byte
@@ -699,7 +700,7 @@ const struct __declspec(align(32)) GfxBackEndData // sizeof=0x186300
     // padding byte
     GfxSpotShadow spotShadows[4];
     DynSModelGfxState dynSModelState;
-    DynSModelClientView *dynSModelClientViewArray;
+    Ptr32<DynSModelClientView> dynSModelClientViewArray;
     // padding byte
     // padding byte
     // padding byte
@@ -725,7 +726,7 @@ struct __declspec(align(2)) GfxCmdDrawText2D // sizeof=0x60
     float y;
     float w;
     float rotation;
-    Font_s *font;
+    Ptr32<Font_s> font;
     float xScale;
     float yScale;
     GfxColor color;
@@ -743,8 +744,8 @@ struct __declspec(align(2)) GfxCmdDrawText2D // sizeof=0x60
     int fxDecayDuration;
     int fxRedactDecayStartTime;
     int fxRedactDecayDuration;
-    const Material *fxMaterial;
-    const Material *fxMaterialGlow;
+    Ptr32<const Material> fxMaterial;
+    Ptr32<const Material> fxMaterialGlow;
     float padding;
     char text[3];
     // padding byte
@@ -753,7 +754,7 @@ struct __declspec(align(2)) GfxCmdDrawText2D // sizeof=0x60
 struct GfxCmdDrawQuadList2D // sizeof=0xC
 {
     GfxCmdHeader header;
-    const Material *material;
+    Ptr32<const Material> material;
     int quadCount;
 };
 

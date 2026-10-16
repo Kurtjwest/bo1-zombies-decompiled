@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum eFoot : __int32
 {
@@ -26,8 +27,8 @@ struct GfxLight;
 
 struct DelayListInfo // sizeof=0xC
 {                                       // XREF: ?CG_AddPacketEntities@@YAHH@Z/r
-    centity_s *head;
-    centity_s *latest;
+    Ptr32<centity_s> head;
+    Ptr32<centity_s> latest;
     int size;
 };
 

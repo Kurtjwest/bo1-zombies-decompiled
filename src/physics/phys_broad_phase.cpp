@@ -454,7 +454,7 @@ void __thiscall axis_aligned_sweep_and_prune::remove(
                 axis_aligned_sweep_and_prune::axis_element **axis_list,
                 axis_aligned_sweep_and_prune::sap_node *node)
 {
-    axis_aligned_sweep_and_prune::axis_element **p_m_next; // ecx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *p_m_next; // ecx
     axis_aligned_sweep_and_prune::axis_element *v4; // eax
     int v5; // edx
 
@@ -3463,7 +3463,7 @@ phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal *__thiscall ph
 
 void    axis_aligned_sweep_and_prune::process_active_pair_list()
 {
-    axis_aligned_sweep_and_prune::active_pair **p_m_list_bpi_bpi; // edx
+    Ptr32<axis_aligned_sweep_and_prune::active_pair> *p_m_list_bpi_bpi; // edx
     axis_aligned_sweep_and_prune::active_pair *m_list_bpi_bpi; // edi
     axis_aligned_sweep_and_prune::sap_node *m_p1; // eax
     axis_aligned_sweep_and_prune::sap_node *m_p2; // ecx
@@ -3475,7 +3475,7 @@ void    axis_aligned_sweep_and_prune::process_active_pair_list()
     phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal *v11; // eax
     char *m_gjk_ci; // esi
     axis_aligned_sweep_and_prune::active_pair *m_list_bpi_bpg; // esi
-    axis_aligned_sweep_and_prune::active_pair **p_m_list_bpi_bpg; // edx
+    Ptr32<axis_aligned_sweep_and_prune::active_pair> *p_m_list_bpi_bpg; // edx
     axis_aligned_sweep_and_prune::sap_node *v15; // eax
     axis_aligned_sweep_and_prune::sap_node *v16; // ecx
     broad_phase_info *v17; // edi
@@ -3484,7 +3484,7 @@ void    axis_aligned_sweep_and_prune::process_active_pair_list()
     broad_phase_info *i; // esi
     char *v21; // edi
     axis_aligned_sweep_and_prune::active_pair *m_list_bpg_bpg; // edi
-    axis_aligned_sweep_and_prune::active_pair **p_m_list_bpg_bpg; // edx
+    Ptr32<axis_aligned_sweep_and_prune::active_pair> *p_m_list_bpg_bpg; // edx
     axis_aligned_sweep_and_prune::sap_node *v24; // eax
     axis_aligned_sweep_and_prune::sap_node *v25; // ecx
     broad_phase_base *v26; // esi
@@ -3497,7 +3497,7 @@ void    axis_aligned_sweep_and_prune::process_active_pair_list()
     phys_vec3 v33; // [esp+28h] [ebp-3Ch] BYREF
     phys_heap_gjk_cache_system_avl_tree *p_g_phys_gjk_cache_system; // [esp+44h] [ebp-20h]
     broad_phase_info *v35; // [esp+48h] [ebp-1Ch]
-    axis_aligned_sweep_and_prune::active_pair **ap_i; // [esp+4Ch] [ebp-18h]
+    Ptr32<axis_aligned_sweep_and_prune::active_pair> *ap_i; // [esp+4Ch] [ebp-18h]
     axis_aligned_sweep_and_prune *v37; // [esp+50h] [ebp-14h]
     float hit_time; // [esp+54h] [ebp-10h] BYREF
     //_UNKNOWN *v39; // [esp+58h] [ebp-Ch]

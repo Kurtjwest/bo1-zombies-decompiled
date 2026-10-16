@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "fx_load_obj.h"
 #include <universal/com_memory.h>
@@ -175,11 +176,11 @@ const FxEffectField s_effectFields[4] =
 struct// $5F2A149FFFCA11AA1F641100FCD058F6 // sizeof=0xA08
 {                                       // XREF: .data:fx_load/r
     int effectDefCount;
-    const FxEffectDef *effectDefs[512]; // XREF: FX_Register_LoadObj+48/w
+    Ptr32<const FxEffectDef> effectDefs[512]; // XREF: FX_Register_LoadObj+48/w
                                         // FX_Register_LoadObj+9B/r ...
     unsigned __int8 effectStatus[512];  // XREF: FX_Register_LoadObj+24/r
                                         // FX_Register_LoadObj+32/w ...
-    const FxEffectDef *defaultEffect;   // XREF: FX_LoadFailed+6/r
+    Ptr32<const FxEffectDef> defaultEffect;   // XREF: FX_LoadFailed+6/r
                                         // FX_LoadFailed+3C/r ...
 } fx_load;
 
@@ -563,7 +564,7 @@ bool __cdecl FX_ParseGraphRange(
                 float minValue,
                 float maxValue,
                 float *scale,
-                const FxCurve **shape)
+                Ptr32<const FxCurve> *shape)
 {
     if ( !FX_ParseFloat(parse, scale) )
         return 0;
@@ -576,7 +577,7 @@ bool __cdecl FX_ParseGraphRange(
     return 0;
 }
 
-bool __cdecl FX_ParseCurve(const char **parse, int dimCount, float minValue, float maxValue, const FxCurve **shape)
+bool __cdecl FX_ParseCurve(const char **parse, int dimCount, float minValue, float maxValue, Ptr32<const FxCurve> *shape)
 {
     long double v6; // st7
     float v7; // [esp+10h] [ebp-820h]
@@ -745,7 +746,7 @@ bool __cdecl FX_ParseFxOnImpact(const char **parse, FxEditorElemDef *edElemDef)
     return FX_ParseEffectRef(parse, &edElemDef->effectOnImpact);
 }
 
-bool __cdecl FX_ParseEffectRef(const char **parse, const FxEffectDef **fx)
+bool __cdecl FX_ParseEffectRef(const char **parse, Ptr32<const FxEffectDef> *fx)
 {
     parseInfo_t *token; // [esp+0h] [ebp-4h]
 

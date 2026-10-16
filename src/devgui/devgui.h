@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/dvar.h>
 #include <qcommon/graph.h>
 
@@ -15,9 +16,9 @@ enum DevGuiTokenResult : __int32
 union DevMenuChild // sizeof=0x4
 {                                                                             // XREF: DevGui_ChooseOrigin:loc_598083/r
                                                                                 // DevGui_Init(void)+7D/w ...
-        const char *command;
-        const dvar_s *dvar;
-        DevGraph *graph;
+        Ptr32<const char> command;
+        Ptr32<const dvar_s> dvar;
+        Ptr32<DevGraph> graph;
         unsigned __int16 menu;
 };
 
@@ -40,7 +41,7 @@ struct devguiGlob_t // sizeof=0x14050
 {                                                                             // XREF: .data:devguiGlob/r
         DevMenuItem menus[2048];                        // XREF: DevGui_Init(void)+4B/w
                                                                                 // DevGui_Init(void)+59/w
-        DevMenuItem *nextFreeMenu;                    // XREF: DevGui_CreateMenu:loc_596776/r
+        Ptr32<DevMenuItem> nextFreeMenu;                    // XREF: DevGui_CreateMenu:loc_596776/r
                                                                                 // DevGui_CreateMenu+3E/w ...
         DevMenuItem topmostMenu;                        // XREF: DevGui_CreateMenu:loc_596834/o
                                                                                 // DevGui_FindMenu:loc_596A50/o ...

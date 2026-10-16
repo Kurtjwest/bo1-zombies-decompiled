@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <xanim/dobj.h>
 #include <universal/dvar.h>
 #include <cgame_mp/cg_predict_mp.h>
@@ -124,8 +125,8 @@ struct __declspec(align(8)) UIViewer // sizeof=0xA16C0
             SHADER_CONST_HERO_B      = 0x6,
             SHADER_CONST_MAX         = 0x7,
         };
-        DObj *dobj;                         // XREF: UIViewer::GetDObj(int,int)+C/r
-        const WeaponVariantDef *weaponVariantDef;
+        Ptr32<DObj> dobj;                         // XREF: UIViewer::GetDObj(int,int)+C/r
+        Ptr32<const WeaponVariantDef> weaponVariantDef;
         cpose_t pose;
         float yaw;
         bool depthHack;
@@ -186,38 +187,38 @@ struct __declspec(align(8)) UIViewer // sizeof=0xA16C0
     UIViewer::CameraParams cameraAnimStart;
     UIViewer::CameraParams cameraAnimEnd;
     char playerCameraName[64];
-    const dvar_s *loaded;
-    const dvar_s *streaming;
-    const dvar_s *showDvar;
-    const dvar_s *modeDvar;
-    const dvar_s *ingameDvar;
-    const dvar_s *customname;
-    const dvar_s *equipWeapon;
-    const dvar_s *weaponDvar;
-    const dvar_s *attachmentDvar;
-    const dvar_s *playerCameraDvar;
-    const dvar_s *cameraPitchRange;
-    const dvar_s *allowCameraPitch;
-    const dvar_s *lightMultiplier;
-    const dvar_s *fov;
-    const dvar_s *highlightColor1;
-    const dvar_s *highlightColor2;
-    const dvar_s *heroHighlight;        // XREF: UIViewer::DrawDobj::Draw(float,float)+129/r
-    const dvar_s *sceneOrigin;          // XREF: UIViewer::CameraParams::SetRefDef(refdef_s &)+E7/r
-    const dvar_s *cameraControl;
-    const dvar_s *viewerMsg;
-    const dvar_s *dumpAnims;
-    const dvar_s *timeScale;
-    const dvar_s *drawAttachPoints;     // XREF: UIViewer::DrawDobj::Draw(float,float)+2BB/r
+    Ptr32<const dvar_s> loaded;
+    Ptr32<const dvar_s> streaming;
+    Ptr32<const dvar_s> showDvar;
+    Ptr32<const dvar_s> modeDvar;
+    Ptr32<const dvar_s> ingameDvar;
+    Ptr32<const dvar_s> customname;
+    Ptr32<const dvar_s> equipWeapon;
+    Ptr32<const dvar_s> weaponDvar;
+    Ptr32<const dvar_s> attachmentDvar;
+    Ptr32<const dvar_s> playerCameraDvar;
+    Ptr32<const dvar_s> cameraPitchRange;
+    Ptr32<const dvar_s> allowCameraPitch;
+    Ptr32<const dvar_s> lightMultiplier;
+    Ptr32<const dvar_s> fov;
+    Ptr32<const dvar_s> highlightColor1;
+    Ptr32<const dvar_s> highlightColor2;
+    Ptr32<const dvar_s> heroHighlight;        // XREF: UIViewer::DrawDobj::Draw(float,float)+129/r
+    Ptr32<const dvar_s> sceneOrigin;          // XREF: UIViewer::CameraParams::SetRefDef(refdef_s &)+E7/r
+    Ptr32<const dvar_s> cameraControl;
+    Ptr32<const dvar_s> viewerMsg;
+    Ptr32<const dvar_s> dumpAnims;
+    Ptr32<const dvar_s> timeScale;
+    Ptr32<const dvar_s> drawAttachPoints;     // XREF: UIViewer::DrawDobj::Draw(float,float)+2BB/r
     UIViewer::State prevState;          // XREF: _dynamic_initializer_for__uiViewer__+D/o
     float prevSceneOrigin[3];
     char dobjsBuffer[124];
-    DObj *dobjsPool[1];
+    Ptr32<DObj> dobjsPool[1];
     int nextDobj;
     UIViewer::DrawDobj drawDobjs[1];    // XREF: UIViewer::GetDObj(int,int)+C/r
     int nDrawDobjs;
     int controllerIndex;                // XREF: UIViewer::SetControllerIndexCmd(void)+3/w
-    XAnimTree_s *animTree;
+    Ptr32<XAnimTree_s> animTree;
     pmove_t pmove;                      // XREF: _dynamic_initializer_for__uiViewer__+17/o
                                         // _dynamic_atexit_destructor_for__uiViewer__+3/w
     playerState_s ps;
@@ -230,8 +231,8 @@ struct __declspec(align(8)) UIViewer // sizeof=0xA16C0
     // padding byte
     bgsAnim_s bgsAnim;
     bgs_t bgs;
-    const StringTable *cameraPosTable;
-    const StringTable *bodyHeadTable;
+    Ptr32<const StringTable> cameraPosTable;
+    Ptr32<const StringTable> bodyHeadTable;
     char lastCameraWeapon[32];          // XREF: UIViewer::ResetCameraCmd(void)+A/o
     char lastCameraAttachment[32];      // XREF: UIViewer::ResetCameraCmd(void)+5/o
     UIViewer::CameraParamOverrides cameraOverrides[256];

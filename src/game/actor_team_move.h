@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "actor.h"
 
 enum ai_teammove_t : __int32
@@ -11,7 +12,7 @@ enum ai_teammove_t : __int32
 
 struct team_move_context_t // sizeof=0x118
 {                                       // XREF: Actor_GetTeamMoveStatus/r
-    actor_s *self;                      // XREF: Actor_GetTeamMoveStatus+171/w
+    Ptr32<actor_s> self;                      // XREF: Actor_GetTeamMoveStatus+171/w
     float vVelSelf[2];
     float vOrgSelf[3];                  // XREF: Actor_GetTeamMoveStatus+11B/w
                                         // Actor_GetTeamMoveStatus+12E/w ...
@@ -29,20 +30,20 @@ struct team_move_context_t // sizeof=0x118
                                         // Actor_GetTeamMoveStatus+7CB/o
     int dodgeEntityCount;               // XREF: Actor_GetTeamMoveStatus+6CE/r
                                         // Actor_GetTeamMoveStatus+7C7/r
-    sentient_s *pDodgeOther;            // XREF: Actor_GetTeamMoveStatus+29E/r
+    Ptr32<sentient_s> pDodgeOther;            // XREF: Actor_GetTeamMoveStatus+29E/r
                                         // Actor_GetTeamMoveStatus+2E8/r ...
     bool bPileUp;
     // padding byte
     // padding byte
     // padding byte
     float fSlowDownPosDeltaLengthSqrd;
-    sentient_s *pSlowDownOther;         // XREF: Actor_GetTeamMoveStatus:loc_91D759/r
+    Ptr32<sentient_s> pSlowDownOther;         // XREF: Actor_GetTeamMoveStatus:loc_91D759/r
     float vVelSlowDownOther[2];
 };
 
 struct team_move_other_context_t // sizeof=0x30
 {                                       // XREF: Actor_GetTeamMoveStatus/r
-    sentient_s *other;                  // XREF: Actor_GetTeamMoveStatus+207/w
+    Ptr32<sentient_s> other;                  // XREF: Actor_GetTeamMoveStatus+207/w
     float vOrgOther[3];
     float vVelOther[2];
     float vDelta[2];

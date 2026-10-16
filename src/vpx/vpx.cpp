@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "vpx.h"
 #include <vpx/vpx_image.h>
 #include <vpx/vp8cx.h>
@@ -12,7 +13,7 @@ struct //$0A669EED672D0614AB086EF67B48703D // sizeof=0x12C
     // padding byte
     // padding byte
     // padding byte
-    FILE *outfile;                    // XREF: vpx_init(char const *,int,int)+75/w
+    Ptr32<FILE> outfile;                    // XREF: vpx_init(char const *,int,int)+75/w
     vpx_codec_ctx codec;                // XREF: vpx_init(char const *,int,int)+104/o
     vpx_codec_enc_cfg cfg;              // XREF: vpx_init(char const *,int,int)+8A/o
     int frame_cnt;                      // XREF: vpx_init(char const *,int,int)+26/w

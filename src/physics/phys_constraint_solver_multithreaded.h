@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "phys_local.h"
 #include "rigid_body.h"
@@ -8,9 +9,9 @@ class contact_point_info;
 
 struct constraint_solver_task_input // sizeof=0x20
 {
-    rigid_body **m_list_island;
+    Ptr32<Ptr32<rigid_body>> m_list_island;
     int m_list_island_count;
-    int *m_list_island_cur;
+    Ptr32<int> m_list_island_cur;
     // These two fields are un-used and probably leftover from a previous version. Can save some bytes in the transient allocator by removing them (alignment=4)
     //int m_psys_psc_visit_counter;
     //int m_psys_next_psc_visit_counter;
@@ -37,7 +38,7 @@ struct pulse_sum_node : phys_link_list_base<pulse_sum_node> // sizeof=0x80
     phys_vec3 t_vel;
     phys_vec3 a_vel;
     float m_inv_mass;
-    rigid_body *m_rb;
+    Ptr32<rigid_body> m_rb;
     // padding byte
     // padding byte
     // padding byte
@@ -76,10 +77,10 @@ struct pulse_sum_normal : phys_link_list_base<pulse_sum_normal> // sizeof=0xA0
     float m_denom;
     float m_pulse_limit_ratio;
     unsigned int m_flags;
-    pulse_sum_normal *m_pulse_parent;
-    pulse_sum_node *m_b1;
-    pulse_sum_node *m_b2;
-    pulse_sum_cache *m_pulse_sum_cache;
+    Ptr32<pulse_sum_normal> m_pulse_parent;
+    Ptr32<pulse_sum_node> m_b1;
+    Ptr32<pulse_sum_node> m_b2;
+    Ptr32<pulse_sum_cache> m_pulse_sum_cache;
     // padding byte
     // padding byte
     // padding byte
@@ -142,8 +143,8 @@ struct __declspec(align(8)) pulse_sum_wheel : phys_link_list_base<pulse_sum_whee
     // padding byte
     // padding byte
     pulse_sum_normal m_suspension;
-    pulse_sum_normal *m_side;
-    pulse_sum_normal *m_fwd;
+    Ptr32<pulse_sum_normal> m_side;
+    Ptr32<pulse_sum_normal> m_fwd;
     float m_side_fric_max;
     // padding byte
     // padding byte
@@ -187,9 +188,9 @@ struct pulse_sum_angular : phys_link_list_base<pulse_sum_angular> // sizeof=0x90
     float m_cfm;
     float m_denom;
     unsigned int m_flags;
-    pulse_sum_node *m_b1;
-    pulse_sum_node *m_b2;
-    pulse_sum_cache *m_pulse_sum_cache;
+    Ptr32<pulse_sum_node> m_b1;
+    Ptr32<pulse_sum_node> m_b2;
+    Ptr32<pulse_sum_cache> m_pulse_sum_cache;
     // padding byte
     // padding byte
     // padding byte
@@ -246,9 +247,9 @@ struct pulse_sum_point : phys_link_list_base<pulse_sum_point> // sizeof=0x110
     phys_vec3 m_cr12;
     phys_vec3 m_denom;
     float m_cfm;
-    pulse_sum_node *m_b1;
-    pulse_sum_node *m_b2;
-    pulse_sum_cache *m_pulse_sum_cache;
+    Ptr32<pulse_sum_node> m_b1;
+    Ptr32<pulse_sum_node> m_b2;
+    Ptr32<pulse_sum_cache> m_pulse_sum_cache;
 
     void set_object_vel(const phys_vec3 *object_vel);
     const phys_vec3 *get_vel(phys_vec3 *result);
@@ -295,10 +296,10 @@ struct pulse_sum_contact : phys_link_list_base<pulse_sum_contact> // sizeof=0x60
     phys_vec3 m_ud_f1;
     phys_vec3 m_ud_f2;
     float m_fric_coef;
-    pulse_sum_node *m_b1;
-    pulse_sum_node *m_b2;
-    struct pulse_sum_contact_point *m_list_pscp;
-    void *m_pulse_sum_cache_list;
+    Ptr32<pulse_sum_node> m_b1;
+    Ptr32<pulse_sum_node> m_b2;
+    Ptr32<struct pulse_sum_contact_point> m_list_pscp;
+    Ptr32<void> m_pulse_sum_cache_list;
     int m_list_pscp_count;
     // padding byte
     // padding byte
@@ -410,7 +411,7 @@ struct pulse_sum_constraint_solver // sizeof=0x84
                 node->m_avl_key = key;
             }
         };
-        user_rigid_body *m_avl_key;
+        Ptr32<user_rigid_body> m_avl_key;
         phys_inplace_avl_tree_node<pulse_sum_constraint_solver::temp_user_rigid_body> m_avl_tree_node;
         // padding byte
         // padding byte
@@ -428,8 +429,8 @@ struct pulse_sum_constraint_solver // sizeof=0x84
 
     struct user_rigid_body_restore_info : phys_link_list_base<pulse_sum_constraint_solver::user_rigid_body_restore_info> // sizeof=0xC
     {
-        user_rigid_body **m_rbc_urb;
-        user_rigid_body *m_original_urb;
+        Ptr32<Ptr32<user_rigid_body>> m_rbc_urb;
+        Ptr32<user_rigid_body> m_original_urb;
     };
 
     float m_outside_delta_t;            // XREF: phys_jq_constraint_solver_batch_function(jqBatch *)+43/w

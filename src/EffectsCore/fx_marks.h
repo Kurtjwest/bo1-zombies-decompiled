@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <tl/jobqueue/jobqueue_all.h>
 #include <gfx_d3d/r_material.h>
@@ -22,7 +23,7 @@ struct __declspec(align(4)) FxMark // sizeof=0x5C
     float texCoordAxis[3];
     float hitNormal[3];
     unsigned __int8 nativeColor[4];
-    Material *material;
+    Ptr32<Material> material;
     int tris;
     int points;
     FxMarkAlphaFade alphaFade;
@@ -45,7 +46,7 @@ struct FxTriGroup // sizeof=0x18
 
 union FxTriGroupPool // sizeof=0x18
 {                                       // XREF: FxMarksSystem/r
-    FxTriGroupPool *nextFreeTriGroup;
+    Ptr32<FxTriGroupPool> nextFreeTriGroup;
     FxTriGroup triGroup;
 };
 
@@ -65,7 +66,7 @@ struct FxPointGroup // sizeof=0x44
 
 union FxPointGroupPool // sizeof=0x44
 {                                       // XREF: FxMarksSystem/r
-    FxPointGroupPool *nextFreePointGroup;
+    Ptr32<FxPointGroupPool> nextFreePointGroup;
     FxPointGroup pointGroup;
 };
 
@@ -75,8 +76,8 @@ struct FxMarksSystem // sizeof=0x26028
     unsigned __int16 firstFreeMarkHandle;
     unsigned __int16 firstActiveWorldMarkHandle;
     unsigned __int16 entFirstMarkHandles[1536];
-    FxTriGroupPool *firstFreeTriGroup;
-    FxPointGroupPool *firstFreePointGroup;
+    Ptr32<FxTriGroupPool> firstFreeTriGroup;
+    Ptr32<FxPointGroupPool> firstFreePointGroup;
     FxMark marks[256];
     FxTriGroupPool triGroups[1024];
     FxPointGroupPool pointGroups[1536];
@@ -93,8 +94,8 @@ struct FxMarksSystem // sizeof=0x26028
 struct FxMarkDObjUpdateContext // sizeof=0x108
 {                                       // XREF: ?CG_Corpse@@YAXHPAUcentity_s@@@Z/r
                                         // ?CG_UpdatePlayerDObj@@YAXHPAUcentity_s@@@Z/r ...
-    XModel *models[32];
-    const char *modelParentBones[32];
+    Ptr32<XModel> models[32];
+    Ptr32<const char> modelParentBones[32];
     int modelCount;
     bool isBrush;
     // padding byte
@@ -104,12 +105,12 @@ struct FxMarkDObjUpdateContext // sizeof=0x108
 struct FxActiveMarkSurf // sizeof=0x24
 {                                       // XREF: FX_GenerateMarkVertsForList_EntXModel/r
                                         // FX_GenerateMarkVertsForList_EntDObj/r ...
-    Material *material;
+    Ptr32<Material> material;
     GfxMarkContext context;
     // padding byte
     // padding byte
     int indexCount;
-    unsigned __int16 *indices;
+    Ptr32<unsigned __int16> indices;
     float markHitNormal[3];
     unsigned int visLightsMask;
 };
@@ -117,7 +118,7 @@ struct FxActiveMarkSurf // sizeof=0x24
 struct FxAddMarkCmd // sizeof=0x2C
 {
     int localClientNum;
-    const FxElemDef *elemDef;
+    Ptr32<const FxElemDef> elemDef;
     FxSpatialFrame spatialFrame;
     int randomSeed;
     unsigned int markEntnum;

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct gentity_s;
 struct sentient_s;
@@ -41,7 +42,7 @@ struct EntHandleList // sizeof=0x2
 
 struct EntHandleInfo // sizeof=0x8
 {                                       // XREF: .data:g_entHandleInfoArray/r
-    void *handle;
+    Ptr32<void> handle;
     unsigned __int16 next;              // XREF: EntHandle::Init(void)+48/w
                                         // RemoveEntHandleInfo+1F/r
     unsigned __int16 prev;              // XREF: EntHandleDissociateInternal+E7/r

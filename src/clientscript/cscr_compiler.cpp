@@ -40,7 +40,7 @@ int __cdecl GetExpressionCount(sval_u exprlist)
     int expr_count; // [esp+4h] [ebp-4h]
 
     expr_count = 0;
-    for ( node = *(sval_u **)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
         ++expr_count;
     return expr_count;
 }
@@ -383,7 +383,7 @@ void __cdecl EmitThreadList(scriptInstance_t inst, sval_u val)
     sval_u *nodea; // [esp+0h] [ebp-4h]
 
     gScrCompileGlob[inst].in_developer_thread = 0;
-    for ( node = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = node[1].node )
         SpecifyThread(inst, *node);
     if ( gScrCompileGlob[inst].in_developer_thread )
         CompileError(inst, gScrCompileGlob[inst].developer_thread_sourcePos, "/# has no matching #/");
@@ -399,7 +399,7 @@ void __cdecl EmitThreadList(scriptInstance_t inst, sval_u val)
     {
         __debugbreak();
     }
-    for ( nodea = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); nodea; nodea = nodea[1].node )
+    for ( nodea = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); nodea; nodea = nodea[1].node )
         EmitThread(inst, *nodea);
     if ( gScrCompileGlob[inst].in_developer_thread
         && !Assert_MyHandler(
@@ -569,7 +569,7 @@ void __cdecl Scr_CalcLocalVarsStatementList(scriptInstance_t inst, sval_u val, s
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    for ( node = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = node[1].node )
         Scr_CalcLocalVarsStatement(inst, *node, block);
 }
 
@@ -710,12 +710,12 @@ void __cdecl Scr_CalcLocalVarsAssignmentStatement(sval_u lhs, sval_u rhs, scr_bl
 
 void __cdecl Scr_CalcLocalVarsIfStatement(scriptInstance_t inst, sval_u stmt, scr_block_s *block, sval_u *ifStatBlock)
 {
-    Scr_CopyBlock(block, (scr_block_s **)ifStatBlock);
+    Scr_CopyBlock(block, (Ptr32<scr_block_s> *)ifStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt, ifStatBlock->block);
-    Scr_MergeChildBlocks((scr_block_s **)ifStatBlock, 1, block);
+    Scr_MergeChildBlocks((Ptr32<scr_block_s> *)ifStatBlock, 1, block);
 }
 
-void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_s **to)
+void __cdecl Scr_CopyBlock(scr_block_s *from, Ptr32<scr_block_s> *to)
 {
     if ( !*to )
         *to = (scr_block_s *)BO1_I2P(Hunk_AllocateTempMemoryHigh(536, "Scr_CopyBlock"));
@@ -723,7 +723,7 @@ void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_s **to)
     (*to)->localVarsPublicCount = 0;
 }
 
-void __cdecl Scr_MergeChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block)
+void __cdecl Scr_MergeChildBlocks(Ptr32<scr_block_s> *childBlocks, int childCount, scr_block_s *block)
 {
     unsigned int v3; // eax
     int j; // [esp+4h] [ebp-18h]
@@ -792,13 +792,13 @@ void __cdecl Scr_CalcLocalVarsIfElseStatement(
                 sval_u *ifStatBlock,
                 sval_u *elseStatBlock)
 {
-    scr_block_s *childBlocks[2]; // [esp+0h] [ebp-10h] BYREF
+    Ptr32<scr_block_s> childBlocks[2]; // [esp+0h] [ebp-10h] BYREF
     int childCount; // [esp+8h] [ebp-8h]
     int abortLevel; // [esp+Ch] [ebp-4h]
 
     childCount = 0;
     abortLevel = 3;
-    Scr_CopyBlock(block, (scr_block_s **)ifStatBlock);
+    Scr_CopyBlock(block, (Ptr32<scr_block_s> *)ifStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt1, ifStatBlock->block);
     if ( *(int *)BO1_I2P(ifStatBlock->stringValue) <= 3 )
     {
@@ -806,7 +806,7 @@ void __cdecl Scr_CalcLocalVarsIfElseStatement(
         if ( !abortLevel )
             childBlocks[childCount++] = (scr_block_s *)BO1_I2P(ifStatBlock->stringValue);
     }
-    Scr_CopyBlock(block, (scr_block_s **)elseStatBlock);
+    Scr_CopyBlock(block, (Ptr32<scr_block_s> *)elseStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt2, elseStatBlock->block);
     if ( *(unsigned int *)BO1_I2P(elseStatBlock->stringValue) <= abortLevel )
     {
@@ -820,7 +820,7 @@ void __cdecl Scr_CalcLocalVarsIfElseStatement(
     Scr_MergeChildBlocks(childBlocks, childCount, block);
 }
 
-void __cdecl Scr_AppendChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block)
+void __cdecl Scr_AppendChildBlocks(Ptr32<scr_block_s> *childBlocks, int childCount, scr_block_s *block)
 {
     int localVarsCount; // ecx
     unsigned int localVar; // [esp+0h] [ebp-14h]
@@ -888,16 +888,16 @@ void __cdecl Scr_CalcLocalVarsWhileStatement(
 {
     int breakChildCount; // [esp+8h] [ebp-38h] BYREF
     int *oldBreakChildCount; // [esp+Ch] [ebp-34h]
-    scr_block_s **breakChildBlocks; // [esp+10h] [ebp-30h]
+    Ptr32<scr_block_s> *breakChildBlocks; // [esp+10h] [ebp-30h]
     bool constConditional; // [esp+17h] [ebp-29h]
     int continueChildCount; // [esp+18h] [ebp-28h] BYREF
     int *oldContinueChildCount; // [esp+1Ch] [ebp-24h]
     VariableCompileValue constValue; // [esp+20h] [ebp-20h] BYREF
     int i; // [esp+2Ch] [ebp-14h]
-    scr_block_s **continueChildBlocks; // [esp+30h] [ebp-10h]
-    scr_block_s **oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
+    Ptr32<scr_block_s> *continueChildBlocks; // [esp+30h] [ebp-10h]
+    Ptr32<scr_block_s> *oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
     int abortLevel; // [esp+38h] [ebp-8h]
-    scr_block_s **oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
+    Ptr32<scr_block_s> *oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
 
     constConditional = 0;
     if (EvalExpression(inst, expr, &constValue))
@@ -916,13 +916,13 @@ void __cdecl Scr_CalcLocalVarsWhileStatement(
     oldContinueChildCount = gScrCompileGlob[inst].continueChildCount;
     breakChildCount = 0;
     continueChildCount = 0;
-    continueChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement"));
+    continueChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement"));
     gScrCompileGlob[inst].continueChildBlocks = continueChildBlocks;
     gScrCompileGlob[inst].continueChildCount = &continueChildCount;
     abortLevel = block->abortLevel;
     if (constConditional)
     {
-        breakChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement"));
+        breakChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsWhileStatement"));
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -930,14 +930,14 @@ void __cdecl Scr_CalcLocalVarsWhileStatement(
         breakChildBlocks = 0;
     }
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
-    Scr_CopyBlock(block, (scr_block_s **)whileStatBlock);
+    Scr_CopyBlock(block, (Ptr32<scr_block_s> *)whileStatBlock);
     Scr_CalcLocalVarsStatement(inst, stmt, whileStatBlock->block);
     Scr_AddContinueBlock(inst, whileStatBlock->block);
     for (i = 0; i < continueChildCount; ++i)
         Scr_AppendChildBlocks(&continueChildBlocks[i], 1, block);
     if (constConditional)
         Scr_AppendChildBlocks(breakChildBlocks, breakChildCount, block);
-    Scr_MergeChildBlocks((scr_block_s **)whileStatBlock, 1, block);
+    Scr_MergeChildBlocks((Ptr32<scr_block_s> *)whileStatBlock, 1, block);
     gScrCompileGlob[inst].breakChildBlocks = oldBreakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = oldBreakChildCount;
     gScrCompileGlob[inst].continueChildBlocks = oldContinueChildBlocks;
@@ -1128,7 +1128,7 @@ char __cdecl EvalPrimitiveExpressionList(
     if ( expr_count != 3 )
         return 0;
     i = 0;
-    for ( node = *(sval_u **)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
     {
         if ( !EvalExpression(inst, *node->node, &constValue2[i]) )
             return 0;
@@ -1210,16 +1210,16 @@ void __cdecl Scr_CalcLocalVarsForStatement(
 {
     int breakChildCount; // [esp+8h] [ebp-38h] BYREF
     int *oldBreakChildCount; // [esp+Ch] [ebp-34h]
-    scr_block_s **breakChildBlocks; // [esp+10h] [ebp-30h]
+    Ptr32<scr_block_s> *breakChildBlocks; // [esp+10h] [ebp-30h]
     bool constConditional; // [esp+17h] [ebp-29h]
     int continueChildCount; // [esp+18h] [ebp-28h] BYREF
     int *oldContinueChildCount; // [esp+1Ch] [ebp-24h]
     VariableCompileValue constValue; // [esp+20h] [ebp-20h] BYREF
     int i; // [esp+2Ch] [ebp-14h]
-    scr_block_s **continueChildBlocks; // [esp+30h] [ebp-10h]
-    scr_block_s **oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
+    Ptr32<scr_block_s> *continueChildBlocks; // [esp+30h] [ebp-10h]
+    Ptr32<scr_block_s> *oldBreakChildBlocks; // [esp+34h] [ebp-Ch]
     int abortLevel; // [esp+38h] [ebp-8h]
-    scr_block_s **oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
+    Ptr32<scr_block_s> *oldContinueChildBlocks; // [esp+3Ch] [ebp-4h]
 
     Scr_CalcLocalVarsStatement(inst, stmt1, block);
     if (*(_BYTE *)BO1_I2P(expr.stringValue) == 67)
@@ -1246,13 +1246,13 @@ void __cdecl Scr_CalcLocalVarsForStatement(
     oldContinueChildCount = gScrCompileGlob[inst].continueChildCount;
     breakChildCount = 0;
     continueChildCount = 0;
-    continueChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement"));
+    continueChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement"));
     gScrCompileGlob[inst].continueChildBlocks = continueChildBlocks;
     gScrCompileGlob[inst].continueChildCount = &continueChildCount;
     abortLevel = block->abortLevel;
     if (constConditional)
     {
-        breakChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement"));
+        breakChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsForStatement"));
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -1260,18 +1260,18 @@ void __cdecl Scr_CalcLocalVarsForStatement(
         breakChildBlocks = 0;
     }
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
-    Scr_CopyBlock(block, (scr_block_s **)forStatBlock);
-    Scr_CopyBlock(block, (scr_block_s **)forStatPostBlock);
+    Scr_CopyBlock(block, (Ptr32<scr_block_s> *)forStatBlock);
+    Scr_CopyBlock(block, (Ptr32<scr_block_s> *)forStatPostBlock);
     Scr_CalcLocalVarsStatement(inst, stmt, forStatBlock->block);
     Scr_AddContinueBlock(inst, forStatBlock->block);
     for (i = 0; i < continueChildCount; ++i)
         Scr_AppendChildBlocks(&continueChildBlocks[i], 1, block);
     Scr_CalcLocalVarsStatement(inst, stmt2, forStatPostBlock->block);
-    Scr_AppendChildBlocks((scr_block_s **)forStatPostBlock, 1, block);
-    Scr_MergeChildBlocks((scr_block_s **)forStatPostBlock, 1, block);
+    Scr_AppendChildBlocks((Ptr32<scr_block_s> *)forStatPostBlock, 1, block);
+    Scr_MergeChildBlocks((Ptr32<scr_block_s> *)forStatPostBlock, 1, block);
     if (constConditional)
         Scr_AppendChildBlocks(breakChildBlocks, breakChildCount, block);
-    Scr_MergeChildBlocks((scr_block_s **)forStatBlock, 1, block);
+    Scr_MergeChildBlocks((Ptr32<scr_block_s> *)forStatBlock, 1, block);
     gScrCompileGlob[inst].breakChildBlocks = oldBreakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = oldBreakChildCount;
     gScrCompileGlob[inst].continueChildBlocks = oldContinueChildBlocks;
@@ -1281,7 +1281,7 @@ void __cdecl Scr_CalcLocalVarsWaittillStatement(sval_u exprlist, scr_block_s *bl
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    node = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
+    node = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
     if ( !node
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3721, 0, "%s", "node") )
     {
@@ -1310,12 +1310,12 @@ void __cdecl Scr_CalcLocalVarsSwitchStatement(scriptInstance_t inst, sval_u stmt
 {
     sval_u *node; // [esp+0h] [ebp-28h]
     int breakChildCount; // [esp+4h] [ebp-24h] BYREF
-    scr_block_s **breakChildBlocks; // [esp+8h] [ebp-20h]
+    Ptr32<scr_block_s> *breakChildBlocks; // [esp+8h] [ebp-20h]
     int *oldBreakChildCount; // [esp+Ch] [ebp-1Ch]
     bool hasDefault; // [esp+13h] [ebp-15h]
-    scr_block_s *currentBlock; // [esp+14h] [ebp-14h] BYREF
-    scr_block_s **childBlocks; // [esp+18h] [ebp-10h]
-    scr_block_s **oldBreakChildBlocks; // [esp+1Ch] [ebp-Ch]
+    Ptr32<scr_block_s> currentBlock; // [esp+14h] [ebp-14h] BYREF
+    Ptr32<scr_block_s> *childBlocks; // [esp+18h] [ebp-10h]
+    Ptr32<scr_block_s> *oldBreakChildBlocks; // [esp+1Ch] [ebp-Ch]
     int childCount; // [esp+20h] [ebp-8h]
     int abortLevel; // [esp+24h] [ebp-4h]
 
@@ -1323,14 +1323,14 @@ void __cdecl Scr_CalcLocalVarsSwitchStatement(scriptInstance_t inst, sval_u stmt
     oldBreakChildBlocks = gScrCompileGlob[inst].breakChildBlocks;
     oldBreakChildCount = gScrCompileGlob[inst].breakChildCount;
     breakChildCount = 0;
-    breakChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement"));
+    breakChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement"));
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     childCount = 0;
     currentBlock = 0;
     hasDefault = 0;
-    childBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement"));
-    for (node = *(sval_u **)BO1_I2P((*(_DWORD *)BO1_I2P(stmtlist.stringValue) + 4)); node; node = node[1].node)
+    childBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "Scr_CalcLocalVarsSwitchStatement"));
+    for (node = *(Ptr32<sval_u> *)BO1_I2P((*(_DWORD *)BO1_I2P(stmtlist.stringValue) + 4)); node; node = node[1].node)
     {
         if (*(_BYTE *)BO1_I2P(node->stringValue) == 63 || *(_BYTE *)BO1_I2P(node->stringValue) == 64)
         {
@@ -1389,14 +1389,14 @@ void __cdecl Scr_CalcLocalVarsDeveloperStatementList(
                 scr_block_s *block,
                 sval_u *devStatBlock)
 {
-    Scr_CopyBlock(block, (scr_block_s **)devStatBlock);
+    Scr_CopyBlock(block, (Ptr32<scr_block_s> *)devStatBlock);
     Scr_CalcLocalVarsStatementList(inst, val, devStatBlock->block);
-    Scr_MergeChildBlocks((scr_block_s **)devStatBlock, 1, block);
+    Scr_MergeChildBlocks((Ptr32<scr_block_s> *)devStatBlock, 1, block);
 }
 
 void __cdecl Scr_CalcLocalVarsFormalParameterList(sval_u exprlist, scr_block_s *block)
 {
-    Scr_CalcLocalVarsFormalParameterListInternal(*(sval_u **)BO1_I2P(exprlist.stringValue), block);
+    Scr_CalcLocalVarsFormalParameterListInternal(*(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue), block);
 }
 
 void __cdecl EmitNormalThread(scriptInstance_t inst, sval_u val, sval_u *stmttblock)
@@ -1845,7 +1845,7 @@ void __cdecl EmitStatementList(
     sval_u *node; // [esp+4h] [ebp-8h]
     sval_u *nextNode; // [esp+8h] [ebp-4h]
 
-    for ( node = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = nextNode )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = nextNode )
     {
         nextNode = node[1].node;
         if ( lastStatement && Scr_IsLastStatement(inst, nextNode) )
@@ -2902,7 +2902,7 @@ int __cdecl EmitExpressionList(scriptInstance_t inst, sval_u exprlist, scr_block
     int expr_count; // [esp+4h] [ebp-4h]
 
     expr_count = 0;
-    for ( node = *(sval_u **)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
     {
         EmitExpression(inst, *node->node, block);
         ++expr_count;
@@ -2916,7 +2916,7 @@ void __cdecl AddExpressionListOpcodePos(scriptInstance_t inst, sval_u exprlist)
 
     if (gScrVarPub[inst].developer)
     {
-        for (node = *(sval_u **)BO1_I2P(exprlist.stringValue); node; node = node[1].node)
+        for (node = *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue); node; node = node[1].node)
             AddOpcodePos(inst, *(_DWORD *)BO1_I2P((node->stringValue + 4)), 0);
     }
 }
@@ -3344,7 +3344,7 @@ bool __cdecl EmitOrEvalPrimitiveExpressionList(
     if ( expr_count == 3 )
     {
         success = 1;
-        for ( node = *(sval_u **)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
+        for ( node = *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
         {
             if ( success )
             {
@@ -3874,7 +3874,7 @@ sval_u *__cdecl GetSingleParameter(sval_u exprlist)
         return 0;
     if ( *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4)) )
         return 0;
-    return *(sval_u **)BO1_I2P(exprlist.stringValue);
+    return *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue);
 }
 
 void __cdecl EmitExpressionFieldObject(scriptInstance_t inst, sval_u expr, sval_u sourcePos, scr_block_s *block)
@@ -4231,7 +4231,7 @@ void __cdecl EmitIfElseStatement(
     char *offset; // [esp+4h] [ebp-20h]
     const char *nextPos1; // [esp+8h] [ebp-1Ch]
     unsigned __int8 *pos1; // [esp+Ch] [ebp-18h]
-    scr_block_s *childBlocks[2]; // [esp+10h] [ebp-14h] BYREF
+    Ptr32<scr_block_s> childBlocks[2]; // [esp+10h] [ebp-14h] BYREF
     const char *nextPos2; // [esp+18h] [ebp-Ch]
     int childCount; // [esp+1Ch] [ebp-8h]
     const char *pos2; // [esp+20h] [ebp-4h]
@@ -4288,7 +4288,7 @@ void __cdecl EmitIfElseStatement(
     Scr_InitFromChildBlocks(childBlocks, childCount, block);
 }
 
-void __cdecl Scr_InitFromChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block)
+void __cdecl Scr_InitFromChildBlocks(Ptr32<scr_block_s> *childBlocks, int childCount, scr_block_s *block)
 {
     scr_block_s *childBlock; // [esp+0h] [ebp-14h]
     scr_block_s *childBlocka; // [esp+0h] [ebp-14h]
@@ -4399,7 +4399,7 @@ void __cdecl EmitWhileStatement(
     ContinueStatementInfo *oldContinueStatement; // [esp+0h] [ebp-48h]
     int breakChildCount; // [esp+4h] [ebp-44h] BYREF
     int *oldBreakChildCount; // [esp+8h] [ebp-40h]
-    scr_block_s **breakChildBlocks; // [esp+Ch] [ebp-3Ch]
+    Ptr32<scr_block_s> *breakChildBlocks; // [esp+Ch] [ebp-3Ch]
     BreakStatementInfo *oldBreakStatement; // [esp+10h] [ebp-38h]
     bool constConditional; // [esp+17h] [ebp-31h]
     unsigned int offset; // [esp+18h] [ebp-30h]
@@ -4409,9 +4409,9 @@ void __cdecl EmitWhileStatement(
     VariableCompileValue constValue; // [esp+24h] [ebp-24h] BYREF
     const char *pos1; // [esp+30h] [ebp-18h]
     const char *nextPos2; // [esp+34h] [ebp-14h]
-    scr_block_s **oldBreakChildBlocks; // [esp+38h] [ebp-10h]
+    Ptr32<scr_block_s> *oldBreakChildBlocks; // [esp+38h] [ebp-10h]
     const char *pos2; // [esp+3Ch] [ebp-Ch]
-    scr_block_s **oldContinueChildBlocks; // [esp+40h] [ebp-8h]
+    Ptr32<scr_block_s> *oldContinueChildBlocks; // [esp+40h] [ebp-8h]
     scr_block_s *oldBreakBlock; // [esp+44h] [ebp-4h]
 
     bOldCanBreak = gScrCompileGlob[inst].bCanBreak;
@@ -4461,7 +4461,7 @@ void __cdecl EmitWhileStatement(
     {
         pos2 = 0;
         nextPos2 = 0;
-        breakChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitWhileStatement"));
+        breakChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitWhileStatement"));
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -4605,7 +4605,7 @@ void __cdecl EmitForStatement(
     ContinueStatementInfo *oldContinueStatement; // [esp+0h] [ebp-50h]
     int breakChildCount; // [esp+4h] [ebp-4Ch] BYREF
     int *oldBreakChildCount; // [esp+8h] [ebp-48h]
-    scr_block_s **breakChildBlocks; // [esp+Ch] [ebp-44h]
+    Ptr32<scr_block_s> *breakChildBlocks; // [esp+Ch] [ebp-44h]
     BreakStatementInfo *oldBreakStatement; // [esp+10h] [ebp-40h]
     bool constConditional; // [esp+17h] [ebp-39h]
     unsigned int offset; // [esp+18h] [ebp-38h]
@@ -4616,10 +4616,10 @@ void __cdecl EmitForStatement(
     VariableCompileValue constValue; // [esp+28h] [ebp-28h] BYREF
     const char *pos1; // [esp+34h] [ebp-1Ch]
     const char *nextPos2; // [esp+38h] [ebp-18h]
-    scr_block_s **continueChildBlocks; // [esp+3Ch] [ebp-14h]
-    scr_block_s **oldBreakChildBlocks; // [esp+40h] [ebp-10h]
+    Ptr32<scr_block_s> *continueChildBlocks; // [esp+3Ch] [ebp-14h]
+    Ptr32<scr_block_s> *oldBreakChildBlocks; // [esp+40h] [ebp-10h]
     const char *pos2; // [esp+44h] [ebp-Ch]
-    scr_block_s **oldContinueChildBlocks; // [esp+48h] [ebp-8h]
+    Ptr32<scr_block_s> *oldContinueChildBlocks; // [esp+48h] [ebp-8h]
     scr_block_s *oldBreakBlock; // [esp+4Ch] [ebp-4h]
 
     bOldCanBreak = gScrCompileGlob[inst].bCanBreak;
@@ -4673,7 +4673,7 @@ void __cdecl EmitForStatement(
     oldContinueChildCount = gScrCompileGlob[inst].continueChildCount;
     breakChildCount = 0;
     continueChildCount = 0;
-    continueChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement"));
+    continueChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement"));
     gScrCompileGlob[inst].continueChildBlocks = continueChildBlocks;
     gScrCompileGlob[inst].continueChildCount = &continueChildCount;
     gScrCompileGlob[inst].breakBlock = forStatBlock->block;
@@ -4681,7 +4681,7 @@ void __cdecl EmitForStatement(
     {
         pos2 = 0;
         nextPos2 = 0;
-        breakChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement"));
+        breakChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitForStatement"));
         gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     }
     else
@@ -4821,7 +4821,7 @@ void __cdecl EmitWaittillStatement(
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    node = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
+    node = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
     if ( !node
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3700, 0, "%s", "node") )
     {
@@ -4873,7 +4873,7 @@ void __cdecl EmitWaittillmatchStatement(
     sval_u *nodea; // [esp+0h] [ebp-8h]
     int exprCount; // [esp+4h] [ebp-4h]
 
-    node = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
+    node = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
     if ( !node
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3732, 0, "%s", "node") )
     {
@@ -4886,7 +4886,7 @@ void __cdecl EmitWaittillmatchStatement(
             break;
         EmitExpression(inst, *node->node, block);
     }
-    nodea = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
+    nodea = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(exprlist.stringValue) + 4));
     if ( !nodea
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp", 3746, 0, "%s", "node") )
     {
@@ -4936,7 +4936,7 @@ void __cdecl EmitNotifyStatement(
     AddOpcodePos(inst, sourcePos.stringValue, 1);
     expr_count = 0;
     start_node = 0;
-    for ( node = *(sval_u **)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue); node; node = node[1].node )
     {
         start_node = node;
         EmitExpression(inst, *node->node, block);
@@ -5016,7 +5016,9 @@ void __cdecl EmitSwitchStatement(
     caseStatement = gScrCompileGlob[inst].currentCaseStatement;
     while (caseStatement)
     {
-        EmitCodepos(inst, (const char *)BO1_I2P(caseStatement->name));
+        // the case value is a raw 32-bit operand (a string id or a biased integer), not a code position
+        gScrCompileGlob[inst].codePos = (unsigned __int8 *)TempMallocAlignStrict(4);
+        *(unsigned int *)gScrCompileGlob[inst].codePos = caseStatement->name;
         EmitCodepos(inst, caseStatement->codePos);
         caseStatement = caseStatement->next;
         ++num;
@@ -5057,22 +5059,22 @@ void __cdecl EmitSwitchStatementList(
     sval_u *node; // [esp+4h] [ebp-20h]
     sval_u *nextNode; // [esp+8h] [ebp-1Ch]
     int breakChildCount; // [esp+Ch] [ebp-18h] BYREF
-    scr_block_s **breakChildBlocks; // [esp+10h] [ebp-14h]
+    Ptr32<scr_block_s> *breakChildBlocks; // [esp+10h] [ebp-14h]
     int *oldBreakChildCount; // [esp+14h] [ebp-10h]
     bool hasDefault; // [esp+1Bh] [ebp-9h]
-    scr_block_s **oldBreakChildBlocks; // [esp+1Ch] [ebp-8h]
+    Ptr32<scr_block_s> *oldBreakChildBlocks; // [esp+1Ch] [ebp-8h]
     scr_block_s *oldBreakBlock; // [esp+20h] [ebp-4h]
 
     oldBreakChildBlocks = gScrCompileGlob[inst].breakChildBlocks;
     oldBreakChildCount = gScrCompileGlob[inst].breakChildCount;
     oldBreakBlock = gScrCompileGlob[inst].breakBlock;
     breakChildCount = 0;
-    breakChildBlocks = (scr_block_s **)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitSwitchStatementList"));
+    breakChildBlocks = (Ptr32<scr_block_s> *)BO1_I2P(Hunk_AllocateTempMemoryHigh(2048, "EmitSwitchStatementList"));
     gScrCompileGlob[inst].breakChildBlocks = breakChildBlocks;
     gScrCompileGlob[inst].breakChildCount = &breakChildCount;
     gScrCompileGlob[inst].breakBlock = 0;
     hasDefault = 0;
-    for (node = *(sval_u **)BO1_I2P((*(_DWORD *)BO1_I2P(val.stringValue) + 4)); node; node = nextNode)
+    for (node = *(Ptr32<sval_u> *)BO1_I2P((*(_DWORD *)BO1_I2P(val.stringValue) + 4)); node; node = nextNode)
     {
         nextNode = node[1].node;
         if (*(_BYTE *)BO1_I2P(node->stringValue) == 63 || *(_BYTE *)BO1_I2P(node->stringValue) == 64)
@@ -5094,12 +5096,12 @@ void __cdecl EmitSwitchStatementList(
             }
             if (*(_BYTE *)BO1_I2P(node->stringValue) == 63)
             {
-                gScrCompileGlob[inst].breakBlock = *(scr_block_s **)BO1_I2P((node->stringValue + 12));
+                gScrCompileGlob[inst].breakBlock = *(Ptr32<scr_block_s> *)BO1_I2P((node->stringValue + 12));
                 EmitCaseStatement(inst, *(sval_u *)BO1_I2P((node->stringValue + 4)), *(sval_u *)BO1_I2P((node->stringValue + 8)));
             }
             else
             {
-                gScrCompileGlob[inst].breakBlock = *(scr_block_s **)BO1_I2P((node->stringValue + 8));
+                gScrCompileGlob[inst].breakBlock = *(Ptr32<scr_block_s> *)BO1_I2P((node->stringValue + 8));
                 hasDefault = 1;
                 EmitDefaultStatement(inst, *(sval_u *)BO1_I2P((node->stringValue + 4)));
             }
@@ -5369,7 +5371,7 @@ void __cdecl EmitDeveloperStatementList(
 
 void __cdecl EmitFormalParameterList(scriptInstance_t inst, sval_u exprlist, sval_u sourcePos, scr_block_s *block)
 {
-    EmitFormalParameterListInternal(inst, *(sval_u **)BO1_I2P(exprlist.stringValue), block);
+    EmitFormalParameterListInternal(inst, *(Ptr32<sval_u> *)BO1_I2P(exprlist.stringValue), block);
     EmitOpcode(inst, 0x35u, 0, 0);
     AddOpcodePos(inst, sourcePos.stringValue, 0);
 }
@@ -5467,7 +5469,7 @@ void __cdecl EmitIncludeList(scriptInstance_t inst, sval_u val)
 {
     sval_u *node; // [esp+0h] [ebp-4h]
 
-    for ( node = *(sval_u **)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P((*(unsigned int *)BO1_I2P(val.stringValue) + 4)); node; node = node[1].node )
         EmitInclude(inst, *node);
 }
 

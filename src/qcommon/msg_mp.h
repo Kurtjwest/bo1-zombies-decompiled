@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/q_shared.h>
 #include <qcommon/bitarray.h>
 #include "ent.h"
@@ -48,8 +49,8 @@ struct msg_t // sizeof=0x30
 {                                                                             // XREF: .data:msg_t fakemsg/r
     int overflowed;                                         // XREF: BG_EmblemsWriteString(short,CompositeEmblemLayer *,int)+44/r
     int readOnly;
-    unsigned __int8 *data;                            // XREF: BG_EmblemsWriteString(short,CompositeEmblemLayer *,int)+88/r
-    unsigned __int8 *splitData;
+    Ptr32<unsigned __int8> data;                            // XREF: BG_EmblemsWriteString(short,CompositeEmblemLayer *,int)+88/r
+    Ptr32<unsigned __int8> splitData;
     int maxsize;                                                // XREF: CL_ReadDemoNetworkPacket+116/r
     int cursize;                                                // XREF: BG_EmblemsWriteString(short,CompositeEmblemLayer *,int)+84/r
     int splitSize;
@@ -62,15 +63,15 @@ struct msg_t // sizeof=0x30
 
 struct NetFieldList // sizeof=0xC
 {                                       // XREF: .rdata:s_entityNetFieldList/r
-    const struct NetField *array;
+    Ptr32<const struct NetField> array;
     unsigned int count;
-    const char *fieldArrayName;
+    Ptr32<const char> fieldArrayName;
 };
 
 struct NetField // sizeof=0x1C
 {                                                                             // XREF: .rdata:helicopterEntityStateFields/r
                                                                                 // .rdata:planeStateFields/r ...
-        const char *name;
+        Ptr32<const char> name;
         int offset;
         int size;
         int bits;
@@ -78,8 +79,8 @@ struct NetField // sizeof=0x1C
         // padding byte
         // padding byte
         // padding byte
-        const char *bitsStr;
-        const char *changeHintsStr;
+        Ptr32<const char> bitsStr;
+        Ptr32<const char> changeHintsStr;
 };
 
 struct archivedEntityShared_t // sizeof=0x20

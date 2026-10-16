@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum ShockViewTypes : __int32
 {                                       // XREF: shellshock_parms_t::<unnamed_type_screenBlend>/r
@@ -90,7 +91,7 @@ const struct shellshock_parms_t // sizeof=0x204
 
 struct shellshock_t // sizeof=0x24
 {                                       // XREF: cg_s/r
-    const shellshock_parms_t *parms;
+    Ptr32<const shellshock_parms_t> parms;
     int startTime;
     int duration;
     int loopEndTime;

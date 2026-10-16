@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rb_state.h"
 #include <xanim/xanim.h>
 #include "rb_backend.h"
@@ -13,9 +14,9 @@ struct GfxDrawPrimArgs // sizeof=0xC
 
 struct GfxModelWaterSurface // sizeof=0x2C
 {
-    IDirect3DIndexBuffer9 *ib;
-    IDirect3DVertexBuffer9 *vb0;
-    IDirect3DVertexBuffer9 *vb1;
+    Ptr32<IDirect3DIndexBuffer9> ib;
+    Ptr32<IDirect3DVertexBuffer9> vb0;
+    Ptr32<IDirect3DVertexBuffer9> vb1;
     unsigned int baseVertex0;
     unsigned int baseVertex1;
     float interpolate;

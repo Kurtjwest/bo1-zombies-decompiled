@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <gfx_d3d/fxprimitives.h>
 #include "fx_marks.h"
 
 struct FxProfileEntry // sizeof=0x1C
 {                                       // XREF: ?FX_DrawProfile@@YAXHP6AXPBDQAM@Z1@Z/r
-    const FxEffectDef *effectDef;
+    Ptr32<const FxEffectDef> effectDef;
     int effectCount;
     int activeElemCount;
     int pendingElemCount;

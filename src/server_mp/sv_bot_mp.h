@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/dvar.h>
 #include <game/pathnode.h>
 
 struct bot_threat_t // sizeof=0x38
 {                                       // XREF: bot_info_t/r
-    const gentity_s *enemy;
+    Ptr32<const gentity_s> enemy;
     float dot;
     float distSq;
     int acquireTime;
@@ -23,7 +24,7 @@ struct __declspec(align(4)) bot_info_t // sizeof=0x460
     bot_threat_t threat;
     int weapon;
     int sightHitNum;
-    const gentity_s *attackerEnt;
+    Ptr32<const gentity_s> attackerEnt;
     int adsEndTime;
     int pitchEndTime;
     int crouchEndTime;

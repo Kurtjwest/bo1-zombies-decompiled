@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "snd.h"
 #include <database/db_load.h>
 #include <tl/jobqueue/jobqueue_all.h>
@@ -7,7 +8,7 @@
 
 struct snd_buffer // sizeof=0x118
 {
-    char *data;
+    Ptr32<char> data;
     volatile unsigned int reference_count;
     char filename[260];
     unsigned int offset_in_file;
@@ -54,15 +55,15 @@ struct __declspec(align(8)) snd_stream // sizeof=0x190
     // padding byte
     // padding byte
     tlAtomicMutex mutex;
-    char *window_return[3];
+    Ptr32<char> window_return[3];
     unsigned int head;
     unsigned int read;
     unsigned int stream_length;
-    snd_buffer *buffers[2];
+    Ptr32<snd_buffer> buffers[2];
     //int buffer_references[2];
     volatile unsigned int buffer_references[2];
     unsigned int prime_size;
-    char *prime_data;
+    Ptr32<char> prime_data;
     //int windows_in_use;
     volatile unsigned int windows_in_use;
     bool looping;
@@ -87,7 +88,7 @@ struct snd_stream_request // sizeof=0x110
                                         // Snd_StreamUpdate(void)+15D/r ...
     int need;                           // XREF: Snd_StreamUpdate(void)+31C/r
                                         // Snd_StreamUpdate(void)+337/r
-    snd_buffer *buffer;                 // XREF: Snd_StreamUpdate(void)+118/w
+    Ptr32<snd_buffer> buffer;                 // XREF: Snd_StreamUpdate(void)+118/w
 };
 
 struct __declspec(align(8)) scoped_performance_error // sizeof=0x18
@@ -97,7 +98,7 @@ struct __declspec(align(8)) scoped_performance_error // sizeof=0x18
                                         // Snd_StreamClose(uint)+E/w ...
     unsigned __int64 start;             // XREF: Snd_StreamOpen(uint,char const *,bool,uint,char *)+1F/w
                                         // Snd_StreamOpen(uint,char const *,bool,uint,char *)+22/w ...
-    const char *what;                   // XREF: Snd_StreamOpen(uint,char const *,bool,uint,char *)+13/w
+    Ptr32<const char> what;                   // XREF: Snd_StreamOpen(uint,char const *,bool,uint,char *)+13/w
                                         // Snd_StreamClose(uint)+13/w ...
     // padding byte
     // padding byte

@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <qcommon/cm_mapkit.h>
 #include "r_model_lighting.h"
 #include "r_rendercmds.h"
@@ -28,27 +29,27 @@ struct $ACD36BF6C142509D89D5FAE1478EBC2D // sizeof=0x64
                                         // R_InitModelLightingGlobals(void)+CA/r
     unsigned int imageHeight;           // XREF: R_GetPackedStaticModelLightingCoords(uint,PackedLightingCoords *)+46/r
                                         // R_GetPackedStaticModelLightingCoords(uint,PackedLightingCoords *)+4E/r ...
-    const GfxEntity *entities;
+    Ptr32<const GfxEntity> entities;
     unsigned int modFrameCount;         // XREF: R_ToggleModelLightingFrame(void)+11/r
                                         // R_ToggleModelLightingFrame(void)+22/w ...
-    GfxImage *image;                    // XREF: R_AllocModelLighting+4A0/r
+    Ptr32<GfxImage> image;                    // XREF: R_AllocModelLighting+4A0/r
                                         // RB_PatchModelLighting(GfxModelLightingPatch const * const,uint)+4B/r ...
     unsigned int xmodelEntryLimit;      // XREF: R_AllocModelLighting+37A/r
                                         // R_AllocModelLighting+382/r ...
-    GfxLightingInfo *lightingInfo;      // XREF: R_AllocModelLighting+21B/r
+    Ptr32<GfxLightingInfo> lightingInfo;      // XREF: R_AllocModelLighting+21B/r
                                         // R_AllocModelLighting+23C/r ...
-    float (*lightingOrigins)[3];        // XREF: R_AllocModelLighting+13D/r
+    Ptr32<float[3]> lightingOrigins;        // XREF: R_AllocModelLighting+13D/r
                                         // R_AllocModelLighting+1A1/r ...
     int allocModelFail;                 // XREF: R_AllocModelLighting:loc_AF574E/r
                                         // R_AllocModelLighting+321/w ...
-    unsigned int *pixelFreeBits[4];     // XREF: R_ToggleModelLightingFrame(void)+43/r
+    Ptr32<unsigned int> pixelFreeBits[4];     // XREF: R_ToggleModelLightingFrame(void)+43/r
                                         // R_ToggleModelLightingFrame(void)+61/r ...
-    unsigned int *prevPrevPixelFreeBits;
+    Ptr32<unsigned int> prevPrevPixelFreeBits;
                                         // XREF: R_AllocModelLighting+2E1/r
                                         // R_ToggleModelLightingFrame(void)+4A/w
-    unsigned int *prevPixelFreeBits;    // XREF: R_AllocModelLighting+2D2/r
+    Ptr32<unsigned int> prevPixelFreeBits;    // XREF: R_AllocModelLighting+2D2/r
                                         // R_ToggleModelLightingFrame(void)+68/w
-    unsigned int *currPixelFreeBits;    // XREF: R_AllocModelLighting+200/r
+    Ptr32<unsigned int> currPixelFreeBits;    // XREF: R_AllocModelLighting+200/r
                                         // R_AllocModelLighting+20F/r ...
     unsigned int pixelFreeBitsSize;     // XREF: R_ToggleModelLightingFrame(void)+89/r
                                         // R_InitModelLightingGlobals(void)+147/w ...

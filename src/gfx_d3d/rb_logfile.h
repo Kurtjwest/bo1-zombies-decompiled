@@ -1,18 +1,19 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct StateBitsTable // sizeof=0x8
 {                                       // XREF: RB_LogPrintState_0(int,int)+14/w
                                         // RB_LogPrintState_0(int,int)+4C/w ...
     int stateBits;                      // XREF: RB_LogPrintState_0(int,int)+6/w
                                         // RB_LogPrintState_0(int,int)+22/w ...
-    const char *name;                   // XREF: RB_LogPrintState_0(int,int)+D/w
+    Ptr32<const char> name;                   // XREF: RB_LogPrintState_0(int,int)+D/w
                                         // RB_LogPrintState_0(int,int)+1B/w ...
 };
 
 struct StencilLogBits // sizeof=0x18
 {                                       // XREF: ?RB_LogPrintState_1@@YAXHH@Z/r
                                         // ?RB_LogPrintState_1@@YAXHH@Z/r
-    const char *description;            // XREF: RB_LogPrintState_1(int,int)+84/w
+    Ptr32<const char> description;            // XREF: RB_LogPrintState_1(int,int)+84/w
                                         // RB_LogPrintState_1(int,int)+AE/w
     int enableMask;                     // XREF: RB_LogPrintState_1(int,int)+8B/w
                                         // RB_LogPrintState_1(int,int)+B5/w

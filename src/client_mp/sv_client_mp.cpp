@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include <game_sp/g_sp_client.h>
 #include <cgame/cg_sp_nettrace.h>
@@ -48,8 +49,8 @@
 
 struct ucmd_t // sizeof=0xC
 {                                       // XREF: .data:ucmds/r
-    const char *name;
-    void (__cdecl *func)(client_t *);
+    Ptr32<const char> name;
+    Ptr32<void __cdecl(client_t *)> func;
     int allowFromOldServer;
 };
 

@@ -2282,12 +2282,12 @@ void __cdecl Float4LoadFloats(unsigned int x, unsigned int y, unsigned int z, un
     *(_QWORD *)&result->unitVec[2].packed = __PAIR64__(w, z);
 }
 
-void *__cdecl Water_AllocVertexBuffer(IDirect3DVertexBuffer9 **vb, unsigned int buffersize)
+void *__cdecl Water_AllocVertexBuffer(Ptr32<IDirect3DVertexBuffer9> *vb, unsigned int buffersize)
 {
     return R_AllocDynamicVertexBuffer(vb, buffersize);
 }
 
-void *__cdecl Water_AllocIndexBuffer(IDirect3DIndexBuffer9 **ib, unsigned int buffersize)
+void *__cdecl Water_AllocIndexBuffer(Ptr32<IDirect3DIndexBuffer9> *ib, unsigned int buffersize)
 {
     return R_AllocStaticIndexBuffer(ib, buffersize);
 }

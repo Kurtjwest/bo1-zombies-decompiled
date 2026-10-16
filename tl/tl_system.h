@@ -1,24 +1,25 @@
 #pragma once
+#include <universal/ptr32.h>
 
 union _LARGE_INTEGER;
 
 struct tlFileBuf // sizeof=0xC
 {
-    unsigned __int8 *Buf;
+    Ptr32<unsigned __int8> Buf;
     unsigned int Size;
     unsigned int UserData;
 };
 
 struct tlSystemCallbacks // sizeof=0x20
 {                                       // XREF: .data:tlSystemCallbacks tlCurSystemCallbacks/r
-    bool (__cdecl *ReadFile)(const char *, tlFileBuf *, unsigned int, unsigned int);
-    void (__cdecl *ReleaseFile)(tlFileBuf *);
-    void (__cdecl *CriticalError)(const char *);
-    void (__cdecl *Warning)(const char *);
-    void (__cdecl *DebugPrint)(const char *);
-    void *(__cdecl *MemAlloc)(unsigned int, unsigned int, unsigned int);
-    void *(__cdecl *MemRealloc)(void *, unsigned int, unsigned int, unsigned int);
-    void (__cdecl *MemFree)(void *);    // XREF: Sys_SetupTLCallbacks(int)+55/w
+    Ptr32<bool __cdecl(const char *, tlFileBuf *, unsigned int, unsigned int)> ReadFile;
+    Ptr32<void __cdecl(tlFileBuf *)> ReleaseFile;
+    Ptr32<void __cdecl(const char *)> CriticalError;
+    Ptr32<void __cdecl(const char *)> Warning;
+    Ptr32<void __cdecl(const char *)> DebugPrint;
+    Ptr32<void * __cdecl(unsigned int, unsigned int, unsigned int)> MemAlloc;
+    Ptr32<void * __cdecl(void *, unsigned int, unsigned int, unsigned int)> MemRealloc;
+    Ptr32<void __cdecl(void *)> MemFree;    // XREF: Sys_SetupTLCallbacks(int)+55/w
 };
 
 void __cdecl tlSetSystemCallbacks(const tlSystemCallbacks *Callbacks);

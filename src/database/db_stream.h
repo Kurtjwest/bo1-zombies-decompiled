@@ -4,7 +4,7 @@
 
 struct StreamPosInfo // sizeof=0x8
 {                                       // XREF: .data:g_streamPosStack/r
-    unsigned __int8 *pos;               // XREF: DB_PopStreamPos(void)+51/r
+    Ptr32<unsigned __int8> pos;               // XREF: DB_PopStreamPos(void)+51/r
     unsigned int index;                 // XREF: DB_PushStreamPos(uint)+8F/w
 };
 

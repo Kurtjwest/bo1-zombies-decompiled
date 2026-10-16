@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "cscr_main.h"
 #include <stddef.h>
@@ -55,7 +56,7 @@ struct scr_classStruct_t // sizeof=0x10
     // padding byte
     // padding byte
     // padding byte
-    const char *name;
+    Ptr32<const char> name;
 };
 
 union ObjectInfo_u // sizeof=0x4
@@ -76,7 +77,7 @@ struct ObjectInfo // sizeof=0x8
 
 struct __declspec(align(4)) VariableStackBuffer // sizeof=0x10
 {
-        const char *pos;
+        Ptr32<const char> pos;
         unsigned __int16 size;
         unsigned __int16 bufLen;
         unsigned int localId;
@@ -116,10 +117,10 @@ union VariableUnion // sizeof=0x4
     int intValue;
     float floatValue;
     unsigned int stringValue;
-    const float *vectorValue;
-    const char *codePosValue;
+    Ptr32<const float> vectorValue;
+    Ptr32<const char> codePosValue;
     unsigned int pointerValue;
-    VariableStackBuffer *stackValue;
+    Ptr32<VariableStackBuffer> stackValue;
     unsigned int entityOffset;
 };
 
@@ -217,7 +218,7 @@ struct scr_entref_t // sizeof=0x6
 struct scrVarPub_t // sizeof=0x74
 {                                       // XREF: .data:scrVarPub_t * gScrVarPub/r
     //const char *fieldBuffer;            // XREF: Scr_BeginLoadScripts(scriptInstance_t,int)+4D6/w
-    char *fieldBuffer;            // XREF: Scr_BeginLoadScripts(scriptInstance_t,int)+4D6/w
+    Ptr32<char> fieldBuffer;            // XREF: Scr_BeginLoadScripts(scriptInstance_t,int)+4D6/w
                                         // Scr_FindField(char const *,int *,scriptInstance_t)+C/r ...
     unsigned __int16 canonicalStrCount; // XREF: Scr_ArchiveCanonicalStrings(scriptInstance_t)+C1/r
                                         // Scr_ArchiveCanonicalStrings(scriptInstance_t)+F4/r ...
@@ -230,7 +231,7 @@ struct scrVarPub_t // sizeof=0x74
     // padding byte
     // padding byte
     // padding byte
-    const char *error_message;          // XREF: EvalBinaryOperatorExpression+90/r
+    Ptr32<const char> error_message;          // XREF: EvalBinaryOperatorExpression+90/r
                                         // EvalBinaryOperatorExpression+9F/r ...
     int error_index;                    // XREF: Scr_EvalMethod+DA/w
                                         // Scr_EvalMethod+14F/w ...
@@ -260,21 +261,21 @@ struct scrVarPub_t // sizeof=0x74
                                         // SetVariableFieldValue(scriptInstance_t,uint,VariableValue *)+39/r ...
     unsigned int entFieldName;          // XREF: Scr_GetVariableFieldIndex(scriptInstance_t,uint,uint)+153/w
                                         // SetVariableFieldValue(scriptInstance_t,uint,VariableValue *)+2C/r ...
-    HunkUser *programHunkUser;          // XREF: Scr_BeginLoadScripts(scriptInstance_t,int)+420/w
+    Ptr32<HunkUser> programHunkUser;          // XREF: Scr_BeginLoadScripts(scriptInstance_t,int)+420/w
                                         // Scr_BeginLoadScripts(scriptInstance_t,int)+42C/r ...
-    const char *programBuffer;          // XREF: ScriptCompile(scriptInstance_t,sval_u,uint,uint,uint,PrecacheEntry *,int)+10D/r
+    Ptr32<const char> programBuffer;          // XREF: ScriptCompile(scriptInstance_t,sval_u,uint,uint,uint,PrecacheEntry *,int)+10D/r
                                         // Scr_FindBreakpointInfo+39/r ...
-    const char *endScriptBuffer;        // XREF: Scr_BeginLoadScripts(scriptInstance_t,int)+4AE/w
+    Ptr32<const char> endScriptBuffer;        // XREF: Scr_BeginLoadScripts(scriptInstance_t,int)+4AE/w
                                         // Scr_EndLoadAnimTrees(scriptInstance_t)+128/r ...
-    unsigned __int16 *saveIdMap;        // XREF: Scr_InitVariables(scriptInstance_t)+85/w
-    unsigned __int16 *saveIdMapRev;     // XREF: Scr_InitVariables(scriptInstance_t)+C7/w
+    Ptr32<unsigned __int16> saveIdMap;        // XREF: Scr_InitVariables(scriptInstance_t)+85/w
+    Ptr32<unsigned __int16> saveIdMapRev;     // XREF: Scr_InitVariables(scriptInstance_t)+C7/w
     unsigned int numScriptThreads;      // XREF: Scr_VM_Init+1E5/w
                                         // Scr_GetNumScriptThreads(scriptInstance_t)+9/r ...
     unsigned int numScriptValues;       // XREF: Scr_LoadScriptInternal(scriptInstance_t,char const *,PrecacheEntry *,int)+547/r
                                         // Scr_LoadScriptInternal(scriptInstance_t,char const *,PrecacheEntry *,int)+56A/r ...
     unsigned int numScriptObjects;      // XREF: Scr_InitVariables(scriptInstance_t)+21A/w
                                         // Scr_ShutdownVariables(scriptInstance_t)+A7/r ...
-    const char *varUsagePos;            // XREF: Scr_DisplayDebuggerRemote+3B/r
+    Ptr32<const char> varUsagePos;            // XREF: Scr_DisplayDebuggerRemote+3B/r
                                         // Scr_DisplayDebuggerRemote+4A/w ...
     int ext_threadcount;                // XREF: Scr_CheckLeaks+FD/r
                                         // Scr_VM_Init+1D5/w ...
@@ -288,9 +289,9 @@ struct scrVarPub_t // sizeof=0x74
 struct __declspec(align(4)) scrVarDebugPub_t // sizeof=0x10
 {                                       // XREF: .data:scrVarDebugPub_t * gScrVarDebugPubBuff/r
                                         // scrVarDebugPubArray_t/r
-    const char **varUsage;
-    unsigned __int16 *extRefCount;
-    int *leakCount;
+    Ptr32<Ptr32<const char>> varUsage;
+    Ptr32<unsigned __int16> extRefCount;
+    Ptr32<int> leakCount;
     bool dummy;
     // padding byte
     // padding byte
@@ -299,7 +300,7 @@ struct __declspec(align(4)) scrVarDebugPub_t // sizeof=0x10
 
 struct __declspec(align(128)) scrVarGlob_t // sizeof=0x80
 {                                       // XREF: .data:scrVarGlob_t * gScrVarGlob/r
-    VariableValueInternal *variableList;
+    Ptr32<VariableValueInternal> variableList;
                                         // XREF: Scr_GetArrayValues_Vector(long,long,float (*)[3],long,char const *)+114/r
                                         // GScr_AddSpawnPoints(void)+109/r ...
     // padding byte
@@ -430,7 +431,7 @@ struct __declspec(align(128)) scrVarGlob_t // sizeof=0x80
 
 struct ThreadDebugInfo // sizeof=0x8C
 {                                       // XREF: ?Scr_DumpScriptThreads@@YAXW4scriptInstance_t@@@Z/r
-    const char *pos[32];                // XREF: Scr_DumpScriptThreads(scriptInstance_t)+1CA/w
+    Ptr32<const char> pos[32];                // XREF: Scr_DumpScriptThreads(scriptInstance_t)+1CA/w
                                         // Scr_DumpScriptThreads(scriptInstance_t)+1E5/w ...
     int posSize;                        // XREF: Scr_DumpScriptThreads(scriptInstance_t)+15C/w
                                         // Scr_DumpScriptThreads(scriptInstance_t)+1C4/r ...
@@ -442,9 +443,9 @@ struct ThreadDebugInfo // sizeof=0x8C
 
 struct VariableDebugInfo // sizeof=0x10
 {
-    const char *pos;
-    const char *fileName;
-    const char *functionName;
+    Ptr32<const char> pos;
+    Ptr32<const char> fileName;
+    Ptr32<const char> functionName;
     int varUsage;
 };
 

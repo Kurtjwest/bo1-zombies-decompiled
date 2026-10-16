@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "phys_local.h"
 #include "phys_colgeom.h"
 #include "phys_collision.h"
@@ -12,11 +13,11 @@ struct __declspec(align(16)) phys_contact_manifold // sizeof=0x60
     float m_feature_distance_eps;
     float m_sin_feautre_angular_eps_sq;
     int m_close_mesh_point_count;
-    phys_memory_heap *m_allocator;
-    contact_manifold_mesh_point *m_list_mesh_point;
+    Ptr32<phys_memory_heap> m_allocator;
+    Ptr32<contact_manifold_mesh_point> m_list_mesh_point;
     int m_list_mesh_point_count;
-    contact_manifold_mesh_point **m_list_sorted_mesh_point;
-    contact_manifold_mesh_point **m_list_contact_point;
+    Ptr32<Ptr32<contact_manifold_mesh_point>> m_list_sorted_mesh_point;
+    Ptr32<Ptr32<contact_manifold_mesh_point>> m_list_contact_point;
     int m_list_contact_point_count;
     // padding byte
     // padding byte
@@ -118,10 +119,10 @@ struct __declspec(align(16)) phys_contact_manifold_process // sizeof=0x4180
     };
     struct isect_info // sizeof=0x18
     {                                       // XREF: ?intersect_poly_poly@phys_contact_manifold_process@@QAEXXZ/r
-        phys_contact_manifold *m_cman;      // XREF: phys_contact_manifold_process::intersect_poly_poly(void)+1E1/r
-        contact_manifold_mesh_point **m_i;
-        contact_manifold_mesh_point **m_next_i;
-        contact_manifold_mesh_point **m_last_i;
+        Ptr32<phys_contact_manifold> m_cman;      // XREF: phys_contact_manifold_process::intersect_poly_poly(void)+1E1/r
+        Ptr32<Ptr32<contact_manifold_mesh_point>> m_i;
+        Ptr32<Ptr32<contact_manifold_mesh_point>> m_next_i;
+        Ptr32<Ptr32<contact_manifold_mesh_point>> m_last_i;
         phys_vec2 m_edge;
 
         void init(phys_contact_manifold *cman);
@@ -130,16 +131,16 @@ struct __declspec(align(16)) phys_contact_manifold_process // sizeof=0x4180
     struct bridge // sizeof=0x10
     {
         phys_vec2 m_intersection_p;
-        contact_manifold_mesh_point **m_left_i;
-        contact_manifold_mesh_point **m_right_i;
+        Ptr32<Ptr32<contact_manifold_mesh_point>> m_left_i;
+        Ptr32<Ptr32<contact_manifold_mesh_point>> m_right_i;
     };
     phys_mat44 contact_mat;
     phys_mat44 cg1_to_rb2_xform;
-    phys_transient_allocator *m_cpi_allocator;
+    Ptr32<phys_transient_allocator> m_cpi_allocator;
     phys_link_list<contact_point_info> m_list_cpi;
-    contact_point_info *m_cpi;
-    contact_manifold_mesh_point **m_list_isect_point;
-    rigid_body_constraint_contact *m_rbc_contact_search_tree_root;
+    Ptr32<contact_point_info> m_cpi;
+    Ptr32<Ptr32<contact_manifold_mesh_point>> m_list_isect_point;
+    Ptr32<rigid_body_constraint_contact> m_rbc_contact_search_tree_root;
     // padding byte
     // padding byte
     // padding byte
@@ -179,8 +180,8 @@ struct __declspec(align(16)) phys_contact_manifold_process // sizeof=0x4180
 
 const phys_vec3 *__cdecl phys_v2_to_v3_multiply(phys_vec3 *result, const phys_mat44 *m, const phys_vec2 *v);
 void    displace_contact_p(
-                contact_manifold_mesh_point **mp,
+                Ptr32<contact_manifold_mesh_point> *mp,
                 const phys_vec2 *d,
                 const phys_mat44 *contact_mat);
-void __cdecl feature_qsort(contact_manifold_mesh_point **list, int list_count);
-void __cdecl convex_poly_qsort(contact_manifold_mesh_point **list, int list_count);
+void __cdecl feature_qsort(Ptr32<contact_manifold_mesh_point> *list, int list_count);
+void __cdecl convex_poly_qsort(Ptr32<contact_manifold_mesh_point> *list, int list_count);

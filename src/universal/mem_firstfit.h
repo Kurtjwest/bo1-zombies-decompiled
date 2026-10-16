@@ -1,9 +1,10 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "mem_userhunk.h"
 
 struct _firstfit_heapnode // sizeof=0x8
 {                                       // XREF: FIRSTFIT_HEAPNODE/r
-    _firstfit_heapnode *next;
+    Ptr32<_firstfit_heapnode> next;
     int size;
 };
 

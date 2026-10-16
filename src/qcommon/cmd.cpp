@@ -150,7 +150,7 @@ void __cdecl Cmd_ExecuteServerString(char *text)
     const char *v1; // eax
     const char *arg0; // [esp+0h] [ebp-10h]
     const char *predicate; // [esp+4h] [ebp-Ch]
-    cmd_function_s **prev; // [esp+8h] [ebp-8h]
+    Ptr32<cmd_function_s> *prev; // [esp+8h] [ebp-8h]
     cmd_function_s *cmd; // [esp+Ch] [ebp-4h]
 
     //if ( !PbTrapPreExecCmd(text) )
@@ -502,7 +502,7 @@ void __cdecl Cmd_ArgsBuffer(int start, char *buffer, int bufLength)
     CmdArgs *cmd_args; // [esp+4h] [ebp-18h]
     const char *src; // [esp+8h] [ebp-14h]
     int argIndex; // [esp+Ch] [ebp-10h]
-    const char **argv; // [esp+10h] [ebp-Ch]
+    const Ptr32<const char> *argv; // [esp+10h] [ebp-Ch]
     char *dst; // [esp+14h] [ebp-8h]
     int argc; // [esp+18h] [ebp-4h]
     int bufLengtha; // [esp+2Ch] [ebp+10h]
@@ -1069,7 +1069,7 @@ void __cdecl Cmd_ResetConAccessCommands()
 
 char __cdecl Cmd_SetConAccess(const char *str)
 {
-    cmd_function_s **prev; // [esp+0h] [ebp-8h]
+    Ptr32<cmd_function_s> *prev; // [esp+0h] [ebp-8h]
     cmd_function_s *cmd; // [esp+4h] [ebp-4h]
 
     for ( prev = &cmd_functions; *prev; prev = &cmd->next )
@@ -1156,7 +1156,7 @@ void __cdecl Cmd_ExecuteSingleCommandInternal(
     char *arg0; // [esp+38h] [ebp-14h]
     const char *predicate; // [esp+3Ch] [ebp-10h]
     bool restricted; // [esp+43h] [ebp-9h]
-    cmd_function_s **prev; // [esp+44h] [ebp-8h]
+    Ptr32<cmd_function_s> *prev; // [esp+44h] [ebp-8h]
     cmd_function_s *cmd; // [esp+48h] [ebp-4h]
 
     if ( (localClientNum < -1 || localClientNum >= 1)

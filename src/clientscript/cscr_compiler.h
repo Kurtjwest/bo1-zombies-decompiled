@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "cscr_main.h"
 #include "cscr_debugger.h"
 #include "cscr_variable.h"
@@ -28,9 +29,9 @@ struct scrCompilePub_t // sizeof=0x21038
     unsigned __int16 canonicalStrings[65536];
                                         // XREF: Scr_ArchiveCanonicalStrings(scriptInstance_t)+35/r
                                         // Scr_ArchiveCanonicalStrings(scriptInstance_t)+155/r ...
-    const char *in_ptr;                 // XREF: Scr_CompileTextInternal+A2/w
+    Ptr32<const char> in_ptr;                 // XREF: Scr_CompileTextInternal+A2/w
                                         // Scr_ScanFile(scriptInstance_t,char *,int)+2D/r ...
-    const char *parseBuf;               // XREF: Scr_CompileTextInternal+B8/w
+    Ptr32<const char> parseBuf;               // XREF: Scr_CompileTextInternal+B8/w
                                         // Scr_ScanFile(scriptInstance_t,char *,int)+A7/r ...
     bool script_loading;                // XREF: EmitVariableExpression+D0/r
                                         // EmitObject+F/r ...
@@ -40,7 +41,7 @@ struct scrCompilePub_t // sizeof=0x21038
     // padding byte
     int developer_statement;            // XREF: Scr_GetBuiltin(scriptInstance_t,sval_u)+4B/r
                                         // ScriptCompile(scriptInstance_t,sval_u,uint,uint,uint,PrecacheEntry *,int)+59/w ...
-    unsigned __int8 *opcodePos;         // XREF: EmitPreAssignmentPos+33/r
+    Ptr32<unsigned __int8> opcodePos;         // XREF: EmitPreAssignmentPos+33/r
                                         // EmitOpcode+1E3/r ...
     unsigned int programLen;            // XREF: ScriptCompile(scriptInstance_t,sval_u,uint,uint,uint,PrecacheEntry *,int)+11C/w
                                         // Scr_FindBreakpointInfo+4E/r ...
@@ -53,29 +54,29 @@ struct scrCompilePub_t // sizeof=0x21038
 struct CaseStatementInfo // sizeof=0x10
 {
     unsigned int name;
-    const char *codePos;
+    Ptr32<const char> codePos;
     unsigned int sourcePos;
-    CaseStatementInfo *next;
+    Ptr32<CaseStatementInfo> next;
 };
 
 struct BreakStatementInfo // sizeof=0xC
 {
-    const char *codePos;
-    const char *nextCodePos;
-    BreakStatementInfo *next;
+    Ptr32<const char> codePos;
+    Ptr32<const char> nextCodePos;
+    Ptr32<BreakStatementInfo> next;
 };
 
 struct ContinueStatementInfo // sizeof=0xC
 {
-    const char *codePos;
-    const char *nextCodePos;
-    ContinueStatementInfo *next;
+    Ptr32<const char> codePos;
+    Ptr32<const char> nextCodePos;
+    Ptr32<ContinueStatementInfo> next;
 };
 
 struct scrCompileGlob_t
 {
-    unsigned __int8 *codePos;
-    unsigned __int8 *prevOpcodePos;
+    Ptr32<unsigned __int8> codePos;
+    Ptr32<unsigned __int8> prevOpcodePos;
     unsigned int filePosId;
     unsigned int fileCountId;
     int cumulOffset;
@@ -85,18 +86,18 @@ struct scrCompileGlob_t
     bool in_developer_thread;
     unsigned int developer_thread_sourcePos;
     bool firstThread[2];
-    CaseStatementInfo *currentCaseStatement;
+    Ptr32<CaseStatementInfo> currentCaseStatement;
     bool bCanBreak;
-    BreakStatementInfo *currentBreakStatement;
+    Ptr32<BreakStatementInfo> currentBreakStatement;
     bool bCanContinue;
-    ContinueStatementInfo *currentContinueStatement;
-    scr_block_s **breakChildBlocks;
-    int *breakChildCount;
-    scr_block_s *breakBlock;
-    scr_block_s **continueChildBlocks;
-    int *continueChildCount;
+    Ptr32<ContinueStatementInfo> currentContinueStatement;
+    Ptr32<Ptr32<scr_block_s>> breakChildBlocks;
+    Ptr32<int> breakChildCount;
+    Ptr32<scr_block_s> breakBlock;
+    Ptr32<Ptr32<scr_block_s>> continueChildBlocks;
+    Ptr32<int> continueChildCount;
     bool forceNotCreate;
-    PrecacheEntry *precachescriptList;
+    Ptr32<PrecacheEntry> precachescriptList;
     VariableCompileValue value_start[32];
 };
 
@@ -239,8 +240,8 @@ void __cdecl Scr_CalcLocalVarsArrayVariableRef(sval_u expr, scr_block_s *block);
 void __cdecl Scr_CalcLocalVarsArrayPrimitiveExpressionRef(sval_u expr, scr_block_s *block);
 void __cdecl Scr_CalcLocalVarsAssignmentStatement(sval_u lhs, sval_u rhs, scr_block_s *block);
 void __cdecl Scr_CalcLocalVarsIfStatement(scriptInstance_t inst, sval_u stmt, scr_block_s *block, sval_u *ifStatBlock);
-void __cdecl Scr_CopyBlock(scr_block_s *from, scr_block_s **to);
-void __cdecl Scr_MergeChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block);
+void __cdecl Scr_CopyBlock(scr_block_s *from, Ptr32<scr_block_s> *to);
+void __cdecl Scr_MergeChildBlocks(Ptr32<scr_block_s> *childBlocks, int childCount, scr_block_s *block);
 int __cdecl Scr_FindLocalVar(scr_block_s *block, int startIndex, unsigned int name);
 void __cdecl Scr_CalcLocalVarsIfElseStatement(
                 scriptInstance_t inst,
@@ -249,7 +250,7 @@ void __cdecl Scr_CalcLocalVarsIfElseStatement(
                 scr_block_s *block,
                 sval_u *ifStatBlock,
                 sval_u *elseStatBlock);
-void __cdecl Scr_AppendChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block);
+void __cdecl Scr_AppendChildBlocks(Ptr32<scr_block_s> *childBlocks, int childCount, scr_block_s *block);
 void __cdecl Scr_AddBreakBlock(scriptInstance_t inst, scr_block_s *block);
 void __cdecl Scr_CheckMaxSwitchCases(int count);
 void __cdecl Scr_AddContinueBlock(scriptInstance_t inst, scr_block_s *block);
@@ -585,7 +586,7 @@ void __cdecl EmitIfElseStatement(
                 scr_block_s *block,
                 sval_u *ifStatBlock,
                 sval_u *elseStatBlock);
-void __cdecl Scr_InitFromChildBlocks(scr_block_s **childBlocks, int childCount, scr_block_s *block);
+void __cdecl Scr_InitFromChildBlocks(Ptr32<scr_block_s> *childBlocks, int childCount, scr_block_s *block);
 void __cdecl EmitWhileStatement(
                 scriptInstance_t inst,
                 sval_u expr,

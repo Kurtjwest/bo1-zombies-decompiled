@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "actor_scripted.h"
 #include "actor_animapi.h"
 #include "actor_script_cmd.h"
@@ -204,7 +205,7 @@ namespace
     struct ScriptedAnimMeasure
     {
         int time;
-        const XAnim_s *anims;
+        Ptr32<const XAnim_s> anims;
         scripted_anim_sp_t scripted;
         float offset[3];
         float yawOffset;

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum EMemTrack : __int32
 {                                       // XREF: PhysicalMemoryPrim/r
@@ -62,13 +63,13 @@ enum EMemTrack : __int32
 
 struct PhysicalMemoryAllocation // sizeof=0x8
 {                                       // XREF: PhysicalMemoryPrim/r
-    const char *name;
+    Ptr32<const char> name;
     unsigned int pos;
 };
 
 struct PhysicalMemoryPrim // sizeof=0x110
 {                                       // XREF: PhysicalMemory/r
-    const char *allocName;              // XREF: _PMem_Alloc(uint,uint,uint,uint,EMemTrack,char const *,int)+24/r
+    Ptr32<const char> allocName;              // XREF: _PMem_Alloc(uint,uint,uint,uint,EMemTrack,char const *,int)+24/r
     unsigned int allocListCount;
     unsigned int pos;
     PhysicalMemoryAllocation allocList[32];
@@ -77,8 +78,8 @@ struct PhysicalMemoryPrim // sizeof=0x110
 
 struct PhysicalMemory // sizeof=0x22C
 {                                       // XREF: .data:g_mem/r
-    const char *name;
-    unsigned __int8 *buf;
+    Ptr32<const char> name;
+    Ptr32<unsigned __int8> buf;
     PhysicalMemoryPrim prim[2];         // XREF: PMem_BeginAlloc(char const *,uint,EMemTrack)+59/o
                                         // PMem_EndAlloc(char const *,uint)+3D/o ...
     unsigned int size;

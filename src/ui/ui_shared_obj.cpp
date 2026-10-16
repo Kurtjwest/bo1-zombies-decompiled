@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "ui_shared_obj.h"
 #include <universal/com_files.h>
@@ -14,8 +15,8 @@
 template <typename T, int HASH_SIZE, int HASH_SEED>
 struct KeywordHashEntry
 {
-    const char *keyword;
-    int(__cdecl *func)(T *def, int handle);
+    Ptr32<const char> keyword;
+    Ptr32<int __cdecl(T *def, int handle)> func;
 
     // --------------------------------------------------------
     // Hash core (seeded runtime version)

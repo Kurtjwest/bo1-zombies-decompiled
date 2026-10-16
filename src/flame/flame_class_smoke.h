@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "flame_system.h"
 
 struct flameSmoke_t // sizeof=0x74
 {                                       // XREF: flameSmokeArray_t/r
     flameGeneric_s gen;
-    Material *material;
+    Ptr32<Material> material;
     float smokeFadein;
     float smokeFadeout;
     float smokeMaxAlpha;

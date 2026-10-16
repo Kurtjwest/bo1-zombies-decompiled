@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <cgame/cg_draw_names.h>
 
 struct __declspec(align(4)) rankData_t // sizeof=0x488
@@ -24,4 +25,11 @@ int __cdecl CL_GetMaxPrestige();
 int __cdecl CL_GetRankForXp(int xp);
 const char *__cdecl CL_GetRankData(int rank, rankTableColumns_t column);
 void __cdecl CL_GetRankIcon(int rank, int prestige, Material **handle);
+#if BO1_PTR32_IS_CLASS
+inline void CL_GetRankIcon(int rank, int prestige, Ptr32<Material> *handle)
+{
+    Material *bo1_handle = handle ? (Material *)*handle : nullptr; CL_GetRankIcon(rank, prestige, handle ? &bo1_handle : nullptr); if (handle) *handle = bo1_handle;
+}
+#endif
+
 const char *__cdecl CL_GetRankIconName(int rank, int prestige);

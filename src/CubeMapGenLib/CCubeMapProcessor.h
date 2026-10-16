@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 //--------------------------------------------------------------------------------------
 //CCubeMapProcessor
 // Class for filtering and processing cubemaps
@@ -159,7 +160,7 @@ struct SFilterProgress
 //--------------------------------------------------------------------------------------------------
 struct SThreadOptionsThread0
 {
-   class CCubeMapProcessor *m_cmProc;
+   Ptr32<class CCubeMapProcessor> m_cmProc;
    float32 m_BaseFilterAngle;
    float32 m_InitialMipAngle;
    float32 m_MipAnglePerLevelScale;
@@ -175,9 +176,9 @@ struct SThreadOptionsThread0
 //--------------------------------------------------------------------------------------------------
 struct SThreadOptionsThread1
 {
-   class CCubeMapProcessor *m_cmProc;
-   CImageSurface *m_SrcCubeMap; 
-   CImageSurface *m_DstCubeMap;
+   Ptr32<class CCubeMapProcessor> m_cmProc;
+   Ptr32<CImageSurface> m_SrcCubeMap; 
+   Ptr32<CImageSurface> m_DstCubeMap;
    float32        m_FilterConeAngle;
    int32          m_FilterType;
    bool8          m_bUseSolidAngle; 
@@ -200,7 +201,7 @@ public:
    //information about threads actively processing the cubemap
    int32             m_NumFilterThreads;
    bool8             m_bThreadInitialized[CP_MAX_FILTER_THREADS];
-   HANDLE            m_ThreadHandle[CP_MAX_FILTER_THREADS];
+   Ptr32T<HANDLE> m_ThreadHandle[CP_MAX_FILTER_THREADS];
    DWORD             m_ThreadID[CP_MAX_FILTER_THREADS];
    SFilterProgress  m_ThreadProgress[CP_MAX_FILTER_THREADS];
    WCHAR             m_ProgressString[CP_MAX_PROGRESS_STRING];
@@ -215,7 +216,7 @@ public:
    int32 m_NumMipLevels;                  //number of output mip levels
    int32 m_NumChannels;                   //number of channels in cube map processor
 
-   CP_ITYPE *m_FilterLUT;                 //filter weight lookup table (scale dot product 0-1 range to index into it)
+   Ptr32<CP_ITYPE> m_FilterLUT;                 //filter weight lookup table (scale dot product 0-1 range to index into it)
    int32   m_NumFilterLUTEntries;         //number of filter lookup table entries
    
    CImageSurface m_NormCubeMap[6];        //normalizer cube map and solid angle lookup table

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <ui/ui_shared.h>
 #include "bg_weapons_attachment.h"
 #include <live/live_combatrecord.h>
@@ -92,11 +93,11 @@ struct __declspec(align(4)) itemInfo_t // sizeof=0x128
     // padding byte
     // padding byte
     itemGroup_t group;
-    const char *name;
-    const char *reference;
+    Ptr32<const char> name;
+    Ptr32<const char> reference;
     int count;
-    const char *imageRef;
-    const char *desc;
+    Ptr32<const char> imageRef;
+    Ptr32<const char> desc;
     int numAttachments[5];
     eAttachment attachments[24];
     int unlockLevel;
@@ -135,7 +136,7 @@ struct unlockableItemsData // sizeof=0x13E58
     int defaultClassLoadouts[20][35];   // XREF: BG_UnlockablesBuildDefaultClasses+42/w
                                         // BG_UnlockablesBuildDefaultClasses+184/r ...
     int defaultGlobalItems[4];          // XREF: BG_UnlockablesBuildDefaultClasses+24F/w
-    itemInfo_t *itemsInSlot[256];       // XREF: BG_UnlockablesBuildItemListForGroup(itemGroup_t)+81/w
+    Ptr32<itemInfo_t> itemsInSlot[256];       // XREF: BG_UnlockablesBuildItemListForGroup(itemGroup_t)+81/w
                                         // BG_UnlockablesBuildItemListForGroup(itemGroup_t)+A6/o ...
     int numItemsInSlot;                 // XREF: BG_UnlockablesBuildItemListForGroup(itemGroup_t)+4/w
                                         // BG_UnlockablesBuildItemListForGroup(itemGroup_t)+7B/r ...

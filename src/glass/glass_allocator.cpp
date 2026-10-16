@@ -49,7 +49,7 @@ void **__thiscall SmallAllocator::Allocate(unsigned int size)
         numUsed = this->maxUsed;
     this->maxUsed = numUsed;
     ret = (void **)this->freeHead;
-    this->freeHead = *ret;
+    this->freeHead = *(Ptr32<void> *)ret; // free blocks link through 32-bit handles (Init)
     return ret;
 }
 
@@ -76,7 +76,7 @@ void __thiscall SmallAllocator::Free(void **ptr, unsigned int num)
         __debugbreak();
     }
     --this->numUsed;
-    *ptr = this->freeHead;
+    *(Ptr32<void> *)ptr = this->freeHead;
     this->freeHead = ptr;
 }
 
@@ -157,7 +157,7 @@ void __thiscall Allocator::FreeAll()
     this->freeHead = this->head;
 }
 
-Allocator::Memory **__thiscall Allocator::Allocate(int size, void *userData)
+Ptr32<Allocator::Memory> *__thiscall Allocator::Allocate(int size, void *userData)
 {
     int maxUsed; // [esp+0h] [ebp-30h]
     signed int v5; // [esp+4h] [ebp-2Ch]
@@ -319,12 +319,12 @@ void __thiscall Allocator::Split(Allocator::Memory *mem, int size)
     if ( v3 - size > 32 )
     {
         mem2 = (Allocator::Memory *)((char *)mem + size);
-        *(void **)((char *)&mem->userData + size) = 0;
+        *(Ptr32<void> *)((char *)&mem->userData + size) = 0;
         mem2->next = mem->next;
         mem2->prev = mem;
         mem2->nextFree = mem->nextFree;
         mem2->prevFree = mem;
-        if ( *(Allocator::Memory **)((char *)&mem->next + size) )
+        if ( *(Ptr32<Allocator::Memory> *)((char *)&mem->next + size) )
             mem2->next->prev = mem2;
         if ( mem2->nextFree )
             mem2->nextFree->prevFree = mem2;

@@ -160,8 +160,8 @@ struct pathnode_parent_t // sizeof=0x18
     float origin_loc[3];                // XREF: get_pathnode_parent(pathnode_t const *)+17/w
                                         // get_pathnode_parent(pathnode_t const *)+27/w ...
     int entnum;                         // XREF: get_pathnode_parent(pathnode_t const *)+3F/w
-    pathnode_t *m_node;                 // XREF: get_pathnode_parent(pathnode_t const *)+49/w
-    pathnode_parent_t *m_next;          // XREF: get_pathnode_parent(pathnode_t const *)+53/w
+    Ptr32<pathnode_t> m_node;                 // XREF: get_pathnode_parent(pathnode_t const *)+49/w
+    Ptr32<pathnode_parent_t> m_next;          // XREF: get_pathnode_parent(pathnode_t const *)+53/w
 };
 
 struct pathbasenode_t // sizeof=0x10
@@ -173,7 +173,7 @@ struct pathbasenode_t // sizeof=0x10
 struct pathsort_t // sizeof=0xC
 {                                       // XREF: ?Sentient_NearestNode@@YIPAUpathnode_t@@PAUsentient_s@@@Z/r
                                         // ?Sentient_NearestNodeSuppressed@@YIPAUpathnode_t@@PAUsentient_s@@QAY01MQAMH@Z/r ...
-    pathnode_t *node;                   // XREF: Actor_BadPlace_AttemptEscape+116/r
+    Ptr32<pathnode_t> node;                   // XREF: Actor_BadPlace_AttemptEscape+116/r
                                         // Actor_BadPlace_FindSafeNodeOutsideBadPlace+134/r ...
     float metric;
     float distMetric;
@@ -242,11 +242,11 @@ struct path_t // sizeof=0x3E8
 
 struct node_field_t // sizeof=0x14
 {                                       // XREF: .data:fields_3/r
-    const char *name;                   // XREF: Path_ReadOnly+B/r
+    Ptr32<const char> name;                   // XREF: Path_ReadOnly+B/r
     int ofs;
     int size[1];
     fieldtype_t type;
-    void (__cdecl *getter)(pathnode_t *, int);
+    Ptr32<void __cdecl(pathnode_t *, int)> getter;
 };
 
 struct PathLinkInfo // sizeof=0x8
@@ -286,7 +286,7 @@ struct __declspec(align(128)) pathlocal_t // sizeof=0x4080
         // Path_NodesInCylinder(float const * const,float,float,pathsort_t *,int,int)+7A/w
         int typeFlags;                      // XREF: Path_NodesInCylinder_process(pathnode_t *)+6B/r
         // Path_NodesInCylinder_process(pathnode_t *)+84/r ...
-        pathsort_t *nodes;                  // XREF: Path_NodesInCylinder_process(pathnode_t *)+FA/r
+        Ptr32<pathsort_t> nodes;                  // XREF: Path_NodesInCylinder_process(pathnode_t *)+FA/r
         // Path_NodesInCylinder_process(pathnode_t *)+10E/r ...
         int maxNodes;                       // XREF: Path_NodesInCylinder_process(pathnode_t *)+C3/r
         // Path_NodesInCylinder(float const * const,float,float,pathsort_t *,int,int)+97/w ...
@@ -368,9 +368,9 @@ struct __declspec(align(128)) pathlocal_t // sizeof=0x4080
 
 struct pathstatic_t // sizeof=0xC
 {                                       // XREF: .data:pathstatic/r
-    pathlink_s *pathLinks;              // XREF: Path_CreateNodes(void)+5/w
-    unsigned __int16 *indirectNodes;    // XREF: Path_CreateNodes(void)+A/w
-    unsigned __int8 *pathbuf;           // XREF: Path_CreateNodes(void)+F/w
+    Ptr32<pathlink_s> pathLinks;              // XREF: Path_CreateNodes(void)+5/w
+    Ptr32<unsigned __int16> indirectNodes;    // XREF: Path_CreateNodes(void)+A/w
+    Ptr32<unsigned __int8> pathbuf;           // XREF: Path_CreateNodes(void)+F/w
 };
 
 void __cdecl Path_GetType(pathnode_t *node, int);

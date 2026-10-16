@@ -1,12 +1,13 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "cscr_debugger.h"
 #include <cstdio>
 
 struct yy_buffer_state // sizeof=0x28
 {                                       // XREF: ?ScriptParse@@YAXW4scriptInstance_t@@PATsval_u@@E@Z/r
-    FILE *yy_input_file;
-    char *yy_ch_buf;                    // XREF: ScriptParse(scriptInstance_t,sval_u *,uchar)+46/w
-    char *yy_buf_pos;
+    Ptr32<FILE> yy_input_file;
+    Ptr32<char> yy_ch_buf;                    // XREF: ScriptParse(scriptInstance_t,sval_u *,uchar)+46/w
+    Ptr32<char> yy_buf_pos;
     unsigned int yy_buf_size;           // XREF: ScriptParse(scriptInstance_t,sval_u *,uchar)+3F/w
     int yy_n_chars;
     int yy_is_our_buffer;               // XREF: ScriptParse(scriptInstance_t,sval_u *,uchar)+4D/w

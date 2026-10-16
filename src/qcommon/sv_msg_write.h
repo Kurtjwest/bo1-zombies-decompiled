@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "sv_msg_write_mp.h"
 #include <qcommon/msg_mp.h>
 
@@ -17,7 +18,7 @@ void __cdecl MSG_LoopThroughFields(const NetFieldList *fieldToCheck);
 const NetFieldList *__cdecl MSG_GetNetFieldList(netFieldTypes_t fieldType, bool isDemoSnapshot);
 void __cdecl MSG_WriteReliableCommandToBuffer(
                 const char *pszCommand,
-                char **pszBuffer,
+                Ptr32<char> *pszBuffer,
                 char *allocBufferBase,
                 int allocBufferLength,
                 int *allocBufferPos);

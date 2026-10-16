@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rb_backend.h"
 
 struct SunFlareDynamic // sizeof=0x2C
@@ -13,7 +14,7 @@ struct SunFlareDynamic // sizeof=0x2C
     bool error;
     bool sunQueryIssued[2];             // XREF: RB_AllocSunSpriteQueries(void)+59/w
     // padding byte
-    IDirect3DQuery9 *sunQuery[2];       // XREF: RB_CalcSunSpriteSamples(void):loc_B0161A/r
+    Ptr32<IDirect3DQuery9> sunQuery[2];       // XREF: RB_CalcSunSpriteSamples(void):loc_B0161A/r
                                         // RB_AllocSunSpriteQueries(void)+49/w ...
     int hitNum;
 };

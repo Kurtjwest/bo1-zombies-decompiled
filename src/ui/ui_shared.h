@@ -80,13 +80,13 @@ enum UILocalVarType : __int32
 struct UILocalVar // sizeof=0xC
 {                                                                             // XREF: UILocalVarContext/r
     UILocalVarType type;
-    const char *name;
+    Ptr32<const char> name;
     //UILocalVar::<unnamed_type_u> u;
     union //UILocalVar::<unnamed_type_u> // sizeof=0x4
     {                                                                             // XREF: UILocalVar/r
         int integer;
         float value;
-        const char *string;
+        Ptr32<const char> string;
     } u;
 };
 
@@ -103,8 +103,8 @@ struct BlurStackEntry // sizeof=0x40
 struct serverFilter_s // sizeof=0x8
 {                                       // XREF: .rdata:serverFilter_s const * const serverFilters/r
                                         // serverFilter_t/r
-    const char *description;            // XREF: UI_GetServerFilter(int)+33/r
-    const char *basedir;                // XREF: UI_GetServerFilter(int)+3A/r
+    Ptr32<const char> description;            // XREF: UI_GetServerFilter(int)+33/r
+    Ptr32<const char> basedir;                // XREF: UI_GetServerFilter(int)+3A/r
 };
 
 struct rectDef_s // sizeof=0x18
@@ -245,7 +245,7 @@ struct __declspec(align(8)) menuDef_t // sizeof=0x190
 
 struct menuClientNum_t // sizeof=0x8
 {                                                                             // XREF: UiContext/r
-    menuDef_t *menu;
+    Ptr32<menuDef_t> menu;
     int localClientNum;
 };
 
@@ -277,7 +277,7 @@ struct MenuList // sizeof=0xC
 struct ConversionArguments // sizeof=0x28
 {                                                                             // XREF: ?LiveNews_PopulateFriendNews@@YAXH_KPAD@Z/r
     int argCount;                                             // XREF: CG_DrawWarText:loc_4D6B37/w
-    const char *args[9];                                // XREF: CG_DrawWarText+325/w
+    Ptr32<const char> args[9];                                // XREF: CG_DrawWarText+325/w
 };
 
 struct Material;
@@ -295,46 +295,46 @@ struct pc_token_s // sizeof=0x410
 
 struct CachedAssets_t // sizeof=0x58
 {                                       // XREF: sharedUiInfo_t/r
-    Material *scrollBarArrowUp;         // XREF: UI_AssetCache+4E/w
-    Material *scrollBarArrowDown;       // XREF: UI_AssetCache+3A/w
-    Material *scrollBarArrowLeft;       // XREF: UI_AssetCache+62/w
+    Ptr32<Material> scrollBarArrowUp;         // XREF: UI_AssetCache+4E/w
+    Ptr32<Material> scrollBarArrowDown;       // XREF: UI_AssetCache+3A/w
+    Ptr32<Material> scrollBarArrowLeft;       // XREF: UI_AssetCache+62/w
                                         // Item_ListBox_Paint+F4/r
-    Material *scrollBarArrowRight;      // XREF: UI_AssetCache+76/w
+    Ptr32<Material> scrollBarArrowRight;      // XREF: UI_AssetCache+76/w
                                         // Item_ListBox_Paint+1C5/r
-    Material *scrollBar;                // XREF: UI_AssetCache+26/w
+    Ptr32<Material> scrollBar;                // XREF: UI_AssetCache+26/w
                                         // Item_ListBox_Paint+160/r ...
-    Material *scrollBarThumb;           // XREF: UI_AssetCache+8A/w
+    Ptr32<Material> scrollBarThumb;           // XREF: UI_AssetCache+8A/w
                                         // Item_ListBox_Paint:loc_77292A/r ...
-    Material *sliderBar;                // XREF: UI_AssetCache+9E/w
-    Material *sliderThumb;              // XREF: UI_AssetCache+B2/w
+    Ptr32<Material> sliderBar;                // XREF: UI_AssetCache+9E/w
+    Ptr32<Material> sliderThumb;              // XREF: UI_AssetCache+B2/w
                                         // UI_DrawStatsMilestonesFeederProgressBar(int,int,rectDef_s const *,int,int)+2C7/r ...
-    Material *whiteMaterial;            // XREF: UI_FillRectPhysical(float,float,float,float,float const * const)+3/r
+    Ptr32<Material> whiteMaterial;            // XREF: UI_FillRectPhysical(float,float,float,float,float const * const)+3/r
                                         // UI_FillRectPhysical(float,float,float,float,float const * const)+C/r ...
-    Material *cursor;                   // XREF: UI_Refresh(int)+355/r
+    Ptr32<Material> cursor;                   // XREF: UI_Refresh(int)+355/r
                                         // UI_AssetCache+102/w
-    Material *dvarlistArrowLeft;        // XREF: UI_AssetCache+C6/w
+    Ptr32<Material> dvarlistArrowLeft;        // XREF: UI_AssetCache+C6/w
                                         // Item_Text_Paint+364/r
-    Material *dvarlistArrowRight;       // XREF: UI_AssetCache+DA/w
+    Ptr32<Material> dvarlistArrowRight;       // XREF: UI_AssetCache+DA/w
                                         // Item_Text_Paint+3D3/r
-    Material *line;                     // XREF: UI_DrawPrettyLine(int,float * const,float * const,float,int,int,float * const)+24A/r
+    Ptr32<Material> line;                     // XREF: UI_DrawPrettyLine(int,float * const,float * const,float,int,int,float * const)+24A/r
                                         // UI_AssetCache+EE/w
-    Material *blur;                     // XREF: UI_Project_AssetCache(void)+12/w
+    Ptr32<Material> blur;                     // XREF: UI_Project_AssetCache(void)+12/w
                                         // UI_DrawBlurMaterial+AB/r
-    Material *lineGraph;                // XREF: UI_Project_AssetCache(void)+26/w
+    Ptr32<Material> lineGraph;                // XREF: UI_Project_AssetCache(void)+26/w
                                         // UI_DrawLineGraphSegment(int,float * const,float * const,rectDef_s *)+113/r
-    Font_s *bigFont;                    // XREF: UI_GetFontHandleDefault(float)+5E/r
+    Ptr32<Font_s> bigFont;                    // XREF: UI_GetFontHandleDefault(float)+5E/r
                                         // UI_GetFontHandle(ScreenPlacement const *,int,float)+A/r ...
-    Font_s *smallFont;                  // XREF: UI_GetFontHandleDefault(float)+1C/r
+    Ptr32<Font_s> smallFont;                  // XREF: UI_GetFontHandleDefault(float)+1C/r
                                         // UI_GetFontHandle(ScreenPlacement const *,int,float)+1A/r ...
-    Font_s *consoleFont;                // XREF: UI_GetFontHandle(ScreenPlacement const *,int,float)+3A/r
+    Ptr32<Font_s> consoleFont;                // XREF: UI_GetFontHandle(ScreenPlacement const *,int,float)+3A/r
                                         // UI_AssetCache+13E/w
-    Font_s *boldFont;                   // XREF: UI_GetFontHandle(ScreenPlacement const *,int,float)+BC/r
+    Ptr32<Font_s> boldFont;                   // XREF: UI_GetFontHandle(ScreenPlacement const *,int,float)+BC/r
                                         // UI_AssetCache+152/w
-    Font_s *textFont;                   // XREF: UI_GetFontHandleDefault(float):loc_745F05/r
+    Ptr32<Font_s> textFont;                   // XREF: UI_GetFontHandleDefault(float):loc_745F05/r
                                         // UI_GetFontHandle(ScreenPlacement const *,int,float)+2A/r ...
-    Font_s *extraBigFont;               // XREF: UI_GetFontHandleDefault(float)+3D/r
+    Ptr32<Font_s> extraBigFont;               // XREF: UI_GetFontHandleDefault(float)+3D/r
                                         // UI_GetFontHandle(ScreenPlacement const *,int,float)+4A/r ...
-    snd_alias_list_t *itemFocusSound;
+    Ptr32<snd_alias_list_t> itemFocusSound;
 };
 
 struct gameTypeInfo // sizeof=0x74
@@ -381,13 +381,13 @@ struct mapInfo // sizeof=0x130
     char imageName[42];
     // padding byte
     // padding byte
-    const char *opponentName;
+    Ptr32<const char> opponentName;
     int teamMembers;                    // XREF: UI_LoadArenas(void)+25B/w
                                         // UI_LoadArenas(void)+305/r ...
     int typeBits;
     int timeToBeat[32];                 // XREF: UI_LoadArenas(void)+1DD/w
                                         // UI_GetLevelShot(int)+24/r ...
-    Material *levelShot;                // XREF: UI_GetListIndexFromMapIndex(int)+6E/r
+    Ptr32<Material> levelShot;                // XREF: UI_GetListIndexFromMapIndex(int)+6E/r
                                         // UI_MapCountByGameType(void)+3E/w ...
     int active;                         // XREF: UI_LoadMaps(void)+105/o
 };
@@ -399,9 +399,9 @@ struct contentPackInfo // sizeof=0x10
 
 struct modInfo_t // sizeof=0x8
 {                                       // XREF: sharedUiInfo_t/r
-    const char *modName;                // XREF: UI_FeederItemText_Mods+17/r
+    Ptr32<const char> modName;                // XREF: UI_FeederItemText_Mods+17/r
                                         // UI_FeederItemText_Mods+24/r ...
-    const char *modDescr;               // XREF: UI_FeederCount(int,int,float,listBoxDef_s *):$LN22_13/r
+    Ptr32<const char> modDescr;               // XREF: UI_FeederCount(int,int,float,listBoxDef_s *):$LN22_13/r
                                         // UI_FeederItemText_Mods+C/r ...
 };
 
@@ -409,7 +409,7 @@ struct serverStatusInfo_s // sizeof=0x14A4
 {                                       // XREF: $D349527935E9920CD1D59819DFE4C1D2/r
                                         // sharedUiInfo_t/r ...
     char address[64];
-    const char *lines[128][8];          // XREF: UI_FeederCount(int,int,float,listBoxDef_s *):$LN19_12/r
+    Ptr32<const char> lines[128][8];          // XREF: UI_FeederCount(int,int,float,listBoxDef_s *):$LN19_12/r
                                         // UI_FeederItemText_ServerStatus+C/r ...
     char text[1024];
     char pings[96];
@@ -458,7 +458,7 @@ struct serverStatus_s // sizeof=0x14180
     int numPlayersOnServers;
     int nextDisplayRefresh;
     int nextSortTime;
-    Material *currentServerPreview;
+    Ptr32<Material> currentServerPreview;
     int motdLen;
     int motdWidth;
     int motdPaintX;
@@ -509,7 +509,7 @@ struct sharedUiInfo_t // sizeof=0x261D0
     mapInfo mapList[128];               // XREF: UI_FeederDoubleClickDlcMaps(int,int,int)+C/r
                                         // UI_FeederDoubleClickDlcMaps(int,int,int)+1E/o ...
     contentPackInfo contentPackList[8];
-    Material *serverHardwareIconList[10];
+    Ptr32<Material> serverHardwareIconList[10];
                                         // XREF: UI_FeederItemText_Mods+43/r
                                         // UI_RunMenuScript(int,int,char const * *,char const *)+5FE/r ...
     modInfo_t modList[64];              // XREF: UI_FeederCount(int,int,float,listBoxDef_s *):$LN22_13/r
@@ -571,7 +571,7 @@ struct sharedUiInfo_t // sizeof=0x261D0
     unsigned __int64 visibilityBits[1];
     unsigned __int64 localVisibilityBits[1];
     int contractIndex;
-    Material *loadingScreen;
+    Ptr32<Material> loadingScreen;
 };
 
 struct cursor_t // sizeof=0x8
@@ -592,7 +592,7 @@ struct scrollInfo_s // sizeof=0x20
                                         // Item_StartCapture+180/w
     float yStart;                       // XREF: Item_StartCapture+109/w
                                         // Item_StartCapture+190/w
-    itemDef_s *item;                    // XREF: Item_StartCapture+B1/w
+    Ptr32<itemDef_s> item;                    // XREF: Item_StartCapture+B1/w
                                         // Item_StartCapture+EB/w ...
     int scrollDir;                      // XREF: Item_StartCapture+A8/w
 };
@@ -614,7 +614,7 @@ struct UiContext // sizeof=0x1828
     float blurRadiusOut;
     BlurStackEntry blurMenuStack[8];
     int blurMenuStackIndex;
-    menuDef_t *Menus[600];
+    Ptr32<menuDef_t> Menus[600];
     int menuCount;
     menuClientNum_t menuStack[16];
     int openMenuCount;

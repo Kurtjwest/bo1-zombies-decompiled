@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "cm_mapkit.h"
 #include "cm_trace.h"
 #include "cm_load.h"
@@ -19,8 +20,8 @@ namespace
     {
         int type;
         double num;
-        const char *str;
-        const char *key;
+        Ptr32<const char> str;
+        Ptr32<const char> key;
         int first;
         int next;
         int count;
@@ -980,7 +981,7 @@ namespace
     }
 
     // model-local clip bounds (x, y, z from the edit origin; the model faces local -y): Five's machine xmodel bounds
-    struct MkClip { const char *key; float mins[3], maxs[3]; float modelYaw; };
+    struct MkClip { Ptr32<const char> key; float mins[3], maxs[3]; float modelYaw; };
     const MkClip s_machineClips[] = {
         { "specialty_armorvest", { -16.0f, -18.0f, -4.0f }, { 16.0f, 19.0f, 101.0f }, 90.0f },
         { "specialty_fastreload", { -27.5f, -18.0f, -4.0f }, { 28.5f, 19.0f, 105.5f }, 90.0f },
@@ -1552,7 +1553,7 @@ static int s_lightCount;
 
 struct MkLightPreset
 {
-    const char *name;
+    Ptr32<const char> name;
     float rgb[3];
     float intensity;
 };

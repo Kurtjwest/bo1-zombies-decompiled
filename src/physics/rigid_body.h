@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 
 #include "phys_local.h"
@@ -12,9 +13,9 @@ struct pulse_sum_cache // sizeof=0x4
 
 struct rigid_body_constraint // sizeof=0xC
 {                                                                             // XREF: rigid_body_constraint_point/r
-        struct rigid_body *b1;
-        struct rigid_body *b2;
-        struct rigid_body_constraint *m_next;
+        Ptr32<struct rigid_body> b1;
+        Ptr32<struct rigid_body> b2;
+        Ptr32<struct rigid_body_constraint> m_next;
 };
 
 struct    rigid_body_constraint_point : rigid_body_constraint // sizeof=0x50
@@ -221,9 +222,9 @@ struct    rigid_body_constraint_wheel : rigid_body_constraint // sizeof=0xD0
         unsigned int m_wheel_state;
         unsigned int m_wheel_flags;
         pulse_sum_cache m_ps_cache_list[4];
-        struct pulse_sum_normal *m_ps_suspension;
-        struct pulse_sum_normal *m_ps_side_fric;
-        struct pulse_sum_normal *m_ps_fwd_fric;
+        Ptr32<struct pulse_sum_normal> m_ps_suspension;
+        Ptr32<struct pulse_sum_normal> m_ps_side_fric;
+        Ptr32<struct pulse_sum_normal> m_ps_fwd_fric;
 
         void set_wheel_state_accelerating(float desired_speed_k, float acceleration_factor_k);
         void get_wheel_state_accelerating(float *desired_speed_k, float *acceleration_factor_k);
@@ -348,19 +349,19 @@ struct    rigid_body_constraint_custom_orientation : rigid_body_constraint // si
 
 struct rb_inplace_partition_node // sizeof=0x38
 {                                                                             // XREF: rigid_body/r
-    struct rigid_body_constraint_point *m_rbc_point_first;
-    struct rigid_body_constraint_hinge *m_rbc_hinge_first;
-    struct rigid_body_constraint_distance *m_rbc_dist_first;
-    struct rigid_body_constraint_ragdoll *m_rbc_ragdoll_first;
-    struct rigid_body_constraint_wheel *m_rbc_wheel_first;
-    struct rigid_body_constraint_angular_actuator *m_rbc_angular_actuator_first;
-    struct rigid_body_constraint_upright *m_rbc_upright_first;
-    struct rigid_body_constraint_custom_orientation *m_rbc_custom_orientation_first;
-    struct rigid_body_constraint_custom_path *m_rbc_custom_path_first;
-    struct rigid_body_constraint_contact *m_rbc_contact_first;
-    struct rigid_body *m_partition_head;
-    struct rigid_body *m_partition_tail;
-    struct rigid_body *m_next_node;
+    Ptr32<struct rigid_body_constraint_point> m_rbc_point_first;
+    Ptr32<struct rigid_body_constraint_hinge> m_rbc_hinge_first;
+    Ptr32<struct rigid_body_constraint_distance> m_rbc_dist_first;
+    Ptr32<struct rigid_body_constraint_ragdoll> m_rbc_ragdoll_first;
+    Ptr32<struct rigid_body_constraint_wheel> m_rbc_wheel_first;
+    Ptr32<struct rigid_body_constraint_angular_actuator> m_rbc_angular_actuator_first;
+    Ptr32<struct rigid_body_constraint_upright> m_rbc_upright_first;
+    Ptr32<struct rigid_body_constraint_custom_orientation> m_rbc_custom_orientation_first;
+    Ptr32<struct rigid_body_constraint_custom_path> m_rbc_custom_path_first;
+    Ptr32<struct rigid_body_constraint_contact> m_rbc_contact_first;
+    Ptr32<struct rigid_body> m_partition_head;
+    Ptr32<struct rigid_body> m_partition_tail;
+    Ptr32<struct rigid_body> m_next_node;
     int m_partition_size;
 };
 
@@ -438,7 +439,7 @@ public:
     float m_max_delta_t;
     unsigned int m_flags;
     unsigned int m_tick;
-    struct pulse_sum_node *m_node;
+    Ptr32<struct pulse_sum_node> m_node;
     int m_constraint_count;
     int m_contact_count;
     int m_stable_min_contact_count;
@@ -446,7 +447,7 @@ public:
     float m_largest_vel_sq;
     float m_t_drag_coef;
     float m_a_drag_coef;
-    void *m_userdata;
+    Ptr32<void> m_userdata;
     rb_inplace_partition_node m_partition_node;
 };
 
@@ -454,7 +455,7 @@ public:
 struct    user_rigid_body : rigid_body // sizeof=0x1B0
 {                                                                             // XREF: phys_free_list<user_rigid_body>::T_internal/r
                                                                                 // pulse_sum_constraint_solver::temp_user_rigid_body/r
-        const phys_mat44 *m_dictator;
+        Ptr32<const phys_mat44> m_dictator;
         // padding byte
         // padding byte
         // padding byte
@@ -483,7 +484,7 @@ struct    __declspec(align(16)) rigid_body_constraint_custom_path : rigid_body_c
         // padding byte
         phys_mat44 m_path_mat;
         phys_vec3 b1_r_loc;
-        user_rigid_body *m_urb;
+        Ptr32<user_rigid_body> m_urb;
         pulse_sum_cache m_list_psc[4];
         // padding byte
         // padding byte
@@ -531,17 +532,17 @@ struct rigid_body_pair_key // sizeof=0x8
             m_b2 == other.m_b2;
     }
 
-    struct rigid_body *m_b1;
-    struct rigid_body *m_b2;
+    Ptr32<struct rigid_body> m_b1;
+    Ptr32<struct rigid_body> m_b2;
 };
 
 struct broad_phase_info;
 struct phys_collision_pair : phys_link_list_base<phys_collision_pair> // sizeof=0x14
 {                                                                             // XREF: ?do_initial_tunnel_test@@YAXPAVbroad_phase_group@@ABVbroad_phase_environement_query_results@@@Z/r
-    broad_phase_info *m_bpi1;
-    broad_phase_info *m_bpi2;
+    Ptr32<broad_phase_info> m_bpi1;
+    Ptr32<broad_phase_info> m_bpi2;
     float m_hit_time;
-    struct phys_gjk_cache_info *m_gjk_ci;
+    Ptr32<struct phys_gjk_cache_info> m_gjk_ci;
 };
 BO1_LAYOUT32_ASSERT(sizeof(phys_collision_pair) == 20);
 
@@ -558,14 +559,14 @@ public:
     float m_max_restitution_vel;
     int m_flags;
     int m_point_pair_count;
-    phys_vec3 *m_list_b1_r_loc;
-    phys_vec3 *m_list_b2_r_loc;
-    contact_point_info::pulse_sum_cache_info *m_list_pulse_sum_cache_info;
-    contact_point_info *m_next_link;
-    const void *m_rb2_entity;
+    Ptr32<phys_vec3> m_list_b1_r_loc;
+    Ptr32<phys_vec3> m_list_b2_r_loc;
+    Ptr32<contact_point_info::pulse_sum_cache_info> m_list_pulse_sum_cache_info;
+    Ptr32<contact_point_info> m_next_link;
+    Ptr32<const void> m_rb2_entity;
     float m_translation_lambda;
-    phys_collision_pair *m_pcp;
-    struct rigid_body_constraint_contact *m_rbc_contact;
+    Ptr32<phys_collision_pair> m_pcp;
+    Ptr32<struct rigid_body_constraint_contact> m_rbc_contact;
     // padding byte
     // padding byte
     // padding byte

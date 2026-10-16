@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "demo_common.h"
 #include "../../tl/jobqueue/jobqueue_all.h"
 #include <qcommon/sv_msg_write_mp.h>
@@ -65,7 +66,7 @@ struct uploadStreamHistory_t // sizeof=0x1E8
 
 struct __declspec(align(4)) demoSaveCmd // sizeof=0xC
 {                                       // XREF: ?Demo_Save@@YAXPAEH_N@Z/r
-    unsigned __int8 *data;              // XREF: Demo_Save(uchar *,int,bool)+16/w
+    Ptr32<unsigned __int8> data;              // XREF: Demo_Save(uchar *,int,bool)+16/w
     int size;                           // XREF: Demo_Save(uchar *,int,bool)+1C/w
     bool writeInfoFile;                 // XREF: Demo_Save(uchar *,int,bool)+22/w
     // padding byte

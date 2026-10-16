@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "r_sunshadow.h"
 #include "r_dvars.h"
 #include "r_dpvs_static.h"
@@ -17,7 +18,7 @@ const float g_clipSpacePoints[4][3] =
 
 struct ShadowGlobals // sizeof=0x4
 {                                       // XREF: .data:shadowGlob/r
-    const MaterialTechnique *defaultShadowCasterTechnique;
+    Ptr32<const MaterialTechnique> defaultShadowCasterTechnique;
                                         // XREF: R_SunShadowMaps(GfxSunShadow *)+5A/w
 };
 

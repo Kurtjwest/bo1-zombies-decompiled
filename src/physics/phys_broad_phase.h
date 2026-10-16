@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include "rigid_body.h"
 #include <gfx_d3d/r_workercmds.h>
@@ -20,8 +21,8 @@ struct broad_phase_memory_info // sizeof=0xC
 
 struct broad_phase_prolog_task_input // sizeof=0x8
 {                                       // XREF: ?broad_phase_process_object_environment_collision@@YAXAAVbpi_environment_collision_info@@@Z/r
-    phys_vec3 *m_aabb_min;
-    phys_vec3 *m_aabb_max;
+    Ptr32<phys_vec3> m_aabb_min;
+    Ptr32<phys_vec3> m_aabb_max;
 };
 
 struct __declspec(align(8)) broad_phase_base // sizeof=0x50
@@ -38,10 +39,10 @@ struct __declspec(align(8)) broad_phase_base // sizeof=0x50
     phys_vec3 m_trace_aabb_max_whace;
     phys_vec3 m_trace_translation;
     unsigned int m_flags;
-    broad_phase_base *m_list_bpb_next;
-    broad_phase_base *m_list_bpb_cluster_next;
-    void *m_sap_node;
-    void *m_user_data;
+    Ptr32<broad_phase_base> m_list_bpb_next;
+    Ptr32<broad_phase_base> m_list_bpb_cluster_next;
+    Ptr32<void> m_sap_node;
+    Ptr32<void> m_user_data;
     unsigned int m_env_collision_flags;
     unsigned int m_my_collision_type_flags;
     // padding byte
@@ -120,7 +121,7 @@ struct rb_vehicle_model // sizeof=0x90
     phys_vec3 m_steer_front_pt_loc;
     float m_steer_front_back_length;
     unsigned int m_state_flags;
-    rigid_body_constraint_upright *m_rbc_upright;
+    Ptr32<rigid_body_constraint_upright> m_rbc_upright;
     // padding byte
     // padding byte
     // padding byte
@@ -129,10 +130,10 @@ struct rb_vehicle_model // sizeof=0x90
 
 struct broad_phase_group : broad_phase_base // sizeof=0x60
 {                                       // XREF: phys_free_list<broad_phase_group>::T_internal/r
-    broad_phase_info *m_list_bpi_head;
+    Ptr32<broad_phase_info> m_list_bpi_head;
     int m_bpi_count;
-    rb_vehicle_model *m_rbvm;
-    struct phys_wheel_collide_info *m_list_wci;
+    Ptr32<rb_vehicle_model> m_rbvm;
+    Ptr32<struct phys_wheel_collide_info> m_list_wci;
 
     void set();
     void add_bpi(broad_phase_info *bpi);
@@ -164,11 +165,11 @@ struct broad_phase_base_list // sizeof=0x8
 {                                       // XREF: broad_phase_environement_query_results/r
     struct node // sizeof=0x8
     {
-        broad_phase_base *m_bpb;
-        broad_phase_base_list::node *m_next;
+        Ptr32<broad_phase_base> m_bpb;
+        Ptr32<broad_phase_base_list::node> m_next;
     };
-    broad_phase_base_list::node *m_list;
-    broad_phase_base_list::node **m_list_cur;
+    Ptr32<broad_phase_base_list::node> m_list;
+    Ptr32<Ptr32<broad_phase_base_list::node>> m_list_cur;
 
     void add(broad_phase_base *bpb);
 };
@@ -189,9 +190,9 @@ struct broad_phase_terrain_query_callback // sizeof=0x4
 
 struct broad_phase_collision_pair // sizeof=0xC
 {                                       // XREF: phys_free_list<broad_phase_collision_pair>::T_internal/r
-    broad_phase_info *m_bpi1;
-    broad_phase_info *m_bpi2;
-    broad_phase_collision_pair *m_next_bpcp;
+    Ptr32<broad_phase_info> m_bpi1;
+    Ptr32<broad_phase_info> m_bpi2;
+    Ptr32<broad_phase_collision_pair> m_next_bpcp;
 };
 
 struct broad_phase_memory // sizeof=0xCD8
@@ -203,10 +204,10 @@ struct broad_phase_memory // sizeof=0xCD8
     phys_free_list<broad_phase_group> g_list_broad_phase_group;
     phys_free_list<broad_phase_collision_pair> g_list_broad_phase_collision_pair;
     bpei_database_t g_bpei_database;
-    broad_phase_terrain_query_callback *g_broad_phase_terrain_query_callback;
-    broad_phase_base *g_list_bpb;
+    Ptr32<broad_phase_terrain_query_callback> g_broad_phase_terrain_query_callback;
+    Ptr32<broad_phase_base> g_list_bpb;
     int g_list_bpb_count;
-    broad_phase_info *m_list_bpi_env;
+    Ptr32<broad_phase_info> m_list_bpi_env;
     volatile unsigned int m_bpi_env_count;
     int m_bpg_env_count;
     int m_bpg_env_bpi_count;
@@ -214,7 +215,7 @@ struct broad_phase_memory // sizeof=0xCD8
     int m_memory_high_water;
     phys_link_list<phys_collision_pair> g_list_phys_collide_data;
     phys_transient_allocator g_collision_memory_buffer;
-    struct phys_surface_type_info *g_surface_type_info_database;
+    Ptr32<struct phys_surface_type_info> g_surface_type_info_database;
     int m_max_num_surface_types;
     int m_max_num_surface_type_infos;
 
@@ -228,9 +229,9 @@ BO1_LAYOUT32_ASSERT(sizeof(broad_phase_memory) == 0xCD8);
 
 struct bpi_environment_collision_info // sizeof=0x10
 {                                       // XREF: ?broad_phase_process_object_environment_collision@@YAXXZ/r
-    broad_phase_base *m_bpb_i_start;    // XREF: broad_phase_process_object_environment_collision(void)+17/w
+    Ptr32<broad_phase_base> m_bpb_i_start;    // XREF: broad_phase_process_object_environment_collision(void)+17/w
                                         // broad_phase_process_object_environment_collision(void)+39/r ...
-    broad_phase_base *m_bpb_i_end;      // XREF: broad_phase_process_object_environment_collision(void)+1A/w
+    Ptr32<broad_phase_base> m_bpb_i_end;      // XREF: broad_phase_process_object_environment_collision(void)+1A/w
                                         // broad_phase_process_object_environment_collision(void)+3C/w
     int m_bpb_count;                    // XREF: broad_phase_process_object_environment_collision(void)+21/w
                                         // broad_phase_process_object_environment_collision(void)+5B/w
@@ -244,7 +245,7 @@ struct __declspec(align(16)) phys_wheel_collide_info // sizeof=0x40
     phys_vec3 m_ray_dir;
     phys_vec3 m_hitn;
     float m_hit_t;
-    broad_phase_info *m_hit_bpi;
+    Ptr32<broad_phase_info> m_hit_bpi;
     // padding byte
     // padding byte
     // padding byte
@@ -276,15 +277,15 @@ struct axis_aligned_sweep_and_prune // sizeof=0x28
     struct sap_node;
     struct axis_element // sizeof=0x14
     {                                       // XREF: axis_aligned_sweep_and_prune::sap_node/r
-        axis_aligned_sweep_and_prune::sap_node *m_node;
+        Ptr32<axis_aligned_sweep_and_prune::sap_node> m_node;
         int m_min_max;
         float m_val;
         int m_ae_list_index;
-        axis_aligned_sweep_and_prune::axis_element *m_next;
+        Ptr32<axis_aligned_sweep_and_prune::axis_element> m_next;
     };
     struct sap_node // sizeof=0x80
     {
-        broad_phase_base *m_bpb;
+        Ptr32<broad_phase_base> m_bpb;
         axis_aligned_sweep_and_prune::axis_element m_ae1[3][2];
         int m_updated;
 
@@ -298,21 +299,21 @@ struct axis_aligned_sweep_and_prune // sizeof=0x28
     };
     struct active_pair // sizeof=0x10
     {
-        axis_aligned_sweep_and_prune::sap_node *m_p1;
-        axis_aligned_sweep_and_prune::sap_node *m_p2;
-        axis_aligned_sweep_and_prune::active_pair *m_next;
-        phys_gjk_cache_info *m_gjk_ci;
+        Ptr32<axis_aligned_sweep_and_prune::sap_node> m_p1;
+        Ptr32<axis_aligned_sweep_and_prune::sap_node> m_p2;
+        Ptr32<axis_aligned_sweep_and_prune::active_pair> m_next;
+        Ptr32<phys_gjk_cache_info> m_gjk_ci;
     };
     phys_simple_allocator<axis_aligned_sweep_and_prune::sap_node> m_sap_node_allocator;
-    axis_aligned_sweep_and_prune::axis_element *m_x_list;
-    axis_aligned_sweep_and_prune::axis_element *m_y_list;
-    axis_aligned_sweep_and_prune::axis_element *m_z_list;
-    bool (*m_should_collide_callback)(const broad_phase_base *, const broad_phase_base *);
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> m_x_list;
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> m_y_list;
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> m_z_list;
+    Ptr32<bool(const broad_phase_base *, const broad_phase_base *)> m_should_collide_callback;
     phys_simple_allocator<axis_aligned_sweep_and_prune::active_pair> m_active_pair_allocator;
     int m_max_num_active_pairs;
-    axis_aligned_sweep_and_prune::active_pair *m_list_bpi_bpi;
-    axis_aligned_sweep_and_prune::active_pair *m_list_bpi_bpg;
-    axis_aligned_sweep_and_prune::active_pair *m_list_bpg_bpg;
+    Ptr32<axis_aligned_sweep_and_prune::active_pair> m_list_bpi_bpi;
+    Ptr32<axis_aligned_sweep_and_prune::active_pair> m_list_bpi_bpg;
+    Ptr32<axis_aligned_sweep_and_prune::active_pair> m_list_bpg_bpg;
 
 
     bool are_overlapping(axis_aligned_sweep_and_prune::sap_node *n1, axis_aligned_sweep_and_prune::sap_node *n2);
@@ -331,11 +332,11 @@ BO1_LAYOUT32_ASSERT(sizeof(axis_aligned_sweep_and_prune) == 40);
 
 struct __declspec(align(8)) broad_phase_info : broad_phase_base // sizeof=0x70
 {                                                                             // XREF: phys_free_list<broad_phase_info>::T_internal/r
-    rigid_body *m_rb;
-    const phys_mat44 *m_rb_to_world_xform;
-    const phys_mat44 *m_cg_to_world_xform;
-    const phys_mat44 *m_cg_to_rb_xform;
-    const struct phys_gjk_geom *m_gjk_geom;
+    Ptr32<rigid_body> m_rb;
+    Ptr32<const phys_mat44> m_rb_to_world_xform;
+    Ptr32<const phys_mat44> m_cg_to_world_xform;
+    Ptr32<const phys_mat44> m_cg_to_rb_xform;
+    Ptr32<const struct phys_gjk_geom> m_gjk_geom;
     unsigned int m_gjk_geom_id;
     int m_surface_type;
     // padding byte

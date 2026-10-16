@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <physics/rope.h>
 
@@ -11,7 +12,7 @@ struct RopeRenderInfo // sizeof=0xC04
 
 struct RopeGenerateVertsCmd // sizeof=0x40
 {                                       // XREF: ?CG_GenerateSceneCodeMeshes@@YAXH@Z/r
-    RopeRenderInfo *ropeInfo;           // XREF: CG_GenerateSceneCodeMeshes(int)+2F/w
+    Ptr32<RopeRenderInfo> ropeInfo;           // XREF: CG_GenerateSceneCodeMeshes(int)+2F/w
     int localClientNum;                 // XREF: CG_GenerateSceneCodeMeshes(int)+27/w
     float vieworg[3];                   // XREF: CG_GenerateSceneCodeMeshes(int)+54/w
                                         // CG_GenerateSceneCodeMeshes(int)+61/w ...

@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct nodetype // sizeof=0x14
 {                                       // XREF: huff_t/r node_t/r
-    nodetype *left;
-    nodetype *right;
-    nodetype *parent;
+    Ptr32<nodetype> left;
+    Ptr32<nodetype> right;
+    Ptr32<nodetype> parent;
     int weight;
     int symbol;
 };
@@ -13,11 +14,11 @@ struct huff_t // sizeof=0x4C14
 {                                       // XREF: huffman_t/r
     int blocNode;
     int blocPtrs;
-    nodetype *tree;                     // XREF: MSG_ReadBitsCompress(uchar const *,int,uchar *,int)+95/r
-    nodetype *loc[257];
-    nodetype **freelist;
+    Ptr32<nodetype> tree;                     // XREF: MSG_ReadBitsCompress(uchar const *,int,uchar *,int)+95/r
+    Ptr32<nodetype> loc[257];
+    Ptr32<Ptr32<nodetype>> freelist;
     nodetype nodeList[768];
-    nodetype *nodePtrs[768];
+    Ptr32<nodetype> nodePtrs[768];
 };
 
 struct huffman_t // sizeof=0x4C14

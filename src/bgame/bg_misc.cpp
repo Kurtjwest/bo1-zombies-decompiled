@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "bg_misc.h"
 #include <universal/q_shared.h>
@@ -646,7 +647,7 @@ int BG_ZombieIntDefault(const char *name, int mpDefault, int spDefault)
 // MP map KB's own bits come back. Only these two bits change; the others (0x1000 SAVED etc.) stay KB's.
 struct BGZombieDvarFlags
 {
-    const char *name;
+    Ptr32<const char> name;
     unsigned short mpBits; // KB's ARCHIVE|CHEAT bits
     unsigned short spBits; // SP's (retail pool flags)
 };

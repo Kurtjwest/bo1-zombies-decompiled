@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum parseSkip_t : __int32
 {                                       // XREF: indent_s/r
@@ -9,9 +10,9 @@ enum parseSkip_t : __int32
 
 struct punctuation_s // sizeof=0xC
 {                                       // XREF: punctuation_t/r
-    char *p;
+    Ptr32<char> p;
     int n;
-    punctuation_s *next;
+    Ptr32<punctuation_s> next;
 };
 
 struct __declspec(align(8)) token_s // sizeof=0x430
@@ -30,15 +31,15 @@ struct __declspec(align(8)) token_s // sizeof=0x430
     // padding byte
     long double floatvalue;             // XREF: PC_DollarDirective_evalint(source_s *)+9C/w
                                         // PC_DollarDirective_evalfloat(source_s *)+EB/w ...
-    char *whitespace_p;                 // XREF: UnreadSignToken(source_s *)+2E/w
+    Ptr32<char> whitespace_p;                 // XREF: UnreadSignToken(source_s *)+2E/w
                                         // PC_Directive_eval+4D/w ...
-    char *endwhitespace_p;              // XREF: UnreadSignToken(source_s *)+3D/w
+    Ptr32<char> endwhitespace_p;              // XREF: UnreadSignToken(source_s *)+3D/w
                                         // PC_Directive_eval+5C/w ...
     int line;                           // XREF: UnreadSignToken(source_s *)+1F/w
                                         // PC_Directive_eval+3E/w ...
     int linescrossed;                   // XREF: PC_Directive_include(source_s *):loc_46B29A/r
                                         // PC_Directive_include(source_s *)+27D/r ...
-    token_s *next;
+    Ptr32<token_s> next;
     // padding byte
     // padding byte
     // padding byte
@@ -48,25 +49,25 @@ struct __declspec(align(8)) token_s // sizeof=0x430
 struct __declspec(align(8)) script_s // sizeof=0x4B0
 {                                       // XREF: script_t/r
     char filename[64];
-    char *buffer;
-    char *script_p;
-    char *end_p;
-    char *lastscript_p;
-    char *whitespace_p;
-    char *endwhitespace_p;
+    Ptr32<char> buffer;
+    Ptr32<char> script_p;
+    Ptr32<char> end_p;
+    Ptr32<char> lastscript_p;
+    Ptr32<char> whitespace_p;
+    Ptr32<char> endwhitespace_p;
     int length;
     int line;
     int lastline;
     int tokenavailable;
     int flags;
-    punctuation_s *punctuations;
-    punctuation_s **punctuationtable;
+    Ptr32<punctuation_s> punctuations;
+    Ptr32<Ptr32<punctuation_s>> punctuationtable;
     // padding byte
     // padding byte
     // padding byte
     // padding byte
     token_s token;
-    script_s *next;
+    Ptr32<script_s> next;
     // padding byte
     // padding byte
     // padding byte
@@ -75,22 +76,22 @@ struct __declspec(align(8)) script_s // sizeof=0x4B0
 
 struct define_s // sizeof=0x20
 {                                       // XREF: define_t/r
-    char *name;
+    Ptr32<char> name;
     int flags;
     int builtin;
     int numparms;
-    token_s *parms;
-    token_s *tokens;
-    define_s *next;
-    define_s *hashnext;
+    Ptr32<token_s> parms;
+    Ptr32<token_s> tokens;
+    Ptr32<define_s> next;
+    Ptr32<define_s> hashnext;
 };
 
 struct indent_s // sizeof=0x10
 {                                       // XREF: indent_t/r
     int type;
     parseSkip_t skip;
-    script_s *script;
-    indent_s *next;
+    Ptr32<script_s> script;
+    Ptr32<indent_s> next;
 };
 
 struct source_s // sizeof=0x4D0
@@ -98,14 +99,14 @@ struct source_s // sizeof=0x4D0
                                         // ?PC_DefineFromString@@YAPAUdefine_s@@PBD@Z/r
     char filename[64];
     char includepath[64];
-    punctuation_s *punctuations;
-    script_s *scriptstack;              // XREF: PC_DefineFromString(char const *)+A5/w
-    token_s *tokens;                    // XREF: PC_DefineFromString(char const *)+D0/r
+    Ptr32<punctuation_s> punctuations;
+    Ptr32<script_s> scriptstack;              // XREF: PC_DefineFromString(char const *)+A5/w
+    Ptr32<token_s> tokens;                    // XREF: PC_DefineFromString(char const *)+D0/r
                                         // PC_DefineFromString(char const *):loc_46C36B/r ...
-    define_s *defines;                  // XREF: PC_DefineFromString(char const *):loc_46C404/r
-    define_s **definehash;              // XREF: PC_DefineFromString(char const *)+B8/w
+    Ptr32<define_s> defines;                  // XREF: PC_DefineFromString(char const *):loc_46C404/r
+    Ptr32<Ptr32<define_s>> definehash;              // XREF: PC_DefineFromString(char const *)+B8/w
                                         // PC_DefineFromString(char const *)+12F/r ...
-    indent_s *indentstack;
+    Ptr32<indent_s> indentstack;
     int skip;
     // padding byte
     // padding byte
@@ -123,8 +124,8 @@ struct __declspec(align(8)) value_s // sizeof=0x20
     // padding byte
     long double floatvalue;
     int parentheses;
-    value_s *prev;
-    value_s *next;
+    Ptr32<value_s> prev;
+    Ptr32<value_s> next;
     // padding byte
     // padding byte
     // padding byte
@@ -136,8 +137,8 @@ struct operator_s // sizeof=0x14
     int op;
     int priority;
     int parentheses;
-    operator_s *prev;
-    operator_s *next;
+    Ptr32<operator_s> prev;
+    Ptr32<operator_s> next;
 };
 
 void __cdecl PS_CreatePunctuationTable(script_s *script, punctuation_s *punctuations);

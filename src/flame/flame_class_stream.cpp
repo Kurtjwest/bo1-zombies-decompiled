@@ -308,7 +308,7 @@ void __cdecl Flame_Class_Stream_Fire_Chunks(
                 newChunk = Flame_Class_Chunk_Spawn(
                                          source->is_server_alloc,
                                          &spawnVars,
-                                         (flameGeneric_s **)&stream->chunkList,
+                                         (Ptr32<flameGeneric_s> *)&stream->chunkList,
                                          velocityAdd,
                                          fTable);
                 if ( newChunk )

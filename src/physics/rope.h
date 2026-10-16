@@ -16,11 +16,11 @@ struct __declspec(align(4)) VisualRope // sizeof=0x20
                                         // Rope_Draw/r
     float beginRadius;                  // XREF: Rope_Draw+DD/w
     float endRadius;                    // XREF: Rope_Draw+F5/w
-    const Material *material;           // XREF: Rope_Draw+103/w
+    Ptr32<const Material> material;           // XREF: Rope_Draw+103/w
     int segmentCount;                   // XREF: Rope_Draw+114/w
-    float *segmentVerts;                // XREF: Rope_Draw+10C/w
-    GfxDrawSurf *drawSurf;
-    unsigned __int16 *lightingHandle;   // XREF: Rope_Draw+120/w
+    Ptr32<float> segmentVerts;                // XREF: Rope_Draw+10C/w
+    Ptr32<GfxDrawSurf> drawSurf;
+    Ptr32<unsigned __int16> lightingHandle;   // XREF: Rope_Draw+120/w
     unsigned __int8 visibilityFlags;    // XREF: Rope_Draw+89/w
                                         // Rope_Draw+8C/r
     // padding byte
@@ -105,7 +105,7 @@ struct __declspec(align(16)) RopeUpdateCmdData // sizeof=0x60
     float viewOrg[3];
     int ropeCount;
     float screenMtx[4][4];
-    rope_t *ropes;
+    Ptr32<rope_t> ropes;
     // padding byte
     // padding byte
     // padding byte

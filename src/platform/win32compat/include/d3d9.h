@@ -3,6 +3,7 @@
 // src/platform/d3d9mtl. Numeric values match the Direct3D 9 API exactly: the engine stores raw D3D state values
 // in its data (state bits, sampler states, image formats inside fastfiles), so they must not change.
 #pragma once
+#include <universal/ptr32.h>
 // the SDK header's guard macro, which other SDKs (NVAPI) test to declare their Direct3D 9 entry points
 #ifndef _D3D9_H_
 #define _D3D9_H_
@@ -1104,6 +1105,10 @@ struct IDirect3D9 : public IUnknown
     virtual HRESULT GetDeviceCaps(UINT Adapter, D3DDEVTYPE DeviceType, D3DCAPS9 *pCaps) = 0;
     virtual HMONITOR GetAdapterMonitor(UINT Adapter) = 0;
     virtual HRESULT CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DDevice9 **ppReturnedDeviceInterface) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, Ptr32<IDirect3DDevice9> *ppReturnedDeviceInterface) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = CreateDevice(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, &bo1_out); if (ppReturnedDeviceInterface) *ppReturnedDeviceInterface = bo1_out; return hr; }
+    #endif
 };
 
 struct IDirect3D9Ex : public IDirect3D9
@@ -1112,12 +1117,20 @@ struct IDirect3D9Ex : public IDirect3D9
     virtual HRESULT EnumAdapterModesEx(UINT Adapter, const D3DDISPLAYMODEFILTER *pFilter, UINT Mode, D3DDISPLAYMODEEX *pMode) = 0;
     virtual HRESULT GetAdapterDisplayModeEx(UINT Adapter, D3DDISPLAYMODEEX *pMode, D3DDISPLAYROTATION *pRotation) = 0;
     virtual HRESULT CreateDeviceEx(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX *pFullscreenDisplayMode, struct IDirect3DDevice9Ex **ppReturnedDeviceInterface) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateDeviceEx(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusWindow, DWORD BehaviorFlags, D3DPRESENT_PARAMETERS *pPresentationParameters, D3DDISPLAYMODEEX *pFullscreenDisplayMode, Ptr32<IDirect3DDevice9Ex> *ppReturnedDeviceInterface) { IDirect3DDevice9Ex *bo1_out = nullptr; HRESULT hr = CreateDeviceEx(Adapter, DeviceType, hFocusWindow, BehaviorFlags, pPresentationParameters, pFullscreenDisplayMode, &bo1_out); if (ppReturnedDeviceInterface) *ppReturnedDeviceInterface = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetAdapterLUID(UINT Adapter, LUID *pLUID) = 0;
 };
 
 struct IDirect3DResource9 : public IUnknown
 {
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetPrivateData(REFGUID refguid, const void *pData, DWORD SizeOfData, DWORD Flags) = 0;
     virtual HRESULT GetPrivateData(REFGUID refguid, void *pData, DWORD *pSizeOfData) = 0;
     virtual HRESULT FreePrivateData(REFGUID refguid) = 0;
@@ -1141,6 +1154,10 @@ struct IDirect3DTexture9 : public IDirect3DBaseTexture9
 {
     virtual HRESULT GetLevelDesc(UINT Level, D3DSURFACE_DESC *pDesc) = 0;
     virtual HRESULT GetSurfaceLevel(UINT Level, IDirect3DSurface9 **ppSurfaceLevel) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetSurfaceLevel(UINT Level, Ptr32<IDirect3DSurface9> *ppSurfaceLevel) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = GetSurfaceLevel(Level, &bo1_out); if (ppSurfaceLevel) *ppSurfaceLevel = bo1_out; return hr; }
+    #endif
     virtual HRESULT LockRect(UINT Level, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags) = 0;
     virtual HRESULT UnlockRect(UINT Level) = 0;
     virtual HRESULT AddDirtyRect(const RECT *pDirtyRect) = 0;
@@ -1150,6 +1167,10 @@ struct IDirect3DVolumeTexture9 : public IDirect3DBaseTexture9
 {
     virtual HRESULT GetLevelDesc(UINT Level, D3DVOLUME_DESC *pDesc) = 0;
     virtual HRESULT GetVolumeLevel(UINT Level, IDirect3DVolume9 **ppVolumeLevel) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetVolumeLevel(UINT Level, Ptr32<IDirect3DVolume9> *ppVolumeLevel) { IDirect3DVolume9 *bo1_out = nullptr; HRESULT hr = GetVolumeLevel(Level, &bo1_out); if (ppVolumeLevel) *ppVolumeLevel = bo1_out; return hr; }
+    #endif
     virtual HRESULT LockBox(UINT Level, D3DLOCKED_BOX *pLockedVolume, const D3DBOX *pBox, DWORD Flags) = 0;
     virtual HRESULT UnlockBox(UINT Level) = 0;
     virtual HRESULT AddDirtyBox(const D3DBOX *pDirtyBox) = 0;
@@ -1159,6 +1180,10 @@ struct IDirect3DCubeTexture9 : public IDirect3DBaseTexture9
 {
     virtual HRESULT GetLevelDesc(UINT Level, D3DSURFACE_DESC *pDesc) = 0;
     virtual HRESULT GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, IDirect3DSurface9 **ppCubeMapSurface) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetCubeMapSurface(D3DCUBEMAP_FACES FaceType, UINT Level, Ptr32<IDirect3DSurface9> *ppCubeMapSurface) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = GetCubeMapSurface(FaceType, Level, &bo1_out); if (ppCubeMapSurface) *ppCubeMapSurface = bo1_out; return hr; }
+    #endif
     virtual HRESULT LockRect(D3DCUBEMAP_FACES FaceType, UINT Level, D3DLOCKED_RECT *pLockedRect, const RECT *pRect, DWORD Flags) = 0;
     virtual HRESULT UnlockRect(D3DCUBEMAP_FACES FaceType, UINT Level) = 0;
     virtual HRESULT AddDirtyRect(D3DCUBEMAP_FACES FaceType, const RECT *pDirtyRect) = 0;
@@ -1167,6 +1192,10 @@ struct IDirect3DCubeTexture9 : public IDirect3DBaseTexture9
 struct IDirect3DVertexBuffer9 : public IDirect3DResource9
 {
     virtual HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, void **ppbData, DWORD Flags) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, Ptr32<void> *ppbData, DWORD Flags) { void *bo1_out = nullptr; HRESULT hr = Lock(OffsetToLock, SizeToLock, &bo1_out, Flags); if (ppbData) *ppbData = bo1_out; return hr; }
+    #endif
     virtual HRESULT Unlock() = 0;
     virtual HRESULT GetDesc(D3DVERTEXBUFFER_DESC *pDesc) = 0;
 };
@@ -1174,6 +1203,10 @@ struct IDirect3DVertexBuffer9 : public IDirect3DResource9
 struct IDirect3DIndexBuffer9 : public IDirect3DResource9
 {
     virtual HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, void **ppbData, DWORD Flags) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT Lock(UINT OffsetToLock, UINT SizeToLock, Ptr32<void> *ppbData, DWORD Flags) { void *bo1_out = nullptr; HRESULT hr = Lock(OffsetToLock, SizeToLock, &bo1_out, Flags); if (ppbData) *ppbData = bo1_out; return hr; }
+    #endif
     virtual HRESULT Unlock() = 0;
     virtual HRESULT GetDesc(D3DINDEXBUFFER_DESC *pDesc) = 0;
 };
@@ -1191,6 +1224,10 @@ struct IDirect3DSurface9 : public IDirect3DResource9
 struct IDirect3DVolume9 : public IUnknown
 {
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetDesc(D3DVOLUME_DESC *pDesc) = 0;
     virtual HRESULT LockBox(D3DLOCKED_BOX *pLockedVolume, const D3DBOX *pBox, DWORD Flags) = 0;
     virtual HRESULT UnlockBox() = 0;
@@ -1199,24 +1236,40 @@ struct IDirect3DVolume9 : public IUnknown
 struct IDirect3DVertexDeclaration9 : public IUnknown
 {
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetDeclaration(D3DVERTEXELEMENT9 *pElement, UINT *pNumElements) = 0;
 };
 
 struct IDirect3DVertexShader9 : public IUnknown
 {
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetFunction(void *pData, UINT *pSizeOfData) = 0;
 };
 
 struct IDirect3DPixelShader9 : public IUnknown
 {
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetFunction(void *pData, UINT *pSizeOfData) = 0;
 };
 
 struct IDirect3DStateBlock9 : public IUnknown
 {
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual HRESULT Capture() = 0;
     virtual HRESULT Apply() = 0;
 };
@@ -1224,6 +1277,10 @@ struct IDirect3DStateBlock9 : public IUnknown
 struct IDirect3DQuery9 : public IUnknown
 {
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual D3DQUERYTYPE GetType() = 0;
     virtual DWORD GetDataSize() = 0;
     virtual HRESULT Issue(DWORD dwIssueFlags) = 0;
@@ -1235,9 +1292,17 @@ struct IDirect3DSwapChain9 : public IUnknown
     virtual HRESULT Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion, DWORD dwFlags) = 0;
     virtual HRESULT GetFrontBufferData(IDirect3DSurface9 *pDestSurface) = 0;
     virtual HRESULT GetBackBuffer(UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 **ppBackBuffer) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetBackBuffer(UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, Ptr32<IDirect3DSurface9> *ppBackBuffer) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = GetBackBuffer(iBackBuffer, Type, &bo1_out); if (ppBackBuffer) *ppBackBuffer = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetRasterStatus(D3DRASTER_STATUS *pRasterStatus) = 0;
     virtual HRESULT GetDisplayMode(D3DDISPLAYMODE *pMode) = 0;
     virtual HRESULT GetDevice(IDirect3DDevice9 **ppDevice) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDevice(Ptr32<IDirect3DDevice9> *ppDevice) { IDirect3DDevice9 *bo1_out = nullptr; HRESULT hr = GetDevice(&bo1_out); if (ppDevice) *ppDevice = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetPresentParameters(D3DPRESENT_PARAMETERS *pPresentationParameters) = 0;
 };
 
@@ -1247,6 +1312,10 @@ struct IDirect3DDevice9 : public IUnknown
     virtual UINT GetAvailableTextureMem() = 0;
     virtual HRESULT EvictManagedResources() = 0;
     virtual HRESULT GetDirect3D(IDirect3D9 **ppD3D9) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDirect3D(Ptr32<IDirect3D9> *ppD3D9) { IDirect3D9 *bo1_out = nullptr; HRESULT hr = GetDirect3D(&bo1_out); if (ppD3D9) *ppD3D9 = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetDeviceCaps(D3DCAPS9 *pCaps) = 0;
     virtual HRESULT GetDisplayMode(UINT iSwapChain, D3DDISPLAYMODE *pMode) = 0;
     virtual HRESULT GetCreationParameters(D3DDEVICE_CREATION_PARAMETERS *pParameters) = 0;
@@ -1254,22 +1323,62 @@ struct IDirect3DDevice9 : public IUnknown
     virtual void SetCursorPosition(int X, int Y, DWORD Flags) = 0;
     virtual BOOL ShowCursor(BOOL bShow) = 0;
     virtual HRESULT CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters, IDirect3DSwapChain9 **pSwapChain) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateAdditionalSwapChain(D3DPRESENT_PARAMETERS *pPresentationParameters, Ptr32<IDirect3DSwapChain9> *pSwapChain) { IDirect3DSwapChain9 *bo1_out = nullptr; HRESULT hr = CreateAdditionalSwapChain(pPresentationParameters, &bo1_out); if (pSwapChain) *pSwapChain = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetSwapChain(UINT iSwapChain, IDirect3DSwapChain9 **pSwapChain) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetSwapChain(UINT iSwapChain, Ptr32<IDirect3DSwapChain9> *pSwapChain) { IDirect3DSwapChain9 *bo1_out = nullptr; HRESULT hr = GetSwapChain(iSwapChain, &bo1_out); if (pSwapChain) *pSwapChain = bo1_out; return hr; }
+    #endif
     virtual UINT GetNumberOfSwapChains() = 0;
     virtual HRESULT Reset(D3DPRESENT_PARAMETERS *pPresentationParameters) = 0;
     virtual HRESULT Present(const RECT *pSourceRect, const RECT *pDestRect, HWND hDestWindowOverride, const RGNDATA *pDirtyRegion) = 0;
     virtual HRESULT GetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, IDirect3DSurface9 **ppBackBuffer) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetBackBuffer(UINT iSwapChain, UINT iBackBuffer, D3DBACKBUFFER_TYPE Type, Ptr32<IDirect3DSurface9> *ppBackBuffer) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = GetBackBuffer(iSwapChain, iBackBuffer, Type, &bo1_out); if (ppBackBuffer) *ppBackBuffer = bo1_out; return hr; }
+    #endif
     virtual HRESULT GetRasterStatus(UINT iSwapChain, D3DRASTER_STATUS *pRasterStatus) = 0;
     virtual HRESULT SetDialogBoxMode(BOOL bEnableDialogs) = 0;
     virtual void SetGammaRamp(UINT iSwapChain, DWORD Flags, const D3DGAMMARAMP *pRamp) = 0;
     virtual void GetGammaRamp(UINT iSwapChain, D3DGAMMARAMP *pRamp) = 0;
     virtual HRESULT CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DTexture9 **ppTexture, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateTexture(UINT Width, UINT Height, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, Ptr32<IDirect3DTexture9> *ppTexture, HANDLE *pSharedHandle) { IDirect3DTexture9 *bo1_out = nullptr; HRESULT hr = CreateTexture(Width, Height, Levels, Usage, Format, Pool, &bo1_out, pSharedHandle); if (ppTexture) *ppTexture = bo1_out; return hr; }
+    #endif
     virtual HRESULT CreateVolumeTexture(UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DVolumeTexture9 **ppVolumeTexture, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateVolumeTexture(UINT Width, UINT Height, UINT Depth, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, Ptr32<IDirect3DVolumeTexture9> *ppVolumeTexture, HANDLE *pSharedHandle) { IDirect3DVolumeTexture9 *bo1_out = nullptr; HRESULT hr = CreateVolumeTexture(Width, Height, Depth, Levels, Usage, Format, Pool, &bo1_out, pSharedHandle); if (ppVolumeTexture) *ppVolumeTexture = bo1_out; return hr; }
+    #endif
     virtual HRESULT CreateCubeTexture(UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DCubeTexture9 **ppCubeTexture, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateCubeTexture(UINT EdgeLength, UINT Levels, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, Ptr32<IDirect3DCubeTexture9> *ppCubeTexture, HANDLE *pSharedHandle) { IDirect3DCubeTexture9 *bo1_out = nullptr; HRESULT hr = CreateCubeTexture(EdgeLength, Levels, Usage, Format, Pool, &bo1_out, pSharedHandle); if (ppCubeTexture) *ppCubeTexture = bo1_out; return hr; }
+    #endif
     virtual HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, IDirect3DVertexBuffer9 **ppVertexBuffer, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateVertexBuffer(UINT Length, DWORD Usage, DWORD FVF, D3DPOOL Pool, Ptr32<IDirect3DVertexBuffer9> *ppVertexBuffer, HANDLE *pSharedHandle) { IDirect3DVertexBuffer9 *bo1_out = nullptr; HRESULT hr = CreateVertexBuffer(Length, Usage, FVF, Pool, &bo1_out, pSharedHandle); if (ppVertexBuffer) *ppVertexBuffer = bo1_out; return hr; }
+    #endif
     virtual HRESULT CreateIndexBuffer(UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, IDirect3DIndexBuffer9 **ppIndexBuffer, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateIndexBuffer(UINT Length, DWORD Usage, D3DFORMAT Format, D3DPOOL Pool, Ptr32<IDirect3DIndexBuffer9> *ppIndexBuffer, HANDLE *pSharedHandle) { IDirect3DIndexBuffer9 *bo1_out = nullptr; HRESULT hr = CreateIndexBuffer(Length, Usage, Format, Pool, &bo1_out, pSharedHandle); if (ppIndexBuffer) *ppIndexBuffer = bo1_out; return hr; }
+    #endif
     virtual HRESULT CreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, IDirect3DSurface9 **ppSurface, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateRenderTarget(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Lockable, Ptr32<IDirect3DSurface9> *ppSurface, HANDLE *pSharedHandle) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = CreateRenderTarget(Width, Height, Format, MultiSample, MultisampleQuality, Lockable, &bo1_out, pSharedHandle); if (ppSurface) *ppSurface = bo1_out; return hr; }
+    #endif
     virtual HRESULT CreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, IDirect3DSurface9 **ppSurface, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateDepthStencilSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DMULTISAMPLE_TYPE MultiSample, DWORD MultisampleQuality, BOOL Discard, Ptr32<IDirect3DSurface9> *ppSurface, HANDLE *pSharedHandle) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = CreateDepthStencilSurface(Width, Height, Format, MultiSample, MultisampleQuality, Discard, &bo1_out, pSharedHandle); if (ppSurface) *ppSurface = bo1_out; return hr; }
+    #endif
     virtual HRESULT UpdateSurface(IDirect3DSurface9 *pSourceSurface, const RECT *pSourceRect, IDirect3DSurface9 *pDestinationSurface, const POINT *pDestPoint) = 0;
     virtual HRESULT UpdateTexture(IDirect3DBaseTexture9 *pSourceTexture, IDirect3DBaseTexture9 *pDestinationTexture) = 0;
     virtual HRESULT GetRenderTargetData(IDirect3DSurface9 *pRenderTarget, IDirect3DSurface9 *pDestSurface) = 0;
@@ -1277,10 +1386,22 @@ struct IDirect3DDevice9 : public IUnknown
     virtual HRESULT StretchRect(IDirect3DSurface9 *pSourceSurface, const RECT *pSourceRect, IDirect3DSurface9 *pDestSurface, const RECT *pDestRect, D3DTEXTUREFILTERTYPE Filter) = 0;
     virtual HRESULT ColorFill(IDirect3DSurface9 *pSurface, const RECT *pRect, D3DCOLOR color) = 0;
     virtual HRESULT CreateOffscreenPlainSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DPOOL Pool, IDirect3DSurface9 **ppSurface, HANDLE *pSharedHandle) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateOffscreenPlainSurface(UINT Width, UINT Height, D3DFORMAT Format, D3DPOOL Pool, Ptr32<IDirect3DSurface9> *ppSurface, HANDLE *pSharedHandle) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = CreateOffscreenPlainSurface(Width, Height, Format, Pool, &bo1_out, pSharedHandle); if (ppSurface) *ppSurface = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 *pRenderTarget) = 0;
     virtual HRESULT GetRenderTarget(DWORD RenderTargetIndex, IDirect3DSurface9 **ppRenderTarget) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetRenderTarget(DWORD RenderTargetIndex, Ptr32<IDirect3DSurface9> *ppRenderTarget) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = GetRenderTarget(RenderTargetIndex, &bo1_out); if (ppRenderTarget) *ppRenderTarget = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetDepthStencilSurface(IDirect3DSurface9 *pNewZStencil) = 0;
     virtual HRESULT GetDepthStencilSurface(IDirect3DSurface9 **ppZStencilSurface) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetDepthStencilSurface(Ptr32<IDirect3DSurface9> *ppZStencilSurface) { IDirect3DSurface9 *bo1_out = nullptr; HRESULT hr = GetDepthStencilSurface(&bo1_out); if (ppZStencilSurface) *ppZStencilSurface = bo1_out; return hr; }
+    #endif
     virtual HRESULT BeginScene() = 0;
     virtual HRESULT EndScene() = 0;
     virtual HRESULT Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR Color, float Z, DWORD Stencil) = 0;
@@ -1300,11 +1421,23 @@ struct IDirect3DDevice9 : public IUnknown
     virtual HRESULT SetRenderState(D3DRENDERSTATETYPE State, DWORD Value) = 0;
     virtual HRESULT GetRenderState(D3DRENDERSTATETYPE State, DWORD *pValue) = 0;
     virtual HRESULT CreateStateBlock(D3DSTATEBLOCKTYPE Type, IDirect3DStateBlock9 **ppSB) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateStateBlock(D3DSTATEBLOCKTYPE Type, Ptr32<IDirect3DStateBlock9> *ppSB) { IDirect3DStateBlock9 *bo1_out = nullptr; HRESULT hr = CreateStateBlock(Type, &bo1_out); if (ppSB) *ppSB = bo1_out; return hr; }
+    #endif
     virtual HRESULT BeginStateBlock() = 0;
     virtual HRESULT EndStateBlock(IDirect3DStateBlock9 **ppSB) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT EndStateBlock(Ptr32<IDirect3DStateBlock9> *ppSB) { IDirect3DStateBlock9 *bo1_out = nullptr; HRESULT hr = EndStateBlock(&bo1_out); if (ppSB) *ppSB = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetClipStatus(const D3DCLIPSTATUS9 *pClipStatus) = 0;
     virtual HRESULT GetClipStatus(D3DCLIPSTATUS9 *pClipStatus) = 0;
     virtual HRESULT GetTexture(DWORD Stage, IDirect3DBaseTexture9 **ppTexture) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetTexture(DWORD Stage, Ptr32<IDirect3DBaseTexture9> *ppTexture) { IDirect3DBaseTexture9 *bo1_out = nullptr; HRESULT hr = GetTexture(Stage, &bo1_out); if (ppTexture) *ppTexture = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetTexture(DWORD Stage, IDirect3DBaseTexture9 *pTexture) = 0;
     virtual HRESULT GetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD *pValue) = 0;
     virtual HRESULT SetTextureStageState(DWORD Stage, D3DTEXTURESTAGESTATETYPE Type, DWORD Value) = 0;
@@ -1327,13 +1460,29 @@ struct IDirect3DDevice9 : public IUnknown
     virtual HRESULT DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinVertexIndex, UINT NumVertices, UINT PrimitiveCount, const void *pIndexData, D3DFORMAT IndexDataFormat, const void *pVertexStreamZeroData, UINT VertexStreamZeroStride) = 0;
     virtual HRESULT ProcessVertices(UINT SrcStartIndex, UINT DestIndex, UINT VertexCount, IDirect3DVertexBuffer9 *pDestBuffer, IDirect3DVertexDeclaration9 *pVertexDecl, DWORD Flags) = 0;
     virtual HRESULT CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements, IDirect3DVertexDeclaration9 **ppDecl) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateVertexDeclaration(const D3DVERTEXELEMENT9 *pVertexElements, Ptr32<IDirect3DVertexDeclaration9> *ppDecl) { IDirect3DVertexDeclaration9 *bo1_out = nullptr; HRESULT hr = CreateVertexDeclaration(pVertexElements, &bo1_out); if (ppDecl) *ppDecl = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetVertexDeclaration(IDirect3DVertexDeclaration9 *pDecl) = 0;
     virtual HRESULT GetVertexDeclaration(IDirect3DVertexDeclaration9 **ppDecl) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetVertexDeclaration(Ptr32<IDirect3DVertexDeclaration9> *ppDecl) { IDirect3DVertexDeclaration9 *bo1_out = nullptr; HRESULT hr = GetVertexDeclaration(&bo1_out); if (ppDecl) *ppDecl = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetFVF(DWORD FVF) = 0;
     virtual HRESULT GetFVF(DWORD *pFVF) = 0;
     virtual HRESULT CreateVertexShader(const DWORD *pFunction, IDirect3DVertexShader9 **ppShader) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateVertexShader(const DWORD *pFunction, Ptr32<IDirect3DVertexShader9> *ppShader) { IDirect3DVertexShader9 *bo1_out = nullptr; HRESULT hr = CreateVertexShader(pFunction, &bo1_out); if (ppShader) *ppShader = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetVertexShader(IDirect3DVertexShader9 *pShader) = 0;
     virtual HRESULT GetVertexShader(IDirect3DVertexShader9 **ppShader) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetVertexShader(Ptr32<IDirect3DVertexShader9> *ppShader) { IDirect3DVertexShader9 *bo1_out = nullptr; HRESULT hr = GetVertexShader(&bo1_out); if (ppShader) *ppShader = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetVertexShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount) = 0;
     virtual HRESULT GetVertexShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount) = 0;
     virtual HRESULT SetVertexShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount) = 0;
@@ -1342,13 +1491,29 @@ struct IDirect3DDevice9 : public IUnknown
     virtual HRESULT GetVertexShaderConstantB(UINT StartRegister, BOOL *pConstantData, UINT BoolCount) = 0;
     virtual HRESULT SetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9 *pStreamData, UINT OffsetInBytes, UINT Stride) = 0;
     virtual HRESULT GetStreamSource(UINT StreamNumber, IDirect3DVertexBuffer9 **ppStreamData, UINT *pOffsetInBytes, UINT *pStride) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetStreamSource(UINT StreamNumber, Ptr32<IDirect3DVertexBuffer9> *ppStreamData, UINT *pOffsetInBytes, UINT *pStride) { IDirect3DVertexBuffer9 *bo1_out = nullptr; HRESULT hr = GetStreamSource(StreamNumber, &bo1_out, pOffsetInBytes, pStride); if (ppStreamData) *ppStreamData = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetStreamSourceFreq(UINT StreamNumber, UINT Setting) = 0;
     virtual HRESULT GetStreamSourceFreq(UINT StreamNumber, UINT *pSetting) = 0;
     virtual HRESULT SetIndices(IDirect3DIndexBuffer9 *pIndexData) = 0;
     virtual HRESULT GetIndices(IDirect3DIndexBuffer9 **ppIndexData) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetIndices(Ptr32<IDirect3DIndexBuffer9> *ppIndexData) { IDirect3DIndexBuffer9 *bo1_out = nullptr; HRESULT hr = GetIndices(&bo1_out); if (ppIndexData) *ppIndexData = bo1_out; return hr; }
+    #endif
     virtual HRESULT CreatePixelShader(const DWORD *pFunction, IDirect3DPixelShader9 **ppShader) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreatePixelShader(const DWORD *pFunction, Ptr32<IDirect3DPixelShader9> *ppShader) { IDirect3DPixelShader9 *bo1_out = nullptr; HRESULT hr = CreatePixelShader(pFunction, &bo1_out); if (ppShader) *ppShader = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetPixelShader(IDirect3DPixelShader9 *pShader) = 0;
     virtual HRESULT GetPixelShader(IDirect3DPixelShader9 **ppShader) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT GetPixelShader(Ptr32<IDirect3DPixelShader9> *ppShader) { IDirect3DPixelShader9 *bo1_out = nullptr; HRESULT hr = GetPixelShader(&bo1_out); if (ppShader) *ppShader = bo1_out; return hr; }
+    #endif
     virtual HRESULT SetPixelShaderConstantF(UINT StartRegister, const float *pConstantData, UINT Vector4fCount) = 0;
     virtual HRESULT GetPixelShaderConstantF(UINT StartRegister, float *pConstantData, UINT Vector4fCount) = 0;
     virtual HRESULT SetPixelShaderConstantI(UINT StartRegister, const int *pConstantData, UINT Vector4iCount) = 0;
@@ -1359,6 +1524,10 @@ struct IDirect3DDevice9 : public IUnknown
     virtual HRESULT DrawTriPatch(UINT Handle, const float *pNumSegs, const void *pTriPatchInfo) = 0;
     virtual HRESULT DeletePatch(UINT Handle) = 0;
     virtual HRESULT CreateQuery(D3DQUERYTYPE Type, IDirect3DQuery9 **ppQuery) = 0;
+    #if BO1_PTR32_IS_CLASS
+    // the engine keeps these in 32-bit pointer fields (src/universal/ptr32.h)
+    HRESULT CreateQuery(D3DQUERYTYPE Type, Ptr32<IDirect3DQuery9> *ppQuery) { IDirect3DQuery9 *bo1_out = nullptr; HRESULT hr = CreateQuery(Type, &bo1_out); if (ppQuery) *ppQuery = bo1_out; return hr; }
+    #endif
 };
 
 struct IDirect3DDevice9Ex : public IDirect3DDevice9

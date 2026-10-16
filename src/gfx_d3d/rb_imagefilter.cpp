@@ -205,7 +205,7 @@ void __cdecl RB_GenerateGaussianFilter1D(float radius, int *res, int axis, GfxIm
     filterPass->dstHeight = res[1];
 }
 
-int __cdecl RB_PickSymmetricFilterMaterial(int halfTapCount, const Material **material)
+int __cdecl RB_PickSymmetricFilterMaterial(int halfTapCount, Ptr32<const Material> *material)
 {
     if ( (halfTapCount <= 0 || halfTapCount > 8)
         && !Assert_MyHandler(

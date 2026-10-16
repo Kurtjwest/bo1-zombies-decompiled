@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "live_storage.h"
 #include <DemonWare/bdLobbyService.h>
 
@@ -10,7 +11,7 @@ struct bdCounterValue : bdTaskResult // sizeof=0x10
 
 struct bdCounter // sizeof=0x4
 {
-    bdRemoteTaskManager *m_remoteTaskManager;
+    Ptr32<bdRemoteTaskManager> m_remoteTaskManager;
 };
 
 TaskRecord *__cdecl LiveCounter_IncrementCounters(

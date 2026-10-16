@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <DemonWare/bdPlatform/bdPlatformThread/bdPlatformMutex.h>
 

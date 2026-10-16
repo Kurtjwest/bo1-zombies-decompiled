@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <clientscript/cscr_variable.h>
 #include "actor.h"
 
@@ -10,16 +11,16 @@ enum DEBUGMAYMOVE_LIFT_ENUM : __int32
 
 struct entityHandler_t // sizeof=0x30
 {                                       // XREF: .data:entityHandler_t * entityHandlers/r
-    void(__cdecl *think)(gentity_s *); // XREF: G_RunThink(gentity_s *)+41/r
-    void(__cdecl *reached)(gentity_s *);
-    void(__cdecl *blocked)(gentity_s *, gentity_s *);
-    void(__cdecl *touch)(gentity_s *, gentity_s *, int);
-    void(__cdecl *use)(gentity_s *, gentity_s *, gentity_s *);
-    void(__cdecl *pain)(gentity_s *, gentity_s *, int, const float *, const int, const float *, const hitLocation_t, const int);
-    void(__cdecl *react)(gentity_s *, gentity_s *, const float *);
-    void(__cdecl *die)(gentity_s *, gentity_s *, gentity_s *, int, int, const int, const float *, const hitLocation_t, int);
-    void(__cdecl *entinfo)(gentity_s *, float *);
-    void(__cdecl *controller)(const gentity_s *, int *);
+    Ptr32<void __cdecl(gentity_s *)> think; // XREF: G_RunThink(gentity_s *)+41/r
+    Ptr32<void __cdecl(gentity_s *)> reached;
+    Ptr32<void __cdecl(gentity_s *, gentity_s *)> blocked;
+    Ptr32<void __cdecl(gentity_s *, gentity_s *, int)> touch;
+    Ptr32<void __cdecl(gentity_s *, gentity_s *, gentity_s *)> use;
+    Ptr32<void __cdecl(gentity_s *, gentity_s *, int, const float *, const int, const float *, const hitLocation_t, const int)> pain;
+    Ptr32<void __cdecl(gentity_s *, gentity_s *, const float *)> react;
+    Ptr32<void __cdecl(gentity_s *, gentity_s *, gentity_s *, int, int, const int, const float *, const hitLocation_t, int)> die;
+    Ptr32<void __cdecl(gentity_s *, float *)> entinfo;
+    Ptr32<void __cdecl(const gentity_s *, int *)> controller;
     // G_DObjCalcBone(gentity_s const *,int)+56/r
     int methodOfDeath;                  // XREF: G_ExplodeMissile(gentity_s *)+C03/r
     int splashMethodOfDeath;            // XREF: GetSplashMethodOfDeath+B5/r

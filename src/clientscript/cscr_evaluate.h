@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "cscr_main.h"
 #include "cscr_variable.h"
 #include "cscr_debugger.h"
@@ -8,17 +9,17 @@ struct ArchivedCanonicalStringInfo // sizeof=0x8
     unsigned __int16 canonicalStr;
     // padding byte
     // padding byte
-    const char *value;
+    Ptr32<const char> value;
 };
 
 struct __declspec(align(2)) scrEvaluateGlob_t // sizeof=0x10
 {                                       // XREF: .data:scrEvaluateGlob_t * gScrEvaluateGlob/r
-    char *archivedCanonicalStringsBuf;  // XREF: Scr_ArchiveCanonicalStrings(scriptInstance_t)+AE/w
+    Ptr32<char> archivedCanonicalStringsBuf;  // XREF: Scr_ArchiveCanonicalStrings(scriptInstance_t)+AE/w
                                         // Scr_ArchiveCanonicalStrings(scriptInstance_t)+1BF/r ...
-    ArchivedCanonicalStringInfo *archivedCanonicalStrings;
+    Ptr32<ArchivedCanonicalStringInfo> archivedCanonicalStrings;
                                         // XREF: Scr_ArchiveCanonicalStrings(scriptInstance_t)+E1/w
                                         // Scr_ArchiveCanonicalStrings(scriptInstance_t)+20F/r ...
-    int *canonicalStringLookup;         // XREF: Scr_CompareCanonicalStrings(void const *,void const *)+11/r
+    Ptr32<int> canonicalStringLookup;         // XREF: Scr_CompareCanonicalStrings(void const *,void const *)+11/r
                                         // Scr_CompareCanonicalStrings(void const *,void const *)+25/r ...
     bool freezeScope;                   // XREF: Scr_EvalScriptExpression(scriptInstance_t,ScriptExpression_t *,uint,VariableValue *,bool,bool)+38/w
                                         // Scr_EvalExpression+163/r ...

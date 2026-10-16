@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <ddl/ddl_api.h>
 #include <universal/com_stringtable.h>
 #include <ui/ui_shared.h>
@@ -100,8 +101,8 @@ enum playerStatsKeyIndex_t : __int32
 
 struct personalBest_t // sizeof=0x14
 {                                       // XREF: .data:s_personalBests/r
-    const char *name;
-    const char *prefix;
+    Ptr32<const char> name;
+    Ptr32<const char> prefix;
     int value;
     int delta;
     int rating;
@@ -115,7 +116,7 @@ struct statsMilestone_t // sizeof=0xC
                                         // LiveStats_PublishNews(int)+21F/r
     // padding byte
     // padding byte
-    const char *name;                   // XREF: LiveStats_PublishNews(int)+2AF/r
+    Ptr32<const char> name;                   // XREF: LiveStats_PublishNews(int)+2AF/r
 };
 
 struct challengeInfo_t // sizeof=0x24
@@ -131,7 +132,7 @@ struct challengeInfo_t // sizeof=0x24
     int targetValue;
     int currentValue;
     int prevTarget;
-    const char *name;
+    Ptr32<const char> name;
 };
 
 int __cdecl LiveStats_GetDDLHeaderVersion(unsigned __int8 *statsBuffer);

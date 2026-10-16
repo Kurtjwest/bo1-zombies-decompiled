@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 // SP builtin table, lane F: client (CSC) builtins.
 // Searched after BO1Zombies's own tables and before the generated not-ported table (see
 // src/game_sp/scr_sp_tables.h).
@@ -368,7 +369,7 @@ static void __cdecl CScr_EntYawOverridesLinkYaw(scr_entref_t entref)
 // Scr_GetInt (SP 0x004c1bb0, stored raw at 0x0065082a). Kept outside cg_s: KB's cg_s is exactly the SP-sized 0x71C80 hunk block.
 struct CgSpPhysicsGravity
 {
-    centity_s *cent;
+    Ptr32<centity_s> cent;
     int gravity;
 };
 static CgSpPhysicsGravity s_cgSpPhysicsGravity[32];

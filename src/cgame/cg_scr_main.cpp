@@ -778,7 +778,7 @@ void __cdecl CScr_GetModel(centity_s *cent, const cent_field_s *pField)
         case 6:
             if (cent->nextState.solid == 0xFFFFFF)
                 goto LABEL_20;
-            model = cent->destructible ? (XModel *)Destructible_GetDDef(cent)->model : cgs->gameModels[cent->nextState.index.brushmodel];
+            model = cent->destructible ? (XModel *)Destructible_GetDDef(cent)->model : (XModel *)cgs->gameModels[cent->nextState.index.brushmodel];
             if ( !model || !model->name )
                 goto LABEL_20;
             Scr_AddString((char *)model->name, SCRIPTINSTANCE_CLIENT);

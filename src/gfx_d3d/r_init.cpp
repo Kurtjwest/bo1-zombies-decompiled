@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "r_init.h"
 #include <win32/win_main.h>
@@ -496,7 +497,8 @@ HRESULT __cdecl R_CreateDeviceInternal(HWND__ *hwnd, unsigned int behavior, _D3D
     }
     dx.nvStereoActivated = 0;
     dx.nvStereoHandle = 0;
-    if ( !NvAPI_Stereo_CreateHandleFromIUnknown(dx.device, &dx.nvStereoHandle) )
+    // (dx.nvStereoHandle is a 32-bit field: the handle goes through a native temporary)
+    if ( ![&] { StereoHandle h = dx.nvStereoHandle; NvAPI_Status st = NvAPI_Stereo_CreateHandleFromIUnknown(dx.device, &h); dx.nvStereoHandle = h; return st; }() )
     {
         NvAPI_Stereo_IsActivated(dx.nvStereoHandle, &res);
         dx.nvStereoActivated = res != 0;
@@ -1519,7 +1521,7 @@ unsigned int __cdecl R_ChooseAdapter()
 struct GfxEnumMonitors // sizeof=0x8
 {                                       // XREF: R_ChooseMonitor/r
     int monitorIndex;                   // XREF: R_ChooseMonitor+23/w
-    HMONITOR__ *foundMonitor;           // XREF: R_ChooseMonitor+26/w
+    Ptr32<HMONITOR__> foundMonitor;           // XREF: R_ChooseMonitor+26/w
 };
 
 HMONITOR__ *__cdecl R_ChooseMonitor()
@@ -2195,7 +2197,7 @@ char __cdecl R_ResetDevice()
     else if (wndParms.borderless)
     {
         // borderless: no frame to add - the window stays exactly the back buffer's (the monitor's) size, not topmost
-        SetWindowPos(wndParms.hwnd, BO1_I2P(HWND_NOTOPMOST), 0, 0, wndParms.displayWidth, wndParms.displayHeight, 0x62u);
+        SetWindowPos(wndParms.hwnd, HWND_NOTOPMOST, 0, 0, wndParms.displayWidth, wndParms.displayHeight, 0x62u);
     }
     else
     {

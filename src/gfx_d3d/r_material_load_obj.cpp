@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "r_material_load_obj.h"
 #include <universal/q_shared.h>
@@ -1022,7 +1023,7 @@ struct //$54435CF730F84DB67694F69169881761 // sizeof=0x2CE28
 {                                       // XREF: .data:mtlLoadGlob/r
     unsigned int cachedShaderCount;     // XREF: Material_FindCachedShaderText+D/r
                                         // Material_PreLoadAllShaderText(void)+6F/w ...
-    GfxCachedShaderText *cachedShaderText;
+    Ptr32<GfxCachedShaderText> cachedShaderText;
                                         // XREF: Material_FindCachedShaderText+31/r
                                         // Material_FindCachedShaderText+59/r ...
     unsigned int vertexDeclCount;       // XREF: Material_FreeAll(void)+60/w
@@ -1041,24 +1042,24 @@ struct //$54435CF730F84DB67694F69169881761 // sizeof=0x2CE28
                                         // Material_RegisterString+24/r ...
     unsigned int vertexShaderCount;     // XREF: Material_FreeAll(void)+7E/w
                                         // Material_RegisterVertexShader+CC/r ...
-    MaterialVertexShader *vertexShaderHashTable[5120];
+    Ptr32<MaterialVertexShader> vertexShaderHashTable[5120];
                                         // XREF: Material_FreeAll(void)+71/o
                                         // Material_RegisterVertexShader+24/r ...
     unsigned int pixelShaderCount;      // XREF: Material_FreeAll(void)+9C/w
                                         // Material_RegisterPixelShader+CC/r ...
-    MaterialPixelShader *pixelShaderHashTable[20480];
+    Ptr32<MaterialPixelShader> pixelShaderHashTable[20480];
                                         // XREF: Material_FreeAll(void)+8F/o
                                         // Material_RegisterPixelShader+24/r ...
     unsigned int stateMapCount;         // XREF: Material_FreeAllStateMaps+17/w
-    MaterialStateMap *stateMapHashTable[64];
+    Ptr32<MaterialStateMap> stateMapHashTable[64];
                                         // XREF: Material_FreeAllStateMaps+A/o
                                         // Material_FindStateMap+22/r ...
     unsigned int techniqueCount;        // XREF: Material_FreeAll(void)+42/w
                                         // Material_SetTechnique+4/r ...
-    MaterialTechnique *techniqueHashTable[16384];
+    Ptr32<MaterialTechnique> techniqueHashTable[16384];
                                         // XREF: Material_FreeAll(void)+35/o
                                         // Material_FindTechnique+4E/r ...
-    const MaterialRaw *sortMtlRaw;      // XREF: Material_FinishLoadingInstance+D1/w
+    Ptr32<const MaterialRaw> sortMtlRaw;      // XREF: Material_FinishLoadingInstance+D1/w
 } mtlLoadGlob;
 
 bool gIsPIMPEnabled;
@@ -1798,7 +1799,7 @@ char __cdecl Material_ParseRuleSet(
                 char **text,
                 const char *ruleSetName,
                 const MtlStateMapBitGroup *stateSet,
-                MaterialStateMapRuleSet **ruleSet)
+                Ptr32<MaterialStateMapRuleSet> *ruleSet)
 {
     int v5; // edx
     int v6; // eax
@@ -7419,7 +7420,7 @@ void __cdecl Material_PreLoadAllShaderText()
     //    (signed int)(12 * mtlLoadGlob.cachedShaderCount) / 12,
     //    Material_CachedShaderTextLess);
 
-    std::sort(mtlLoadGlob.cachedShaderText, mtlLoadGlob.cachedShaderText + mtlLoadGlob.cachedShaderCount, Material_CachedShaderTextLess);
+    std::sort(mtlLoadGlob.cachedShaderText.get(), mtlLoadGlob.cachedShaderText.get() + mtlLoadGlob.cachedShaderCount, Material_CachedShaderTextLess);
 
     FS_FreeFileList(shaderListLib1);
     FS_FreeFileList(shaderListLib2);
@@ -7513,7 +7514,7 @@ void __cdecl Material_Sort()
     Material_SortInternal(rgp.sortedMaterials, rgp.materialCount);
 }
 
-void __cdecl Material_SortInternal(Material **sortedMaterials, unsigned int materialCount)
+void __cdecl Material_SortInternal(Ptr32<Material> *sortedMaterials, unsigned int materialCount)
 {
     unsigned __int64 v2; // rax
     int v3; // ecx

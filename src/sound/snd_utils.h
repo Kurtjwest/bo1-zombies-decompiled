@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum snd_speaker_flag : __int32
 {                                       // XREF: snd_speaker_angle/r
@@ -21,7 +22,7 @@ struct snd_speaker_angle // sizeof=0x8
 
 struct snd_speaker_config // sizeof=0x54
 {
-    const char *name;
+    Ptr32<const char> name;
     snd_speaker_flag outputFormat;
     unsigned int speakerCount;
     unsigned int speakerMapCount;

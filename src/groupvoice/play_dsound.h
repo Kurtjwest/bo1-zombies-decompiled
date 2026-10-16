@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "directsound.h"
 
@@ -11,7 +12,7 @@ void __cdecl DSound_SampleFrame(dsound_sample_t *sample);
 dsound_sample_t *__cdecl DSound_NewSample();
 HRESULT __cdecl CreateBasicBuffer(
                 IDirectSound8 *lpDirectSound,
-                IDirectSoundBuffer **ppDsb,
+                Ptr32<IDirectSoundBuffer> *ppDsb,
                 unsigned int sampleRate,
                 unsigned __int16 channels,
                 unsigned int bufferSize);

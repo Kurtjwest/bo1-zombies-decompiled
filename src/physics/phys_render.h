@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "phys_local.h"
 #include "phys_colgeom.h"
 #include "phys_main.h"
@@ -6,7 +7,7 @@
 
 struct __declspec(align(4)) debug_patch_t // sizeof=0xC
 {                                       // XREF: debug_patch_info_t/r
-    const CollisionAabbTree *tree;
+    Ptr32<const CollisionAabbTree> tree;
     unsigned int first_vertex_index;
     unsigned __int16 num_indices;
     // padding byte
@@ -26,7 +27,7 @@ struct debug_patch_info_t // sizeof=0x704E8
 
 struct debug_brush_t // sizeof=0x10
 {                                       // XREF: debug_brush_info_t/r
-    const cbrush_t *brush;
+    Ptr32<const cbrush_t> brush;
     unsigned int first_vertex_index;
     unsigned int first_winding_index;
     unsigned __int16 num_indices;
@@ -48,7 +49,7 @@ struct debug_brush_info_t // sizeof=0x77A1C
 
 struct GjkTraceGeom // sizeof=0x50
 {
-    const cbrush_t *brush;
+    Ptr32<const cbrush_t> brush;
     // padding byte
     // padding byte
     // padding byte

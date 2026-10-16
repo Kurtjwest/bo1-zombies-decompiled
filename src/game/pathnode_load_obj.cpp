@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "pathnode_load_obj.h"
 #include <universal/com_memory.h>
 #include "g_load_utils.h"
@@ -39,7 +40,7 @@ const int nodeFlagsCleared[21] =
 
 struct node_field_t_HACK // sizeof=0xC
 {                                       // XREF: .data:fields_4/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     int type;
 };
@@ -57,7 +58,7 @@ node_field_t_HACK fields_4[7] =
 
 struct nodespawn_t // sizeof=0x8
 {                                       // XREF: .rdata:nodespawns/r
-    const char *name;
+    Ptr32<const char> name;
     nodeType type;
 };
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #ifdef TRACY_ENABLE
 #ifndef TRACY_ON_DEMAND
@@ -28,8 +29,8 @@ typedef unsigned long bo1_ulong;
 
 struct BO1ProfZone
 {
-    const char *name;
-    BO1ProfZone *next;
+    Ptr32<const char> name;
+    Ptr32<BO1ProfZone> next;
     unsigned long long mainTicks;
     volatile bo1_ilong otherTicks1k; // other threads, rdtsc ticks / 1024
     unsigned int mainCalls;
@@ -103,7 +104,7 @@ extern BO1RenderFrame g_bo1RenderRing[BO1_RENDER_RING]; // index frame % BO1_REN
 
 struct BO1ProfScope
 {
-    BO1ProfZone *zone;
+    Ptr32<BO1ProfZone> zone;
     unsigned long long start;
     bool main;
 

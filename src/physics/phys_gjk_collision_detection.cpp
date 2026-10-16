@@ -202,7 +202,7 @@ void gjk_query_output::reset_cache()
 void bpei_database_t::update_database()
 {
     broad_phase_environment_info *bpei; // [esp+154h] [ebp-8h]
-    broad_phase_environment_info **prev_next; // [esp+158h] [ebp-4h]
+    Ptr32<broad_phase_environment_info> *prev_next; // [esp+158h] [ebp-4h]
 
     prev_next = &this->m_bpei_list;
     for ( bpei = this->m_bpei_list; bpei; bpei = *prev_next )

@@ -17,18 +17,18 @@ struct FxImpactTable // sizeof=0x8
 
 struct EffectFile // sizeof=0xB7C
 {                                       // XREF: CG_RegisterImpactEffects_LoadObj/r
-    const char *nonflesh[21][31];       // XREF: CG_RegisterImpactEffects_LoadObj+121/r
-    const char *flesh[21][4];           // XREF: CG_RegisterImpactEffects_LoadObj+14E/o
+    Ptr32<const char> nonflesh[21][31];       // XREF: CG_RegisterImpactEffects_LoadObj+121/r
+    Ptr32<const char> flesh[21][4];           // XREF: CG_RegisterImpactEffects_LoadObj+14E/o
 };
 
 FxImpactTable *__cdecl CG_RegisterImpactEffects(const char *mapname);
 FxImpactTable *__cdecl CG_RegisterImpactEffects_LoadObj(const char *mapname);
 int __cdecl CG_RegisterImpactEffects_NonFlesh(
-                const char **szEffectFile,
+                Ptr32<const char> *szEffectFile,
                 const char *pszTypeName,
                 Ptr32<const FxEffectDef> *fx);
 int __cdecl CG_RegisterImpactEffects_Flesh(
-                const char **szEffectFile,
+                Ptr32<const char> *szEffectFile,
                 const char *pszTypeName,
                 Ptr32<const FxEffectDef> *fx,
                 char *defaultEffectName);

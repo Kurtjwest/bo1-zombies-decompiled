@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum DevEventType : __int32
 {                                                                             // XREF: GraphFloat_DevGuiCB_Event/r
@@ -12,13 +13,13 @@ enum DevEventType : __int32
 
 struct __declspec(align(4)) DevGraph // sizeof=0x20
 {                                                                             // XREF: GraphFloat/r
-        float (*knots)[2];
-        int *knotCount;
+        Ptr32<float[2]> knots;
+        Ptr32<int> knotCount;
         int knotCountMax;
         int selectedKnot;
-        void (__cdecl *eventCallback)(const DevGraph *, DevEventType, int);
-        void (__cdecl *textCallback)(const DevGraph *, const float, const float, char *, const int);
-        void *data;
+        Ptr32<void __cdecl(const DevGraph *, DevEventType, int)> eventCallback;
+        Ptr32<void __cdecl(const DevGraph *, const float, const float, char *, const int)> textCallback;
+        Ptr32<void> data;
         bool disableEditingEndPoints;
         // padding byte
         // padding byte

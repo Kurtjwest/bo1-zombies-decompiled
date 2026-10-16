@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 // p1: headless movement lab (TEST SWITCH bo1_testclient_move, harness only). The zombie test client runs a fixed
 // sequence of usercmds (walk / back / strafe / crouch / prone / jump / sprint to exhaustion) and every server frame
 // prints its playerState as a "bo1_move:" line; tools/p1_recording_feel.mjs --log measures it the same way it
@@ -44,7 +45,7 @@ static int g_moveLastTime;
 
 struct MovePhase
 {
-    const char *name;
+    Ptr32<const char> name;
     int durationMs;
     int forward, right;
     int stanceBit;      // 8 prone, 9 crouch, -1 stand (CL_AddCurrentStanceToCmd's held stance bits)

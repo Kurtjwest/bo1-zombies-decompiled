@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "r_gfx.h"
 #include "rb_state.h"
@@ -72,7 +73,7 @@ struct tilemesh_t // sizeof=0x20
     int worldZ;
     int lastSkinTime;
     unsigned int baseVertex;
-    GfxWaterVertex *lockedData;
+    Ptr32<GfxWaterVertex> lockedData;
 };
 
 struct WaterSimulationCmdSkin // sizeof=0x48
@@ -82,8 +83,8 @@ struct WaterSimulationCmdSkin // sizeof=0x48
     //$23E4FC536F9FEE55F47DDD857C0ED32E ___u2;
     union //$23E4FC536F9FEE55F47DDD857C0ED32E // sizeof=0x40
     {                                       // XREF: WaterSimulationCmdSkin/r
-        tilemesh_t *meshesEA[16];
-        tilemesh_t *meshes[16];
+        Ptr32<tilemesh_t> meshesEA[16];
+        Ptr32<tilemesh_t> meshes[16];
     };
 };
 
@@ -296,7 +297,7 @@ struct __declspec(align(16)) channel_t
         v = 0;
     }
 
-    T *v;
+    Ptr32<T> v;
     unsigned int bufferSize;
     char         _pad0[8];
 
@@ -352,7 +353,7 @@ struct waterdata_t // sizeof=0x160A0
     // padding byte
     int timeDelta;                      // XREF: R_WaterSimulationRestart(void)+16/w
                                         // R_WaterSimulationRender(float const * const,int,uint):loc_A81FC8/r ...
-    Material *sprayMaterial;            // XREF: R_InitWaterSimulation(void)+55B/w
+    Ptr32<Material> sprayMaterial;            // XREF: R_InitWaterSimulation(void)+55B/w
     int gridX;                          // XREF: R_WaterSimulationTeleport+9/w
                                         // R_WaterSimulationTeleport+BB/r ...
     int gridY;                          // XREF: R_WaterSimulationTeleport+11/w
@@ -371,13 +372,13 @@ struct waterdata_t // sizeof=0x160A0
                                         // R_WaterSimulationRestart(void)+6F/w ...
     int tileTriCount[2];                // XREF: R_RenderWaterModel+272/r
                                         // R_InitWaterSimulationVertexBuffers(uint)+4B/w ...
-    IDirect3DIndexBuffer9 *indexBuffer[2];
+    Ptr32<IDirect3DIndexBuffer9> indexBuffer[2];
                                         // XREF: R_RenderWaterModel+259/r
                                         // R_InitWaterSimulationVertexBuffers(uint)+6F/o ...
-    IDirect3DVertexBuffer9 *vertexBuffer;
+    Ptr32<IDirect3DVertexBuffer9> vertexBuffer;
                                         // XREF: R_RenderWaterModel+17E/r
                                         // R_RenderWaterModel+18A/r ...
-    GfxWaterVertex *lockedData;         // XREF: R_WaterSimulationRender(float const * const,int,uint)+3ED/r
+    Ptr32<GfxWaterVertex> lockedData;         // XREF: R_WaterSimulationRender(float const * const,int,uint)+3ED/r
                                         // R_InitWaterSimulationVertexBuffers(uint)+3C/w
     tile_t tiles[256];                  // XREF: R_WaterSimulationRestart(void)+AB/o
                                         // R_WaterSimulationTeleport+82/o ...
@@ -405,8 +406,8 @@ void __cdecl R_WaterSimulationSwitchOff();
 void *FlushBuffers();
 void    R_WaterSimulationUpdateFrame(const WaterSimulationCmd *cmd);
 void __cdecl Float4LoadFloats(unsigned int x, unsigned int y, unsigned int z, unsigned int w, float4 *result);
-void *__cdecl Water_AllocVertexBuffer(IDirect3DVertexBuffer9 **vb, unsigned int buffersize);
-void *__cdecl Water_AllocIndexBuffer(IDirect3DIndexBuffer9 **ib, unsigned int buffersize);
+void *__cdecl Water_AllocVertexBuffer(Ptr32<IDirect3DVertexBuffer9> *vb, unsigned int buffersize);
+void *__cdecl Water_AllocIndexBuffer(Ptr32<IDirect3DIndexBuffer9> *ib, unsigned int buffersize);
 void __cdecl R_InitWaterSimulationVertexBuffers();
 unsigned int __cdecl FillIndexBuffer(unsigned __int16 *lockedindex, unsigned int lodMask, unsigned __int16 *verts);
 void __cdecl R_FreeWaterSimulationVertexBuffers();

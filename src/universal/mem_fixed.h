@@ -1,9 +1,10 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "mem_userhunk.h"
 
 struct _fixed_heapnode // sizeof=0x4
 {                                       // XREF: FIXED_HEAPNODE/r
-    _fixed_heapnode *next;
+    Ptr32<_fixed_heapnode> next;
 };
 
 _fixed_heapnode *__cdecl Hunk_FixedInit(

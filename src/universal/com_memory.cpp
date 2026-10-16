@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "com_memory.h"
 #include "assertive.h"
@@ -30,7 +31,7 @@ struct AssetList // sizeof=0xC
 {                                       // XREF: DB_GetAllXAssetOfType_LoadObj/r
     int assetCount;                     // XREF: DB_GetAllXAssetOfType_LoadObj+C/w
     int maxCount;                       // XREF: DB_GetAllXAssetOfType_LoadObj+16/w
-    XAssetHeader *assets;               // XREF: DB_GetAllXAssetOfType_LoadObj+9/w
+    Ptr32<XAssetHeader> assets;               // XREF: DB_GetAllXAssetOfType_LoadObj+9/w
 };
 
 

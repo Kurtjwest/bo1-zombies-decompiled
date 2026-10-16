@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_material.h"
 #include <universal/aabbtree.h>
 #include <qcommon/com_bsp_load_obj.h>
@@ -17,7 +18,7 @@ struct GfxBspLoad // sizeof=0x2A4
 {                                       // XREF: r_globals_load_t/r
     unsigned int bspVersion;            // XREF: R_LoadWorldInternal(char const *)+4D/w
                                         // R_LoadWorldInternal(char const *)+26E/r ...
-    const dmaterial_t *diskMaterials;   // XREF: R_GetBspMaterial(uint,GfxSurface *,GfxWorldVertex *)+4C/r
+    Ptr32<const dmaterial_t> diskMaterials;   // XREF: R_GetBspMaterial(uint,GfxSurface *,GfxWorldVertex *)+4C/r
     unsigned int materialCount;
     float outdoorMins[3];               // XREF: R_LoadWorldInternal(char const *)+57B/o
     float outdoorMaxs[3];               // XREF: R_LoadWorldInternal(char const *)+576/o
@@ -85,7 +86,7 @@ struct Stream2Usage // sizeof=0x10
     unsigned __int16 vertexCount;       // XREF: R_CalculateVertexStream2Usage+1BE/w
     // padding byte
     // padding byte
-    Stream2Usage *next;                 // XREF: R_CalculateVertexStream2Usage+1C2/w
+    Ptr32<Stream2Usage> next;                 // XREF: R_CalculateVertexStream2Usage+1C2/w
 };
 
 struct DiskGfxVertex // sizeof=0x44

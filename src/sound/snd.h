@@ -241,7 +241,7 @@ struct snd_playback // sizeof=0x10
 
 struct SndStartAliasInfo // sizeof=0x3C
 {                                                                             // XREF: ?SND_PlaySoundAlias@@YAHPBUsnd_alias_list_t@@MTSndEntHandle@@QBMHH2PAUsnd_playback@@PAUsnd_occlusion_start_cache@@@Z/r
-        const snd_alias_t *alias;                     // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+7BD/w
+        Ptr32<const snd_alias_t> alias;                     // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+7BD/w
         SndEntHandle sndEnt;                                // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+7C3/w
         float org[3];                                             // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+7CD/w
                                                                                 // SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+7DA/w ...
@@ -252,8 +252,8 @@ struct SndStartAliasInfo // sizeof=0x3C
         float fadetime;                                         // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+856/w
         int startDelay;                                         // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+84E/w
                                                                                 // SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+8EB/r ...
-        snd_occlusion_start_cache *ocache;    // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+85E/w
-        snd_playback *playback;                         // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+864/w
+        Ptr32<snd_occlusion_start_cache> ocache;    // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+85E/w
+        Ptr32<snd_playback> playback;                         // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+864/w
         int playbackId;                                         // XREF: SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+872/w
                                                                                 // SND_PlaySoundAlias(snd_alias_list_t const *,float,SndEntHandle,float const * const,int,int,float const * const,snd_playback *,snd_occlusion_start_cache *)+87C/w
 };
@@ -282,7 +282,7 @@ struct SndFileSpecificVoiceInfo // sizeof=0x14
 struct sndLengthNotifyInfo // sizeof=0x24
 {                                                                             // XREF: snd_voice_t/r
         snd_length_type id[4];
-        void *data[4];
+        Ptr32<void> data[4];
         int count;
 };
 
@@ -308,12 +308,12 @@ struct snd_voice_t // sizeof=0x1D8
                                                                                 // SND_GetPlayingInfo+C7/r ...
         int looptime;
         int totalMsec;
-        snd_playback *playback;
+        Ptr32<snd_playback> playback;
         int playbackId;                                         // XREF: SND_SetPlaybackIdNotPlayed(int)+3E/w
                                                                                 // SND_ContinueLoopingSound(uint,float,SndEntHandle,float const * const,int,snd_playback *)+109/r ...
         int firstPlaybackId;
         sndLengthNotifyInfo lengthNotifyInfo;
-        const snd_alias_t *alias;                     // XREF: SND_ContinueLoopingSound(uint,float,SndEntHandle,float const * const,int,snd_playback *)+68/r
+        Ptr32<const snd_alias_t> alias;                     // XREF: SND_ContinueLoopingSound(uint,float,SndEntHandle,float const * const,int,snd_playback *)+68/r
                                                                                 // SND_ContinueLoopingSound(uint,float,SndEntHandle,float const * const,int,snd_playback *)+8A/r ...
         float offset[3];
         float position[3];                                    // XREF: SND_SetPosition(int,float const * const)+40/o
@@ -523,7 +523,7 @@ struct snd_line_emitter // sizeof=0x20
                                                                                 // SND_UpdateStaticSounds+60/r ...
         float origin[2][3];                                 // XREF: SND_UpdateStaticSounds+BD/o
                                                                                 // SND_UpdateStaticSounds+FB/o ...
-        const snd_alias_list_t *alias;            // XREF: SND_UpdateStaticSounds+51/r
+        Ptr32<const snd_alias_list_t> alias;            // XREF: SND_UpdateStaticSounds+51/r
                                                                                 // SND_UpdateStaticSounds+75/w ...
 };
 
@@ -533,7 +533,7 @@ struct snd_loop_emitter // sizeof=0x14
                                                                                 // SND_UpdateStaticSounds+2DA/r ...
         float origin[3];                                        // XREF: SND_UpdateStaticSounds+3AA/o
                                                                                 // SNDL_PlayLoopAt(uint,float const * const)+88/o ...
-        const snd_alias_list_t *alias;            // XREF: SND_UpdateStaticSounds+2CB/r
+        Ptr32<const snd_alias_list_t> alias;            // XREF: SND_UpdateStaticSounds+2CB/r
                                                                                 // SND_UpdateStaticSounds+2EF/w ...
 };
 
@@ -573,7 +573,7 @@ struct snd_ent_state // sizeof=0x48
                                                                                 // .rdata:00D148C1/o
         unsigned int lastUsed;                            // XREF: SND_FindEntState(SndEntHandle,bool)+2C6/r
                                                                                 // SND_FindEntState(SndEntHandle,bool)+3B4/r ...
-        snd_ent_state *next;                                // XREF: SND_FindEntState(SndEntHandle,bool)+39A/r
+        Ptr32<snd_ent_state> next;                                // XREF: SND_FindEntState(SndEntHandle,bool)+39A/r
 };
 
 enum snd_command_type : __int32
@@ -638,7 +638,7 @@ struct snd_play_context // sizeof=0x30
         int notify;
         float position[3];
         float direction[3];
-        snd_playback *playback;
+        Ptr32<snd_playback> playback;
 };
 
 struct snd_stop_alias_context // sizeof=0x8
@@ -844,12 +844,12 @@ enum snd_notify_type : __int32
 struct snd_subtitle // sizeof=0x8
 {                                                                             // XREF: snd_notify_context/r
         unsigned int lengthMs;
-        const char *subtitle;
+        Ptr32<const char> subtitle;
 };
 
 struct snd_playback_update // sizeof=0x10
 {                                                                             // XREF: snd_notify_context/r
-        snd_playback *playback;
+        Ptr32<snd_playback> playback;
         float attenuation;
         unsigned int lengthMs;
         unsigned int playedMs;
@@ -862,7 +862,7 @@ struct snd_ent_update // sizeof=0x4
 
 struct snd_playback_free // sizeof=0x4
 {                                                                             // XREF: snd_notify_context/r
-        snd_playback *playback;
+        Ptr32<snd_playback> playback;
 };
 
 struct snd_length // sizeof=0x8
@@ -917,7 +917,7 @@ struct snd_local_t // sizeof=0x31730
                                                                                 // SND_UpdatePause+57/w ...
         unsigned int frame;                                 // XREF: SNDL_Update(void)+91/r
                                                                                 // SNDL_Update(void)+9A/w ...
-        SndDriverGlobals *global_constants; // XREF: SND_Init(void)+CB/w
+        Ptr32<SndDriverGlobals> global_constants; // XREF: SND_Init(void)+CB/w
                                                                                 // SND_Init(void)+D0/r ...
         int inCinematic;                                        // XREF: SNDL_NotifyCinematicStart(float):loc_9476A2/r
                                                                                 // SNDL_NotifyCinematicStart(float)+49/w ...
@@ -934,11 +934,11 @@ struct snd_local_t // sizeof=0x31730
                                                                                 // SND_UpdateMasterVolumes+22/r ...
         unsigned int defaultHash;                     // XREF: SND_GetCurrentReverb(void):loc_935ECF/r
                                                                                 // SND_Init(void)+8D/w ...
-        const snd_curve *defaultCurve;            // XREF: SND_Init(void)+134/w
+        Ptr32<const snd_curve> defaultCurve;            // XREF: SND_Init(void)+134/w
                                                                                 // SND_UpdateSnapshot(float)+9/r
         snd_enveffect envEffects[3];                // XREF: SND_Init(void)+1C1/o
                                                                                 // SNDL_SetEnvironmentEffects(int,uint,float,float,int)+15C/o ...
-        snd_enveffect *effect;                            // XREF: SND_GetCurrentReverb(void):loc_935EB2/r
+        Ptr32<snd_enveffect> effect;                            // XREF: SND_GetCurrentReverb(void):loc_935EB2/r
                                                                                 // SND_GetCurrentReverb(void)+3B/r ...
         snd_listener listeners[1];                    // XREF: SND_ActiveListenerCount(void)+2B/r
                                                                                 // SND_GetListenerIndexNearestToOrigin(float const * const)+50/r ...
@@ -980,7 +980,7 @@ struct snd_local_t // sizeof=0x31730
         unsigned int updated;
         snd_ent_state entState[296];                // XREF: SND_FindEntState(SndEntHandle,bool)+2C6/r
                                                                                 // SND_FindEntState(SndEntHandle,bool)+2D9/o ...
-        snd_ent_state *entStateIndex[MAX_CL_ENTNUM]; // mod (L43): retail [1536] // XREF: SND_FindEntState(SndEntHandle,bool)+175/r
+        Ptr32<snd_ent_state> entStateIndex[MAX_CL_ENTNUM]; // mod (L43): retail [1536] // XREF: SND_FindEntState(SndEntHandle,bool)+175/r
                                                                                 // SND_FindEntState(SndEntHandle,bool)+2ED/r ...
         snd_playback playbacks[148];                // XREF: SND_ResetPlaybacks(void)+25/w
                                                                                 // SND_AllocatePlayback(void)+67/r ...
@@ -995,7 +995,7 @@ struct snd_local_t // sizeof=0x31730
         unsigned int command_id;                        // XREF: SND_CommandPush(snd_command *):loc_94DFAA/r
                                                                                 // SND_CommandPush(snd_command *)+103/r ...
         unsigned int command_id_commit;         // XREF: SND_CommandPump(void)+B2/w
-        snd_command *command_q[1024];             // XREF: SND_InitCommands(void)+1E/o
+        Ptr32<snd_command> command_q[1024];             // XREF: SND_InitCommands(void)+1E/o
                                                                                 // SND_CommandPush(snd_command *)+13A/r ...
         unsigned int command_q_head;                // XREF: SND_InitCommands(void)+2B/w
                                                                                 // SND_GetNewCommand(void):loc_94DE10/r ...
@@ -1010,7 +1010,7 @@ struct snd_local_t // sizeof=0x31730
                                                                                 // SND_GetNewNotify(void)+C2/o ...
         unsigned int notify_free;                     // XREF: SND_GetNewNotify(void):loc_94F018/r
                                                                                 // SND_GetNewNotify(void)+B9/r ...
-        snd_notify *notify_q[512];                    // XREF: SND_NotifyPush(snd_notify *)+1A4/r
+        Ptr32<snd_notify> notify_q[512];                    // XREF: SND_NotifyPush(snd_notify *)+1A4/r
                                                                                 // SND_NotifyPush(snd_notify *)+1DC/w ...
         unsigned int notify_q_head;                 // XREF: SND_GetNewNotify(void):loc_94EFE6/r
                                                                                 // SND_NotifyPush(snd_notify *):loc_94F13F/r ...

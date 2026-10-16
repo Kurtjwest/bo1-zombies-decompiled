@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <physics/physpreset_load_obj.h>
 #include <gfx_d3d/fxprimitives.h>
 
@@ -55,25 +56,25 @@ struct FxEditorElemDef // sizeof=0x974
     float timeScale;
     float windInfluence;
     float velScale[2][3];
-    const FxCurve *velShape[2][3][2];
+    Ptr32<const FxCurve> velShape[2][3][2];
     float rotationScale;
-    const FxCurve *rotationShape[2];
+    Ptr32<const FxCurve> rotationShape[2];
     float sizeScale[2];
-    const FxCurve *sizeShape[2][2];
+    Ptr32<const FxCurve> sizeShape[2][2];
     float scaleScale;
-    const FxCurve *scaleShape[2];
-    const FxCurve *color[2];
-    const FxCurve *alpha[2];
+    Ptr32<const FxCurve> scaleShape[2];
+    Ptr32<const FxCurve> color[2];
+    Ptr32<const FxCurve> alpha[2];
     float lightingFrac;
     float collOffset[3];
     float collRadius;
-    const FxEffectDef *effectOnImpact;
-    const FxEffectDef *effectOnDeath;
+    Ptr32<const FxEffectDef> effectOnImpact;
+    Ptr32<const FxEffectDef> effectOnDeath;
     int sortOrder;
-    const FxEffectDef *emission;
+    Ptr32<const FxEffectDef> emission;
     FxFloatRange emitDist;
     FxFloatRange emitDistVariance;
-    const FxEffectDef *attachment;
+    Ptr32<const FxEffectDef> attachment;
     unsigned __int8 elemType;
     // padding byte
     // padding byte
@@ -102,7 +103,7 @@ struct FxEditorElemDef // sizeof=0x974
 
 struct FxFlagOutputSet // sizeof=0x10
 {                                       // XREF: FX_ParseNonAtlasFlags/r
-    int *flags[4];                      // XREF: FX_ParseNonAtlasFlags+6/w
+    Ptr32<int> flags[4];                      // XREF: FX_ParseNonAtlasFlags+6/w
 };
 
 struct FxEditorEffectDef // sizeof=0x12EE0
@@ -120,7 +121,7 @@ struct FxEditorEffectDef // sizeof=0x12EE0
 
 struct FxFlagDef // sizeof=0x10
 {
-    const char *name;
+    Ptr32<const char> name;
     int flagType;
     int mask;
     int value;
@@ -128,17 +129,17 @@ struct FxFlagDef // sizeof=0x10
 
 struct FxElemField // sizeof=0x8
 {                                       // XREF: .rdata:s_elemFields/r
-    const char *keyName;                // XREF: FX_ParseEditorElemField+25/r
+    Ptr32<const char> keyName;                // XREF: FX_ParseEditorElemField+25/r
                                         // FX_ParseEditorElemField+F8/r
-    bool (__cdecl *handler)(const char **, FxEditorElemDef *);
+    Ptr32<bool __cdecl(const char **, FxEditorElemDef *)> handler;
                                         // XREF: FX_ParseEditorElemField+93/r
 };
 
 struct FxEffectField // sizeof=0x8
 {                                       // XREF: .rdata:s_effectFields/r
-    const char *keyName;                // XREF: FX_ParseEditorEffectField+25/r
+    Ptr32<const char> keyName;                // XREF: FX_ParseEditorEffectField+25/r
                                         // FX_ParseEditorEffectField+F8/r
-    bool (__cdecl *handler)(const char **, FxEditorEffectDef *);
+    Ptr32<bool __cdecl(const char **, FxEditorEffectDef *)> handler;
                                         // XREF: FX_ParseEditorEffectField+93/r
 };
 
@@ -194,8 +195,8 @@ bool __cdecl FX_ParseGraphRange(
                 float minValue,
                 float maxValue,
                 float *scale,
-                const FxCurve **shape);
-bool __cdecl FX_ParseCurve(const char **parse, int dimCount, float minValue, float maxValue, const FxCurve **shape);
+                Ptr32<const FxCurve> *shape);
+bool __cdecl FX_ParseCurve(const char **parse, int dimCount, float minValue, float maxValue, Ptr32<const FxCurve> *shape);
 bool __cdecl FX_ParseVelGraph0Y(const char **parse, FxEditorElemDef *edElemDef);
 bool __cdecl FX_ParseVelGraph0Z(const char **parse, FxEditorElemDef *edElemDef);
 bool __cdecl FX_ParseVelGraph1X(const char **parse, FxEditorElemDef *edElemDef);
@@ -212,7 +213,7 @@ bool __cdecl FX_ParseVector(const char **parse, float *value);
 bool __cdecl FX_ParseLightingFrac(const char **parse, FxEditorElemDef *edElemDef);
 bool __cdecl FX_ParseCollRadius(const char **parse, FxEditorElemDef *edElemDef);
 bool __cdecl FX_ParseFxOnImpact(const char **parse, FxEditorElemDef *edElemDef);
-bool __cdecl FX_ParseEffectRef(const char **parse, const FxEffectDef **fx);
+bool __cdecl FX_ParseEffectRef(const char **parse, Ptr32<const FxEffectDef> *fx);
 bool __cdecl FX_ParseFxOnDeath(const char **parse, FxEditorElemDef *edElemDef);
 bool __cdecl FX_ParseSortOrder(const char **parse, FxEditorElemDef *edElemDef);
 bool __cdecl FX_ParsePriority(const char **parse, FxEditorElemDef *edElemDef);

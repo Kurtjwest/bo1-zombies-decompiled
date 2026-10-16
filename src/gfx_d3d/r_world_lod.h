@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct __declspec(align(4)) GfxWorldLodChain // sizeof=0x18
 {
@@ -17,7 +18,7 @@ struct LodChainState // sizeof=0xC
     unsigned __int8 m_curLevel;
     // padding byte
     // padding byte
-    const GfxWorldLodChain *m_lodChain;
+    Ptr32<const GfxWorldLodChain> m_lodChain;
 
     void __thiscall Init(const GfxWorldLodChain *lodChain, int localClientNum);
     void __thiscall UpdateLevel(int newLevel, int localClientNum);

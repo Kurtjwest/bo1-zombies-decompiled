@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/com_expressions.h>
 #include <ui/ui_main.h>
 
@@ -23,13 +24,13 @@ struct CmdArgs // sizeof=0x28EC
                                                                                 // SV_Cmd_Argc(void)+E/r ...
         int localClientNum[8];
         int controllerIndex[8];
-        struct itemDef_s *itemDef[8];
+        Ptr32<struct itemDef_s> itemDef[8];
         int argshift[8];
         int argc[8];                                                // XREF: SV_Cmd_Argc(void)+3A/r
                                                                                 // SV_Cmd_Argv(int)+6E/r
-        const char **argv[8];                             // XREF: SV_Cmd_Argv(int)+7D/r
+        Ptr32<Ptr32<const char>> argv[8];                             // XREF: SV_Cmd_Argv(int)+7D/r
         char textPool[8192];
-        const char *argvPool[512];
+        Ptr32<const char> argvPool[512];
         int usedTextPool[8];
         int totalUsedArgvPool;                            // XREF: SV_Cmd_TokenizeString(char const *)+F/r
         int totalUsedTextPool;
@@ -39,11 +40,11 @@ struct CmdArgs // sizeof=0x28EC
 struct __declspec(align(4)) cmd_function_s // sizeof=0x18
 {                                                                             // XREF: .data:BG_EmblemsFlushResults_VAR/r
                                                                                 // .data:BG_EmblemsPurchaseBackgroundByIndex_f_VAR/r ...
-        cmd_function_s *next;
-        const char *name;
-        const char *autoCompleteDir;
-        const char *autoCompleteExt;
-        void (__cdecl *function)();
+        Ptr32<cmd_function_s> next;
+        Ptr32<const char> name;
+        Ptr32<const char> autoCompleteDir;
+        Ptr32<const char> autoCompleteExt;
+        Ptr32<void __cdecl()> function;
         bool consoleAccess;
         // padding byte
         // padding byte
@@ -52,7 +53,7 @@ struct __declspec(align(4)) cmd_function_s // sizeof=0x18
 
 struct CmdText // sizeof=0xC
 {                                       // XREF: .data:sv_cmd_text/r
-    unsigned __int8 *data;              // XREF: Cbuf_Init(void)+38/w
+    Ptr32<unsigned __int8> data;              // XREF: Cbuf_Init(void)+38/w
     int maxsize;                        // XREF: Cbuf_Init(void)+44/w
     int cmdsize;                        // XREF: Cbuf_Init(void)+54/w
 };

@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <tl/jobqueue/jobqueue_all.h>
 
 struct WorkerCmdConditional // sizeof=0x8
 {
-    void *address;
+    Ptr32<void> address;
     unsigned int value;
 };
 

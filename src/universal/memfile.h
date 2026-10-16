@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "assertive.h"
 #include <cstring>
 
 struct MemoryFile // sizeof=0x8024
 {                                       // XREF: SaveGame/r
                                         // ?UI_Gametype_UploadToFileShare_f@@YAXXZ/r ...
-    unsigned __int8 *buffer;
+    Ptr32<unsigned __int8> buffer;
     int bufferSize;
     int bytesUsed;
     int cacheBufferUsed;

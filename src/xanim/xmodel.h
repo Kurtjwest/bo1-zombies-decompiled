@@ -18,14 +18,14 @@ struct XSurfaceGetTriCandidatesLocals // sizeof=0x2AC
 {                                       // XREF: ?XSurfaceVisitTrianglesInAabb@@YA_NPBUXSurface@@IQBM1P6A_NPAXPAPBE3@Z2@Z/r
     int mins[3];
     int maxs[3];                        // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+E9/o
-    const XSurfaceCollisionTree *tree;  // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+5A/w
+    Ptr32<const XSurfaceCollisionTree> tree;  // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+5A/w
                                         // XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+60/r ...
-    const unsigned __int16 *inIndices;  // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+CB/w
-    const unsigned __int8 *inVertices0; // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+D7/w
-    const unsigned __int8 *inVertices1; // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+E3/w
-    bool (__cdecl *visitorFunc)(void *, const unsigned __int8 **, const unsigned __int8 **);
+    Ptr32<const unsigned __int16> inIndices;  // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+CB/w
+    Ptr32<const unsigned __int8> inVertices0; // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+D7/w
+    Ptr32<const unsigned __int8> inVertices1; // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+E3/w
+    Ptr32<bool __cdecl(void *, const unsigned __int8 **, const unsigned __int8 **)> visitorFunc;
                                         // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+B6/w
-    void *visitorContext;               // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+BF/w
+    Ptr32<void> visitorContext;               // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+BF/w
     unsigned __int16 vertexSize0;       // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+185/w
     unsigned __int16 surfaceFlags;      // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+179/w
     unsigned int nodeQueueBegin;        // XREF: XSurfaceVisitTrianglesInAabb(XSurface const *,uint,float const * const,float const * const,bool (*)(void *,uchar const * *,uchar const * *),void *)+122/w
@@ -185,17 +185,17 @@ struct XModelPartsLoad // sizeof=0x1C
         unsigned __int8 numRootBones;
         // padding byte
         // padding byte
-        unsigned __int16 *boneNames;
-        unsigned __int8 *parentList;
-        __int16 *quats;
-        float *trans;
-        unsigned __int8 *partClassification;
-        DObjAnimMat *baseMat;
+        Ptr32<unsigned __int16> boneNames;
+        Ptr32<unsigned __int8> parentList;
+        Ptr32<__int16> quats;
+        Ptr32<float> trans;
+        Ptr32<unsigned __int8> partClassification;
+        Ptr32<DObjAnimMat> baseMat;
 };
 
 struct XModelSurfs // sizeof=0x18
 {                                                                             // XREF: XModelLoadFile/r
-        XSurface *surfs;                                        // XREF: XModelLoadFile+B47/r
+        Ptr32<XSurface> surfs;                                        // XREF: XModelLoadFile+B47/r
         int partBits[5];                                        // XREF: XModelLoadFile+926/r
 };
 

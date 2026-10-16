@@ -1,14 +1,15 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 
 #include <gfx_d3d/fxprimitives.h>
 
 struct __declspec(align(4)) FxGenerateVertsCmd // sizeof=0x50
 {                                       // XREF: ?R_DrawEffects@@YAXPAUFxCmd@@@Z/r
-    FxSystem *system;
-    FxBeamInfo *beamInfo;
-    FxPostLightInfo *postLightInfo;
-    FxSpriteInfo *spriteInfo;
+    Ptr32<FxSystem> system;
+    Ptr32<FxBeamInfo> beamInfo;
+    Ptr32<FxPostLightInfo> postLightInfo;
+    Ptr32<FxSpriteInfo> spriteInfo;
     int localClientNum;
     float vieworg[3];
     float viewaxis[3][3];
@@ -43,9 +44,9 @@ struct FxElemPreVisualState // sizeof=0x1C
                                         // FX_CreateImpactMarkInternal/r
     float sampleLerp;                   // XREF: FX_CreateImpactMarkInternal+8E/r
     float sampleLerpInv;                // XREF: FX_CreateImpactMarkInternal+98/r
-    const FxElemDef *elemDef;
-    const FxEffect *effect;
-    const FxElemVisStateSample *refState;
+    Ptr32<const FxElemDef> elemDef;
+    Ptr32<const FxEffect> effect;
+    Ptr32<const FxElemVisStateSample> refState;
                                         // XREF: FX_CreateImpactMarkInternal+47/r
                                         // FX_CreateImpactMarkInternal+55/r ...
     int randomSeed;
@@ -55,16 +56,16 @@ struct FxElemPreVisualState // sizeof=0x1C
 struct FxDrawState // sizeof=0xDC
 {                                       // XREF: FX_DrawNonSpriteEffect/r
                                         // FX_DrawSpotLightEffect/r ...
-    const FxSystem *system;             // XREF: FX_DrawNonSpriteEffect+63/w
+    Ptr32<const FxSystem> system;             // XREF: FX_DrawNonSpriteEffect+63/w
                                         // FX_DrawSpotLightEffect+9F/w ...
-    const FxEffect *effect;             // XREF: FX_DrawNonSpriteEffect+2C/w
+    Ptr32<const FxEffect> effect;             // XREF: FX_DrawNonSpriteEffect+2C/w
                                         // FX_DrawNonSpriteEffect+3B/r ...
-    const FxElem *elem;                 // XREF: FX_DrawTrailsForEffect+70/w
-    const FxElemDef *elemDef;
+    Ptr32<const FxElem> elem;                 // XREF: FX_DrawTrailsForEffect+70/w
+    Ptr32<const FxElemDef> elemDef;
     unsigned int region;                // XREF: FX_DrawNonSpriteEffect+75/w
                                         // FX_DrawSpotLightEffect+AB/w ...
     orientation_t orient;
-    const FxCamera *camera;
+    Ptr32<const FxCamera> camera;
     FxReflectParams reflect;            // XREF: FX_DrawNonSpriteEffect+80/w
                                         // FX_DrawNonSpriteEffect+89/w ...
     int randomSeed;
@@ -84,7 +85,7 @@ struct FxDrawState // sizeof=0xDC
 struct FxTrailSegmentDrawState // sizeof=0x3C
 {                                       // XREF: FX_DrawTrail/r
                                         // FX_DrawTrail/r ...
-    FxTrailDef *trailDef;
+    Ptr32<FxTrailDef> trailDef;
     float posWorld[3];                  // XREF: FX_DrawTrail+3B3/o
                                         // FX_DrawTrail+3C4/o ...
     float basis[2][3];                  // XREF: FX_DrawTrail+3DA/o

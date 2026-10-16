@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_dpvs.h"
 
 struct DpvsStaticCellCmd;
@@ -8,7 +9,7 @@ union GfxDrawSurf;
 
 struct DpvsPlanes // sizeof=0x8
 {                                       // XREF: R_AddCellStaticSurfacesInFrustum/r
-    const DpvsPlane *planes;            // XREF: R_AddCellStaticSurfacesInFrustum+AF/w
+    Ptr32<const DpvsPlane> planes;            // XREF: R_AddCellStaticSurfacesInFrustum+AF/w
     int count;                          // XREF: R_AddCellStaticSurfacesInFrustum+4B/w
 };
 

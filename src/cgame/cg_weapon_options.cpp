@@ -29,7 +29,7 @@ void __thiscall WeaponOptions::InitWeaponOptionTextures(
                 const char *label,
                 int labelCol,
                 int textureCol,
-                const GfxImage **overrides,
+                Ptr32<const GfxImage> *overrides,
                 unsigned int num)
 {
     int i; // [esp+4h] [ebp-20Ch]
@@ -58,7 +58,7 @@ void __thiscall WeaponOptions::InitWeaponOptionMaterials(
                 const char *label,
                 int labelCol,
                 int materialCol,
-                Material **overrides,
+                Ptr32<Material> *overrides,
                 unsigned int num)
 {
     const char *materialName; // [esp+18h] [ebp-210h]

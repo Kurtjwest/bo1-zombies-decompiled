@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_material.h"
 #include "r_material_load_obj.h"
 
@@ -102,12 +103,12 @@ struct GfxCmdBufPrimState // sizeof=0x2BC
     //$0548B6ED447A4690AAB8EE4D4B1790A5 ___u0;
     union //$0548B6ED447A4690AAB8EE4D4B1790A5 // sizeof=0x4
     {                                       // XREF: R_SetAndClearSceneTarget+6D/r
-        IDirect3DDevice9 *device;
-        IDirect3DDevice9 *localDevice;
+        Ptr32<IDirect3DDevice9> device;
+        Ptr32<IDirect3DDevice9> localDevice;
     };
                                         // XREF: R_SetAndClearSceneTarget+6D/r
                                         // R_SetAndClearSceneTarget+7F/r ...
-    IDirect3DIndexBuffer9 *indexBuffer; // XREF: RB_CallExecuteRenderCommands(void)+372/r
+    Ptr32<IDirect3DIndexBuffer9> indexBuffer; // XREF: RB_CallExecuteRenderCommands(void)+372/r
                                         // RB_SetInitialState(void)+1C5/r
     MaterialVertexDeclType vertDeclType;
                                         // XREF: RB_BeginSurface(Material const *,uchar)+126/w
@@ -116,7 +117,7 @@ struct GfxCmdBufPrimState // sizeof=0x2BC
     {                                       // XREF: GfxCmdBufPrimState/r
         unsigned int stride;                // XREF: RB_SetInitialState(void):loc_AC7AC9/r
         // RB_SetInitialState(void):loc_AC7B4D/r
-        IDirect3DVertexBuffer9 *vb;         // XREF: RB_SetInitialState(void):loc_AC7A71/r
+        Ptr32<IDirect3DVertexBuffer9> vb;         // XREF: RB_SetInitialState(void):loc_AC7A71/r
         // RB_SetInitialState(void):loc_AC7AF5/r
         unsigned int offset;                // XREF: RB_SetInitialState(void):loc_AC7A9D/r
         // RB_SetInitialState(void):loc_AC7B21/r
@@ -124,33 +125,33 @@ struct GfxCmdBufPrimState // sizeof=0x2BC
     //GfxCmdBufPrimState::<unnamed_type_streams> streams[3];
                                         // XREF: RB_SetInitialState(void):loc_AC7A71/r
                                         // RB_SetInitialState(void):loc_AC7A9D/r ...
-    IDirect3DVertexDeclaration9 *vertexDecl;
+    Ptr32<IDirect3DVertexDeclaration9> vertexDecl;
                                         // XREF: RB_ClearVertexDecl(void)+6/r
                                         // RB_ClearVertexDecl(void):loc_AC6A5E/r
     GfxFrameStats frameStats;
-    GfxPrimStats *primStats;            // XREF: RB_ExecuteRenderCommandsLoop(void const *,int *)+2A5/r
+    Ptr32<GfxPrimStats> primStats;            // XREF: RB_ExecuteRenderCommandsLoop(void const *,int *)+2A5/r
                                         // RB_BeginSurface(Material const *,uchar):loc_AC706C/r ...
-    GfxPrimStats *backupPrimStats;
-    GfxViewStats *viewStats;
+    Ptr32<GfxPrimStats> backupPrimStats;
+    Ptr32<GfxViewStats> viewStats;
 };
 
 struct GfxCmdBufState // sizeof=0x13D0
 {                                       // XREF: .data:GfxCmdBufState gfxCmdBufState/r
     unsigned __int8 refSamplerState[16];
     unsigned int samplerState[16];
-    const GfxTexture *samplerTexture[16];
+    Ptr32<const GfxTexture> samplerTexture[16];
     GfxCmdBufPrimState prim;            // XREF: R_ShutdownStreams(void):loc_A515AE/o
                                         // R_SetAndClearSceneTarget+6D/r ...
-    const Material *material;           // XREF: RB_BeginSurface(Material const *,uchar)+118/w
+    Ptr32<const Material> material;           // XREF: RB_BeginSurface(Material const *,uchar)+118/w
                                         // RB_BeginSurface(Material const *,uchar)+161/w ...
     unsigned __int8 techType;           // XREF: RB_BeginSurface(Material const *,uchar)+121/w
                                         // RB_BeginSurface(Material const *,uchar)+166/w ...
     // padding byte
     // padding byte
     // padding byte
-    const MaterialTechnique *technique; // XREF: RB_BeginSurface(Material const *,uchar)+184/w
+    Ptr32<const MaterialTechnique> technique; // XREF: RB_BeginSurface(Material const *,uchar)+184/w
                                         // RB_BeginSurface(Material const *,uchar)+189/r ...
-    const MaterialPass *pass;
+    Ptr32<const MaterialPass> pass;
     unsigned int passIndex;
     GfxDepthRangeType depthRangeType;
     float depthRangeNear;
@@ -167,15 +168,15 @@ struct GfxCmdBufState // sizeof=0x13D0
     // padding byte
     unsigned int refStateBits[2];
     unsigned int activeStateBits[2];    // XREF: RB_UpdateBackEndDvarOptions+FC/r
-    const MaterialPixelShader *pixelShader;
+    Ptr32<const MaterialPixelShader> pixelShader;
                                         // XREF: RB_ClearPixelShader(void)+6/r
                                         // RB_ClearPixelShader(void):loc_AC67FF/w
-    const MaterialVertexShader *vertexShader;
+    Ptr32<const MaterialVertexShader> vertexShader;
                                         // XREF: RB_ClearVertexShader(void)+6/r
                                         // RB_ClearVertexShader(void):loc_AC692F/w ...
     unsigned int pixPrimarySortKey;
-    const Material *pixMaterial;
-    const MaterialTechnique *pixTechnique;
+    Ptr32<const Material> pixMaterial;
+    Ptr32<const MaterialTechnique> pixTechnique;
     int pixCombine;
     GfxViewport viewport;
     GfxViewport scissor;
@@ -185,7 +186,7 @@ struct GfxCmdBufState // sizeof=0x13D0
     // padding byte
     // padding byte
     // padding byte
-    const Material *origMaterial;       // XREF: RB_SetTessTechnique(Material const *,uchar):loc_AC6F8F/r
+    Ptr32<const Material> origMaterial;       // XREF: RB_SetTessTechnique(Material const *,uchar):loc_AC6F8F/r
                                         // RB_BeginSurface(Material const *,uchar)+133/w ...
     unsigned __int8 origTechType;       // XREF: RB_SetTessTechnique(Material const *,uchar)+3A/r
                                         // RB_BeginSurface(Material const *,uchar)+13C/w ...
@@ -219,11 +220,11 @@ struct GfxBackEndData;
 struct __declspec(align(16)) GfxCmdBufInput // sizeof=0xE90
 {                                       // XREF: .data:GfxCmdBufInput gfxCmdBufInput/r
     float consts[197][4];
-    const GfxImage *codeImages[TEXTURE_SRC_CODE_COUNT];     // XREF: R_UpdateFrontEndDvarOptions+249/w
+    Ptr32<const GfxImage> codeImages[TEXTURE_SRC_CODE_COUNT];     // XREF: R_UpdateFrontEndDvarOptions+249/w
     unsigned __int8 codeImageSamplerStates[TEXTURE_SRC_CODE_COUNT];
     // padding byte
     GfxCodeImageRenderTarget codeImageRenderTargetControl[TEXTURE_SRC_CODE_COUNT];
-    const GfxBackEndData *data;
+    Ptr32<const GfxBackEndData> data;
     // padding byte
     // padding byte
     // padding byte
@@ -263,8 +264,8 @@ struct GfxCmdBufSourceState // sizeof=0x1A90
     float eyeOffset[4];                 // XREF: RB_SetIdentity(void)+41/w
                                         // RB_SetIdentity(void)+51/w ...
     unsigned int shadowableLightForShadowLookupMatrix;
-    const GfxScaledPlacement *objectPlacement;
-    const GfxViewParms *viewParms3D;    // XREF: RB_TessCoronaBillboard+9/r
+    Ptr32<const GfxScaledPlacement> objectPlacement;
+    Ptr32<const GfxViewParms> viewParms3D;    // XREF: RB_TessCoronaBillboard+9/r
                                         // RB_TessCoronaBillboard+432/r ...
     unsigned int depthHackFlags;
     GfxScaledPlacement skinnedPlacement;
@@ -293,13 +294,13 @@ struct GfxCmdBufSourceState // sizeof=0x1A90
 struct GfxCmdBuf // sizeof=0x4
 {                                       // XREF: RB_FullbrightDrawCommands/r
                                         // RB_DebugShaderDrawCommands/r ...
-    IDirect3DDevice9 *device;
+    Ptr32<IDirect3DDevice9> device;
 };
 
 struct GfxCmdBufContext // sizeof=0x8
 {                                       // XREF: .rdata:GfxCmdBufContext const gfxCmdBufContext/r
-    GfxCmdBufSourceState *source;       // ...
-    GfxCmdBufState *state;              // ...
+    Ptr32<GfxCmdBufSourceState> source;       // ...
+    Ptr32<GfxCmdBufState> state;              // ...
 };
 
 void __cdecl RB_SetInitialState();

@@ -484,7 +484,7 @@ void __cdecl Scr_InitVariables(scriptInstance_t inst)
     gScrVarPub[inst].numScriptObjects = 0;
     if (gScrVarDebugPub[inst])
     {
-        gScrVarDebugPub[inst]->varUsage = (const char **)Scr_AllocVarsMem(inst, 
+        gScrVarDebugPub[inst]->varUsage = (Ptr32<const char> *)Scr_AllocVarsMem(inst, 
             4 * VARIABLELIST_SIZE(inst) /* retail 0x11FFF8 */,
             4u,
             4,

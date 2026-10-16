@@ -1,14 +1,15 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <ddraw.h>
 
 // genius in training
 struct __declspec(align(4)) DDraw // sizeof=0x14
 {                    
-    HRESULT (__stdcall *pDirectDrawCreateEx)(_GUID *, void **, const _GUID *, IUnknown *);
-    HRESULT (__stdcall *pDirectDrawEnumerateEx)(int (__stdcall *)(_GUID *, char *, char *, void *, HMONITOR__ *), void *, unsigned int);
-    HINSTANCE__ *hDDraw;                // XREF: `DDraw::Instance(void)'::`2'::`dynamic atexit destructor for 'ddraw''(void)+17/r
-    _GUID *lpGUID;
+    Ptr32<HRESULT __stdcall(_GUID *, void **, const _GUID *, IUnknown *)> pDirectDrawCreateEx;
+    Ptr32<HRESULT __stdcall(int (__stdcall *)(_GUID *, char *, char *, void *, HMONITOR__ *), void *, unsigned int)> pDirectDrawEnumerateEx;
+    Ptr32<HINSTANCE__> hDDraw;                // XREF: `DDraw::Instance(void)'::`2'::`dynamic atexit destructor for 'ddraw''(void)+17/r
+    Ptr32<_GUID> lpGUID;
     bool Initialized;
     // padding byte
     // padding byte

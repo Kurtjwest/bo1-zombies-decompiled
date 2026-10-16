@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "mem_userhunk.h"
 #include "assertive.h"
@@ -14,11 +15,11 @@ HunkUser *g_DebugHunkUser;
 
 struct ALLOCATION_SCHEME_FUNCTIONS // sizeof=0x14
 {
-    HunkUser *(__cdecl *Init)(void *, int, HU_ALLOCATION_SCHEME, unsigned int, void *, const char *, int);
-    void (__cdecl *Reset)(HunkUser *);
-    void (__cdecl *Destroy)(HunkUser *);
-    void *(__cdecl *Alloc)(HunkUser *, int, int, const char *);
-    void (__cdecl *Free)(HunkUser *, void *);
+    Ptr32<HunkUser * __cdecl(void *, int, HU_ALLOCATION_SCHEME, unsigned int, void *, const char *, int)> Init;
+    Ptr32<void __cdecl(HunkUser *)> Reset;
+    Ptr32<void __cdecl(HunkUser *)> Destroy;
+    Ptr32<void * __cdecl(HunkUser *, int, int, const char *)> Alloc;
+    Ptr32<void __cdecl(HunkUser *, void *)> Free;
 };
 
 // BO1TODO: remove casts and fix prototypes

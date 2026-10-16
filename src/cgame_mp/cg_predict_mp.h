@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "cg_local_mp.h"
 #include <qcommon/msg_mp.h>
 
 struct pmove_t // sizeof=0x910
 {                                                                             // XREF: .data:pmove_t * g_pmove/r
-    struct playerState_s *ps;
+    Ptr32<struct playerState_s> ps;
     usercmd_s cmd;                                            // XREF: PlayerCmd_Revive(scr_entref_t)+149/o
     // PlayerCmd_Revive(scr_entref_t)+18D/o
     usercmd_s oldcmd;
@@ -37,7 +38,7 @@ struct pmove_t // sizeof=0x910
     // padding byte
     // padding byte
     int localClientNum;
-    const struct gjkcc_input_t *m_gjkcc_input;
+    Ptr32<const struct gjkcc_input_t> m_gjkcc_input;
     colgeom_visitor_inlined_t<200> proximity_data;
     // zombies: SP keeps AllowStand/AllowCrouch/AllowProne in pm_flags 0x400000/0x800000/0x1000000
     // (SPPlayerPermission); KB's pm_flags bits mean other things, so the mover gets them here (0 = all allowed).

@@ -661,7 +661,7 @@ char __thiscall GlassClient::PreShatter()
     GlassRenderer *renderer; // [esp+18h] [ebp-674h]
     int i; // [esp+34h] [ebp-658h]
     GlassShard *baseShard; // [esp+38h] [ebp-654h]
-    Allocator::Memory **buffer; // [esp+3Ch] [ebp-650h]
+    Ptr32<Allocator::Memory> *buffer; // [esp+3Ch] [ebp-650h]
     int numNewShards; // [esp+40h] [ebp-64Ch]
     const GlassShard *newShards[400]; // [esp+44h] [ebp-648h] BYREF
     GlassShard *shard; // [esp+688h] [ebp-4h]

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct gentity_s;
 struct SpawnVar;
@@ -12,8 +13,8 @@ struct actor_grenade_landing_sp_t
     float position[3];
     int time;
     bool populated;
-    gentity_s *throwbackOwner; // SP missile entity+0x210; no KB missile member
-    gentity_s *originalThrowbackOwner; // SP entity+0x27c, cleared by the actor-only reinitializer
+    Ptr32<gentity_s> throwbackOwner; // SP missile entity+0x210; no KB missile member
+    Ptr32<gentity_s> originalThrowbackOwner; // SP entity+0x27c, cleared by the actor-only reinitializer
 };
 actor_grenade_landing_sp_t *Actor_SP_GrenadeLandingCache(const gentity_s *grenade);
 void Actor_SP_ResetGrenadeLandingCaches();

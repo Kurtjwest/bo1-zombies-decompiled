@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "glass.h"
 
 struct gentity_s;
@@ -11,7 +12,7 @@ struct trace_t;
 struct GlassServer // sizeof=0x2C
 {                                       // XREF: GlassesServer/r
     GlassState state;
-    Glass *glass;
+    Ptr32<Glass> glass;
     int stateChangeTime;
     float health;
     float crackedDamageRate;
@@ -33,9 +34,9 @@ struct GlassesServer // sizeof=0xABF8
                                         // GlassSv_AreaGlasses(float const * const,float const * const,Glass const * * const,uint):loc_9A00C1/r ...
     GlassServer glasses[1000];          // XREF: GlassSv_AreaGlasses(float const * const,float const * const,Glass const * * const,uint)+58/o
                                         // GlassSv_PointTrace(pointtrace_t const *,trace_t *)+61/o ...
-    const dvar_s *damageMultiplier;     // XREF: GlassSv_Damage(uint,int,int,float const * const,float const * const)+70/r
+    Ptr32<const dvar_s> damageMultiplier;     // XREF: GlassSv_Damage(uint,int,int,float const * const,float const * const)+70/r
                                         // GlassSv_Damage(uint,int,int,float const * const,float const * const)+146/r
-    const dvar_s *crackedDamageRateRange;
+    Ptr32<const dvar_s> crackedDamageRateRange;
                                         // XREF: GlassServer::SetState(GlassState::State,float const * const,float const * const)+2B/r
                                         // GlassServer::SetState(GlassState::State,float const * const,float const * const)+38/r
     void __thiscall Init();

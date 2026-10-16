@@ -1,13 +1,14 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rb_state.h"
 #include "r_rendercmds.h"
 
 struct GfxPointLitSurfsInfo // sizeof=0x1C
 {                                       // XREF: R_DrawPointLitSurfs/r
-    const GfxViewInfo *viewInfo;        // XREF: R_DrawPointLitSurfs+9F/w
-    GfxMeshData *clearQuadMesh;         // XREF: R_DrawPointLitSurfs+FD/w
+    Ptr32<const GfxViewInfo> viewInfo;        // XREF: R_DrawPointLitSurfs+9F/w
+    Ptr32<GfxMeshData> clearQuadMesh;         // XREF: R_DrawPointLitSurfs+FD/w
                                         // R_DrawPointLitSurfs+81C/r
-    const GfxDrawSurfListInfo *drawSurfInfo;
+    Ptr32<const GfxDrawSurfListInfo> drawSurfInfo;
                                         // XREF: R_DrawPointLitSurfs+E7/w
     unsigned int x;                     // XREF: R_DrawPointLitSurfs+6CF/w
                                         // R_DrawPointLitSurfs+74F/r ...

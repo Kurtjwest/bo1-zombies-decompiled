@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "actor_sp_ext.h"
 
 #include <game/actor_animapi.h>
@@ -173,7 +174,7 @@ void Actor_SP_FreeExt(actor_s *actor)
 
 struct actor_sp_ext_field_t
 {
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
 };
 

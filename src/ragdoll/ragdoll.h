@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include <xanim/dobj.h>
 #include <bgame/bg_local.h>
@@ -140,8 +141,8 @@ struct RagdollBody // sizeof=0xA28
     int references;
     int ragdollDef;
     int dobj;
-    DObj *obj;
-    const cpose_t *pose;
+    Ptr32<DObj> obj;
+    Ptr32<const cpose_t> pose;
     float poseOffset[3];
     int localClientNum;
     RagdollBodyState state;
@@ -165,13 +166,13 @@ struct RagdollBody // sizeof=0xA28
     hitLocation_t storedAttachHitLoc;
     int storedAttachEnt;
     int storedPhysObjId;
-    rigid_body_constraint_point *debug_hang_point;
-    rigid_body_constraint_point *hang_point;
+    Ptr32<rigid_body_constraint_point> debug_hang_point;
+    Ptr32<rigid_body_constraint_point> hang_point;
     int start_hang_time;
-    broad_phase_group *m_bpg;
-    broad_phase_collision_pair *m_list_bpcp;
+    Ptr32<broad_phase_group> m_bpg;
+    Ptr32<broad_phase_collision_pair> m_list_bpcp;
     int rope_id;
-    void *rbc_dist;
+    Ptr32<void> rbc_dist;
     // zombies: SP RagdollBody+0xa24 / +0xa28 (not in KB's 0xA28 MP layout): the client physics-gravity override taken
     // from the SetPhysicsGravity table by CG_CreateRagdollObject (SP 0x0046adb1), read by Ragdoll_CreatePhysObj (SP 0x00832b93).
     bool spPhysGravityOverride;

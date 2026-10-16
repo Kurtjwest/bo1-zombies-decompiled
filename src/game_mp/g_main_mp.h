@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <game/teams.h>
 #include <universal/q_shared.h>
@@ -116,29 +117,29 @@ struct gclient_s // sizeof=0x29E0
 
 struct __declspec(align(64)) level_locals_t // sizeof=0x3880
 {                                       // XREF: .data:level_locals_t level/r
-    struct gclient_s *clients;                 // XREF: MatchRecordMovement(void)+133/r
+    Ptr32<struct gclient_s> clients;                 // XREF: MatchRecordMovement(void)+133/r
                                         // MatchRecordMovement(void)+149/r ...
-    gentity_s *gentities;               // XREF: ClientEndFrame(gentity_s *)+C61/r
+    Ptr32<gentity_s> gentities;               // XREF: ClientEndFrame(gentity_s *)+C61/r
                                         // ClientEndFrame(gentity_s *)+C87/r ...
     int gentitySize;
     int num_entities;                   // XREF: Cmd_EntityCount_f(gentity_s *):loc_612A72/r
                                         // G_FreeEntities(bool)+2E/r ...
-    gentity_s *firstFreeEnt;            // XREF: DrawEntityCounts+B7/r
+    Ptr32<gentity_s> firstFreeEnt;            // XREF: DrawEntityCounts+B7/r
                                         // G_FreeEntities(bool)+12A/w ...
-    gentity_s *lastFreeEnt;             // XREF: G_FreeEntities(bool)+134/w
+    Ptr32<gentity_s> lastFreeEnt;             // XREF: G_FreeEntities(bool)+134/w
                                         // G_InitGame(int,int,int,int,int)+649/w ...
-    struct scr_vehicle_s *vehicles;            // XREF: G_RunFrameForEntity+34E/r
+    Ptr32<struct scr_vehicle_s> vehicles;            // XREF: G_RunFrameForEntity+34E/r
                                         // G_InitScrVehicles(void):loc_66C758/w
-    gentity_s *firstFreeActor;
-    gentity_s *lastFreeActor;
+    Ptr32<gentity_s> firstFreeActor;
+    Ptr32<gentity_s> lastFreeActor;
     int num_actors;
-    struct sentient_s *sentients;              // XREF: G_InitGame(int,int,int,int,int)+5DA/w
+    Ptr32<struct sentient_s> sentients;              // XREF: G_InitGame(int,int,int,int,int)+5DA/w
                                         // turret_findBestTarget+165/r ...
-    struct actor_s *actors;                    // XREF: G_FreeEntities(bool):loc_626429/r
+    Ptr32<struct actor_s> actors;                    // XREF: G_FreeEntities(bool):loc_626429/r
                                         // G_FreeEntities(bool)+A3/r ...
     int actorCorpseCount;               // XREF: G_InitGame(int,int,int,int,int)+325/w
                                         // G_InitGame(int,int,int,int,int)+32A/r ...
-    struct TurretInfo *turrets;                // XREF: G_InitTurrets(void):loc_69F71E/w
+    Ptr32<struct TurretInfo> turrets;                // XREF: G_InitTurrets(void):loc_69F71E/w
     int logFile;                        // XREF: G_InitGame(int,int,int,int,int)+1E9/o
                                         // G_InitGame(int,int,int,int,int)+204/o ...
     int initializing;                   // XREF: Cmd_Give_f(gentity_s *)+2E4/w
@@ -194,7 +195,7 @@ struct __declspec(align(64)) level_locals_t // sizeof=0x3880
                                         // G_RunFrame(int)+39D/w ...
     int openScriptIOFileHandles[1];     // XREF: G_InitGame(int,int,int,int,int)+2D2/w
                                         // G_ShutdownGame(int)+18A/r ...
-    char *openScriptIOFileBuffers[1];   // XREF: G_InitGame(int,int,int,int,int)+2E3/w
+    Ptr32<char> openScriptIOFileBuffers[1];   // XREF: G_InitGame(int,int,int,int,int)+2E3/w
                                         // G_ShutdownGame(int)+15A/r ...
     com_parse_mark_t currentScriptIOLineMark[1];
                                         // XREF: G_InitGame(int,int,int,int,int)+2F9/o

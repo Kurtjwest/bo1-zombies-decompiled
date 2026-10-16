@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <gfx_d3d/r_rendercmds.h>
 
 enum leType_t : __int32
@@ -11,9 +12,9 @@ enum leType_t : __int32
 struct localEntity_s // sizeof=0x68
 {                                       // XREF: .data:cg_localEntities/r
                                         // .data:localEntity_s * cg_activeLocalEntities/r ...
-    localEntity_s *prev;                // XREF: CG_InitLocalEntities(int)+4B/w
+    Ptr32<localEntity_s> prev;                // XREF: CG_InitLocalEntities(int)+4B/w
                                         // CG_AllocLocalEntity(int)+4E/r
-    localEntity_s *next;                // XREF: CG_InitLocalEntities(int)+34/w
+    Ptr32<localEntity_s> next;                // XREF: CG_InitLocalEntities(int)+34/w
                                         // CG_InitLocalEntities(int)+AA/w ...
     leType_t leType;
     float tracerWidth;

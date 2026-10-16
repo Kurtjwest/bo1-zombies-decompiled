@@ -3,7 +3,7 @@
 
 struct StreamDelayInfo // sizeof=0x8
 {                                       // XREF: .data:StreamDelayInfo * g_streamDelayArray/r
-    const void *ptr;                    // XREF: Load_Stream(bool,void const *,int)+CE/w
+    Ptr32<const void> ptr;                    // XREF: Load_Stream(bool,void const *,int)+CE/w
                                         // Load_DelayStream(void)+26/r
     int size;                           // XREF: Load_Stream(bool,void const *,int)+DD/w
                                         // Load_DelayStream(void)+33/r

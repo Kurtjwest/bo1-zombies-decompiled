@@ -1,3 +1,5 @@
+#include <map>
+#include <mutex>
 #include <universal/bo1_ptrcast.h>
 #include "dvar.h"
 #include <database/db_registry.h>
@@ -761,7 +763,7 @@ void __cdecl Dvar_SetModified(const dvar_s *dvar)
     ((dvar_s *)dvar)->modified = 1;
 }
 
-void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, const char **stringTable)
+void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, Ptr32<const char> *stringTable)
 {
     const char *v2; // eax
     const char *v3; // eax
@@ -2446,9 +2448,51 @@ const dvar_s *__cdecl _Dvar_RegisterString(
     return Dvar_RegisterVariant((char*)dvarName, DVAR_TYPE_STRING, flags, dvarValue, v5, description);
 }
 
+#if BO1_PTR32_IS_CLASS
+// Enum dvars keep their value list in a 32-bit pointer field (DvarLimits_enum::strings: an array of 32-bit string
+// pointers, see src/universal/ptr32.h). A string table built natively (const char *[]) is copied into such an array,
+// one per table, refreshed on every registration so tables rebuilt in place stay current.
+static Ptr32<const char> *Dvar_EnumListHandles(const char **list)
+{
+    static std::mutex lock;
+    static std::map<const char **, std::pair<Ptr32<const char> *, int>> cache;
+    if (!list)
+        return nullptr;
+    int count = 0;
+    while (list[count])
+        ++count;
+    std::lock_guard<std::mutex> g(lock);
+    std::pair<Ptr32<const char> *, int> &entry = cache[list];
+    if (!entry.first || entry.second < count)
+    {
+        entry.first = (Ptr32<const char> *)malloc(sizeof(Ptr32<const char>) * (count + 1));
+        entry.second = count;
+    }
+    for (int i = 0; i < count; ++i)
+        entry.first[i] = list[i];
+    entry.first[count] = nullptr;
+    return entry.first;
+}
+
 const dvar_s *__cdecl _Dvar_RegisterEnum(
                 const char *dvarName,
                 const char **valueList,
+                int defaultIndex,
+                unsigned __int16 flags,
+                const char *description)
+{
+    return _Dvar_RegisterEnum(dvarName, Dvar_EnumListHandles(valueList), defaultIndex, flags, description);
+}
+
+void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, const char **stringTable)
+{
+    Dvar_UpdateEnumDomain(dvar, Dvar_EnumListHandles(stringTable));
+}
+#endif
+
+const dvar_s *__cdecl _Dvar_RegisterEnum(
+                const char *dvarName,
+                Ptr32<const char> *valueList,
                 int defaultIndex,
                 unsigned __int16 flags,
                 const char *description)

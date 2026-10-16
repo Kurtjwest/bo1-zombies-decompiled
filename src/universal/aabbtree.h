@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct GenericAabbTree // sizeof=0x10
 {
@@ -11,7 +12,7 @@ struct GenericAabbTree // sizeof=0x10
 struct GenericAabbTreeOptions // sizeof=0x28
 {                                       // XREF: R_GenerateHighmipAabbs/r
                                         // XModelReadSurface_BuildCollisionTree/r
-    void *items;                        // XREF: R_GenerateHighmipAabbs+2C/w
+    Ptr32<void> items;                        // XREF: R_GenerateHighmipAabbs+2C/w
                                         // R_GenerateHighmipAabbs+141/w ...
     int itemCount;                      // XREF: R_GenerateHighmipAabbs+2F/w
                                         // R_GenerateHighmipAabbs+147/w ...
@@ -19,11 +20,11 @@ struct GenericAabbTreeOptions // sizeof=0x28
                                         // R_GenerateHighmipAabbs+14A/w ...
     int maintainValidBounds;            // XREF: R_GenerateHighmipAabbs+35/w
                                         // R_GenerateHighmipAabbs+4A/w ...
-    float (*mins)[3];                   // XREF: R_GenerateHighmipAabbs+38/w
+    Ptr32<float[3]> mins;                   // XREF: R_GenerateHighmipAabbs+38/w
                                         // R_GenerateHighmipAabbs+85/w ...
-    float (*maxs)[3];                   // XREF: R_GenerateHighmipAabbs+3B/w
+    Ptr32<float[3]> maxs;                   // XREF: R_GenerateHighmipAabbs+3B/w
                                         // R_GenerateHighmipAabbs+BC/w ...
-    GenericAabbTree *treeNodePool;      // XREF: R_GenerateHighmipAabbs+3E/w
+    Ptr32<GenericAabbTree> treeNodePool;      // XREF: R_GenerateHighmipAabbs+3E/w
                                         // R_GenerateHighmipAabbs+D2/w ...
     int treeNodeLimit;                  // XREF: R_GenerateHighmipAabbs+41/w
                                         // R_GenerateHighmipAabbs+D5/w ...

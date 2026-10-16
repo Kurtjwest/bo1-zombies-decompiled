@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct __declspec(align(4)) WaveletDecode // sizeof=0x20
 {                                       // XREF: Image_LoadWavelet/r
     unsigned __int16 value;             // XREF: Image_LoadWavelet+A7/w
     unsigned __int16 bit;               // XREF: Image_LoadWavelet+AD/w
-    const unsigned __int8 *data;        // XREF: Image_LoadWavelet+189/w
+    Ptr32<const unsigned __int8> data;        // XREF: Image_LoadWavelet+189/w
     int width;                          // XREF: Image_LoadWavelet+B8/w
                                         // Image_LoadWavelet+198/r
     int height;                         // XREF: Image_LoadWavelet+C2/w

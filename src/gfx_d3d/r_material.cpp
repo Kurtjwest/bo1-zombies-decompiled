@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "r_material.h"
 #include <universal/com_memory.h>
@@ -426,7 +427,7 @@ const BuiltInMaterialTable s_builtInMaterials[122] =
 struct $5803DA4EE1143C7EE9D14DA3FE11ED2E // sizeof=0x2004
 {                                       // XREF: .data:materialGlobals/r
     int techniqueSetCount;
-    MaterialTechniqueSet *techniqueSetHashTable[2048];
+    Ptr32<MaterialTechniqueSet> techniqueSetHashTable[2048];
 };
 $5803DA4EE1143C7EE9D14DA3FE11ED2E materialGlobals;
 

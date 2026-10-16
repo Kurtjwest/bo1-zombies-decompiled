@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 
 #include <xapobase.h>
@@ -103,7 +104,7 @@ struct StreamVoice : IXAudio2VoiceCallback // sizeof=0x50
 struct VoiceInfo // sizeof=0x44
 {                                       // XREF: SoundState/r
     snd_dsp_source_params params;
-    SDXA2SourceEffect *sourceDsp;
+    Ptr32<SDXA2SourceEffect> sourceDsp;
 };
 
 struct __declspec(align(128)) SoundState // sizeof=0x3EF600
@@ -111,21 +112,21 @@ struct __declspec(align(128)) SoundState // sizeof=0x3EF600
     int deviceIndex;                    // XREF: SD_XAudio2Done(void)+35/w
     int deviceGUIDValid;                // XREF: SD_XAudio2Done(void)+2B/w
     _GUID deviceGUID;                   // XREF: SD_XAudio2Done(void)+41/w
-    IXAudio2 *xa2;                      // XREF: SD_XAudio2Done(void)+3/r
+    Ptr32<IXAudio2> xa2;                      // XREF: SD_XAudio2Done(void)+3/r
     XAUDIO2_DEVICE_DETAILS details;     // XREF: SD_Init(void)+5D/o
-    IXAudio2MasteringVoice *masterVoice; // XREF: SD_Init(void)+6A/w
+    Ptr32<IXAudio2MasteringVoice> masterVoice; // XREF: SD_Init(void)+6A/w
     XAUDIO2_VOICE_DETAILS masterVoiceDetails; // XREF: SD_Init(void)+76/w
-    IXAudio2SubmixVoice *masterBus;     // XREF: iSND_CreateVoice+51F/r
+    Ptr32<IXAudio2SubmixVoice> masterBus;     // XREF: iSND_CreateVoice+51F/r
     SDXA2MasterBusEffect masterDsp;     // XREF: SND_InitMasterVoice+122/o
     snd_dsp_master_params masterParams; // XREF: SD_Init(void)+96/o
-    IXAudio2SubmixVoice *novoiceBus;    // XREF: iSND_CreateVoice:loc_93EF9C/r
+    Ptr32<IXAudio2SubmixVoice> novoiceBus;    // XREF: iSND_CreateVoice:loc_93EF9C/r
     SDXA2MasterNoVoiceBusEffect novoiceDsp;
     snd_dsp_master_no_voice_params novoiceParams;
-    IXAudio2SubmixVoice *radverbBus;    // XREF: iSND_CreateVoice+548/r
+    Ptr32<IXAudio2SubmixVoice> radverbBus;    // XREF: iSND_CreateVoice+548/r
     SDXA2RadverbEffect radverbDsp;      // XREF: SND_InitMasterVoice+17C/o
     snd_rv_params radverbParams;        // XREF: SD_Init(void)+E7/o
     SDXA2SourceEffect voiceDsp[148];    // XREF: SDXA2_VoiceDspAllocate(void)+2E/o
-    IXAudio2SourceVoice *voices[SND_MAX_VOICES];    // XREF: SD_StopVoice(int)+9/r
+    Ptr32<IXAudio2SourceVoice> voices[SND_MAX_VOICES];    // XREF: SD_StopVoice(int)+9/r
     VoiceInfo voiceInfos[SND_MAX_VOICES];           // XREF: iSND_CreateVoice+7D/o
     StreamVoice streamVoices[SND_MAX_STREAM_VOICES];       // XREF: iSND_ReleaseStreamBuffer+64/o
     XAUDIO2_PERFORMANCE_DATA perfData;  // XREF: SD_Init(void)+10C/o

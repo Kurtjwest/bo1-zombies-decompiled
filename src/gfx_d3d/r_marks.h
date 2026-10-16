@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <xanim/dobj.h>
 #include <bgame/bg_local.h>
 #include "r_dpvs.h"
@@ -44,8 +45,8 @@ struct FxMarkTri // sizeof=0xC
 
 struct __declspec(align(4)) MarkInfoCollidedDObj // sizeof=0xC
 {                                       // XREF: MarkInfo/r
-    DObj *dObj;
-    cpose_t *pose;
+    Ptr32<DObj> dObj;
+    Ptr32<cpose_t> pose;
     unsigned __int16 entnum;
     // padding byte
     // padding byte
@@ -54,10 +55,10 @@ struct __declspec(align(4)) MarkInfoCollidedDObj // sizeof=0xC
 struct MarkGenContext // sizeof=0x14
 {
     int localClientNum;
-    Material *material;
+    Ptr32<Material> material;
     float radius;
-    const unsigned __int8 *nativeColor;
-    const FxMarkAlphaFade *markAlpha;
+    Ptr32<const unsigned __int8> nativeColor;
+    Ptr32<const FxMarkAlphaFade> markAlpha;
 };
 
 struct MarkClipPlaneSet // sizeof=0xB4
@@ -71,8 +72,8 @@ struct FxMarkPoint;
 
 struct __declspec(align(4)) MarkInfoCollidedBModel // sizeof=0xC
 {                                       // XREF: MarkInfo/r
-    GfxBrushModel *brushModel;
-    cpose_t *pose;
+    Ptr32<GfxBrushModel> brushModel;
+    Ptr32<cpose_t> pose;
     unsigned __int16 entnum;
     // padding byte
     // padding byte
@@ -101,11 +102,11 @@ struct __declspec(align(4)) MarkInfo // sizeof=0x4AC
     float localHitNormal[3];
     float axis[3][3];
     float radius;
-    Material *material;
+    Ptr32<Material> material;
     int maxTris;
-    FxMarkTri *tris;
+    Ptr32<FxMarkTri> tris;
     int maxPoints;
-    FxMarkPoint *points;
+    Ptr32<FxMarkPoint> points;
     float mins[3];
     float maxs[3];
     MarkClipPlaneSet clipPlanes;
@@ -123,8 +124,8 @@ struct __declspec(align(4)) MarkInfo // sizeof=0x4AC
     int sceneBModelCollidedCount;
     int usedTriCount;
     int usedPointCount;
-    void (__cdecl *callback)(void *, int, FxMarkTri *, int, FxMarkPoint *, const float *, const float *, const float *, const bool);
-    void *callbackContext;
+    Ptr32<void __cdecl(void *, int, FxMarkTri *, int, FxMarkPoint *, const float *, const float *, const float *, const bool)> callback;
+    Ptr32<void> callbackContext;
     bool isSeeThruDecal;                // XREF: FX_ImpactMark_Generate+B4/w
     // padding byte
     // padding byte
@@ -133,13 +134,13 @@ struct __declspec(align(4)) MarkInfo // sizeof=0x4AC
 
 struct MarkModelCoreContext // sizeof=0x1C
 {                                       // XREF: R_MarkFragments_AnimatedXModel_VertList/r
-    MarkInfo *markInfo;                 // XREF: R_MarkFragments_XModelSurface_Basic+1F0/w
-    GfxMarkContext *markContext;        // XREF: R_MarkFragments_XModelSurface_Basic+1F9/w
-    const float *markOrigin;            // XREF: R_MarkFragments_XModelSurface_Basic+202/w
-    const float *markDir;               // XREF: R_MarkFragments_XModelSurface_Basic+20E/w
-    const MarkClipPlaneSet *clipPlanes; // XREF: R_MarkFragments_XModelSurface_Basic+21D/w
-    const float (*transformMatrix)[3];  // XREF: R_MarkFragments_XModelSurface_Basic+226/w
-    const float (*transformNormalMatrix)[3];
+    Ptr32<MarkInfo> markInfo;                 // XREF: R_MarkFragments_XModelSurface_Basic+1F0/w
+    Ptr32<GfxMarkContext> markContext;        // XREF: R_MarkFragments_XModelSurface_Basic+1F9/w
+    Ptr32<const float> markOrigin;            // XREF: R_MarkFragments_XModelSurface_Basic+202/w
+    Ptr32<const float> markDir;               // XREF: R_MarkFragments_XModelSurface_Basic+20E/w
+    Ptr32<const MarkClipPlaneSet> clipPlanes; // XREF: R_MarkFragments_XModelSurface_Basic+21D/w
+    Ptr32<const float[3]> transformMatrix;  // XREF: R_MarkFragments_XModelSurface_Basic+226/w
+    Ptr32<const float[3]> transformNormalMatrix;
 };
 
 struct GfxSurface;

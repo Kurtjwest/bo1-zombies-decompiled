@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <DemonWare/bdCore/bdContainers/bdByteBuffer.h>
 #include <DemonWare/bdPlatform/bdPlatformLog/bdPlatformLog.h>
 #include <DemonWare/bdCore/bdContainers/bdArray.h>
@@ -88,14 +89,14 @@ struct bdRemoteTask : bdReferencable // sizeof=0x40
     float m_timeout;
     bdRemoteTask::bdStatus m_status;
     bdReference<bdByteBuffer> m_byteResults;
-    bdTaskResult *m_taskResult;
-    bdTaskResult **m_taskResultList;
+    Ptr32<bdTaskResult> m_taskResult;
+    Ptr32<Ptr32<bdTaskResult>> m_taskResultList;
     unsigned int m_numResults;
     unsigned int m_maxNumResults;
     unsigned int m_totalNumResults;
     unsigned __int64 m_transactionID;
     bdLobbyErrorCode m_errorCode;
-    bdTaskResultProcessor *m_taskResultProcessor;
+    Ptr32<bdTaskResultProcessor> m_taskResultProcessor;
                                         // XREF: bdHTTPClient::resolveHostIP(bdAddr &)+72/o
                                         // bdHTTPClient::resolveHostIP(bdAddr &)+80/w ...
 
@@ -134,9 +135,9 @@ struct bdRemoteTask : bdReferencable // sizeof=0x40
 struct TaskRecord // sizeof=0x34
 {                                       // XREF: .data:s_taskActiveHead/r
                                         // .data:s_taskRecords/r ...
-    TaskRecord *next;                   // XREF: TaskManager2_Init(void)+4/w
+    Ptr32<TaskRecord> next;                   // XREF: TaskManager2_Init(void)+4/w
                                         // TaskManager2_Init(void)+E/w ...
-    const struct TaskDefinition *definition;   // XREF: TaskManager2_PickUpDeferredTasks(void)+101/r
+    Ptr32<const struct TaskDefinition> definition;   // XREF: TaskManager2_PickUpDeferredTasks(void)+101/r
                                         // TaskManager2_PickUpDeferredTasks(void)+120/r ...
     TaskState state;
     int controllerIndex;
@@ -147,8 +148,8 @@ struct TaskRecord // sizeof=0x34
     bdReference<bdRemoteTask> remoteTask;
                                         // XREF: TaskManager2_PickUpDeferredTasks(void)+69/r
                                         // TaskManager2_PickUpDeferredTasks(void)+E5/r ...
-    TaskRecord *nestedTask;
-    void *payload;                      // XREF: TaskManager2_ProcessDemonwareTask(TaskRecord *)+205/w
+    Ptr32<TaskRecord> nestedTask;
+    Ptr32<void> payload;                      // XREF: TaskManager2_ProcessDemonwareTask(TaskRecord *)+205/w
                                         // TaskManager2_ProcessDemonwareTask(TaskRecord *)+386/w ...
     bool isChildTask;
     // padding byte
@@ -162,11 +163,11 @@ const struct __declspec(align(8)) TaskDefinition // sizeof=0x20
 {                                       // XREF: .rdata:task_RequestCACValidate/r
                                         // .rdata:task_QuickMatchFindSessions/r ...
     unsigned __int64 category;
-    const char *name;
+    Ptr32<const char> name;
     int payloadSize;
-    void (__cdecl *completed_callback)(TaskRecord *);
-    void (__cdecl *failure_callback)(TaskRecord *);
-    TaskRecord *nestedTask;
+    Ptr32<void __cdecl(TaskRecord *)> completed_callback;
+    Ptr32<void __cdecl(TaskRecord *)> failure_callback;
+    Ptr32<TaskRecord> nestedTask;
     // padding byte
     // padding byte
     // padding byte
@@ -327,24 +328,24 @@ struct __declspec(align(8)) dwFileOperationInfo // sizeof=0x120
                                         // LiveStorage_FetchOnlineWAD(int)+15C/w
     bool isCompressedFile;              // XREF: SV_AP_GetControlFile(void)+2A/w
                                         // LiveStorage_FetchOnlineWAD(int)+163/w
-    const char *menuDef;
-    unsigned __int8 *fileBuffer;        // XREF: SV_AP_GetControlFile(void)+3B/w
+    Ptr32<const char> menuDef;
+    Ptr32<unsigned __int8> fileBuffer;        // XREF: SV_AP_GetControlFile(void)+3B/w
                                         // LiveStorage_FetchOnlineWAD(int)+174/w ...
     int bufferSize;                     // XREF: SV_AP_GetControlFile(void)+45/w
                                         // LiveStorage_FetchOnlineWAD(int)+17E/w
-    void (__cdecl *fileOperationSucessFunction)(const int, void *);
+    Ptr32<void __cdecl(const int, void *)> fileOperationSucessFunction;
                                         // XREF: SV_AP_GetControlFile(void)+4F/w
                                         // LiveStorage_FetchOnlineWAD(int)+188/w
-    taskCompleteResults (__cdecl *fileNotFoundFunction)(const int, void *);
+    Ptr32<taskCompleteResults __cdecl(const int, void *)> fileNotFoundFunction;
                                         // XREF: SV_AP_GetControlFile(void)+59/w
                                         // LiveStorage_FetchOnlineWAD(int)+192/w
-    void (__cdecl *fileOperationFailureFunction)(const int, void *);
+    Ptr32<void __cdecl(const int, void *)> fileOperationFailureFunction;
     // padding byte
     // padding byte
     // padding byte
     // padding byte
     unsigned __int64 ownerID;
-    bool *alreadyUploaded;
+    Ptr32<bool> alreadyUploaded;
     // padding byte
     // padding byte
     // padding byte
@@ -355,14 +356,14 @@ struct __declspec(align(8)) dwFileOperationInfo // sizeof=0x120
 struct dwFileShareGetRatingTask // sizeof=0x24
 {                                       // XREF: playerFileOperations/r
     fileShareLocation location;
-    unsigned __int64 *fileIDs;
+    Ptr32<unsigned __int64> fileIDs;
     int maxFilesToFetch;
     int leaderboardID;
-    bdVoteRankStatsInfo *outStatsInfo;
-    int *outNumRatingsReceived;
+    Ptr32<bdVoteRankStatsInfo> outStatsInfo;
+    Ptr32<int> outNumRatingsReceived;
     int cacheLoadedFileCount;
-    void (__cdecl *successCallback)();
-    void (__cdecl *failureCallback)();
+    Ptr32<void __cdecl()> successCallback;
+    Ptr32<void __cdecl()> failureCallback;
 };
 
 struct bdFileID : bdTaskResult // sizeof=0x10
@@ -380,32 +381,32 @@ struct dwFileShareDescriptorsTask // sizeof=0x24
 {                                       // XREF: playerFileOperations/r
     fileShareLocation location;
     unsigned int numFiles;
-    bdFileID *fileIDs;
+    Ptr32<bdFileID> fileIDs;
     int cacheLoadedFileCount;
-    bdFileMetaData *descriptors;
-    int *descriptorCount;
+    Ptr32<bdFileMetaData> descriptors;
+    Ptr32<int> descriptorCount;
     bool getFirstSummary;
     bool getLastSummary;
     // padding byte
     // padding byte
-    void (__cdecl *successCallback)();
-    void (__cdecl *failureCallback)();
+    Ptr32<void __cdecl()> successCallback;
+    Ptr32<void __cdecl()> failureCallback;
 };
 
 struct fileShareSearchInfo_t // sizeof=0x30
 {                                       // XREF: Live_FileShareSearch_LoadBook/r
-    bdTag *tags;                        // XREF: Live_FileShareSearch_LoadBook:loc_964DD6/w
+    Ptr32<bdTag> tags;                        // XREF: Live_FileShareSearch_LoadBook:loc_964DD6/w
     int numTags;                        // XREF: Live_FileShareSearch_LoadBook+F2/w
     fileShareLocation location;         // XREF: Live_FileShareSearch_LoadBook+FB/w
     int startIndex;                     // XREF: Live_FileShareSearch_LoadBook+104/w
     int maxFileIDs;                     // XREF: Live_FileShareSearch_LoadBook+107/w
-    bdFileID *outFileIDs;               // XREF: Live_FileShareSearch_LoadBook+10E/w
-    int *outFileCount;                  // XREF: Live_FileShareSearch_LoadBook+115/w
-    bdVoteRankStatsInfo *outRatings;    // XREF: Live_FileShareSearch_LoadBook+11C/w
-    int *outRatingCount;                // XREF: Live_FileShareSearch_LoadBook+123/w
-    int *outTotalFileCount;             // XREF: Live_FileShareSearch_LoadBook+12A/w
-    void (__cdecl *successCallback)();  // XREF: Live_FileShareSearch_LoadBook+131/w
-    void (__cdecl *failureCallback)();  // XREF: Live_FileShareSearch_LoadBook+138/w
+    Ptr32<bdFileID> outFileIDs;               // XREF: Live_FileShareSearch_LoadBook+10E/w
+    Ptr32<int> outFileCount;                  // XREF: Live_FileShareSearch_LoadBook+115/w
+    Ptr32<bdVoteRankStatsInfo> outRatings;    // XREF: Live_FileShareSearch_LoadBook+11C/w
+    Ptr32<int> outRatingCount;                // XREF: Live_FileShareSearch_LoadBook+123/w
+    Ptr32<int> outTotalFileCount;             // XREF: Live_FileShareSearch_LoadBook+12A/w
+    Ptr32<void __cdecl()> successCallback;  // XREF: Live_FileShareSearch_LoadBook+131/w
+    Ptr32<void __cdecl()> failureCallback;  // XREF: Live_FileShareSearch_LoadBook+138/w
 };
 
 struct __declspec(align(8)) fileShareReadFileInfo // sizeof=0x30
@@ -417,7 +418,7 @@ struct __declspec(align(8)) fileShareReadFileInfo // sizeof=0x30
                                         // SV_GameType_DownloadFromFileshare_f(void)+10D/w ...
     fileShareLocation location;         // XREF: UI_Gametype_DownloadFromFileShare_f(void)+65/w
                                         // SV_GameType_DownloadFromFileshare_f(void)+110/w ...
-    char *buffer;                       // XREF: UI_Gametype_DownloadFromFileShare_f(void)+80/w
+    Ptr32<char> buffer;                       // XREF: UI_Gametype_DownloadFromFileShare_f(void)+80/w
                                         // UI_Gametype_DownloadFromFileShare_f(void)+8E/r ...
     unsigned int bufferSize;            // XREF: UI_Gametype_DownloadFromFileShare_f(void)+83/w
                                         // SV_GameType_DownloadFromFileshare_f(void)+12E/w ...
@@ -426,14 +427,14 @@ struct __declspec(align(8)) fileShareReadFileInfo // sizeof=0x30
     // padding byte
     // padding byte
     // padding byte
-    void *cacheBuffer;                  // XREF: UI_Gametype_DownloadFromFileShare_f(void)+91/w
+    Ptr32<void> cacheBuffer;                  // XREF: UI_Gametype_DownloadFromFileShare_f(void)+91/w
                                         // SV_GameType_DownloadFromFileshare_f(void)+13C/w ...
-    void (__cdecl *dataCallback)(void *, unsigned int, unsigned int, unsigned int);
+    Ptr32<void __cdecl(void *, unsigned int, unsigned int, unsigned int)> dataCallback;
                                         // XREF: Demo_DownloadFile(int,char *,unsigned __int64,int,bool,bool)+A6/w
-    void (__cdecl *successCallback)(dwFileShareReadFileTask *);
+    Ptr32<void __cdecl(dwFileShareReadFileTask *)> successCallback;
                                         // XREF: UI_Gametype_DownloadFromFileShare_f(void)+94/w
                                         // SV_GameType_DownloadFromFileshare_f(void)+13F/w ...
-    void (__cdecl *failureCallback)(dwFileShareReadFileTask *);
+    Ptr32<void __cdecl(dwFileShareReadFileTask *)> failureCallback;
                                         // XREF: UI_Gametype_DownloadFromFileShare_f(void)+9B/w
                                         // SV_GameType_DownloadFromFileshare_f(void)+146/w ...
     // padding byte
@@ -444,8 +445,8 @@ struct __declspec(align(8)) fileShareReadFileInfo // sizeof=0x30
 
 struct fileShareDownloadInterceptor : bdDownloadInterceptor // sizeof=0xC
 {                                       // XREF: .data:downloadInterceptor/r
-    dwFileShareReadFileTask *task;      // XREF: LiveStorage_FileShare_ReadFile(int,fileShareReadFileInfo *)+1BF/w
-    unsigned int (__cdecl *callback)(void *, unsigned int, dwFileShareReadFileTask *);
+    Ptr32<dwFileShareReadFileTask> task;      // XREF: LiveStorage_FileShare_ReadFile(int,fileShareReadFileInfo *)+1BF/w
+    Ptr32<unsigned int __cdecl(void *, unsigned int, dwFileShareReadFileTask *)> callback;
                                         // XREF: LiveStorage_FileShare_ReadFile(int,fileShareReadFileInfo *)+1B2/w
 
     unsigned int handleDownload(void *data, unsigned int dataSize);
@@ -466,22 +467,22 @@ struct __declspec(align(8)) dwFileShareWriteFileTask // sizeof=0x50
     unsigned __int16 fileSlot;
     // padding byte
     // padding byte
-    const char *menuDef;
-    void *fileData;
-    bdUploadInterceptor *uploadHandler;
+    Ptr32<const char> menuDef;
+    Ptr32<void> fileData;
+    Ptr32<bdUploadInterceptor> uploadHandler;
     unsigned int fileSize;
-    const char *fileName;
+    Ptr32<const char> fileName;
     unsigned __int16 category;
     // padding byte
     // padding byte
-    const void *thumbData;
+    Ptr32<const void> thumbData;
     unsigned int thumbDataSize;
     unsigned int numTags;
-    bdTag *tags;
+    Ptr32<bdTag> tags;
     bdFileID outFileID;
-    unsigned int (__cdecl *dataCallback)(void *, unsigned int, unsigned int);
-    void (__cdecl *successCallback)(int, unsigned __int64);
-    void (__cdecl *failureCallback)(int);
+    Ptr32<unsigned int __cdecl(void *, unsigned int, unsigned int)> dataCallback;
+    Ptr32<void __cdecl(int, unsigned __int64)> successCallback;
+    Ptr32<void __cdecl(int)> failureCallback;
     // padding byte
     // padding byte
     // padding byte
@@ -498,9 +499,9 @@ struct __declspec(align(8)) dwFileShareListTask // sizeof=0x28
     unsigned __int16 offset;
     // padding byte
     // padding byte
-    char *fileName;
-    bdFileMetaData *descriptors;
-    const char *menuDef;
+    Ptr32<char> fileName;
+    Ptr32<bdFileMetaData> descriptors;
+    Ptr32<const char> menuDef;
     // padding byte
     // padding byte
     // padding byte
@@ -518,20 +519,20 @@ struct dwFileShareSearchTask // sizeof=0x38
     // padding byte
     // padding byte
     // padding byte
-    bdTag *tags;
-    int *resultFileCount;
-    bdFileID *resultFileIDs;
-    int *resultRatingCount;
-    bdVoteRankStatsInfo *resultRatings;
-    int *resultTotalFileCount;
-    void (__cdecl *successCallback)();
-    void (__cdecl *failureCallback)();
+    Ptr32<bdTag> tags;
+    Ptr32<int> resultFileCount;
+    Ptr32<bdFileID> resultFileIDs;
+    Ptr32<int> resultRatingCount;
+    Ptr32<bdVoteRankStatsInfo> resultRatings;
+    Ptr32<int> resultTotalFileCount;
+    Ptr32<void __cdecl()> successCallback;
+    Ptr32<void __cdecl()> failureCallback;
 };
 
 struct dwFileShareTagTask // sizeof=0x18
 {                                       // XREF: playerFileOperations/r
     fileShareLocation location;
-    bdTag *tags;
+    Ptr32<bdTag> tags;
     unsigned int numTags;
     // padding byte
     // padding byte
@@ -547,7 +548,7 @@ struct dwFileShareTransferTask // sizeof=0x138
     unsigned __int16 fileSlot;
     // padding byte
     // padding byte
-    char *fileName;
+    Ptr32<char> fileName;
     unsigned __int16 category;
     char metaData[255];
     // padding byte
@@ -555,7 +556,7 @@ struct dwFileShareTransferTask // sizeof=0x138
     // padding byte
     unsigned int metaDataSize;
     unsigned int numTags;
-    bdTag *tags;
+    Ptr32<bdTag> tags;
     // padding byte
     // padding byte
     // padding byte
@@ -571,19 +572,19 @@ struct dwFileShareRemoveTask // sizeof=0x4
 struct dwFileShareSummaryTask // sizeof=0x30
 {                                       // XREF: playerFileOperations/r
     unsigned __int64 fileID;
-    void *summaryData;
+    Ptr32<void> summaryData;
     unsigned int summaryDataSize;
-    const void *metaData;
+    Ptr32<const void> metaData;
     unsigned int metaDataSize;
     unsigned int numTags;
-    bdTag *tags;
+    Ptr32<bdTag> tags;
     fileShareLocation location;
     bool showSuccess;
     // padding byte
     // padding byte
     // padding byte
-    void (__cdecl *successCallback)();
-    void (__cdecl *failureCallback)();
+    Ptr32<void __cdecl()> successCallback;
+    Ptr32<void __cdecl()> failureCallback;
 };
 
 struct __declspec(align(8)) bdRatingInfo : bdTaskResult // sizeof=0x18
@@ -619,11 +620,11 @@ struct __declspec(align(8)) dwFileShareGetTopRatedTask // sizeof=0x4E48
     int maxFiles;
     unsigned int leaderboardID;
     bdVoteRankStatsInfo statsInfo[100];
-    int *outNumFiles;
-    int *outTotalNumFiles;
-    bdFileID *outFileIDs;
-    void (__cdecl *successCallback)();
-    void (__cdecl *failureCallback)();
+    Ptr32<int> outNumFiles;
+    Ptr32<int> outTotalNumFiles;
+    Ptr32<bdFileID> outFileIDs;
+    Ptr32<void __cdecl()> successCallback;
+    Ptr32<void __cdecl()> failureCallback;
     // padding byte
     // padding byte
     // padding byte
@@ -698,17 +699,17 @@ struct fileShareWriteFileInfo // sizeof=0x34
                                         // Demo_StartRecord_f(void)+16E/w ...
     // padding byte
     // padding byte
-    void *fileData;                     // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+22/w
+    Ptr32<void> fileData;                     // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+22/w
                                         // UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+3D/r ...
     unsigned int fileSize;              // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+2B/w
                                         // Demo_StartRecord_f(void)+180/w ...
-    const char *fileName;               // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+57/w
+    Ptr32<const char> fileName;               // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+57/w
                                         // Demo_StartRecord_f(void)+151/w ...
     unsigned __int16 category;          // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+19/w
                                         // Demo_StartRecord_f(void)+13B/w ...
     // padding byte
     // padding byte
-    const void *thumbData;              // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+5A/w
+    Ptr32<const void> thumbData;              // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+5A/w
                                         // Demo_StartRecord_f(void)+172/w ...
     unsigned int thumbDataSize;         // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+61/w
                                         // Demo_StartRecord_f(void)+179/w ...
@@ -716,15 +717,15 @@ struct fileShareWriteFileInfo // sizeof=0x34
                                         // Demo_StartRecord_f(void)+154/w ...
     fileShareLocation location;         // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+2E/w
                                         // Demo_StartRecord_f(void)+162/w ...
-    bdTag *tags;                        // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+4D/w
+    Ptr32<bdTag> tags;                        // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+4D/w
                                         // Demo_StartRecord_f(void)+15B/w ...
-    unsigned int (__cdecl *dataCallback)(void *, unsigned int, unsigned int);
+    Ptr32<unsigned int __cdecl(void *, unsigned int, unsigned int)> dataCallback;
                                         // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+68/w
                                         // Demo_StartRecord_f(void)+187/w ...
-    void (__cdecl *successCallback)(int, unsigned __int64);
+    Ptr32<void __cdecl(int, unsigned __int64)> successCallback;
                                         // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+6F/w
                                         // Demo_StartRecord_f(void)+18E/w ...
-    void (__cdecl *failureCallback)(int);
+    Ptr32<void __cdecl(int)> failureCallback;
                                         // XREF: UI_Gametype_Custom_UploadToFileShare(int,uint,char const *,MemoryFile &)+76/w
                                         // Demo_StartRecord_f(void)+195/w ...
 };
@@ -744,7 +745,7 @@ struct playerNetworkData // sizeof=0x3AD90
     bool fileShareFetched;
     // padding byte
     // padding byte
-    playerFileOperations *fileOps;      // XREF: LiveStorage_StatsBackupFetchCompleted(int)+C/r
+    Ptr32<playerFileOperations> fileOps;      // XREF: LiveStorage_StatsBackupFetchCompleted(int)+C/r
                                         // LiveStorage_StatsBackupFetchCompleted(int)+44/r ...
 };
 

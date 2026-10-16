@@ -77,10 +77,10 @@ GlassRenderer::GlassRenderer(const Glasses *glasses)
     this->smallAllocator.memory = 0;
     smallAllocatorBlocks = glasses->smallAllocatorBlocks;
     v2 = GlassesClient::Allocate(
-                 16 * smallAllocatorBlocks,
+                 kGlassSmallAllocatorBlockSize * smallAllocatorBlocks,
                  "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp",
                  70);
-    this->smallAllocator.Init(v2, 0x10u, smallAllocatorBlocks);
+    this->smallAllocator.Init(v2, kGlassSmallAllocatorBlockSize, smallAllocatorBlocks);
 
 
     //v23 = GlassesClient::Allocate(28, "C:\\projects_pc\\cod\\codsrc\\src\\glass\\glass_renderer.cpp", 72);
@@ -1360,7 +1360,7 @@ void __thiscall GlassRenderer::FreeShardGroup(ShardGroup *grp)
     this->groupsAllocator->Free(grp);
 }
 
-Allocator::Memory **__thiscall GlassRenderer::AllocateShardMemory(
+Ptr32<Allocator::Memory> *__thiscall GlassRenderer::AllocateShardMemory(
                 unsigned int size,
                 GlassShard *shard)
 {
@@ -2132,7 +2132,7 @@ void GlassRenderer::DoMaintenance()
     if (usedFraction <= maxFraction)
     {
         // Too much shard memory reserved
-        size_t totalMemory = reinterpret_cast<char *>(shardMemoryAllocator.tail) - reinterpret_cast<char *>(shardMemoryAllocator.head);
+        size_t totalMemory = reinterpret_cast<char *>(shardMemoryAllocator.tail.get()) - reinterpret_cast<char *>(shardMemoryAllocator.head.get());
         float freeFraction = static_cast<float>(shardMemoryAllocator.GetFree()) / static_cast<float>(totalMemory);
 
 

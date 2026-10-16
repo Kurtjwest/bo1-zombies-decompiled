@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "ui_main.h"
 #include <bgame/bg_emblems.h>
 #include <live/live_pcache.h>
 
 struct EmblemFilterState // sizeof=0xC
 {                                       // XREF: .data:s_filterStates/r
-    const char *loc;                    // XREF: UI_EmblemGetStateDisplay(int,int)+2A/r
+    Ptr32<const char> loc;                    // XREF: UI_EmblemGetStateDisplay(int,int)+2A/r
     unsigned int include;               // XREF: UI_EmblemGetFilterCount(int,int,int)+6B/r
                                         // UI_EmblemGetFilterCount(int,int,int)+89/r ...
     unsigned int exclude;               // XREF: UI_EmblemGetFilterCount(int,int,int)+98/r

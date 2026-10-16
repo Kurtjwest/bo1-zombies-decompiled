@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include <universal/bo1_layout.h>
 
@@ -22,17 +23,17 @@ struct bdLinkedList
         bdReference<T> m_value;
 
         // +0x0C
-        Node *m_next;
+        Ptr32<Node> m_next;
 
         // +0x10
-        Node *m_prev;
+        Ptr32<Node> m_prev;
     };
 
     // +0x00
-    Node *m_head;
+    Ptr32<Node> m_head;
 
     // +0x04
-    Node *m_tail;
+    Ptr32<Node> m_tail;
 
     // +0x08
     unsigned int m_size;

@@ -28,6 +28,8 @@
     <true/>
     <key>NSPrincipalClass</key>
     <string>NSApplication</string>
+    <key>NSMicrophoneUsageDescription</key>
+    <string>The game's voice chat records from the microphone while you talk.</string>
     <key>GCSupportsControllerUserInteraction</key>
     <true/>
     <key>LSArchitecturePriority</key>

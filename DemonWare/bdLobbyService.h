@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <DemonWare/bdCore/bdReference/bdReferencable.h>
 #include <DemonWare/bdCore/bdSocket/bdAddr.h>
@@ -11,7 +12,7 @@
 
 struct bdTaskByteBuffer : bdByteBuffer // sizeof=0x2C
 {
-    unsigned __int8 *m_taskData;
+    Ptr32<unsigned __int8> m_taskData;
     unsigned int m_taskDataSize;
     unsigned int m_validHeaderSize;
     unsigned int m_paddingSize;
@@ -21,7 +22,7 @@ struct bdPendingBufferTransfer : bdReferencable // sizeof=0x14
 {                                       // XREF: ?sendTask@bdLobbyConnection@@UAE_NV?$bdReference@VbdTaskByteBuffer@@@@I_N@Z/r
                                         // ?sendTask@bdLobbyConnection@@UAE_NV?$bdReference@VbdTaskByteBuffer@@@@I_N@Z/r ...
     bdReference<bdByteBuffer> m_buffer;
-    unsigned __int8 *m_txPtr;
+    Ptr32<unsigned __int8> m_txPtr;
     unsigned int m_txAvail;
 };
 
@@ -54,7 +55,7 @@ struct bdLobbyConnection : bdReferencable // sizeof=0x408
     bdQueue<bdPendingBufferTransfer> m_outgoingBuffers;
     bdStreamSocket m_socket;
     bdLobbyConnection::Status m_status;
-    struct bdLobbyConnectionListener *m_connectionListener;
+    Ptr32<struct bdLobbyConnectionListener> m_connectionListener;
     bdCypher3Des m_cypher;
     unsigned __int8 m_sessionKey[24];
     unsigned int m_messageCount;
@@ -85,32 +86,32 @@ struct bdAuthInfo // sizeof=0xA0
 
 struct bdLobbyService : bdLobbyConnectionListener // sizeof=0x118
 {
-    struct bdRemoteTaskManager *m_taskManager;
-    struct bdProfiles *m_profiles;
-    struct bdMessaging *m_messaging;
-    struct bdMatchMaking *m_matchMaking;
-    struct bdStats *m_statsManager;
-    struct bdFriends *m_friendsManager;
-    struct bdTeams *m_teamsManager;
-    struct bdStorage *m_storageManager;
-    struct bdContentUnlock *m_contentUnlockManager;
-    struct bdTitleUtilities *m_titleUtilitiesManager;
-    struct bdKeyArchive *m_keyArchive;
-    struct bdCounter *m_counter;
-    struct bdGroup *m_group;
-    struct bdContentStreaming *m_contentStreamingManager;
-    struct bdPooledStorage *m_pooledStorageManager;
-    struct bdTags *m_tags;
-    struct bdVoteRank *m_voteRankManager;
-    struct bdTwitter *m_twitter;
-    struct bdFacebook *m_facebook;
-    struct bdLinkCode *m_linkCode;
-    struct bdAntiCheat *m_antiCheat;
-    struct bdDML *m_DML;
-    struct bdCRUX *m_crux;
-    struct bdActivityTracker *m_activityTracker;
+    Ptr32<struct bdRemoteTaskManager> m_taskManager;
+    Ptr32<struct bdProfiles> m_profiles;
+    Ptr32<struct bdMessaging> m_messaging;
+    Ptr32<struct bdMatchMaking> m_matchMaking;
+    Ptr32<struct bdStats> m_statsManager;
+    Ptr32<struct bdFriends> m_friendsManager;
+    Ptr32<struct bdTeams> m_teamsManager;
+    Ptr32<struct bdStorage> m_storageManager;
+    Ptr32<struct bdContentUnlock> m_contentUnlockManager;
+    Ptr32<struct bdTitleUtilities> m_titleUtilitiesManager;
+    Ptr32<struct bdKeyArchive> m_keyArchive;
+    Ptr32<struct bdCounter> m_counter;
+    Ptr32<struct bdGroup> m_group;
+    Ptr32<struct bdContentStreaming> m_contentStreamingManager;
+    Ptr32<struct bdPooledStorage> m_pooledStorageManager;
+    Ptr32<struct bdTags> m_tags;
+    Ptr32<struct bdVoteRank> m_voteRankManager;
+    Ptr32<struct bdTwitter> m_twitter;
+    Ptr32<struct bdFacebook> m_facebook;
+    Ptr32<struct bdLinkCode> m_linkCode;
+    Ptr32<struct bdAntiCheat> m_antiCheat;
+    Ptr32<struct bdDML> m_DML;
+    Ptr32<struct bdCRUX> m_crux;
+    Ptr32<struct bdActivityTracker> m_activityTracker;
     unsigned int m_titleID;
-    struct bdLobbyEventHandler *m_eventHandler;
+    Ptr32<struct bdLobbyEventHandler> m_eventHandler;
     bdReference<bdLobbyConnection> m_lobbyConnection;
     bdAuthInfo m_authInfo;
     bool m_encryptedConnection;

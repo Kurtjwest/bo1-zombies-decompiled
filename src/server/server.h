@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <qcommon/msg_mp.h>
 #include <bgame/bg_local.h>
@@ -52,7 +53,7 @@ struct clientHeader_t // sizeof=0x714
 
 struct svscmd_info_t // sizeof=0xC
 {                                       // XREF: client_t/r
-    char *cmd;
+    Ptr32<char> cmd;
     int time;
     int type;
 };
@@ -60,7 +61,7 @@ struct svscmd_info_t // sizeof=0xC
 struct client_t // sizeof=0x84D00
 {
     clientHeader_t header;
-    const char *dropReason;
+    Ptr32<const char> dropReason;
     char userinfo[1024];
     char reliableCommandBuffer[16384];
     int reliableCommandBufferNext;
@@ -74,7 +75,7 @@ struct client_t // sizeof=0x84D00
     usercmd_s lastUsercmd;
     int lastClientCommand;
     char lastClientCommandString[1024];
-    gentity_s *gentity;
+    Ptr32<gentity_s> gentity;
     char name[32];
     char clanAbbrev[5];
     // padding byte
@@ -89,7 +90,7 @@ struct client_t // sizeof=0x84D00
     int downloadClientBlock;
     int downloadCurrentBlock;
     int downloadXmitBlock;
-    unsigned __int8 *downloadBlocks[8];
+    Ptr32<unsigned __int8> downloadBlocks[8];
     int downloadBlockSize[8];
     int downloadEOF;
     int downloadSendTime;

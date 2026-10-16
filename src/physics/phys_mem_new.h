@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include "phys_local.h"
 #include <tl/tl_system.h>
 
 struct tagged_void_pointer_t // sizeof=0x8
 {                                       // XREF: phys_slot_pool/r
-    void *m_ptr;
+    Ptr32<void> m_ptr;
     unsigned int m_tag;
 
     tagged_void_pointer_t() noexcept
@@ -21,12 +22,12 @@ struct alignas(8) phys_slot_pool // sizeof=0x18
 {                                       // XREF: phys_memory_manager/r
     struct extra_info // sizeof=0x8
     {
-        phys_slot_pool *m_slot_pool_owner;
-        void *m_allocation_owner;
+        Ptr32<phys_slot_pool> m_slot_pool_owner;
+        Ptr32<void> m_allocation_owner;
     };
     volatile tagged_void_pointer_t m_first_free_slot;
     unsigned int m_map_key;
-    phys_slot_pool *m_hash_next;
+    Ptr32<phys_slot_pool> m_hash_next;
     volatile unsigned int m_total_slot_count;
     volatile unsigned int m_allocated_slot_count;
 
@@ -51,9 +52,9 @@ BO1_LAYOUT32_ASSERT(sizeof(phys_slot_pool) == 0x18);
 
 struct phys_memory_manager // sizeof=0x3D0
 {
-    char *m_buffer_start;
-    char *m_buffer_end;
-    char *m_buffer_cur;
+    Ptr32<char> m_buffer_start;
+    Ptr32<char> m_buffer_end;
+    Ptr32<char> m_buffer_cur;
     int m_list_slot_pool_count;
     minspec_read_write_mutex m_slot_pool_map_mutex;
     minspec_hash_table<phys_slot_pool,64> m_slot_pool_map;

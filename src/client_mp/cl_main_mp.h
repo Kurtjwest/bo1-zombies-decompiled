@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 
 #include <bgame/bg_local.h>
@@ -48,9 +49,9 @@ struct demoInitialStateBuffer_t // sizeof=0x13010
 struct demoContinuousStateBuffer_t // sizeof=0x1C
 {                                                                             // XREF: clientConnection_t/r
         int serverMessageSequence;
-        unsigned __int8 *msgData;
+        Ptr32<unsigned __int8> msgData;
         int msgLen;
-        unsigned __int8 *archive;
+        Ptr32<unsigned __int8> archive;
         int startClientArchiveIndex;
         int endClientArchiveIndex;
         int intialBufferStateIndex;
@@ -155,7 +156,7 @@ struct clientActive_t // sizeof=0x1A6100
         int skelTimeStamp;
         volatile unsigned int skelMemPos;
         char skelMemory[262144];
-        char *skelMemoryStart;
+        Ptr32<char> skelMemoryStart;
         bool allowedAllocSkel;
         // padding byte
         // padding byte
@@ -383,7 +384,7 @@ struct clientLogo_t // sizeof=0x18
                                                                                 // CL_DrawLogo(int)+5B/r ...
         int fadeout;                                                // XREF: CL_DrawLogo(int)+74/r
                                                                                 // CL_DrawLogo(int)+8B/r ...
-        Material *material[2];                            // XREF: CL_DrawLogo(int)+15A/r
+        Ptr32<Material> material[2];                            // XREF: CL_DrawLogo(int)+15A/r
                                                                                 // CL_DrawLogo(int)+19F/r ...
 };
 
@@ -488,9 +489,9 @@ struct clientDebugStringInfo_t // sizeof=0x10
                                                                                 // CreateDebugStringsIfNeeded+D9/w ...
         int num;                                                        // XREF: CreateDebugStringsIfNeeded+124/w
                                                                                 // CreateDebugStringsIfNeeded+165/w ...
-        trDebugString_t *strings;                     // XREF: CreateDebugStringsIfNeeded+6/r
+        Ptr32<trDebugString_t> strings;                     // XREF: CreateDebugStringsIfNeeded+6/r
                                                                                 // CreateDebugStringsIfNeeded+F/r ...
-        int *durations;                                         // XREF: CreateDebugStringsIfNeeded:loc_54DF0B/r
+        Ptr32<int> durations;                                         // XREF: CreateDebugStringsIfNeeded:loc_54DF0B/r
                                                                                 // CreateDebugStringsIfNeeded+4D/r ...
 };
 
@@ -509,9 +510,9 @@ struct clientDebugLineInfo_t // sizeof=0x10
                                                                                 // CreateDebugLinesIfNeeded+B3/w ...
         int num;                                                        // XREF: CreateDebugLinesIfNeeded+F5/w
                                                                                 // CreateDebugLinesIfNeeded+12D/w ...
-        trDebugLine_t *lines;                             // XREF: CreateDebugLinesIfNeeded+6/r
+        Ptr32<trDebugLine_t> lines;                             // XREF: CreateDebugLinesIfNeeded+6/r
                                                                                 // CreateDebugLinesIfNeeded+18/r ...
-        int *durations;                                         // XREF: CreateDebugLinesIfNeeded+F/r
+        Ptr32<int> durations;                                         // XREF: CreateDebugLinesIfNeeded+F/r
                                                                                 // CreateDebugLinesIfNeeded+21/r ...
 };
 
@@ -531,9 +532,9 @@ struct clientDebugSphereInfo_t // sizeof=0x10
                                                                                 // CreateDebugSpheresIfNeeded+AD/w ...
         int num;                                                        // XREF: CreateDebugSpheresIfNeeded+EF/w
                                                                                 // CreateDebugSpheresIfNeeded+127/w ...
-        trDebugSphere_t *spheres;                     // XREF: CreateDebugSpheresIfNeeded+6/r
+        Ptr32<trDebugSphere_t> spheres;                     // XREF: CreateDebugSpheresIfNeeded+6/r
                                                                                 // CreateDebugSpheresIfNeeded+18/r ...
-        int *durations;                                         // XREF: CreateDebugSpheresIfNeeded+F/r
+        Ptr32<int> durations;                                         // XREF: CreateDebugSpheresIfNeeded+F/r
                                                                                 // CreateDebugSpheresIfNeeded+21/r ...
 };
 
@@ -662,13 +663,13 @@ struct clientStatic_t // sizeof=0x1CF2800
         serverInfo_t favoriteServers[128];    // XREF: CL_GetServerList(int,serverInfo_t * *,int * *)+E5/o
         int pingUpdateSource;                             // XREF: CL_UpdateDirtyPings(int,int)+3A/w
                                                                                 // CL_ServerInfoPacket(bdSecurityID *,msg_t *,int)+1E/r ...
-        Material *whiteMaterial;                        // XREF: ConDraw_Box:loc_54B8D0/r
+        Ptr32<Material> whiteMaterial;                        // XREF: ConDraw_Box:loc_54B8D0/r
                                                                                 // ConDraw_Box+C7/r ...
-        Material *consoleMaterial;                    // XREF: CL_InitRenderer(void)+E9/w
+        Ptr32<Material> consoleMaterial;                    // XREF: CL_InitRenderer(void)+E9/w
                                                                                 // CL_ShutdownRenderer+7D/w
-        Material *spinnerMaterial;                    // XREF: CL_DrawSpinnerPhysical(float,float,float,float,float const * const)+1BD/r
+        Ptr32<Material> spinnerMaterial;                    // XREF: CL_DrawSpinnerPhysical(float,float,float,float,float const * const)+1BD/r
                                                                                 // CL_DrawSpinnerLoadbarPhysical(float,float,float,float,float const * const,float):loc_55D532/r ...
-        Font_s *consoleFont;                                // XREF: Con_CheckResize(void)+100/r
+        Ptr32<Font_s> consoleFont;                                // XREF: Con_CheckResize(void)+100/r
                                                                                 // Con_CheckResize(void)+10D/r ...
         vidConfig_t vidConfig;                            // XREF: CG_Init(int,int,int,int)+A21/r
                                                                                 // CL_GetScreenDimensions(int *,int *,float *)+81/r ...
@@ -735,7 +736,7 @@ struct __declspec(align(8)) clientConnection_t // sizeof=0xAFF48
         int checksumFeed;
         int reliableSequence;
         int reliableAcknowledge;
-        char *reliableCommands[128];
+        Ptr32<char> reliableCommands[128];
         int reliableCommandBufferNext;
         char reliableCommandBuffer[16384];
         int serverMessageSequence;
@@ -814,10 +815,10 @@ struct cgs_t // sizeof=0x31A4
     int voteYes;
     int voteNo;
     char voteString[256];
-    XModel *gameModels[512];
-    const FxEffectDef *fxs[196];
-    const FxEffectDef *grenadeFx[27];
-    const FxEffectDef *playerFireFx[3];
+    Ptr32<XModel> gameModels[512];
+    Ptr32<const FxEffectDef> fxs[196];
+    Ptr32<const FxEffectDef> grenadeFx[27];
+    Ptr32<const FxEffectDef> playerFireFx[3];
     shellshock_parms_t holdBreathParams;
     char teamChatMsgs[8][241];
     int teamChatMsgTimes[8];

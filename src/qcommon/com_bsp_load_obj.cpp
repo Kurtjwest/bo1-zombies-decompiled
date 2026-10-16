@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "com_bsp_load_obj.h"
 #include <universal/com_files.h>
@@ -27,7 +28,7 @@ const char *connectionString_126[11] =
 struct $770C4B51799C51B11A150CADEE7E2360 // sizeof=0x54
 {                                       // XREF: .data:comBspGlob/r
     char name[64];                      // XREF: Com_UnloadBsp(void)+8C/w
-    BspHeader *header;                  // XREF: Com_IsBspLoaded(void)+5/r
+    Ptr32<BspHeader> header;                  // XREF: Com_IsBspLoaded(void)+5/r
                                         // Com_GetBspLump(LumpType,uint,uint *):loc_6CABF5/r ...
     unsigned int fileSize;              // XREF: Com_ValidateBspLumpData+45/r
                                         // Com_CheckVersionLumpCountError+56/r ...
@@ -35,7 +36,7 @@ struct $770C4B51799C51B11A150CADEE7E2360 // sizeof=0x54
                                         // Com_LoadBsp(char const *)+182/w
     LumpType loadedLumpType;            // XREF: Com_LoadBspLump(char const *,LumpType,uint,uint *)+12D/w
                                         // Com_UnloadBspLump(LumpType):loc_6CB162/r ...
-    const void *loadedLumpData;         // XREF: Com_LoadBspLump(char const *,LumpType,uint,uint *)+13/r
+    Ptr32<const void> loadedLumpData;         // XREF: Com_LoadBspLump(char const *,LumpType,uint,uint *)+13/r
                                         // Com_LoadBspLump(char const *,LumpType,uint,uint *)+B4/w ...
 } comBspGlob;
 

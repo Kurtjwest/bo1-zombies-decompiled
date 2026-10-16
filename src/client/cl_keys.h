@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <qcommon/common.h>
 #include "screen_placement.h"
 
@@ -19,9 +20,9 @@ struct KeyState // sizeof=0x10
     int down;                           // XREF: Console_Key(int,int)+22/r
                                         // Console_Key(int,int)+34/r ...
     int repeats;
-    const char *binding;                // XREF: Key_SetBinding(int,int,char const *,int)+5A/o
+    Ptr32<const char> binding;                // XREF: Key_SetBinding(int,int,char const *,int)+5A/o
                                         // Key_GetBinding(int,int,int)+78/r ...
-    const char *binding2;               // XREF: Key_SetBinding(int,int,char const *,int)+97/o
+    Ptr32<const char> binding2;               // XREF: Key_SetBinding(int,int,char const *,int)+97/o
                                         // Key_GetBinding(int,int,int)+92/r ...
 };
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/q_parse.h>
 #include <universal/dvar.h>
 #include "ui_shared.h"
@@ -13,8 +14,8 @@ enum sscType_t : __int32
 
 struct serverStatusDvar_t // sizeof=0xC
 {
-    const char *name;
-    const char *altName;
+    Ptr32<const char> name;
+    Ptr32<const char> altName;
     sscType_t type;
 };
 

@@ -19,7 +19,7 @@ void    DObjCalcAnim(DObj *obj, int *partBits)
     int v11; // [esp+80h] [ebp-78B4h]
     XModel *v12; // [esp+84h] [ebp-78B0h]
     int kk; // [esp+88h] [ebp-78ACh]
-    XModel **localModels; // [esp+8Ch] [ebp-78A8h]
+    Ptr32<struct XModel> *localModels; // [esp+8Ch] [ebp-78A8h]
     signed int v15; // [esp+90h] [ebp-78A4h]
     XAnimTree_s *localTree; // [esp+94h] [ebp-78A0h]
     int jj; // [esp+98h] [ebp-789Ch]

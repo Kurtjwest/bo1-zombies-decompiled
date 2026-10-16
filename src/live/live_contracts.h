@@ -1,22 +1,23 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "live_storage.h"
 
 struct contractRequirement_t // sizeof=0x8
 {                                       // XREF: contractInfo_t/r
-    char *reqType;                      // XREF: LiveContracts_ParseContracts(char *)+AC1/w
+    Ptr32<char> reqType;                      // XREF: LiveContracts_ParseContracts(char *)+AC1/w
                                         // LiveContracts_ParseContracts(char *)+AF6/r ...
-    char *reqData;
+    Ptr32<char> reqData;
 };
 
 struct contractInfo_t // sizeof=0x6C
 {                                       // XREF: .data:contracts/r
-    char *name;                         // XREF: LiveContracts_ParseContracts(char *)+1D8/r
+    Ptr32<char> name;                         // XREF: LiveContracts_ParseContracts(char *)+1D8/r
                                         // LiveContracts_ParseContracts(char *)+1FE/r ...
-    char *description;                  // XREF: LiveContracts_ParseContracts(char *)+831/w
+    Ptr32<char> description;                  // XREF: LiveContracts_ParseContracts(char *)+831/w
                                         // LiveContracts_ValidateContracts+63/r ...
-    char *statType;                     // XREF: LiveContracts_ParseContracts(char *)+943/w
+    Ptr32<char> statType;                     // XREF: LiveContracts_ParseContracts(char *)+943/w
                                         // LiveContracts_ParseContracts(char *)+974/r ...
-    char *statName;                     // XREF: LiveContracts_ParseContracts(char *)+A16/w
+    Ptr32<char> statName;                     // XREF: LiveContracts_ParseContracts(char *)+A16/w
                                         // LiveContracts_ValidateContracts+131/r ...
     contractRequirement_t requirements[5];
                                         // XREF: LiveContracts_ParseContracts(char *)+AC1/w
@@ -25,7 +26,7 @@ struct contractInfo_t // sizeof=0x6C
                                         // LiveContracts_ValidateContracts+D2/r ...
     int count;                          // XREF: LiveContracts_ParseContracts(char *)+C20/w
                                         // LiveContracts_ValidateContracts+15A/r ...
-    char *expirationType;               // XREF: LiveContracts_ParseContracts(char *)+ED5/w
+    Ptr32<char> expirationType;               // XREF: LiveContracts_ParseContracts(char *)+ED5/w
                                         // LiveContracts_ParseContracts(char *)+F0C/r ...
     int expirationData;                 // XREF: LiveContracts_ParseContracts(char *)+FCA/w
                                         // LiveContracts_ValidateContracts+1B9/r ...
@@ -49,7 +50,7 @@ struct contractInfo_t // sizeof=0x6C
     // padding byte
     int progressInterval;               // XREF: LiveContracts_ParseContracts(char *)+E0D/w
                                         // LiveContracts_ParseContracts(char *)+E19/r ...
-    char *resetProgressEvents;          // XREF: LiveContracts_ParseContracts(char *)+105C/w
+    Ptr32<char> resetProgressEvents;          // XREF: LiveContracts_ParseContracts(char *)+105C/w
                                         // LiveContracts_GetResetConditions(int)+20/r
     int cycle;                          // XREF: LiveContracts_ParseContracts(char *)+D60/r
                                         // LiveContracts_ParseContracts(char *)+D6C/w ...

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <bgame/bg_local.h>
 #include <cstdint>
 #include <universal/assertive.h>
@@ -446,8 +447,8 @@ struct __declspec(align(128)) cg_s // sizeof=0x71C80
         int renderScreen;
         int latestSnapshotNum;
         int latestSnapshotTime;
-        snapshot_s *snap;
-        snapshot_s *nextSnap;
+        Ptr32<snapshot_s> snap;
+        Ptr32<snapshot_s> nextSnap;
         // padding byte
         // padding byte
         // padding byte
@@ -571,7 +572,7 @@ struct __declspec(align(128)) cg_s // sizeof=0x71C80
         int radiantCamInUse;
         int followCameraClient;
         int iEntityLastType[1536];
-        XModel *pEntityLastXModel[1536];
+        Ptr32<XModel> pEntityLastXModel[1536];
         float zoomSensitivity;
         bool isLoading;
         char objectiveText[1024];
@@ -691,7 +692,7 @@ struct __declspec(align(128)) cg_s // sizeof=0x71C80
         float rumbleScale;
         float compassNorthYaw;
         float compassNorth[2];
-        Material *compassMapMaterial;
+        Ptr32<Material> compassMapMaterial;
         float compassMapUpperLeft[2];
         float compassMapWorldSize[2];
         int compassLastTime;
@@ -802,15 +803,15 @@ struct __declspec(align(128)) cg_s // sizeof=0x71C80
         int warMomentumFlashTime;
         float gunnerPitchOffset;
         unsigned int centInNextSnapshot[32];
-        centity_s *slideFakeEnt;
+        Ptr32<centity_s> slideFakeEnt;
         int cameraLinkedEntitiesCount;
         int cameraLinkedEntities[4];
         link_type_e cameraLinkedEntitiesType[4];
         int groundTiltEntNum;
         int poisoned;
-        Material *genericMaterialMap[64];
+        Ptr32<Material> genericMaterialMap[64];
         bool genericFilterPassEnabled[3][16];
-        Material *genericFilterPassMaterial[3][16];
+        Ptr32<Material> genericFilterPassMaterial[3][16];
         int genericFilterPassTarget[3][16];
         int genericFilterPassSampler0[3][16];
         int genericFilterPassSampler1[3][16];
@@ -819,7 +820,7 @@ struct __declspec(align(128)) cg_s // sizeof=0x71C80
         float genericFilterPassFlareOcclusion[3][16];
         bool genericOverlayEnabled[3];
         // padding byte
-        Material *genericOverlayMaterial[3];
+        Ptr32<Material> genericOverlayMaterial[3];
         float genericOverlayParam[3][16];
         int genericOverlaySortIndex[3];
         float genericOverlayParamADS[8];
@@ -851,7 +852,7 @@ struct __declspec(align(128)) cg_s // sizeof=0x71C80
         float popupRotationAngle;
         float popUpAngleDelta;
         CompassScrambler compassScrambler[16];
-        centity_s *closestEnemyScrambler;
+        Ptr32<centity_s> closestEnemyScrambler;
         int alliesFlagAway;
         int axisFlagAway;
         int resetWeaponStateFlag;
@@ -961,46 +962,46 @@ struct __declspec(align(128)) cg_s // sizeof=0x71C80
 
 struct cgMedia_t // sizeof=0x31BC
 {                                                                             // XREF: .data:cgMedia_t cgMedia/r
-        Material *whiteMaterial;                        // XREF: AimAssist_DrawCenterBox+E6/r
+        Ptr32<Material> whiteMaterial;                        // XREF: AimAssist_DrawCenterBox+E6/r
                                                                                 // AimAssist_DrawTargets+297/r ...
-        Material *teamStatusBar;                        // XREF: CG_DrawChatMessages+399/r
+        Ptr32<Material> teamStatusBar;                        // XREF: CG_DrawChatMessages+399/r
                                                                                 // CG_RegisterGraphics+6A5/w
-        Material *afkLightbulb;                         // XREF: CG_RegisterGraphics+6CA/w
+        Ptr32<Material> afkLightbulb;                         // XREF: CG_RegisterGraphics+6CA/w
                                                                                 // CG_AddPlayerSpriteDrawSurfs+310/r
-        Material *connectionMaterial;             // XREF: CG_RegisterGraphics+42/w
+        Ptr32<Material> connectionMaterial;             // XREF: CG_RegisterGraphics+42/w
                                                                                 // CG_AddPlayerSpriteDrawSurfs+2C0/r
-        Material *youInKillCamMaterial;         // XREF: CG_RegisterGraphics+56/w
+        Ptr32<Material> youInKillCamMaterial;         // XREF: CG_RegisterGraphics+56/w
                                                                                 // CG_AddPlayerSpriteDrawSurfs+280/r
-        Material *redTracerMaterial;                // XREF: CG_RegisterGraphics+B5/w
+        Ptr32<Material> redTracerMaterial;                // XREF: CG_RegisterGraphics+B5/w
                                                                                 // CG_DrawTracer(float const * const,float const * const,refdef_s const *,localEntity_s *)+7C/r
-        Material *greenTracerMaterial;            // XREF: CG_RegisterGraphics+C9/w
+        Ptr32<Material> greenTracerMaterial;            // XREF: CG_RegisterGraphics+C9/w
                                                                                 // CG_DrawTracer(float const * const,float const * const,refdef_s const *,localEntity_s *)+9A/r
-        Material *bulletMaterial;                     // XREF: CG_RegisterGraphics+DD/w
+        Ptr32<Material> bulletMaterial;                     // XREF: CG_RegisterGraphics+DD/w
                                                                                 // CG_DrawTracer(float const * const,float const * const,refdef_s const *,localEntity_s *)+C4/r
-        Material *laserMaterial;                        // XREF: CG_Laser_Add_Core+454/r
+        Ptr32<Material> laserMaterial;                        // XREF: CG_Laser_Add_Core+454/r
                                                                                 // CG_RegisterGraphics+F1/w
-        Material *laserLightMaterial;             // XREF: CG_Laser_Add_Core+6B4/r
+        Ptr32<Material> laserLightMaterial;             // XREF: CG_Laser_Add_Core+6B4/r
                                                                                 // CG_RegisterGraphics+105/w
-        Material *lagometerMaterial;                // XREF: CG_DrawLagometer(int)+66/r
+        Ptr32<Material> lagometerMaterial;                // XREF: CG_DrawLagometer(int)+66/r
                                                                                 // CG_RegisterGraphics+2E/w
-        Material *ropeMaterial;                         // XREF: CG_RegisterGraphics+119/w
+        Ptr32<Material> ropeMaterial;                         // XREF: CG_RegisterGraphics+119/w
                                                                                 // Rope_Init:loc_85DBDD/r
-        Material *hintMaterials[2056];            // XREF: CG_RegisterGraphics+12D/w
+        Ptr32<Material> hintMaterials[2056];            // XREF: CG_RegisterGraphics+12D/w
                                                                                 // CG_RegisterGraphics+141/w ...
-        Material *stanceMaterials[5];             // XREF: CG_RegisterGraphics+155/w
+        Ptr32<Material> stanceMaterials[5];             // XREF: CG_RegisterGraphics+155/w
                                                                                 // CG_RegisterGraphics+169/w ...
-        Material *objectiveMaterials[1];        // XREF: CG_RegisterGraphics+1B9/w
+        Ptr32<Material> objectiveMaterials[1];        // XREF: CG_RegisterGraphics+1B9/w
                                                                                 // CG_ObjectiveIcon(int,int,int)+75/r
-        Material *friendMaterials[3];             // XREF: CG_CompassDrawFriendlies(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+8AA/r
+        Ptr32<Material> friendMaterials[3];             // XREF: CG_CompassDrawFriendlies(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+8AA/r
                                                                                 // CG_CompassDrawFriendlies(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+906/r ...
-        Material *damageMaterial;                     // XREF: CG_DrawDamageDirectionIndicators(int)+361/r
+        Ptr32<Material> damageMaterial;                     // XREF: CG_DrawDamageDirectionIndicators(int)+361/r
                                                                                 // CG_RegisterGraphics+209/w
-        Material *mantleHint;                             // XREF: CG_RegisterGraphics+21D/w
+        Ptr32<Material> mantleHint;                             // XREF: CG_RegisterGraphics+21D/w
                                                                                 // CG_DrawMantleHint+13/r ...
-        Material *graphline;
-        Font_s *smallDevFont;                             // XREF: AimAssist_DrawTargets+316/r
+        Ptr32<Material> graphline;
+        Ptr32<Font_s> smallDevFont;                             // XREF: AimAssist_DrawTargets+316/r
                                                                                 // AimAssist_DrawTargets+387/r ...
-        Font_s *bigDevFont;                                 // XREF: CG_DrawBigDevStringColor(ScreenPlacement const *,float,float,char const *,float const * const,int)+3/r
+        Ptr32<Font_s> bigDevFont;                                 // XREF: CG_DrawBigDevStringColor(ScreenPlacement const *,float,float,char const *,float const * const,int)+3/r
                                                                                 // CG_Init(int,int,int,int)+3B7/w
         unsigned int grenadeExplodeSound[31];
                                                                                 // XREF: CG_RegisterSounds(void)+13/o
@@ -1122,194 +1123,194 @@ struct cgMedia_t // sizeof=0x31BC
         unsigned int playerBreathGaspSound; // XREF: CG_RegisterSounds(void)+599/w
                                                                                 // HoldBreathUpdate+1DC/r
         unsigned int playerSwapOffhand;         // XREF: CG_RegisterSounds(void)+5AB/w
-        Material *compassping_player;             // XREF: CG_CompassDrawVehicles(int,CompassType,int,rectDef_s const *,rectDef_s const *,float const * const)+59E/r
+        Ptr32<Material> compassping_player;             // XREF: CG_CompassDrawVehicles(int,CompassType,int,rectDef_s const *,rectDef_s const *,float const * const)+59E/r
                                                                                 // CG_CompassDrawVehicles(int,CompassType,int,rectDef_s const *,rectDef_s const *,float const * const)+5D6/r ...
-        Material *compassping_friendlyfiring;
+        Ptr32<Material> compassping_friendlyfiring;
                                                                                 // XREF: CG_CompassDrawFriendlies(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_48E28E/r
                                                                                 // CG_RegisterGraphics+245/w
-        Material *compassping_friendlyyelling;
+        Ptr32<Material> compassping_friendlyyelling;
                                                                                 // XREF: CG_CompassDrawFriendlies(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_48E342/r
                                                                                 // CG_RegisterGraphics+259/w
-        Material *compassping_friendlyfakefire;
+        Ptr32<Material> compassping_friendlyfakefire;
                                                                                 // XREF: CG_CompassDrawFakeFire(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_490288/r
                                                                                 // CG_RegisterGraphics+26D/w
-        Material *compassping_enemy;                // XREF: GetCompassPingMaterialForClient:loc_48FCAE/r
+        Ptr32<Material> compassping_enemy;                // XREF: GetCompassPingMaterialForClient:loc_48FCAE/r
                                                                                 // CG_RegisterGraphics+281/w
-        Material *compassping_enemydirectional;
+        Ptr32<Material> compassping_enemydirectional;
                                                                                 // XREF: CG_CompassDrawEnemies(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_48F9F3/r
                                                                                 // CG_CompassDrawFakeFire(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_490227/r ...
-        Material *compassping_enemyfiring;    // XREF: GetCompassFiringMaterialForClient:loc_48FCFE/r
+        Ptr32<Material> compassping_enemyfiring;    // XREF: GetCompassFiringMaterialForClient:loc_48FCFE/r
                                                                                 // CG_CompassDrawFakeFire(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+56B/r ...
-        Material *compassping_enemyyelling; // XREF: CG_RegisterGraphics+2D1/w
-        Material *compassping_enemysatellite;
+        Ptr32<Material> compassping_enemyyelling; // XREF: CG_RegisterGraphics+2D1/w
+        Ptr32<Material> compassping_enemysatellite;
                                                                                 // XREF: CG_CompassDrawEnemies(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+C63/r
                                                                                 // CG_RegisterGraphics+2A9/w
-        Material *compassping_grenade;            // XREF: CG_RegisterGraphics+2E5/w
-        Material *compassping_explosion;        // XREF: CG_RegisterGraphics+2F9/w
-        Material *compassping_firstplace;     // XREF: GetCompassPingMaterialForClient+37/r
+        Ptr32<Material> compassping_grenade;            // XREF: CG_RegisterGraphics+2E5/w
+        Ptr32<Material> compassping_explosion;        // XREF: CG_RegisterGraphics+2F9/w
+        Ptr32<Material> compassping_firstplace;     // XREF: GetCompassPingMaterialForClient+37/r
                                                                                 // GetCompassFiringMaterialForClient+37/r ...
-        Material *watch_face;                             // XREF: CG_RegisterGraphics+349/w
+        Ptr32<Material> watch_face;                             // XREF: CG_RegisterGraphics+349/w
                                                                                 // CG_DrawWristWatch+32/r
-        Material *watch_hour;                             // XREF: CG_RegisterGraphics+35D/w
+        Ptr32<Material> watch_hour;                             // XREF: CG_RegisterGraphics+35D/w
                                                                                 // CG_DrawWristWatch+C7/r
-        Material *watch_minute;                         // XREF: CG_RegisterGraphics+371/w
+        Ptr32<Material> watch_minute;                         // XREF: CG_RegisterGraphics+371/w
                                                                                 // CG_DrawWristWatch+13F/r
-        Material *watch_second;                         // XREF: CG_RegisterGraphics+385/w
+        Ptr32<Material> watch_second;                         // XREF: CG_RegisterGraphics+385/w
                                                                                 // CG_DrawWristWatch+1B7/r
-        Material *acoustic_ping;                        // XREF: CG_RegisterGraphics+399/w
-        Material *acoustic_wedge;                     // XREF: CG_RegisterGraphics+3AD/w
-        Material *acoustic_grid;                        // XREF: CG_RegisterGraphics+3C1/w
-        Material *compass_scrambler_large;    // XREF: CG_CompassDrawScramblerFriendly(int,CompassType,rectDef_s const *,rectDef_s const *,float const * const)+174/r
+        Ptr32<Material> acoustic_ping;                        // XREF: CG_RegisterGraphics+399/w
+        Ptr32<Material> acoustic_wedge;                     // XREF: CG_RegisterGraphics+3AD/w
+        Ptr32<Material> acoustic_grid;                        // XREF: CG_RegisterGraphics+3C1/w
+        Ptr32<Material> compass_scrambler_large;    // XREF: CG_CompassDrawScramblerFriendly(int,CompassType,rectDef_s const *,rectDef_s const *,float const * const)+174/r
                                                                                 // CG_RegisterGraphics+3D5/w
-        Material *compass_mortar_selector;    // XREF: CG_CompassDrawPlayerSelectedLocations(int,CompassType,rectDef_s const *,rectDef_s const *,Material *,float * const)+587/r
+        Ptr32<Material> compass_mortar_selector;    // XREF: CG_CompassDrawPlayerSelectedLocations(int,CompassType,rectDef_s const *,rectDef_s const *,Material *,float * const)+587/r
                                                                                 // CG_RegisterGraphics+3E9/w
-        Material *compass_acoustic_ping;        // XREF: CG_CompassDrawRadarEffects(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_4909A6/r
+        Ptr32<Material> compass_acoustic_ping;        // XREF: CG_CompassDrawRadarEffects(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_4909A6/r
                                                                                 // CG_RegisterGraphics+335/w
-        Material *compass_radarline;                // XREF: CG_CompassDrawRadarEffects(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_490544/r
+        Ptr32<Material> compass_radarline;                // XREF: CG_CompassDrawRadarEffects(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_490544/r
                                                                                 // CG_CompassDrawRadarEffects(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+419/r ...
-        Material *compass_artillery_friendly;
+        Ptr32<Material> compass_artillery_friendly;
                                                                                 // XREF: CG_CompassDrawArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_48E946/r
                                                                                 // CG_RegisterGraphics+411/w
-        Material *compass_artillery_enemy;    // XREF: CG_CompassDrawArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_48E916/r
+        Ptr32<Material> compass_artillery_enemy;    // XREF: CG_CompassDrawArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const):loc_48E916/r
                                                                                 // CG_RegisterGraphics+3FD/w
-        Material *compass_mortar_friendly;    // XREF: CG_CompassDrawArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+FC/r
+        Ptr32<Material> compass_mortar_friendly;    // XREF: CG_CompassDrawArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+FC/r
                                                                                 // CG_RegisterGraphics+439/w
-        Material *compass_mortar_enemy;         // XREF: CG_CompassDrawArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+C4/r
+        Ptr32<Material> compass_mortar_enemy;         // XREF: CG_CompassDrawArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+C4/r
                                                                                 // CG_RegisterGraphics+425/w
-        Material *compass_dogs_enemy;             // XREF: CG_RegisterGraphics+44D/w
+        Ptr32<Material> compass_dogs_enemy;             // XREF: CG_RegisterGraphics+44D/w
                                                                                 // CG_OwnerDraw(int,rectDef_s,float,float,float,float,int,int,int,int,float * const,Material *)+44F/r ...
-        Material *compass_incoming_artillery;
+        Ptr32<Material> compass_incoming_artillery;
                                                                                 // XREF: CG_CompassDrawIncomingArtilleryIcon(int,CompassType,rectDef_s const *,rectDef_s const *,float * const)+1AD/r
                                                                                 // CG_RegisterGraphics+461/w
-        Material *compass_sentry_friendly;    // XREF: CG_GetTurretCompassMaterial:loc_49212A/r
+        Ptr32<Material> compass_sentry_friendly;    // XREF: CG_GetTurretCompassMaterial:loc_49212A/r
                                                                                 // CG_RegisterGraphics+475/w
-        Material *compass_sentry_friendly_firing;
+        Ptr32<Material> compass_sentry_friendly_firing;
                                                                                 // XREF: CG_GetTurretCompassMaterial+21/r
                                                                                 // CG_RegisterGraphics+489/w
-        Material *compass_sentry_enemy;         // XREF: CG_GetTurretCompassMaterial:loc_492144/r
+        Ptr32<Material> compass_sentry_enemy;         // XREF: CG_GetTurretCompassMaterial:loc_492144/r
                                                                                 // CG_RegisterGraphics+49D/w
-        Material *compass_sentry_enemy_firing;
+        Ptr32<Material> compass_sentry_enemy_firing;
                                                                                 // XREF: CG_GetTurretCompassMaterial+3B/r
                                                                                 // CG_RegisterGraphics+4B1/w
-        Material *compass_tow_turret_friendly;
+        Ptr32<Material> compass_tow_turret_friendly;
                                                                                 // XREF: CG_GetTurretCompassMaterial:loc_492174/r
                                                                                 // CG_RegisterGraphics+4C5/w
-        Material *compass_tow_turret_friendly_firing;
+        Ptr32<Material> compass_tow_turret_friendly_firing;
                                                                                 // XREF: CG_GetTurretCompassMaterial+6B/r
                                                                                 // CG_RegisterGraphics+4D9/w
-        Material *compass_tow_turret_enemy; // XREF: CG_GetTurretCompassMaterial:loc_49218E/r
+        Ptr32<Material> compass_tow_turret_enemy; // XREF: CG_GetTurretCompassMaterial:loc_49218E/r
                                                                                 // CG_RegisterGraphics+4ED/w
-        Material *compass_tow_turret_enemy_firing;
+        Ptr32<Material> compass_tow_turret_enemy_firing;
                                                                                 // XREF: CG_GetTurretCompassMaterial+85/r
                                                                                 // CG_RegisterGraphics+501/w
-        Material *compass_guided_missile;     // XREF: CG_CompassDrawGuidedMissile(int,CompassType,int,rectDef_s const *,rectDef_s const *,float const * const)+3B7/r
+        Ptr32<Material> compass_guided_missile;     // XREF: CG_CompassDrawGuidedMissile(int,CompassType,int,rectDef_s const *,rectDef_s const *,float const * const)+3B7/r
                                                                                 // CG_RegisterGraphics+515/w
-        Material *grenadeIconFrag;                    // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *):loc_498BC7/r
+        Ptr32<Material> grenadeIconFrag;                    // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *):loc_498BC7/r
                                                                                 // CG_RegisterGraphics+529/w
-        Material *grenadeIconFlash;                 // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *):loc_498C1F/r
+        Ptr32<Material> grenadeIconFlash;                 // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *):loc_498C1F/r
                                                                                 // CG_RegisterGraphics+53D/w
-        Material *grenadeIconThrowBack;         // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *)+342/r
+        Ptr32<Material> grenadeIconThrowBack;         // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *)+342/r
                                                                                 // CG_RegisterGraphics+551/w
-        Material *grenadePointer;                     // XREF: CG_DrawWarningPointer+20F/r
+        Ptr32<Material> grenadePointer;                     // XREF: CG_DrawWarningPointer+20F/r
                                                                                 // CG_RegisterGraphics+565/w
-        Material *offscreenObjectivePointer;
+        Ptr32<Material> offscreenObjectivePointer;
                                                                                 // XREF: DrawOffscreenViewableWaypoint+7BE/r
                                                                                 // CG_RegisterGraphics+579/w
-        Material *demoTimelineFaded;                // XREF: CG_RegisterGraphics+58D/w
+        Ptr32<Material> demoTimelineFaded;                // XREF: CG_RegisterGraphics+58D/w
                                                                                 // CG_DrawDemoControls+4A2/r
-        Material *demoTimelineSolid;                // XREF: CG_RegisterGraphics+5A1/w
+        Ptr32<Material> demoTimelineSolid;                // XREF: CG_RegisterGraphics+5A1/w
                                                                                 // CG_DrawDemoControls+7DF/r
-        Material *demoTimelineCursor;             // XREF: CG_RegisterGraphics+5B5/w
+        Ptr32<Material> demoTimelineCursor;             // XREF: CG_RegisterGraphics+5B5/w
                                                                                 // CG_DrawDemoControls+1227/r
-        Material *demoTimelineBookmark;         // XREF: CG_RegisterGraphics+5C9/w
+        Ptr32<Material> demoTimelineBookmark;         // XREF: CG_RegisterGraphics+5C9/w
                                                                                 // CG_DrawDemoControls+CD4/r ...
-        Material *demoStatePaused;                    // XREF: CG_RegisterGraphics+5DD/w
+        Ptr32<Material> demoStatePaused;                    // XREF: CG_RegisterGraphics+5DD/w
                                                                                 // CG_DrawDemoControls:loc_4CFC0A/r
-        Material *demoStatePlay;                        // XREF: CG_RegisterGraphics+5F1/w
+        Ptr32<Material> demoStatePlay;                        // XREF: CG_RegisterGraphics+5F1/w
                                                                                 // CG_DrawDemoControls+1DB0/r
-        Material *demoStateStop;                        // XREF: CG_RegisterGraphics+605/w
+        Ptr32<Material> demoStateStop;                        // XREF: CG_RegisterGraphics+605/w
                                                                                 // CG_DrawDemoControls+1D37/r
-        Material *demoStateJump;                        // XREF: CG_RegisterGraphics+619/w
+        Ptr32<Material> demoStateJump;                        // XREF: CG_RegisterGraphics+619/w
                                                                                 // CG_DrawDemoControls+19D6/r ...
-        Material *demoStateForwardFast;         // XREF: CG_RegisterGraphics+62D/w
+        Ptr32<Material> demoStateForwardFast;         // XREF: CG_RegisterGraphics+62D/w
                                                                                 // CG_DrawDemoControls+2012/r ...
-        Material *demoStateForwardSlow;         // XREF: CG_RegisterGraphics+641/w
+        Ptr32<Material> demoStateForwardSlow;         // XREF: CG_RegisterGraphics+641/w
 
-        Material *theaterUpArrow;           // XREF: CG_RegisterGraphics+655/w
-        Material *theaterDownArrow;
-        Material *theaterLeftArrow;
-        Material *theaterRightArrow;
+        Ptr32<Material> theaterUpArrow;           // XREF: CG_RegisterGraphics+655/w
+        Ptr32<Material> theaterDownArrow;
+        Ptr32<Material> theaterLeftArrow;
+        Ptr32<Material> theaterRightArrow;
                                                                                 // CG_DrawDemoControls+1AB9/r ...
-        struct FxImpactTable *fx;                                    // XREF: CG_RegisterGraphics+655/w
+        Ptr32<struct FxImpactTable> fx;                                    // XREF: CG_RegisterGraphics+655/w
                                                                                 // CG_DrawDemoControls+25CE/r
-        const FxEffectDef *fxNoBloodFleshHit;
+        Ptr32<const FxEffectDef> fxNoBloodFleshHit;
                                                                                 // XREF: CG_RegisterGraphics+669/w
                                                                                 // CG_DrawDemoControls+24B7/r
-        const FxEffectDef *fxKnifeBlood;        // XREF: CG_RegisterGraphics+67D/w
+        Ptr32<const FxEffectDef> fxKnifeBlood;        // XREF: CG_RegisterGraphics+67D/w
                                                                                 // CG_DrawDemoControls+23A8/r
-        const FxEffectDef *fxKnifeNoBlood;    // XREF: CG_RegisterGraphics+691/w
+        Ptr32<const FxEffectDef> fxKnifeNoBlood;    // XREF: CG_RegisterGraphics+691/w
                                                                                 // CG_DrawDemoControls+26DE/r
-        const FxEffectDef *fxDogBlood;            // XREF: CG_EntityEvent(int,centity_s *,int):loc_4B4266/r
+        Ptr32<const FxEffectDef> fxDogBlood;            // XREF: CG_EntityEvent(int,centity_s *,int):loc_4B4266/r
                                                                                 // CG_EntityEvent(int,centity_s *,int)+2600/r ...
-        const FxEffectDef *fxDogNoBlood;        // XREF: CG_RegisterGraphics+ABC/w
+        Ptr32<const FxEffectDef> fxDogNoBlood;        // XREF: CG_RegisterGraphics+ABC/w
                                                                                 // CG_BulletHitEvent_Internal+2A5/r
-        const FxEffectDef *fxNonFatalHero;    // XREF: CG_RegisterGraphics+ACE/w
+        Ptr32<const FxEffectDef> fxNonFatalHero;    // XREF: CG_RegisterGraphics+ACE/w
                                                                                 // CG_MeleeBloodEvent(int,centity_s const *,int)+131/r ...
-        const FxEffectDef *fxBodyArmorSmall;
+        Ptr32<const FxEffectDef> fxBodyArmorSmall;
                                                                                 // XREF: CG_RegisterGraphics+AE0/w
                                                                                 // CG_MeleeBloodEvent(int,centity_s const *,int)+152/r ...
-        const FxEffectDef *fxBodyArmorLarge;
+        Ptr32<const FxEffectDef> fxBodyArmorLarge;
                                                                                 // XREF: CG_RegisterGraphics+AF2/w
                                                                                 // CG_DogBloodEvent(int,int,float * const,int)+40/r
-        const FxEffectDef *fxDtpArmSlide1;    // XREF: CG_RegisterGraphics+B04/w
+        Ptr32<const FxEffectDef> fxDtpArmSlide1;    // XREF: CG_RegisterGraphics+B04/w
                                                                                 // CG_DogBloodEvent(int,int,float * const,int)+76/r
-        const FxEffectDef *fxDtpArmSlide2;    // XREF: CG_RegisterGraphics+B16/w
+        Ptr32<const FxEffectDef> fxDtpArmSlide2;    // XREF: CG_RegisterGraphics+B16/w
                                                                                 // CG_BulletHitEvent_Internal+277/r
-        const FxEffectDef *fxPlayerSliding; // XREF: CG_RegisterGraphics+B28/w
+        Ptr32<const FxEffectDef> fxPlayerSliding; // XREF: CG_RegisterGraphics+B28/w
                                                                                 // CG_BulletHitEvent_Internal+495/r
-        const FxEffectDef *fxPuff;                    // XREF: CG_RegisterGraphics+B3A/w
+        Ptr32<const FxEffectDef> fxPuff;                    // XREF: CG_RegisterGraphics+B3A/w
                                                                                 // CG_BulletHitEvent_Internal:loc_537A90/r
-        const FxEffectDef *heliDustEffect;    // XREF: CG_EntityEvent(int,centity_s *,int)+48C8/r
+        Ptr32<const FxEffectDef> heliDustEffect;    // XREF: CG_EntityEvent(int,centity_s *,int)+48C8/r
                                                                                 // CG_RegisterGraphics+B4C/w
-        const FxEffectDef *heliWaterEffect; // XREF: CG_EntityEvent(int,centity_s *,int)+48F0/r
+        Ptr32<const FxEffectDef> heliWaterEffect; // XREF: CG_EntityEvent(int,centity_s *,int)+48F0/r
                                                                                 // CG_RegisterGraphics+B5E/w
-        const FxEffectDef *helicopterLightSmoke;
+        Ptr32<const FxEffectDef> helicopterLightSmoke;
                                                                                 // XREF: CG_RegisterGraphics+B70/w
                                                                                 // CG_Player(int,centity_s *)+3F6/r
-        const FxEffectDef *helicopterHeavySmoke;
+        Ptr32<const FxEffectDef> helicopterHeavySmoke;
                                                                                 // XREF: CG_EntityEvent(int,centity_s *,int)+4913/r
                                                                                 // CG_RegisterGraphics+B82/w
-        const FxEffectDef *helicopterOnFire;
+        Ptr32<const FxEffectDef> helicopterOnFire;
                                                                                 // XREF: CG_RegisterGraphics+B94/w
-        const FxEffectDef *jetAfterburner;    // XREF: CG_RegisterGraphics+BA6/w
-        Material *nightVisionOverlay;             // XREF: CG_RegisterGraphics+BB8/w
-        Material *hudIconNVG;                             // XREF: CG_RegisterGraphics+BCA/w
-        Material *hudDpadArrow;                         // XREF: CG_RegisterGraphics+BDC/w
-        Material *hudDpadCircle;                        // XREF: CG_RegisterGraphics+BEE/w
-        Material *hudDpadLeftHighlight;         // XREF: CG_DrawNightVisionOverlay(int):loc_4A1586/r
+        Ptr32<const FxEffectDef> jetAfterburner;    // XREF: CG_RegisterGraphics+BA6/w
+        Ptr32<Material> nightVisionOverlay;             // XREF: CG_RegisterGraphics+BB8/w
+        Ptr32<Material> hudIconNVG;                             // XREF: CG_RegisterGraphics+BCA/w
+        Ptr32<Material> hudDpadArrow;                         // XREF: CG_RegisterGraphics+BDC/w
+        Ptr32<Material> hudDpadCircle;                        // XREF: CG_RegisterGraphics+BEE/w
+        Ptr32<Material> hudDpadLeftHighlight;         // XREF: CG_DrawNightVisionOverlay(int):loc_4A1586/r
                                                                                 // CG_DrawNightVisionOverlay(int):loc_4A15A0/r ...
-        Material *ammoCounterBullet;                // XREF: CG_Init(int,int,int,int)+3EE/w
-        Material *ammoCounterBeltBullet;        // XREF: CG_Init(int,int,int,int)+402/w
-        Material *ammoCounterRifleBullet;     // XREF: CG_DrawPlayerActionSlot(int,rectDef_s const *,uint,float * const,Font_s *,float,int)+41C/r
+        Ptr32<Material> ammoCounterBullet;                // XREF: CG_Init(int,int,int,int)+3EE/w
+        Ptr32<Material> ammoCounterBeltBullet;        // XREF: CG_Init(int,int,int,int)+402/w
+        Ptr32<Material> ammoCounterRifleBullet;     // XREF: CG_DrawPlayerActionSlot(int,rectDef_s const *,uint,float * const,Font_s *,float,int)+41C/r
                                                                                 // CG_DrawPlayerActionSlot(int,rectDef_s const *,uint,float * const,Font_s *,float,int)+971/r ...
-        Material *ammoCounterRocket;                // XREF: CG_DrawPlayerActionSlot(int,rectDef_s const *,uint,float * const,Font_s *,float,int)+311/r
+        Ptr32<Material> ammoCounterRocket;                // XREF: CG_DrawPlayerActionSlot(int,rectDef_s const *,uint,float * const,Font_s *,float,int)+311/r
                                                                                 // CG_DrawPlayerActionSlot(int,rectDef_s const *,uint,float * const,Font_s *,float,int)+6D2/r ...
-        Material *ammoCounterShotgunShell;    // XREF: DrawClipAmmoMagazine+144/r
+        Ptr32<Material> ammoCounterShotgunShell;    // XREF: DrawClipAmmoMagazine+144/r
                                                                                 // DrawClipAmmoBeltfed+16F/r ...
-        Material *ammoCounterSingle;                // XREF: DrawClipAmmoBeltfed+388/r
+        Ptr32<Material> ammoCounterSingle;                // XREF: DrawClipAmmoBeltfed+388/r
                                                                                 // CG_Init(int,int,int,int)+452/w
-        Material *lifeCounterAlive;                 // XREF: DrawClipAmmoShortMagazine+144/r
+        Ptr32<Material> lifeCounterAlive;                 // XREF: DrawClipAmmoShortMagazine+144/r
                                                                                 // CG_Init(int,int,int,int)+466/w
-        Material *lifeCounterDead;                    // XREF: DrawClipAmmoRockets+144/r
+        Ptr32<Material> lifeCounterDead;                    // XREF: DrawClipAmmoRockets+144/r
                                                                                 // CG_Init(int,int,int,int)+47A/w
-        Material *textDecodeCharacters;         // XREF: DrawClipAmmoShotgunShells+144/r
+        Ptr32<Material> textDecodeCharacters;         // XREF: DrawClipAmmoShotgunShells+144/r
                                                                                 // CG_Init(int,int,int,int)+48E/w
-        Material *textDecodeCharactersGlow; // XREF: CG_DrawAmmoCounterSingle(int,rectDef_s *,float * const,bool):loc_4720C6/r
+        Ptr32<Material> textDecodeCharactersGlow; // XREF: CG_DrawAmmoCounterSingle(int,rectDef_s *,float * const,bool):loc_4720C6/r
                                                                                 // CG_Init(int,int,int,int)+4A2/w
-        const FxEffectDef *physicsWaterEffects[8];
+        Ptr32<const FxEffectDef> physicsWaterEffects[8];
                                                                                 // XREF: CG_DrawPlayerCOD7TypeWriter(int,rectDef_s const *,Font_s *,float,float * const,Material *,int,itemDef_s *,char const *)+8E/r
                                                                                 // CG_DrawPlayerCOD7TypeWriter(int,rectDef_s const *,Font_s *,float,float * const,Material *,int,itemDef_s *,char const *)+95/r ...
-        const FxEffectDef *infraredHeartbeat;
+        Ptr32<const FxEffectDef> infraredHeartbeat;
                                                                                 // XREF: CG_RegisterGraphics+C48/w
 };
 

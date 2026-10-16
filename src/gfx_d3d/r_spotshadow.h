@@ -1,13 +1,14 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "r_scene.h"
 #include "r_gfx.h"
 
 struct GfxSpotShadowEntCmd // sizeof=0x8
 {                                       // XREF: R_AddSpotShadowModelEntities/r
-    GfxSceneEntity *sceneEnt;           // XREF: R_AddSpotShadowModelEntities+42/w
+    Ptr32<GfxSceneEntity> sceneEnt;           // XREF: R_AddSpotShadowModelEntities+42/w
                                         // R_AddSpotShadowModelEntities+45/r ...
-    const GfxLight *light;              // XREF: R_AddSpotShadowModelEntities+10/w
+    Ptr32<const GfxLight> light;              // XREF: R_AddSpotShadowModelEntities+10/w
 };
 
 void __cdecl R_AddSpotShadowEntCmd(const GfxSpotShadowEntCmd *data);

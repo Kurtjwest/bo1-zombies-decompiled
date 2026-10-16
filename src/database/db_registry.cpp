@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "db_registry.h"
 #include <universal/profile.h>
@@ -482,7 +483,7 @@ struct// $73C9AB3B505E60D629E435B147795978 // sizeof=0x8011C
     bool loadedLocalization;            // XREF: DB_RegisteredReorderAsset+1A/r
                                         // DB_RegisteredReorderAsset+3A/w ...
     // padding byte
-    DBReorderAssetEntry *lastEntry;     // XREF: DB_RegisteredReorderAsset:loc_58E988/r
+    Ptr32<DBReorderAssetEntry> lastEntry;     // XREF: DB_RegisteredReorderAsset:loc_58E988/r
                                         // DB_RegisteredReorderAsset+81/r ...
     unsigned int sequence;              // XREF: DB_RegisteredReorderAsset+12D/r
                                         // DB_RegisteredReorderAsset+162/r ...

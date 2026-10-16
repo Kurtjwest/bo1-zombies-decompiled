@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "bg_dog.h"
 #include <clientscript/cscr_stringlist.h>
 #include <universal/q_shared.h>
@@ -17,7 +18,7 @@ const dvar_s *dog_turn_min_goal_dist;
 
 struct AnimStateName // sizeof=0x8
 {                                                                             // XREF: .data:s_animStateNames/r
-        unsigned __int16 *name;                         // XREF: BG_Actor_GetAnimStateIndex(ushort)+26/r
+        Ptr32<unsigned __int16> name;                         // XREF: BG_Actor_GetAnimStateIndex(ushort)+26/r
                                                                                 // BG_Actor_GetAnimStateName(int)+3D/r
         int category;                                             // XREF: BG_Actor_GetAnimStateCategoryName(int)+40/r
 };

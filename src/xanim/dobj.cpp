@@ -115,7 +115,7 @@ void __cdecl DObjGetHierarchyBits(DObj *obj, int boneIndex, int *partBits)
     int localBoneIndex; // [esp+A8h] [ebp-14h]
     unsigned __int8 *parentList; // [esp+ACh] [ebp-10h]
     const int *duplicatePartBits; // [esp+B0h] [ebp-Ch]
-    XModel **models; // [esp+B4h] [ebp-8h]
+    Ptr32<struct XModel> *models; // [esp+B4h] [ebp-8h]
     int highBoneIndex; // [esp+B8h] [ebp-4h]
 
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj.cpp", 490, 0, "%s", "obj") )
@@ -504,7 +504,7 @@ void __cdecl DObjComputeBounds(DObj *obj)
     unsigned int numModels; // [esp+20h] [ebp-14h]
     const DObjAnimMat *boneMtxList; // [esp+24h] [ebp-10h]
     float maxRadius; // [esp+28h] [ebp-Ch]
-    XModel **models; // [esp+2Ch] [ebp-8h]
+    Ptr32<struct XModel> *models; // [esp+2Ch] [ebp-8h]
     unsigned __int8 baseModelNumBones; // [esp+33h] [ebp-1h]
 
     maxRadius = 0.0f;
@@ -570,7 +570,7 @@ void __cdecl DObjCreateExt(
 void __cdecl DObjFree(DObj *obj)
 {
     unsigned __int16 entnum; // [esp+4h] [ebp-8h]
-    XModel **models; // [esp+8h] [ebp-4h]
+    Ptr32<struct XModel> *models; // [esp+8h] [ebp-4h]
 
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj.cpp", 895, 0, "%s", "obj") )
         __debugbreak();
@@ -996,7 +996,7 @@ void __cdecl DObjTracelinePartBits(DObj *obj, int *partBits)
     unsigned int globalBoneIndex; // [esp+1Ch] [ebp-14h]
     unsigned int localBoneIndex; // [esp+20h] [ebp-10h]
     XBoneInfo *boneInfo; // [esp+24h] [ebp-Ch]
-    XModel **models; // [esp+2Ch] [ebp-4h]
+    Ptr32<struct XModel> *models; // [esp+2Ch] [ebp-4h]
 
     PROF_SCOPED("traceline_bits");
 
@@ -1088,7 +1088,7 @@ void __cdecl DObjTraceline(DObj *obj, float *start, float *end, unsigned __int8 
     XBoneInfo *boneInfo; // [esp+3B0h] [ebp-4Ch]
     int ignoreCollision; // [esp+3B4h] [ebp-48h]
     float axis[3][3]; // [esp+3B8h] [ebp-44h] BYREF
-    XModel **models; // [esp+3DCh] [ebp-20h]
+    Ptr32<struct XModel> *models; // [esp+3DCh] [ebp-20h]
     unsigned __int16 classification; // [esp+3E0h] [ebp-1Ch]
     int target_mask; // [esp+3E4h] [ebp-18h]
     float center[3]; // [esp+3E8h] [ebp-14h] BYREF
@@ -1528,7 +1528,7 @@ void __cdecl DObjGeomTraceline(DObj *obj, float *localStart, float *localEnd, in
     trace_t trace; // [esp+28h] [ebp-48h] BYREF
     DObjAnimMat *boneMtxList; // [esp+64h] [ebp-Ch]
     unsigned int i; // [esp+68h] [ebp-8h]
-    XModel **models; // [esp+6Ch] [ebp-4h]
+    Ptr32<struct XModel> *models; // [esp+6Ch] [ebp-4h]
 
     PROF_SCOPED("geomtraceline");
 
@@ -1605,7 +1605,7 @@ void __cdecl DObjGeomTracelinePartBits(DObj *obj, int contentmask, int *partBits
     XModel *model; // [esp+10h] [ebp-10h]
     unsigned int numModels; // [esp+14h] [ebp-Ch]
     unsigned int i; // [esp+18h] [ebp-8h]
-    XModel **models; // [esp+1Ch] [ebp-4h]
+    Ptr32<struct XModel> *models; // [esp+1Ch] [ebp-4h]
 
     PROF_SCOPED("geomtraceline_bits");
 
@@ -1629,7 +1629,7 @@ void __cdecl DObjGeomTracelinePartBits(DObj *obj, int contentmask, int *partBits
 int __cdecl DObjHasContents(DObj *obj, int contentmask)
 {
     int i; // [esp+8h] [ebp-8h]
-    XModel **models; // [esp+Ch] [ebp-4h]
+    Ptr32<struct XModel> *models; // [esp+Ch] [ebp-4h]
 
     models = obj->localModels;
     for ( i = 0; i < obj->numModels; ++i )

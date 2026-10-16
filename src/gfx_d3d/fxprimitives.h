@@ -304,11 +304,11 @@ struct r_double_index_t // sizeof=0x4
 struct FxSpriteInfo // sizeof=0x10
 {                                       // XREF: .data:g_spriteInfo/r
                                         // FxSystem/r
-    r_double_index_t *indices;          // XREF: FX_SpriteBegin(void)+3/w
+    Ptr32<r_double_index_t> indices;          // XREF: FX_SpriteBegin(void)+3/w
     // FX_SpriteAdd(FxSprite *)+5/r ...
     unsigned int indexCount;
-    Material *material;
-    const char *name;
+    Ptr32<Material> material;
+    Ptr32<const char> name;
 };
 
 
@@ -349,8 +349,8 @@ struct __declspec(align(16)) FxEffect // sizeof=0xC0
     //$A7FC777CB20AB0354B9D4E9742D6DE43 ___u0;
     union //$A7FC777CB20AB0354B9D4E9742D6DE43 // sizeof=0x4
     {                                       // XREF: FxEffect/r
-        const FxEffectDef *def;
-        const FxEffectDef *localDef;
+        Ptr32<const FxEffectDef> def;
+        Ptr32<const FxEffectDef> localDef;
     };
     unsigned __int16 firstElemHandle[3];
     unsigned __int16 firstSortedElemHandle;
@@ -575,14 +575,14 @@ struct FxSystem // sizeof=0x360
     FxCamera extraCamera;
     FxCamera extraCameraPre;
     FxSpriteInfo sprite;
-    FxEffectContainer *effects;
-    FxPool<FxElem, FxElemContainer> *elems;
-    FxPool<FxTrail, FxTrail> *trails;
-    FxPool<FxTrailElem, FxTrailElem> *trailElems;
+    Ptr32<FxEffectContainer> effects;
+    Ptr32<FxPool<FxElem, FxElemContainer>> elems;
+    Ptr32<FxPool<FxTrail, FxTrail>> trails;
+    Ptr32<FxPool<FxTrailElem, FxTrailElem>> trailElems;
     volatile unsigned int gfxCloudCount;
-    FxVisState *visState;
-    const FxVisState *visStateBufferRead;
-    FxVisState *visStateBufferWrite;
+    Ptr32<FxVisState> visState;
+    Ptr32<const FxVisState> visStateBufferRead;
+    Ptr32<FxVisState> visStateBufferWrite;
     __int16 activeSpotLightBoltDobj;
     // padding byte
     // padding byte
@@ -595,12 +595,12 @@ struct FxSystem // sizeof=0x360
     unsigned __int8 localClientNum;
     unsigned int restartList[32];
     FxPriorityInfo priorityInfo;
-    FxUniqueHandleDb *uniqueHandleDb;
+    Ptr32<FxUniqueHandleDb> uniqueHandleDb;
     bool hasStaleAttachedFx;
     // padding byte
     // padding byte
     // padding byte
-    FxSystemShared *shared;
+    Ptr32<FxSystemShared> shared;
 };
 
 struct FxBeam // sizeof=0x48
@@ -611,12 +611,12 @@ struct FxBeam // sizeof=0x48
     GfxColor endColor;                  // XREF: CG_Laser_Add_Core+3E6/w
     float beginRadius;                  // XREF: CG_Laser_Add_Core+434/w
     float endRadius;                    // XREF: CG_Laser_Add_Core+44C/w
-    Material *material;                 // XREF: CG_Laser_Add_Core+459/w
-    Material *material2;                // XREF: Flame_Class_Stream_Render_Item(int,flameStream_s const *,Material *,Material *,float (*)[3],bool)+580/w
+    Ptr32<Material> material;                 // XREF: CG_Laser_Add_Core+459/w
+    Ptr32<Material> material2;                // XREF: Flame_Class_Stream_Render_Item(int,flameStream_s const *,Material *,Material *,float (*)[3],bool)+580/w
     int segmentCount;                   // XREF: CG_Laser_Add_Core+45F/w
     int perpSegmentCount;               // XREF: Flame_Class_Stream_Render_Item(int,flameStream_s const *,Material *,Material *,float (*)[3],bool)+595/w
     float wiggleDist;                   // XREF: CG_Laser_Add_Core+471/w
-    float *segmentVerts;                // XREF: CG_DrawTracer(float const * const,float const * const,refdef_s const *,localEntity_s *)+15A/w
+    Ptr32<float> segmentVerts;                // XREF: CG_DrawTracer(float const * const,float const * const,refdef_s const *,localEntity_s *)+15A/w
     int flags;                          // XREF: CG_DrawTracer(float const * const,float const * const,refdef_s const *,localEntity_s *)+197/w
     float animFrac;                     // XREF: Flame_Class_Stream_Render_Item(int,flameStream_s const *,Material *,Material *,float (*)[3],bool)+61A/w
 };
@@ -633,7 +633,7 @@ struct FxPostLightInfo;
 struct FxSprite // sizeof=0x20
 {                                       // XREF: CG_AddPlayerSpriteDrawSurf/r
                                         // AddDrawSurfForHudElemWaypoint/r
-    Material *material;
+    Ptr32<Material> material;
     float pos[3];
     unsigned __int8 rgbaColor[4];
     float radius;

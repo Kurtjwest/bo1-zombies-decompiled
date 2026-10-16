@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <cstring>
 #include <cstdint>
@@ -10,7 +11,7 @@ template <typename T>
 struct bdFastArray
 {
     // ===== Layout (matches decomp) =====
-    T *m_data;      // +0x00
+    Ptr32<T> m_data;      // +0x00
     unsigned int m_capacity;  // +0x04
     unsigned int m_size;      // +0x08
 

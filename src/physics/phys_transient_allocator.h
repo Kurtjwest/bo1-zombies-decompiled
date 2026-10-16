@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "phys_local.h"
 #include "phys_mem_new.h"
 
@@ -8,21 +9,21 @@ struct phys_transient_allocator // sizeof=0x18
     {
         unsigned int m_block_size;
         unsigned int m_block_alignment;
-        phys_transient_allocator::block_header *m_next_block;
+        Ptr32<phys_transient_allocator::block_header> m_next_block;
     };
     struct allocator_state // sizeof=0x10
     {                                       // XREF: gjk_query_output/r
-        phys_transient_allocator::block_header *m_first_block;
-        char *m_cur;                        // XREF: pulse_sum_constraint_solver::execute_constraint_solver(rigid_body * const)+2B9/w
-        char *m_end;                        // XREF: pulse_sum_constraint_solver::execute_constraint_solver(rigid_body * const)+2CE/w
+        Ptr32<phys_transient_allocator::block_header> m_first_block;
+        Ptr32<char> m_cur;                        // XREF: pulse_sum_constraint_solver::execute_constraint_solver(rigid_body * const)+2B9/w
+        Ptr32<char> m_end;                        // XREF: pulse_sum_constraint_solver::execute_constraint_solver(rigid_body * const)+2CE/w
         unsigned int m_total_memory_allocated;
     };
-    phys_transient_allocator::block_header *m_first_block;
-    char *m_cur;                        // XREF: physics_system::time_step(float,bool)+14F/w
-    char *m_end;                        // XREF: physics_system::time_step(float,bool)+152/w
+    Ptr32<phys_transient_allocator::block_header> m_first_block;
+    Ptr32<char> m_cur;                        // XREF: physics_system::time_step(float,bool)+14F/w
+    Ptr32<char> m_end;                        // XREF: physics_system::time_step(float,bool)+152/w
     unsigned int m_total_memory_allocated;
     minspec_read_write_mutex m_mutex;   // XREF: physics_system::time_step(float,bool)+158/w
-    void *m_slot_pool;                  // XREF: physics_system::time_step(float,bool)+15F/w
+    Ptr32<void> m_slot_pool;                  // XREF: physics_system::time_step(float,bool)+15F/w
 
     phys_transient_allocator()
     {

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/dvar.h>
 
 struct DvarDumpInfo // sizeof=0xC
@@ -6,7 +7,7 @@ struct DvarDumpInfo // sizeof=0xC
     int count;                          // XREF: Com_DvarDump(int,char const *)+45/w
                                         // Com_DvarDump(int,char const *)+7C/r
     int channel;                        // XREF: Com_DvarDump(int,char const *)+52/w
-    const char *match;                  // XREF: Com_DvarDump(int,char const *)+5B/w
+    Ptr32<const char> match;                  // XREF: Com_DvarDump(int,char const *)+5B/w
 };
 
 struct DvarSetConfigInfo // sizeof=0xC

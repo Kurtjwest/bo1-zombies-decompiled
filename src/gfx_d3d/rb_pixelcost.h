@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_material.h"
 #include "rb_state.h"
 
@@ -19,7 +20,7 @@ union GfxPixelCostKey // sizeof=0x8
     //GfxPixelCostKey::<unnamed_type_mtl> mtl;
     struct
     {
-        const Material *material;
+        Ptr32<const Material> material;
         unsigned __int8 techType;
     } mtl;
     unsigned __int64 packed;

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 
 #include "cscr_main.h"
@@ -25,7 +26,7 @@ struct scr_anim_s // sizeof=0x4
             unsigned __int16 index;
             unsigned __int16 tree;
         };
-        const char *linkPointer;
+        Ptr32<const char> linkPointer;
     };
 
     scr_anim_s()
@@ -52,7 +53,7 @@ struct scr_animtree_t // sizeof=0x4
     {
         anims = NULL; 
     }
-    XAnim_s *anims;                                         // XREF: BG_FindAnimTree+1A/w
+    Ptr32<XAnim_s> anims;                                         // XREF: BG_FindAnimTree+1A/w
 };
 
 struct __declspec(align(4)) scr_animscript_t // sizeof=0x8
@@ -66,8 +67,8 @@ struct __declspec(align(4)) scr_animscript_t // sizeof=0x8
 
 struct scrAnimGlob_t // sizeof=0x40C
 {
-    const char *start;
-    const char *pos;
+    Ptr32<const char> start;
+    Ptr32<const char> pos;
     unsigned int using_xanim_lookup[2][MAX_XANIMTREE_NUM];
     int bAnimCheck;
 };
@@ -123,12 +124,12 @@ struct TreeNameMap // sizeof=0x54
 
 struct ClientTreeStorage // sizeof=0x10
 {                                       // XREF: .data:gGScrXAnimTreesForClient/r
-    char *strName;                      // XREF: Scr_LoadAnimTreeAtIndex(scriptInstance_t,uint,void * (*)(int),int,bool)+69A/w
+    Ptr32<char> strName;                      // XREF: Scr_LoadAnimTreeAtIndex(scriptInstance_t,uint,void * (*)(int),int,bool)+69A/w
                                         // Scr_LoadAnimTreeAtIndex(scriptInstance_t,uint,void * (*)(int),int,bool)+6EE/r ...
     scr_animtree_t animTree;            // XREF: Scr_LoadAnimTreeAtIndex(scriptInstance_t,uint,void * (*)(int),int,bool)+634/w
                                         // CScr_RetrieveAnimTree+244/r
     int numIndices;
-    TreeNameMap *pTreeNameMap;
+    Ptr32<TreeNameMap> pTreeNameMap;
 };
 
 

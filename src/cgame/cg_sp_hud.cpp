@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 // zombies: SP client HUD pieces BO1Zombies's MP client does not have. Everything here is reached only in
 // zombiemode (the callers gate it). Each function names its SP address.
 #include <game_sp/g_sp_loadgame.h>
@@ -61,7 +62,7 @@ struct scoreBarColumn_s
 {
     int type;
     float widthFrac;
-    const char *header;
+    Ptr32<const char> header;
     int alignment;
 };
 static const scoreBarColumn_s s_scoreBarColumnsDefault[2] = { { 12, 0.2f, "", 2 }, { 2, 0.8f, "", 2 } };   // 0x00a60650

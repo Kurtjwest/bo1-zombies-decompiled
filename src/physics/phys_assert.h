@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct phys_assert_info // sizeof=0x18
 {                                       // XREF: .data:phys_assert_info pai_check_terrain_query_params/r
@@ -15,7 +16,7 @@ struct phys_assert_info // sizeof=0x18
     // padding byte
     // padding byte
     // padding byte
-    phys_assert_info *m_next;           // XREF: _dynamic_initializer_for__pai_check_terrain_query_params__+5/w
+    Ptr32<phys_assert_info> m_next;           // XREF: _dynamic_initializer_for__pai_check_terrain_query_params__+5/w
 
     phys_assert_info(int max_hits_total, int max_hits_per_frame, bool use_warnings_only);
     void frame_advance();

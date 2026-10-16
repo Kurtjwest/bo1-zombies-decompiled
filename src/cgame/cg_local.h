@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <xanim/dobj.h>
 #include <xanim/xanim.h>
 
@@ -12,10 +13,10 @@ struct ViewModelHand // sizeof=0x8
 
 struct ViewModelInfo // sizeof=0x34
 {
-    DObj *viewModelDObj;
+    Ptr32<DObj> viewModelDObj;
     int hasAnimTree;
-    struct XAnimTree_s *tree;
-    XAnim_s *anims;
+    Ptr32<struct XAnimTree_s> tree;
+    Ptr32<XAnim_s> anims;
     unsigned int partBits[5];
     ViewModelHand hand[2];
 };

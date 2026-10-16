@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <qcommon/msg_mp.h>
 #include <server/server.h>
@@ -80,10 +81,10 @@ struct tempBanSlot_t // sizeof=0x8
 
 struct __declspec(align(128)) serverStatic_t // sizeof=0x1C880
 {                                       // XREF: .data:serverStatic_t svs/r
-    cachedSnapshot_t *cachedSnapshotFrames;
+    Ptr32<cachedSnapshot_t> cachedSnapshotFrames;
                                         // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+147/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+153/r ...
-    archivedEntity_s *cachedSnapshotEntities;
+    Ptr32<archivedEntity_s> cachedSnapshotEntities;
                                         // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+1D1/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+1E2/r ...
     int initialized;                    // XREF: SV_Startup(int)+3/r
@@ -96,7 +97,7 @@ struct __declspec(align(128)) serverStatic_t // sizeof=0x1C880
                                         // SV_GetEarliestArchivedClientInfoTime(void)+DB/r
     int snapFlagServerBit;              // XREF: SV_MapRestart(int)+23A/r
                                         // SV_MapRestart(int)+243/w ...
-    client_t *clients;                  // XREF: MatchRecord_SearchCreateForPlayer+180/r
+    Ptr32<client_t> clients;                  // XREF: MatchRecord_SearchCreateForPlayer+180/r
                                         // MatchRecordMovement(void):loc_5AD9B7/r ...
     int numCachedSnapshotMatchStates;   // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+165/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+171/r ...
@@ -116,18 +117,18 @@ struct __declspec(align(128)) serverStatic_t // sizeof=0x1C880
                                         // SV_CheckOverflow+6E/r ...
     int nextSnapshotClients;            // XREF: SV_SpawnServer(int,char const *,int,int)+4B4/w
                                         // SV_CheckOverflow+276/r ...
-    struct MatchState *snapshotMatchStates;    // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+6B/w
+    Ptr32<struct MatchState> snapshotMatchStates;    // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+6B/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+7C/r ...
-    entityState_s *snapshotEntities;    // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+B9/w
+    Ptr32<entityState_s> snapshotEntities;    // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+B9/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+CC/r ...
-    clientState_s *snapshotClients;     // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+10A/w
+    Ptr32<clientState_s> snapshotClients;     // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+10A/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+11E/r ...
     int nextArchivedSnapshotFrames;     // XREF: SV_InitArchivedSnapshot(void)+3/w
                                         // SV_CheckOverflow:loc_715D53/r ...
-    archivedSnapshot_s *archivedSnapshotFrames;
+    Ptr32<archivedSnapshot_s> archivedSnapshotFrames;
                                         // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+280/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+28C/r ...
-    unsigned __int8 *archivedSnapshotBuffer;
+    Ptr32<unsigned __int8> archivedSnapshotBuffer;
                                         // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+2B2/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+2BE/r ...
     int nextArchivedSnapshotBuffer;     // XREF: SV_InitArchivedSnapshot(void)+D/w
@@ -140,10 +141,10 @@ struct __declspec(align(128)) serverStatic_t // sizeof=0x1C880
                                         // SV_CheckOverflow+124/r ...
     int nextCachedSnapshotFrames;       // XREF: SV_InitArchivedSnapshot(void)+2B/w
                                         // SV_CheckOverflow:loc_715DFB/r ...
-    MatchState *cachedSnapshotMatchStates;
+    Ptr32<MatchState> cachedSnapshotMatchStates;
                                         // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+187/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+197/r ...
-    cachedClient_s *cachedSnapshotClients;
+    Ptr32<cachedClient_s> cachedSnapshotClients;
                                         // XREF: SV_AllocateClientMemory(HunkUser *,int,int)+246/w
                                         // SV_AllocateClientMemory(HunkUser *,int,int)+259/r ...
     int nextHeartbeatTime;              // XREF: SV_Heartbeat_f(void)+3/w
@@ -289,7 +290,7 @@ struct __declspec(align(128)) serverStatic_t // sizeof=0x1C880
 
 struct serverStaticHeader_t // sizeof=0xA0
 {                                       // XREF: .data:serverStaticHeader_t svsHeader/r
-    client_t *clients;                  // XREF: SV_ArchiveSnapshot(msg_t *)+380/r
+    Ptr32<client_t> clients;                  // XREF: SV_ArchiveSnapshot(msg_t *)+380/r
                                         // SV_ArchiveSnapshot(msg_t *)+BCF/r ...
     int time;                           // XREF: Com_Frame_Try_Block_Function+549/r
                                         // SV_ArchiveSnapshot(msg_t *)+287/r ...
@@ -313,29 +314,29 @@ struct serverStaticHeader_t // sizeof=0xA0
                                         // SV_GetServerStaticHeader(void):loc_71DBBF/r
     int nextSnapshotEntities;           // XREF: SV_WriteSnapshotToClient(client_t *,msg_t *)+211/r
                                         // SV_SetServerStaticHeader(void)+90/w ...
-    MatchState *snapshotMatchStates;    // XREF: SV_WriteSnapshotToClient(client_t *,msg_t *)+36B/r
+    Ptr32<MatchState> snapshotMatchStates;    // XREF: SV_WriteSnapshotToClient(client_t *,msg_t *)+36B/r
                                         // SV_WriteSnapshotToClient(client_t *,msg_t *)+393/r ...
-    entityState_s *snapshotEntities;    // XREF: SV_EmitPacketEntities_GetOldEnt+32/r
+    Ptr32<entityState_s> snapshotEntities;    // XREF: SV_EmitPacketEntities_GetOldEnt+32/r
                                         // SV_SetServerStaticHeader(void)+A7/w ...
-    clientState_s *snapshotClients;     // XREF: SV_EmitPacketClients_GetOldClient+32/r
+    Ptr32<clientState_s> snapshotClients;     // XREF: SV_EmitPacketClients_GetOldClient+32/r
                                         // SV_SetServerStaticHeader(void)+B2/w ...
-    struct svEntity_s *svEntities;             // XREF: SV_ArchiveSnapshot(msg_t *)+7B9/r
+    Ptr32<struct svEntity_s> svEntities;             // XREF: SV_ArchiveSnapshot(msg_t *)+7B9/r
                                         // SV_ArchiveSnapshot(msg_t *)+812/r ...
     float mapCenter[3];                 // XREF: CL_WriteUncompressedDemoInfo(int)+762/w
                                         // CL_WriteUncompressedDemoInfo(int)+772/w ...
-    MatchState *cachedSnapshotMatchStates;
+    Ptr32<MatchState> cachedSnapshotMatchStates;
                                         // XREF: SV_ArchiveSnapshot(msg_t *)+2C8/r
                                         // SV_ArchiveSnapshot(msg_t *)+B43/r ...
-    archivedEntity_s *cachedSnapshotEntities;
+    Ptr32<archivedEntity_s> cachedSnapshotEntities;
                                         // XREF: SV_ArchiveSnapshot(msg_t *):loc_6F6AE0/r
                                         // SV_ArchiveSnapshot(msg_t *)+F48/r ...
-    cachedClient_s *cachedSnapshotClients;
+    Ptr32<cachedClient_s> cachedSnapshotClients;
                                         // XREF: SV_ArchiveSnapshot(msg_t *):loc_6F6B0F/r
                                         // SV_ArchiveSnapshot(msg_t *)+3D9/r ...
-    unsigned __int8 *archivedSnapshotBuffer;
+    Ptr32<unsigned __int8> archivedSnapshotBuffer;
                                         // XREF: SV_ArchiveSnapshot(msg_t *):loc_6F6B3E/r
                                         // SV_SetServerStaticHeader(void)+119/w ...
-    cachedSnapshot_t *cachedSnapshotFrames;
+    Ptr32<cachedSnapshot_t> cachedSnapshotFrames;
                                         // XREF: SV_ArchiveSnapshot(msg_t *):loc_6F6B6D/r
                                         // SV_ArchiveSnapshot(msg_t *)+1C1/r ...
     int nextCachedSnapshotFrames;       // XREF: SV_ArchiveSnapshot(msg_t *):loc_6F6BD9/r
@@ -358,15 +359,15 @@ struct serverStaticHeader_t // sizeof=0xA0
                                         // SV_SetServerStaticHeader(void)+190/w ...
     int clientArchive;                  // XREF: MSG_WriteDeltaPlayerstate(SnapshotInfo_s *,msg_t *,int,playerState_s const *,playerState_s const *)+13C/r
                                         // SV_SetServerStaticHeader(void)+1A0/w ...
-    gentity_s *gentities;               // XREF: SV_GentityNumLocal+38/r
+    Ptr32<gentity_s> gentities;               // XREF: SV_GentityNumLocal+38/r
                                         // SV_SetServerStaticHeader(void)+1AB/w ...
     int gentitySize;                    // XREF: SV_GentityNumLocal:loc_6F7C1F/r
                                         // SV_SetServerStaticHeader(void)+1B7/w ...
-    clientState_s *firstClientState;    // XREF: G_GetClientStateLocal+38/r
+    Ptr32<clientState_s> firstClientState;    // XREF: G_GetClientStateLocal+38/r
                                         // SV_SetServerStaticHeader(void)+1C7/w ...
-    playerState_s *firstPlayerState;    // XREF: GetFollowPlayerStateLocal+3E/r
+    Ptr32<playerState_s> firstPlayerState;    // XREF: GetFollowPlayerStateLocal+3E/r
                                         // SV_SetServerStaticHeader(void)+1D6/w ...
-    MatchState *matchState;             // XREF: G_GetMatchStateLocal:loc_6F7C9F/r
+    Ptr32<MatchState> matchState;             // XREF: G_GetMatchStateLocal:loc_6F7C9F/r
                                         // SV_SetServerStaticHeader(void)+1EA/w ...
     int clientSize;                     // XREF: G_GetClientStateLocal:loc_6F7C5F/r
                                         // GetFollowPlayerStateLocal:loc_6F7CE4/r ...
@@ -408,16 +409,16 @@ struct __declspec(align(4)) server_t // sizeof=0x5C28C
                                         // SV_MapRestart(int)+26E/w ...
     int checksumFeed;                   // XREF: SV_SendClientGameState(client_t *)+1022/r
                                         // SV_VerifyIwds_f:loc_70ADDB/r ...
-    cmodel_t *models[512];
+    Ptr32<cmodel_t> models[512];
     unsigned __int16 emptyConfigString; // XREF: SV_SendClientGameState(client_t *)+64A/r
                                         // SV_SendClientGameState(client_t *)+736/r ...
     unsigned __int16 configstrings[0xCBC/*MAX_CONFIGSTRINGS*/];
     svEntity_s svEntities[MAX_GENTITIES_SV]; // mod (L25): retail 1024        // XREF: CM_GetWaterHeight(float const * const,float,float)+107/o
                                         // CM_UnlinkEntity(svEntity_s *)+75/o ...
-    gentity_s *gentities;
+    Ptr32<gentity_s> gentities;
     int gentitySize;
     int num_entities;
-    playerState_s *gameClients;
+    Ptr32<playerState_s> gameClients;
     int gameClientSize;
     int checksum;
     int skelTimeStamp;
@@ -443,7 +444,7 @@ struct __declspec(align(4)) server_t // sizeof=0x5C28C
     // padding byte
     // padding byte
     // padding byte
-    const char *killReason;
+    Ptr32<const char> killReason;
     unsigned __int8 xpmods;
     // padding byte
     // padding byte

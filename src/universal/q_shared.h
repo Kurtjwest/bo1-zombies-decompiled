@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 // this is the define for determining if we have an asm version of a C function
 #if (defined _M_IX86 || defined __i386__) && !defined __sun__    && !defined __LCC__
@@ -443,7 +444,7 @@ enum trType_t : __int32
 struct cspField_t // sizeof=0xC
 {                                                                             // XREF: .data:weaponDefFields/r
                                                                                 // .data:destructiblePieceFields/r ...
-        const char *szName;                                 // XREF: BG_ParsePenetrationDepthTable+13D/w
+        Ptr32<const char> szName;                                 // XREF: BG_ParsePenetrationDepthTable+13D/w
                                                                                 // G_ParseHitLocDmgTable(void)+5D/w ...
         int iOffset;                                                // XREF: BG_ParsePenetrationDepthTable+156/w
                                                                                 // G_ParseHitLocDmgTable(void)+70/w

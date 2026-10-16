@@ -183,9 +183,9 @@ struct GfxWorldDpvsPlanes // sizeof=0x10
 
 struct BModelSurface // sizeof=0x14
 {
-    GfxScaledPlacement *placement;
-    GfxSurface *surf;
-    struct ShaderConstantSet *shaderConstSet;
+    Ptr32<GfxScaledPlacement> placement;
+    Ptr32<GfxSurface> surf;
+    Ptr32<struct ShaderConstantSet> shaderConstSet;
     float bmodelBurnAmt;
     float bmodelFadeAmt;
 };

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum ParseTokenType : __int32
 {                                                                             // XREF: parseInfo_t/r
@@ -24,19 +25,19 @@ struct parseInfo_t // sizeof=0x424
         // padding byte
         // padding byte
         // padding byte
-        const char *errorPrefix;
-        const char *warningPrefix;
+        Ptr32<const char> errorPrefix;
+        Ptr32<const char> warningPrefix;
         int backup_lines;
-        const char *backup_text;
-        const char *parseFile;
+        Ptr32<const char> backup_text;
+        Ptr32<const char> parseFile;
 };
 
 struct ParseThreadInfo // sizeof=0x464C
 {                                                                             // XREF: .data:g_parse/r
         parseInfo_t parseInfo[16];
         int parseInfoNum;
-        const char *tokenPos;
-        const char *prevTokenPos;
+        Ptr32<const char> tokenPos;
+        Ptr32<const char> prevTokenPos;
         char line[1024];
 };
 
@@ -45,10 +46,10 @@ struct com_parse_mark_t // sizeof=0x14
                                                                                 // level_locals_t/r ...
         int lines;                                                    // XREF: CScr_OpenFile(void)+12D/w
                                                                                 // CScr_FReadLn+A3/r ...
-        const char *text;
+        Ptr32<const char> text;
         int ungetToken;
         int backup_lines;
-        const char *backup_text;
+        Ptr32<const char> backup_text;
 };
 
 void __cdecl Com_InitParse();
@@ -75,6 +76,13 @@ void __cdecl Com_ParseReturnToMark(const char **text, com_parse_mark_t *mark);
 int __cdecl Com_Compress(char *data_p);
 const char *__cdecl Com_GetLastTokenPos();
 parseInfo_t *__cdecl Com_Parse(const char **data_p);
+#if BO1_PTR32_IS_CLASS
+inline parseInfo_t * Com_Parse(Ptr32<const char> *data_p)
+{
+    const char *bo1_data_p = data_p ? (const char *)*data_p : nullptr; parseInfo_t * bo1_r = Com_Parse(data_p ? &bo1_data_p : nullptr); if (data_p) *data_p = bo1_data_p; return bo1_r;
+}
+#endif
+
 parseInfo_t *__cdecl Com_ParseExt(const char **data_p, int allowLineBreaks);
 const char *__cdecl SkipWhitespace(const char *data, int *newLines);
 parseInfo_t *__cdecl Com_ParseCSV(const char **data_p, int allowLineBreaks);

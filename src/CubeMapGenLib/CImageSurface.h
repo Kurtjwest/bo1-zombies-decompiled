@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 //--------------------------------------------------------------------------------------
 //CImageSurface
 // Class for storing, manipulating, and copying image data to and from D3D Surfaces
@@ -60,7 +61,7 @@ public:
    int32 m_Width;          //image width
    int32 m_Height;         //image height
    int32 m_NumChannels;    //number of channels
-   CP_ITYPE *m_ImgData;    //cubemap image data
+   Ptr32<CP_ITYPE> m_ImgData;    //cubemap image data
 
 private:
    //fatal error

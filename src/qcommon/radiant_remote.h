@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "common.h"
 
 /* 596 */
@@ -38,10 +39,10 @@ struct RadaintToGameMapping // sizeof=0x10
 struct RadiantCommandProcessor // sizeof=0x10
 {                                       // XREF: .rdata:gCommandProcessors/r
                                         // .rdata:cgCommandProcessors/r
-    void (__cdecl *processorFunc)(const RadiantCommand *, SpawnVar *);
-    void (__cdecl *clearSelectionFunc)();
-    bool (__cdecl *conditionFunc)(const SpawnVar *);
-    const char *classname;
+    Ptr32<void __cdecl(const RadiantCommand *, SpawnVar *)> processorFunc;
+    Ptr32<void __cdecl()> clearSelectionFunc;
+    Ptr32<bool __cdecl(const SpawnVar *)> conditionFunc;
+    Ptr32<const char> classname;
 };
 
 char *__cdecl GetPairValue(const SpawnVar *spawnVar, const char *key);

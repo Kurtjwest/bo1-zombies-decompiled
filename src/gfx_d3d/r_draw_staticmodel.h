@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rb_state.h"
 #include "r_rendercmds.h"
 #include "rb_tess.h"
@@ -7,32 +8,32 @@
 struct GfxStaticModelDrawStream // sizeof=0x34
 {                                       // XREF: ?R_DrawStaticModelSurfLit@@YAXPBIUGfxCmdBufContext@@1PBUGfxDrawSurfListInfo@@@Z/r
                                         // ?R_DrawStaticModelSurf@@YAXPBIUGfxCmdBufContext@@PBUGfxDrawSurfListInfo@@@Z/r ...
-    const unsigned int *primDrawSurfPos;
+    Ptr32<const unsigned int> primDrawSurfPos;
                                         // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+2C/w
                                         // R_DrawStaticModelSurf(uint const *,GfxCmdBufContext,GfxDrawSurfListInfo const *)+2C/w ...
-    const GfxTexture *reflectionProbeTexture;
+    Ptr32<const GfxTexture> reflectionProbeTexture;
                                         // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+38/w
                                         // R_DrawStaticModelSurf(uint const *,GfxCmdBufContext,GfxDrawSurfListInfo const *)+38/w ...
     unsigned int customSamplerFlags;    // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+48/w
                                         // R_DrawStaticModelSurf(uint const *,GfxCmdBufContext,GfxDrawSurfListInfo const *)+48/w ...
-    GfxFrameStats *frameStats;          // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+66/w
+    Ptr32<GfxFrameStats> frameStats;          // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+66/w
                                         // R_DrawStaticModelSurf(uint const *,GfxCmdBufContext,GfxDrawSurfListInfo const *)+66/w ...
-    GfxPrimStats *primStats;            // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+72/w
+    Ptr32<GfxPrimStats> primStats;            // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+72/w
                                         // R_DrawStaticModelSurf(uint const *,GfxCmdBufContext,GfxDrawSurfListInfo const *)+72/w ...
     int usingCrossFade;                 // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+5A/w
                                         // R_DrawStaticModelSurf(uint const *,GfxCmdBufContext,GfxDrawSurfListInfo const *)+5A/w ...
-    XSurface *localSurf;
+    Ptr32<XSurface> localSurf;
     unsigned int smodelCount;
-    const unsigned __int16 *smodelList;
+    Ptr32<const unsigned __int16> smodelList;
     unsigned int reflectionProbeIndex;
     unsigned __int32 viewInfoIndex : 2;   // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+20/r
                                           // R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+26/w ...
     unsigned __int32 which_lod : 2;
     unsigned __int32 pad : 28;
-    const DynSModelClientView *dynSModelView;
+    Ptr32<const DynSModelClientView> dynSModelView;
                                         // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+6/w
                                         // R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+90/w ...
-    const DynSModelGfxState *dynSModelState;
+    Ptr32<const DynSModelGfxState> dynSModelState;
                                         // XREF: R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+D/w
                                         // R_DrawStaticModelSurfLit(uint const *,GfxCmdBufContext,GfxCmdBufContext,GfxDrawSurfListInfo const *)+9F/w ...
 };

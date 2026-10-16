@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 
 template <typename T>
 struct bdReference//<bdByteBuffer> // sizeof=0x4
 {                                                                             // XREF: bdRemoteTask/r
-    T *m_ptr;
+    Ptr32<T> m_ptr;
 
     const bdReference<T> *operator=(const bdReference<T> &other)
     {

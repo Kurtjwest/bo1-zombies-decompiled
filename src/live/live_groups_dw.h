@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "live_storage.h"
 
 enum servertype_t : __int32
@@ -10,12 +11,12 @@ enum servertype_t : __int32
 
 struct GroupSet // sizeof=0x14
 {                                       // XREF: .data:s_groupSets/r
-    const char *name;                   // XREF: LiveGroups_GetGroupID(char const *,int *,GroupSet * *)+A4/r
+    Ptr32<const char> name;                   // XREF: LiveGroups_GetGroupID(char const *,int *,GroupSet * *)+A4/r
     bool exclusive;
     // padding byte
     // padding byte
     // padding byte
-    const char **groupNames;
+    Ptr32<Ptr32<const char>> groupNames;
     int capacity;
     unsigned int start;
 };

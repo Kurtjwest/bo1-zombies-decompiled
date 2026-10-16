@@ -178,8 +178,8 @@ struct GfxDelayedCmdBuf // sizeof=0x10
 
 struct GfxDrawSurfList // sizeof=0x8
 {                                                                             // XREF: GfxBspDrawSurfData/r
-        GfxDrawSurf *current;                             // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+282/w
-        GfxDrawSurf *end;                                     // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+297/w
+        Ptr32<GfxDrawSurf> current;                             // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+282/w
+        Ptr32<GfxDrawSurf> end;                                     // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+297/w
 };
 
 struct GfxBspDrawSurfData // sizeof=0x18
@@ -347,7 +347,7 @@ struct GfxGenericFilter // sizeof=0x10BC
 {                                       // XREF: refdef_s/r
                                         // GfxViewInfo/r ...
     bool passEnabled[3][16];
-    struct Material *passMaterial[3][16];
+    Ptr32<struct Material> passMaterial[3][16];
     int passTarget[3][16];
     int passSampler0[3][16];
     int passSampler1[3][16];

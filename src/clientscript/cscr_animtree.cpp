@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "cscr_animtree.h"
 #include <universal/q_shared.h>
@@ -63,7 +64,7 @@ const ExpressionOperatorData g_ExprOperatorList[10] =
 
 struct StandardParams // sizeof=0x8
 {                                       // XREF: .data:g_stdParamList/r
-    const char *strParamName;           // XREF: GetStdParamIx+2C/r
+    Ptr32<const char> strParamName;           // XREF: GetStdParamIx+2C/r
     XExpr::MathTypes eType;             // XREF: ParseStdParameter+55/r
 };
 

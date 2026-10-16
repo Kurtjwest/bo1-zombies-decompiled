@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/dvar.h>
 
@@ -9,7 +10,7 @@ struct PhysObjUserData;
 
 struct __declspec(align(2)) BreakablePiece // sizeof=0xC
 {                                       // XREF: .data:g_breakablePieces/r
-    const XModel *model;                // XREF: DynEntPieces_AddDrawSurfs(int)+8D/r
+    Ptr32<const XModel> model;                // XREF: DynEntPieces_AddDrawSurfs(int)+8D/r
                                         // DynEntPieces_SpawnPhysicsModel(int,XModel const *,float const * const,float const * const,float const (* const)[3],float const * const,float const * const,PhysPreset *)+268/w
     int physObjId;                      // XREF: DynEntPieces_AddDrawSurfs(int)+4C/r
                                         // DynEntPieces_SpawnPhysicsModel(int,XModel const *,float const * const,float const * const,float const (* const)[3],float const * const,float const * const,PhysPreset *)+256/w

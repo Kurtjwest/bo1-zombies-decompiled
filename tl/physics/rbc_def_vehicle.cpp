@@ -774,7 +774,7 @@ pulse_sum_normal *__thiscall pulse_sum_constraint_solver::create_pulse_sum_wheel
 pulse_sum_wheel *__thiscall pulse_sum_constraint_solver::create_pulse_sum_wheel()
 {
   pulse_sum_wheel **v2; // edi
-  pulse_sum_wheel **m_last_next_ptr; // ecx
+  Ptr32<pulse_sum_wheel> *m_last_next_ptr; // ecx
 
   v2 = (pulse_sum_wheel **)//phys_transient_allocator::allocate(
                              this->m_solver_memory_allocator.allocate(

@@ -1,18 +1,19 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 
 struct WinConData // sizeof=0x620
 {                                       // XREF: .data:s_wcd/r
-    HWND__ *hWnd;                       // XREF: InputLineWndProc(HWND__ *,uint,uint,long)+3A/r
+    Ptr32<HWND__> hWnd;                       // XREF: InputLineWndProc(HWND__ *,uint,uint,long)+3A/r
                                         // Sys_CreateConsole(HINSTANCE__ *)+223/w ...
-    HWND__ *hwndBuffer;                 // XREF: Sys_CreateConsole(HINSTANCE__ *)+386/w
+    Ptr32<HWND__> hwndBuffer;                 // XREF: Sys_CreateConsole(HINSTANCE__ *)+386/w
                                         // Sys_CreateConsole(HINSTANCE__ *)+396/r ...
-    HWND__ *codLogo;                    // XREF: Sys_CreateConsole(HINSTANCE__ *)+300/w
+    Ptr32<HWND__> codLogo;                    // XREF: Sys_CreateConsole(HINSTANCE__ *)+300/w
                                         // Sys_CreateConsole(HINSTANCE__ *)+313/r
-    HFONT__ *hfBufferFont;              // XREF: Sys_CreateConsole(HINSTANCE__ *)+298/w
+    Ptr32<HFONT__> hfBufferFont;              // XREF: Sys_CreateConsole(HINSTANCE__ *)+298/w
                                         // Sys_CreateConsole(HINSTANCE__ *)+38D/r ...
-    HWND__ *hwndInputLine;              // XREF: InputLineWndProc(HWND__ *,uint,uint,long)+6E/r
+    Ptr32<HWND__> hwndInputLine;              // XREF: InputLineWndProc(HWND__ *,uint,uint,long)+6E/r
                                         // InputLineWndProc(HWND__ *,uint,uint,long)+129/r ...
     char errorString[512];              // XREF: Sys_SetErrorText(char const *)+C/o
     char consoleText[512];              // XREF: InputLineWndProc(HWND__ *,uint,uint,long)+7B/o
@@ -23,7 +24,7 @@ struct WinConData // sizeof=0x620
                                         // ConWndProc+ED/w
     int windowHeight;                   // XREF: Sys_CreateConsole(HINSTANCE__ *)+1B5/w
                                         // ConWndProc+F6/w
-    int (__stdcall *SysInputLineWndProc)(HWND__ *, unsigned int, unsigned int, int);
+    Ptr32<int __stdcall(HWND__ *, unsigned int, unsigned int, int)> SysInputLineWndProc;
                                         // XREF: InputLineWndProc(HWND__ *,uint,uint,long)+178/r
                                         // Sys_CreateConsole(HINSTANCE__ *)+3B6/w
 };

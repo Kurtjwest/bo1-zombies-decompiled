@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "cl_devgui.h"
 #include <universal/dvar.h>
 #include <universal/q_shared.h>
@@ -21,9 +22,9 @@ struct $C9973E8CB98117584CC11D7AF6800567 // sizeof=0x248
                                         // CL_CreateMapMenuEntries:loc_54F824/w ...
     char mapDirs[8][64];                // XREF: CL_DevGuiFrame(int)+60/o
                                         // CL_AddMapDirSlider+10F/o
-    const char **mapNames[8];           // XREF: CL_AddMapDirSlider+127/w
+    const char **mapNames[8]; /* native: FS_ListFiles lists */ // XREF: CL_AddMapDirSlider+127/w
                                         // CL_DestroyDevGui(void)+70/r
-    const dvar_s *mapEnumDvar[8];       // XREF: CL_DevGuiFrame(int)+2A/r
+    Ptr32<const dvar_s> mapEnumDvar[8];       // XREF: CL_DevGuiFrame(int)+2A/r
                                         // CL_RegisterDevGuiDvars+21/w ...
 };
 

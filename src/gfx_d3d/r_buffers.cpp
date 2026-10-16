@@ -72,7 +72,7 @@ void __cdecl R_UnlockIndexBuffer(IDirect3DIndexBuffer9 *handle)
     handle->Unlock();
 }
 
-void *__cdecl R_AllocDynamicVertexBuffer(IDirect3DVertexBuffer9 **vb, int sizeInBytes)
+void *__cdecl R_AllocDynamicVertexBuffer(Ptr32<IDirect3DVertexBuffer9> *vb, int sizeInBytes)
 {
     const char *v3; // eax
     const char *v4; // eax
@@ -188,7 +188,7 @@ void __cdecl R_FreeStaticVertexBuffer(IDirect3DVertexBuffer9 *vb)
     while ( alwaysfails );
 }
 
-void *__cdecl R_AllocDynamicIndexBuffer(IDirect3DIndexBuffer9 **ib, unsigned int sizeInBytes)
+void *__cdecl R_AllocDynamicIndexBuffer(Ptr32<IDirect3DIndexBuffer9> *ib, unsigned int sizeInBytes)
 {
     const char *v3; // eax
     const char *v4; // eax

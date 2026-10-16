@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include <game_sp/g_sp_loadgame.h>
 #include "cl_keys.h"
@@ -29,7 +30,7 @@
 
 struct keyname_t // sizeof=0x8
 {
-    const char *name;
+    Ptr32<const char> name;
     int keynum;
 };
 
@@ -1064,7 +1065,7 @@ void CompleteDvarArgument()
         if ( *dvarValuePrefix )
         {
             Con_AutoCompleteFromList(
-                dvar->domain.enumeration.strings,
+                BO1_NATIVE_ARRAY(dvar->domain.enumeration.strings, dvar->domain.enumeration.stringCount),
                 dvar->domain.enumeration.stringCount,
                 dvarValuePrefix,
                 dvarValue,

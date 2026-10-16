@@ -288,7 +288,7 @@ const NetFieldList *__cdecl MSG_GetNetFieldList(netFieldTypes_t fieldType, bool 
 
 void __cdecl MSG_WriteReliableCommandToBuffer(
                 const char *pszCommand,
-                char **pszBuffer,
+                Ptr32<char> *pszBuffer,
                 char *allocBufferBase,
                 int allocBufferLength,
                 int *allocBufferPos)

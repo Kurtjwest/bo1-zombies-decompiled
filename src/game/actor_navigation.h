@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "pathnode.h"
 #include "actor.h"
 
@@ -6,7 +7,7 @@ struct CustomSearchInfo_FindCloseNode // sizeof=0x14
 {                                       // XREF: ?Path_FindCloseNode@@YIPAUpathnode_t@@W4team_t@@PAU1@QBMH@Z/r
     float goalPos[3];                   // XREF: Path_FindCloseNode(team_t,pathnode_t *,float const * const,int)+9D/w
                                         // Path_FindCloseNode(team_t,pathnode_t *,float const * const,int)+AA/w ...
-    pathnode_t *closestNode;            // XREF: Path_FindCloseNode(team_t,pathnode_t *,float const * const,int)+BF/w
+    Ptr32<pathnode_t> closestNode;            // XREF: Path_FindCloseNode(team_t,pathnode_t *,float const * const,int)+BF/w
                                         // Path_FindCloseNode(team_t,pathnode_t *,float const * const,int)+139/r
     float closestDistSq;                // XREF: Path_FindCloseNode(team_t,pathnode_t *,float const * const,int)+10B/w
 
@@ -16,7 +17,7 @@ struct CustomSearchInfo_FindCloseNode // sizeof=0x14
 struct CustomSearchInfo_FindPath // sizeof=0x14
 {                                       // XREF: CustomSearchInfo_FindPathNotCrossPlanes/r
                                         // ?Path_FindPathFromTo@@YI?BHPAUpath_t@@W4team_t@@PAUpathnode_t@@QBM23HH@Z/r
-    pathnode_t *m_pNodeTo;              // XREF: Path_FindPathFromTo(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,int)+E3/w
+    Ptr32<pathnode_t> m_pNodeTo;              // XREF: Path_FindPathFromTo(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,int)+E3/w
                                         // Path_FindPathFromToNotCrossPlanes(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,float (* const)[2],float * const,int,int,int)+DA/w
     float startPos[3];                  // XREF: Path_FindPathFromTo(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,int)+ED/w
                                         // Path_FindPathFromTo(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,int)+FA/w ...
@@ -29,15 +30,15 @@ struct CustomSearchInfo_FindPath // sizeof=0x14
 struct CustomSearchInfo_FindPathNotCrossPlanes : CustomSearchInfo_FindPath // sizeof=0x20
 {                                       // XREF: ?Path_FindPathFromToNotCrossPlanes@@YI?BHPAUpath_t@@W4team_t@@PAUpathnode_t@@QBM23QAY01MQAMHHH@Z/r
     int m_iPlaneCount;                  // XREF: Path_FindPathFromToNotCrossPlanes(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,float (* const)[2],float * const,int,int,int)+E0/w
-    float (*m_vNormal)[2];              // XREF: Path_FindPathFromToNotCrossPlanes(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,float (* const)[2],float * const,int,int,int)+E6/w
-    float *m_fDist;                     // XREF: Path_FindPathFromToNotCrossPlanes(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,float (* const)[2],float * const,int,int,int)+EC/w
+    Ptr32<float[2]> m_vNormal;              // XREF: Path_FindPathFromToNotCrossPlanes(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,float (* const)[2],float * const,int,int,int)+E6/w
+    Ptr32<float> m_fDist;                     // XREF: Path_FindPathFromToNotCrossPlanes(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,float (* const)[2],float * const,int,int,int)+EC/w
 
     char IgnoreNode(pathnode_t *pNode);
 };
 
 struct CustomSearchInfo_FindPathWithWidth // sizeof=0x10
 {                                       // XREF: ?Path_FindPathFromToWithWidth@@YI?BHPAUpath_t@@W4team_t@@PAUpathnode_t@@QBM23HMQAM@Z/r
-    pathnode_t *m_pNodeTo;              // XREF: Path_FindPathFromToWithWidth(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,float,float * const)+D4/w
+    Ptr32<pathnode_t> m_pNodeTo;              // XREF: Path_FindPathFromToWithWidth(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,float,float * const)+D4/w
     float width;                        // XREF: Path_FindPathFromToWithWidth(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,float,float * const)+DC/w
     float perp[2];                      // XREF: Path_FindPathFromToWithWidth(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,float,float * const)+E8/w
                                         // Path_FindPathFromToWithWidth(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int,float,float * const)+F5/w
@@ -48,7 +49,7 @@ struct CustomSearchInfo_FindPathWithWidth // sizeof=0x10
 struct CustomSearchInfo_FindPathWithLOS // sizeof=0x18
 {                                       // XREF: CustomSearchInfo_FindPathInCylinderWithLOSNotCrossPlanes/r
                                         // CustomSearchInfo_FindPathInCylinderWithLOS/r
-    pathnode_t *m_pNodeTo;              // XREF: Path_FindPathInCylinderWithLOS(path_t *,team_t,float const * const,float const * const,actor_goal_s const *,float,int)+4E/w
+    Ptr32<pathnode_t> m_pNodeTo;              // XREF: Path_FindPathInCylinderWithLOS(path_t *,team_t,float const * const,float const * const,actor_goal_s const *,float,int)+4E/w
                                         // Path_FindPathInCylinderWithLOS(path_t *,team_t,float const * const,float const * const,actor_goal_s const *,float,int)+54/r
     float m_fWithinDistSqrd;            // XREF: Path_FindPathInCylinderWithLOS(path_t *,team_t,float const * const,float const * const,actor_goal_s const *,float,int)+9D/w
     float startPos[3];                  // XREF: Path_FindPathInCylinderWithLOS(path_t *,team_t,float const * const,float const * const,actor_goal_s const *,float,int)+AE/o
@@ -60,9 +61,9 @@ struct CustomSearchInfo_FindPathWithLOS // sizeof=0x18
 struct CustomSearchInfo_FindPathClosestPossible // sizeof=0x10
 {                                       // XREF: ?Path_FindPathGetCloseAsPossible@@YI?BHPAUpath_t@@W4team_t@@PAUpathnode_t@@QBM23H@Z/r
     float m_fBestScore;                 // XREF: Path_FindPathGetCloseAsPossible(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int)+2C/w
-    pathnode_t *m_pBestNode;            // XREF: Path_FindPathGetCloseAsPossible(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int)+31/w
+    Ptr32<pathnode_t> m_pBestNode;            // XREF: Path_FindPathGetCloseAsPossible(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int)+31/w
                                         // Path_FindPathGetCloseAsPossible(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int):loc_905794/r ...
-    pathnode_t *m_pNodeTo;              // XREF: Path_FindPathGetCloseAsPossible(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int)+C5/w
+    Ptr32<pathnode_t> m_pNodeTo;              // XREF: Path_FindPathGetCloseAsPossible(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int)+C5/w
     float negotiationOverlapCost;       // XREF: Path_FindPathGetCloseAsPossible(path_t *,team_t,pathnode_t *,float const * const,pathnode_t *,float const * const,int)+1F/w
 
     double EvaluateHeuristic(pathnode_t *pSuccessor, const float *vGoalPos);
@@ -70,16 +71,16 @@ struct CustomSearchInfo_FindPathClosestPossible // sizeof=0x10
 
 struct CustomSearchInfo_FindPathInCylinderWithLOS : CustomSearchInfo_FindPathWithLOS // sizeof=0x1C
 {                                       // XREF: ?Path_FindPathInCylinderWithLOS@@YI?BHPAUpath_t@@W4team_t@@QBM2PBUactor_goal_s@@MH@Z/r
-    const actor_goal_s *goal;           // XREF: Path_FindPathInCylinderWithLOS(path_t *,team_t,float const * const,float const * const,actor_goal_s const *,float,int)+A8/w
+    Ptr32<const actor_goal_s> goal;           // XREF: Path_FindPathInCylinderWithLOS(path_t *,team_t,float const * const,float const * const,actor_goal_s const *,float,int)+A8/w
 
 
 };
 
 struct CustomSearchInfo_CouldAttack // sizeof=0x8
 {                                       // XREF: ?Path_FindFacingNode@@YIPBUpathnode_t@@PAUsentient_s@@0PAUsentient_info_t@@@Z/r
-    pathnode_t *m_pNodeTo;              // XREF: Path_FindFacingNode(sentient_s *,sentient_s *,sentient_info_t *)+20/w
+    Ptr32<pathnode_t> m_pNodeTo;              // XREF: Path_FindFacingNode(sentient_s *,sentient_s *,sentient_info_t *)+20/w
                                         // Path_FindFacingNode(sentient_s *,sentient_s *,sentient_info_t *)+23/r ...
-    pathnode_t *attackNode;             // XREF: Path_FindFacingNode(sentient_s *,sentient_s *,sentient_info_t *):loc_905685/r
+    Ptr32<pathnode_t> attackNode;             // XREF: Path_FindFacingNode(sentient_s *,sentient_s *,sentient_info_t *):loc_905685/r
 };
 
 

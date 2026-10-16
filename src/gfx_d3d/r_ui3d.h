@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <client/screen_placement.h>
 #include "r_rendercmds.h"
 #include "rb_state.h"
@@ -12,7 +13,7 @@ struct GfxUI3DStack // sizeof=0xC
 struct ScopedUI3DStack // sizeof=0x4
 {                                       // XREF: ?Menu_Paint@@YA_NHPAUUiContext@@PAUScreenPlacementStack@@PAUmenuDef_t@@H@Z/r
                                         // ?Menu_PaintAll@@YAXHPAUUiContext@@@Z/r ...
-    GfxUI3DStack *mStack;               // XREF: DrawSingleHudElem2d+82/w
+    Ptr32<GfxUI3DStack> mStack;               // XREF: DrawSingleHudElem2d+82/w
                                         // DrawSingleHudElem2d+E8/r ...
 };
 

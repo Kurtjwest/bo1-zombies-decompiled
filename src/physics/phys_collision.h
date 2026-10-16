@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/q_shared.h>
 #include <universal/com_math.h>
@@ -17,8 +18,8 @@ struct gjk_physics_collision_visitor;
 
 struct entity_bpi_header // sizeof=0x8
 {
-    phys_mat44 *m_mat;
-    phys_auto_activate_callback *m_aac;
+    Ptr32<phys_mat44> m_mat;
+    Ptr32<phys_auto_activate_callback> m_aac;
 };
 
 //void __thiscall contact_point_info::get_closest_psc(

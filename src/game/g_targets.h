@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <bgame/bg_public.h>
 
 #define MAX_TARGETS 32
 
 struct target_t // sizeof=0x1C
 {                                       // XREF: $A5C519FFED38118F396585C413DE405F/r
-    gentity_s *ent;                     // XREF: G_InitTargets(void)+2C/w
+    Ptr32<gentity_s> ent;                     // XREF: G_InitTargets(void)+2C/w
                                         // Scr_Target_SetShader(void)+6B/r ...
     float offset[3];
     int materialIndex;

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <qcommon/msg_mp.h>
 #include <ddl/ddl_api.h>
 #include <DemonWare/bdCore/bdMemory/bdMemory.h>
@@ -378,9 +379,9 @@ struct demoKeyboardData // sizeof=0x14
 {                                                                             // XREF: demoMain/r
         int mode;                                                     // XREF: Demo_Keyboard_f(void)+6B/w
                                                                                 // Demo_Keyboard_f(void):loc_9BAE82/r ...
-        const char *title;                                    // XREF: Demo_Keyboard_f(void)+118/w
+        Ptr32<const char> title;                                    // XREF: Demo_Keyboard_f(void)+118/w
                                                                                 // Demo_Keyboard_f(void)+154/w ...
-        const char *defaultText;                        // XREF: Demo_Keyboard_f(void)+11D/w
+        Ptr32<const char> defaultText;                        // XREF: Demo_Keyboard_f(void)+11D/w
                                                                                 // Demo_Keyboard_f(void)+159/w ...
         int textSize;                                             // XREF: Demo_Keyboard_f(void)+127/w
                                                                                 // Demo_Keyboard_f(void)+163/w ...
@@ -727,7 +728,7 @@ struct __declspec(align(128)) demoMain // sizeof=0xB0B00
         // padding byte
         demoMemBlock memBlock;                            // XREF: Demo_Load(void)+12/o
                                                                                 // Demo_Load(void)+5C/w ...
-        demoPlayback *playback;                         // XREF: Demo_SetTags(int,int *,bdTag *,screenshotMetaInfo *,fileShareSearchFileType):loc_9B7624/r
+        Ptr32<demoPlayback> playback;                         // XREF: Demo_SetTags(int,int *,bdTag *,screenshotMetaInfo *,fileShareSearchFileType):loc_9B7624/r
                                                                                 // Demo_SetTags(int,int *,bdTag *,screenshotMetaInfo *,fileShareSearchFileType)+104/r ...
         bool playbackInited;                                // XREF: Demo_End(bool)+F9/w
                                                                                 // Demo_IsPlaybackInited(void)+3/r ...
@@ -854,19 +855,19 @@ struct dwFileShareReadFileTask // sizeof=0x878
         // padding byte
         // padding byte
         bdFileMetaData descriptor;
-        const char *menuDef;
-        void *buffer;
-        void *cacheBuffer;
+        Ptr32<const char> menuDef;
+        Ptr32<void> buffer;
+        Ptr32<void> cacheBuffer;
         unsigned int bufferSize;
         unsigned int bytesDownloaded;
-        bdDownloadInterceptor *downloadHandler;
+        Ptr32<bdDownloadInterceptor> downloadHandler;
         bool loadedFromCache;
         // padding byte
         // padding byte
         // padding byte
-        void (__cdecl *dataCallback)(void *, unsigned int, unsigned int, unsigned int);
-        void (__cdecl *successCallback)(dwFileShareReadFileTask *);
-        void (__cdecl *failureCallback)(dwFileShareReadFileTask *);
+        Ptr32<void __cdecl(void *, unsigned int, unsigned int, unsigned int)> dataCallback;
+        Ptr32<void __cdecl(dwFileShareReadFileTask *)> successCallback;
+        Ptr32<void __cdecl(dwFileShareReadFileTask *)> failureCallback;
 };
 
 struct __declspec(align(8)) demoRecordedFileUploadInfo // sizeof=0x5D8

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct playerState_s;
 struct weaponState_t;
@@ -7,7 +8,7 @@ struct WeaponDef;
 struct viewState_t // sizeof=0x24
 {                                       // XREF: ?ClientThink_real@@YAXPAUgentity_s@@PAUusercmd_s@@@Z/r
                                         // CG_OffsetFirstPersonView/r
-    playerState_s *ps;                  // XREF: CG_OffsetFirstPersonView+73/w
+    Ptr32<playerState_s> ps;                  // XREF: CG_OffsetFirstPersonView+73/w
     // CG_OffsetFirstPersonView+85/r ...
     int damageTime;                     // XREF: CG_OffsetFirstPersonView+A3/w
     // ClientThink_real(gentity_s *,usercmd_s *)+856/w
@@ -23,7 +24,7 @@ struct viewState_t // sizeof=0x24
     // ClientThink_real(gentity_s *,usercmd_s *)+918/w
     float fLastIdleFactor;              // XREF: CG_OffsetFirstPersonView+10B/w
     // ClientThink_real(gentity_s *,usercmd_s *)+92B/w
-    int *weapIdleTime;                  // XREF: CG_OffsetFirstPersonView+119/w
+    Ptr32<int> weapIdleTime;                  // XREF: CG_OffsetFirstPersonView+119/w
     // ClientThink_real(gentity_s *,usercmd_s *)+93C/w
 };
 

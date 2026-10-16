@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct snd_group;
 struct snd_curve;
@@ -34,7 +35,7 @@ enum snd_csv_entry_type : __int32
 struct snd_csv_entry_t // sizeof=0x20
 {                                       // XREF: .rdata:snd_csv_entry_t const * const SND_ALIAS_FIELDS/r
                                         // .rdata:snd_csv_entry_t const * const SND_ALIAS_STRINGS_FIELDS/r ...
-    const char *name;
+    Ptr32<const char> name;
     unsigned int offset;
     bool required;
     // padding byte
@@ -44,7 +45,7 @@ struct snd_csv_entry_t // sizeof=0x20
     float minimum;
     float maximum;
     unsigned int length;
-    const char **enum_ids;
+    const char **enum_ids; // static descriptor table (native layout)
 };
 
 void __cdecl SND_ParseInit(

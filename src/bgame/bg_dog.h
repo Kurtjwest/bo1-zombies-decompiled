@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "bg_dog_animations_mp.h"
 
@@ -10,14 +11,14 @@ struct XAnimTree_s;
 
 struct ai_animation_funcs_t // sizeof=0x10
 {                                                                             // XREF: .rdata:ai_animation_funcs_t const * const AIAnimationFuncTable/r
-    void(__cdecl *pfnStart)(int, const entityState_s *, ActorAnimStates);
+    Ptr32<void __cdecl(int, const entityState_s *, ActorAnimStates)> pfnStart;
     // XREF: BG_Dog_SetNewAnimationState+56/r
     // BG_Dog_SetNewAnimationState+77/r
-    void(__cdecl *pfnThink)(int, const entityState_s *);
+    Ptr32<void __cdecl(int, const entityState_s *)> pfnThink;
     // XREF: BG_Dog_UpdateAnimationState(int,entityState_s const *,actorInfo_t *)+AE/r
     // BG_Dog_UpdateAnimationState(int,entityState_s const *,actorInfo_t *)+C5/r
-    int(__cdecl *pfnLength)(int, const entityState_s *);
-    void(__cdecl *pfnSetAtEnd)(int, const entityState_s *, actorInfo_t *);
+    Ptr32<int __cdecl(int, const entityState_s *)> pfnLength;
+    Ptr32<void __cdecl(int, const entityState_s *, actorInfo_t *)> pfnSetAtEnd;
     // XREF: BG_Actor_FastForwardAnimState(int,entityState_s const *,actorInfo_t *)+19/r
     // BG_Actor_FastForwardAnimState(int,entityState_s const *,actorInfo_t *)+34/r
 };

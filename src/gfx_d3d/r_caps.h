@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <d3d9.h>
 
 
@@ -20,7 +21,7 @@ struct DxCapsCheckBits // sizeof=0x14
     unsigned int clearBits;             // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+3D/r
                                         // R_CheckDxCaps(_D3DCAPS9 const *)+51/r
     DxCapsResponse response;            // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+90/r
-    const char *msg;                    // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+83/r
+    Ptr32<const char> msg;                    // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+83/r
 };
 
 struct DxCapsCheckInteger // sizeof=0x14
@@ -29,7 +30,7 @@ struct DxCapsCheckInteger // sizeof=0x14
     unsigned int min;                   // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+DA/r
     unsigned int max;                   // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+EB/r
     DxCapsResponse response;            // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+108/r
-    const char *msg;                    // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+FB/r
+    Ptr32<const char> msg;                    // XREF: R_CheckDxCaps(_D3DCAPS9 const *)+FB/r
 };
 
 void __cdecl R_CheckDxCaps(const _D3DCAPS9 *caps);

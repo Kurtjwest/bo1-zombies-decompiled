@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "ui_shared.h"
 #include "ui_shared_obj.h"
@@ -90,8 +91,8 @@ int g_debugMode;
 
 struct commandDef_t // sizeof=0x8
 {                                       // XREF: .rdata:commandList/r
-    const char *name;                   // XREF: Item_RunScript+AC/r
-    void (__cdecl *handler)(int, UiContext *, itemDef_s *, const char **);
+    Ptr32<const char> name;                   // XREF: Item_RunScript+AC/r
+    Ptr32<void __cdecl(int, UiContext *, itemDef_s *, const char **)> handler;
 };
 
 const commandDef_t commandList[50] =

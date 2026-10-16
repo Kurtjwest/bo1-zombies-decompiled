@@ -1,8 +1,9 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct cgCloudLayer_t // sizeof=0x1C
 {                                       // XREF: .data:cgCloudLayer_t * cg_cloudLayers/r
-    struct XModel *model;
+    Ptr32<struct XModel> model;
     float cloudCover;
     float minHeight;
     float maxHeight;
@@ -17,7 +18,7 @@ struct cgCloud_t // sizeof=0x1C
     float speed;
     float qsin;
     float qcos;
-    cgCloudLayer_t *layer;
+    Ptr32<cgCloudLayer_t> layer;
 };
 
 void __cdecl CG_UpdateClouds(int msec);

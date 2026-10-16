@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <d3d9.h>
 #include "r_material.h"
 #include <binklib/binktextures.h>
@@ -29,14 +30,14 @@ struct CINE_JQ_CMD // sizeof=0x4
 struct __declspec(align(4)) CinematicHunk // sizeof=0x18
 {                                       // XREF: CinematicGlob/r
                                         // CinematicGlob/r ...
-    void *base;                         // XREF: R_Cinematic_Advance+2EE/r
+    Ptr32<void> base;                         // XREF: R_Cinematic_Advance+2EE/r
                                         // R_Cinematic_InitBinkTextures+165/w ...
-    void *atFront;                      // XREF: R_Cinematic_AreHunksOpen+3/o
+    Ptr32<void> atFront;                      // XREF: R_Cinematic_AreHunksOpen+3/o
                                         // R_Cinematic_HunksClose+3/o ...
-    void *atBack;                       // XREF: R_Cinematic_Advance+30A/r
+    Ptr32<void> atBack;                       // XREF: R_Cinematic_Advance+30A/r
                                         // R_Cinematic_InitBinkTextures+227/w
-    void *end;
-    void *lastAllocPtr;                 // XREF: R_Cinematic_Advance+2D2/r
+    Ptr32<void> end;
+    Ptr32<void> lastAllocPtr;                 // XREF: R_Cinematic_Advance+2D2/r
                                         // R_Cinematic_Advance+32F/r ...
     bool fragmented;
     // padding byte
@@ -54,10 +55,10 @@ struct CinematicTextureSet // sizeof=0x290
     GfxImage drawImageCr;
     GfxImage drawImageCb;
     GfxImage drawImageA;
-    void *Ytexture[2];
-    void *cRtexture[2];
-    void *cBtexture[2];
-    void *Atexture[2];
+    Ptr32<void> Ytexture[2];
+    Ptr32<void> cRtexture[2];
+    Ptr32<void> cBtexture[2];
+    Ptr32<void> Atexture[2];
 };
 
 void __cdecl R_CinematicInitSound(const _GUID *guid);

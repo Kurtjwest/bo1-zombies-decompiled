@@ -1,7 +1,8 @@
-// DirectSound for the macOS port. Only the voice-chat path (src/groupvoice) uses it; device creation reports
-// DSERR_NODRIVER so voice chat disables itself cleanly, and the interfaces exist so that code compiles.
+// DirectSound for the macOS port. Only the voice-chat path (src/groupvoice) uses it; the implementation
+// (src/platform/macos/dsound_mac.cpp) plays buffers through Core Audio and captures from the default input device.
 #pragma once
 #include "xaudio2.h"
+#include <universal/ptr32.h>
 
 #define _FACDS 0x878
 #define MAKE_DSHRESULT(code) MAKE_HRESULT(1, _FACDS, code)
@@ -112,6 +113,17 @@ struct IDirectSound : public IUnknown
     STDMETHOD(GetSpeakerConfig)(LPDWORD pdwSpeakerConfig) PURE;
     STDMETHOD(SetSpeakerConfig)(DWORD dwSpeakerConfig) PURE;
     STDMETHOD(Initialize)(LPCGUID pcGuidDevice) PURE;
+#if BO1_PTR32_IS_CLASS
+    // out-pointers into 32-bit fields
+    HRESULT CreateSoundBuffer(LPCDSBUFFERDESC pcDSBufferDesc, Ptr32<IDirectSoundBuffer> *ppDSBuffer, LPUNKNOWN pUnkOuter)
+    {
+        IDirectSoundBuffer *bo1_out = nullptr;
+        HRESULT hr = CreateSoundBuffer(pcDSBufferDesc, &bo1_out, pUnkOuter);
+        if (ppDSBuffer)
+            *ppDSBuffer = bo1_out;
+        return hr;
+    }
+#endif
 };
 struct IDirectSound8 : public IDirectSound
 {
@@ -140,6 +152,16 @@ struct IDirectSoundCapture : public IUnknown
     STDMETHOD(CreateCaptureBuffer)(LPCDSCBUFFERDESC pcDSCBufferDesc, IDirectSoundCaptureBuffer **ppDSCBuffer, LPUNKNOWN pUnkOuter) PURE;
     STDMETHOD(GetCaps)(void *pDSCCaps) PURE;
     STDMETHOD(Initialize)(LPCGUID pcGuidDevice) PURE;
+#if BO1_PTR32_IS_CLASS
+    HRESULT CreateCaptureBuffer(LPCDSCBUFFERDESC pcDSCBufferDesc, Ptr32<IDirectSoundCaptureBuffer> *ppDSCBuffer, LPUNKNOWN pUnkOuter)
+    {
+        IDirectSoundCaptureBuffer *bo1_out = nullptr;
+        HRESULT hr = CreateCaptureBuffer(pcDSCBufferDesc, &bo1_out, pUnkOuter);
+        if (ppDSCBuffer)
+            *ppDSCBuffer = bo1_out;
+        return hr;
+    }
+#endif
 };
 typedef IDirectSoundCapture *LPDIRECTSOUNDCAPTURE;
 typedef IDirectSoundCapture IDirectSoundCapture8;

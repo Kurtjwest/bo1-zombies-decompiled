@@ -1,12 +1,13 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <xanim/xanim.h>
 
 #include "mem_largelocal.h"
 
 struct __declspec(align(4)) fileData_s // sizeof=0xC
 {                                       // XREF: fileData_t/r
-    void *data;
-    fileData_s *next;
+    Ptr32<void> data;
+    Ptr32<fileData_s> next;
     unsigned __int8 type;
     char name[1];
     // padding byte
@@ -17,7 +18,7 @@ struct hunkHeader_t // sizeof=0x10
 {
     unsigned int magic;
     int size;
-    const char *name;
+    Ptr32<const char> name;
     int dummy;
 };
 

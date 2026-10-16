@@ -2345,7 +2345,7 @@ void __cdecl CG_DestructibleRadiusDamage(
     float v8; // [esp+10h] [ebp-B4h]
     float v9; // [esp+14h] [ebp-B0h]
     float v10; // [esp+18h] [ebp-ACh]
-    const centity_s **p_attacker; // [esp+28h] [ebp-9Ch]
+    const Ptr32<const centity_s> *p_attacker; // [esp+28h] [ebp-9Ch]
     unsigned __int8 boneIndex; // [esp+33h] [ebp-91h] BYREF
     float ent_axis[4][3]; // [esp+34h] [ebp-90h] BYREF
     XModel *model; // [esp+64h] [ebp-60h]

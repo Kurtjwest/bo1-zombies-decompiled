@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <steam/steam_api.h>
 
 struct Achievement_t // sizeof=0x190
 {                                       // XREF: .data:Achievement_t * g_Achievements/r
     int m_eAchievementID;
-    const char *m_pchAchievementID;
+    Ptr32<const char> m_pchAchievementID;
     char m_rgchName[128];
     char m_rgchDescription[256];
     bool m_bAchieved;
@@ -26,7 +27,7 @@ struct CSteamAchievements // sizeof=0x58
     // padding byte
     // padding byte
     unsigned __int64 m_iAppID;
-    Achievement_t *m_pAchievements;
+    Ptr32<Achievement_t> m_pAchievements;
     int m_iNumAchievements;
     bool m_bInitialized;
     // padding byte

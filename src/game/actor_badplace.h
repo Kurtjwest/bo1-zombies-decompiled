@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum ai_badplace_t : __int32
 {                                       // XREF: actor_s/r
@@ -9,7 +10,7 @@ enum ai_badplace_t : __int32
 
 struct badplace_brush_t // sizeof=0x8
 {                                       // XREF: badplace_parms_t/r
-    struct gentity_s *volume;
+    Ptr32<struct gentity_s> volume;
     float radius;
 };
 

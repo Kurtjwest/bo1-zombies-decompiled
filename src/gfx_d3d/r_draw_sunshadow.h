@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_rendercmds.h"
 #include "rb_state.h"
 
 struct SunShadowMapCallbackUserData
 {
-    const GfxSunShadowPartition *partition;
-    const GfxDrawSurfListInfo *drawList;
+    Ptr32<const GfxSunShadowPartition> partition;
+    Ptr32<const GfxDrawSurfListInfo> drawList;
 };
 
 void    R_DrawSunShadowMap(

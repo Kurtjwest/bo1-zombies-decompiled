@@ -19,18 +19,18 @@ struct LocalizeEntry // sizeof=0x8
 template <typename T>
 struct EXT_Link//<LocalizeEntry> // sizeof=0xC
 {
-    T *m_Data;
-    EXT_Link<T> *m_Next;
-    EXT_Link<T> *m_Last;
+    Ptr32<T> m_Data;
+    Ptr32<EXT_Link<T>> m_Next;
+    Ptr32<EXT_Link<T>> m_Last;
 };
 
 template <typename T>
 struct EXT_List//<LocalizeEntry> // sizeof=0xC
 {                                       // XREF: .data:EXT_List<LocalizeEntry> overrideLocalizedEntryList/r
     unsigned int m_Count;
-    EXT_Link<T> *m_Head;    // XREF: ProcessStringEdCmds(void)+70/r
+    Ptr32<EXT_Link<T>> m_Head;    // XREF: ProcessStringEdCmds(void)+70/r
                                         // GetString(char const *)+17/r
-    EXT_Link<T> *m_Tail;
+    Ptr32<EXT_Link<T>> m_Tail;
 
 public:
 
@@ -134,8 +134,8 @@ public:
 
 struct languageInfo_t // sizeof=0xC
 {                                       // XREF: .data:g_languages/r
-    const char *pszName;                // XREF: SEH_UpdateCurrentLanguage+62/r
-    const char *pszNameAbbr;            // XREF: SEH_GetLanguageNameAbbr(int):loc_72500F/r
+    Ptr32<const char> pszName;                // XREF: SEH_UpdateCurrentLanguage+62/r
+    Ptr32<const char> pszNameAbbr;            // XREF: SEH_GetLanguageNameAbbr(int):loc_72500F/r
     int bPresent;                       // XREF: SEH_UpdateLanguageInfo(void)+77/w
 };
 

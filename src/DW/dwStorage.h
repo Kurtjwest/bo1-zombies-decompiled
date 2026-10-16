@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum bdLobbyErrorCode : __int32
 {                                       // XREF: bdLobbyConnection::Status/r
@@ -338,7 +339,7 @@ enum bdLobbyErrorCode : __int32
 
 struct bdFileData : bdTaskResult // sizeof=0xC
 {                                       // XREF: dwFileTask/r
-    void *m_fileData;
+    Ptr32<void> m_fileData;
     unsigned int m_fileSize;
 };
 
@@ -386,7 +387,7 @@ struct __declspec(align(4)) dwFileTask // sizeof=0xE0
         this->m_optional = 0;
     }
 
-    char *m_filename;                   // XREF: SV_AP_GetControlFile(void)+31/w
+    Ptr32<char> m_filename;                   // XREF: SV_AP_GetControlFile(void)+31/w
     // LiveStorage_FetchOnlineWAD(int)+16A/w
     bdFileData m_fileData;              // XREF: _dynamic_atexit_destructor_for__s_finfo__+D/o
     // _dynamic_atexit_destructor_for__s_onlineWADFileInfo__+D/o ...
@@ -400,7 +401,7 @@ struct __declspec(align(4)) dwFileTask // sizeof=0xE0
     unsigned int m_bufferSize;
     bdFileInfo m_fileInfo;              // XREF: _dynamic_atexit_destructor_for__s_finfo__+3/o
     // _dynamic_atexit_destructor_for__s_onlineWADFileInfo__+3/o ...
-    void *m_buffer;
+    Ptr32<void> m_buffer;
     bool m_optional;
     // padding byte
     // padding byte

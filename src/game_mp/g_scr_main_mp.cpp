@@ -85,7 +85,7 @@
 #include <game/actor_scripted.h>
 
 scr_data_t g_scr_data;
-XAnimTree_s *g_actorXAnimTreesExt[1024 - 32]; // mod: MAX_ACTORS_CAP - 32
+Ptr32<XAnimTree_s> g_actorXAnimTreesExt[1024 - 32]; // mod: MAX_ACTORS_CAP - 32
 
 void assertCmd()
 {

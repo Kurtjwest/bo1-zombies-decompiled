@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rigid_body.h"
 #include "physconstraints_load_obj.h"
 
@@ -10,7 +11,7 @@ struct XDollBone // sizeof=0x10
     // padding byte
     unsigned int name_hash;
     int rigidBody;
-    struct PhysPreset *physPreset;
+    Ptr32<struct PhysPreset> physPreset;
 };
 
 struct XDollBoneOrientation // sizeof=0x20
@@ -27,11 +28,11 @@ struct XDoll_ConstraintInfo // sizeof=0xC
     //$F8FBF74742F563EDABF51D7175B13032 ___u2;
     union //$F8FBF74742F563EDABF51D7175B13032 // sizeof=0x4
     {                                       // XREF: XDoll_ConstraintInfo/r
-        rigid_body_constraint *constraint;
-        rigid_body_constraint_ragdoll *ragdoll_constraint;
-        rigid_body_constraint_point *point_constraint;
-        rigid_body_constraint_hinge *hinge_constraint;
-        rigid_body_constraint_angular_actuator *actuator_constraint;
+        Ptr32<rigid_body_constraint> constraint;
+        Ptr32<rigid_body_constraint_ragdoll> ragdoll_constraint;
+        Ptr32<rigid_body_constraint_point> point_constraint;
+        Ptr32<rigid_body_constraint_hinge> hinge_constraint;
+        Ptr32<rigid_body_constraint_angular_actuator> actuator_constraint;
     };
 };
 
@@ -42,7 +43,7 @@ struct XDollBody // sizeof=0x118
     int client_index;
     int piece_index;
     unsigned int attach_bone_hash;
-    struct PhysConstraints *constraintsDef;
+    Ptr32<struct PhysConstraints> constraintsDef;
     int numBones;
     XDollBone bones[4];
     XDollBoneOrientation boneOrientations[4];

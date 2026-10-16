@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <physics/phys_local.h>
 #include <game/teams.h>
@@ -262,7 +263,7 @@ const struct vehicle_info_t // sizeof=0x1DD8
     int addToCompass;
     int addToCompassEnemy;
     char compassIcon[64];
-    Material *compassIconMaterial;
+    Ptr32<Material> compassIconMaterial;
     int gasButton;
     int boostButton;
     int reverseBrakeButton;
@@ -276,8 +277,8 @@ const struct vehicle_info_t // sizeof=0x1DD8
     int firePickupButton;
     int swapPickupButton;
     int dropDeployableButton;
-    GraphFloat *steerGraph;
-    GraphFloat *accelGraph;
+    Ptr32<GraphFloat> steerGraph;
+    Ptr32<GraphFloat> accelGraph;
     int isNitrous;
     int isFourWheelSteering;
     float max_fric_tilt_angle;
@@ -384,7 +385,7 @@ struct alignas(16) NitrousVehicle // sizeof=0x440
     phys_mat44 m_wheel_orig_relpo[6];
     int m_wheel_damage[6];
     int m_wheel_surf_types[6];
-    VehicleParameter *m_parameter;
+    Ptr32<VehicleParameter> m_parameter;
     float m_throttle;
     float m_brake;
     float m_hand_brake;
@@ -397,15 +398,15 @@ struct alignas(16) NitrousVehicle // sizeof=0x440
     // padding byte
     phys_vec3 m_ground_vel;
     float m_hand_brake_friction_time;
-    struct gentity_s *m_owner;
+    Ptr32<struct gentity_s> m_owner;
     int m_entnum;
-    const vehicle_info_t *m_vehicle_info;
-    struct PhysObjUserData *m_phys_user_data;
-    XModel *m_xmodel;
+    Ptr32<const vehicle_info_t> m_vehicle_info;
+    Ptr32<struct PhysObjUserData> m_phys_user_data;
+    Ptr32<XModel> m_xmodel;
     float m_origin[3];
     float m_angles[3];
-    struct rigid_body_constraint_custom_orientation *m_orientation_constraint;
-    rigid_body_constraint_custom_path *m_vpc;
+    Ptr32<struct rigid_body_constraint_custom_orientation> m_orientation_constraint;
+    Ptr32<rigid_body_constraint_custom_path> m_vpc;
     int m_flags;
     int m_notify_flags;
     int m_server_notify_flags;
@@ -449,7 +450,7 @@ struct alignas(16) NitrousVehicle // sizeof=0x440
     // padding byte
     int id;
     int refcount;
-    rigid_body_constraint_wheel *m_wheels[6];
+    Ptr32<rigid_body_constraint_wheel> m_wheels[6];
     float m_desired_speed_factor;
     float m_acceleration_factor;
     float m_power_braking_factor;

@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "g_sp_savegame.h"
 #include "g_sp_levelstart.h"
 #include <game_mp/g_main_mp.h>
@@ -62,7 +63,7 @@ struct SPSaveGameRequest
     int flags;              // +0x188, 2 = commit to memory, 4 = write to disk
     bool suppressPrint;     // +0x18C
     int arg6;               // +0x190
-    void (*callback)();     // +0x194
+    Ptr32<void()> callback;     // +0x194
     int callbackArg;        // +0x198
 };
 

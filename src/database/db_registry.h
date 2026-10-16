@@ -79,13 +79,13 @@ struct DBReorderAssetEntry // sizeof=0x10
 {                                       // XREF: $73C9AB3B505E60D629E435B147795978/r
     unsigned int sequence;
     int type;
-    const char *typeString;
-    const char *assetName;
+    Ptr32<const char> typeString;
+    Ptr32<const char> assetName;
 };
 
 struct XZoneInfo // sizeof=0xC
 {                                       // XREF: DB_UpdateDebugZone(void)+1E/w
-    const char *name;                   // XREF: DB_UpdateDebugZone(void)+15/w
+    Ptr32<const char> name;                   // XREF: DB_UpdateDebugZone(void)+15/w
     int allocFlags;                     // XREF: DB_UpdateDebugZone(void)+18/w
     int freeFlags;                      // XREF: DB_UpdateDebugZone(void)+1B/w
 };
@@ -93,7 +93,7 @@ struct XZoneInfo // sizeof=0xC
 union XAssetEntryPoolEntry // sizeof=0x10
 {                                       // XREF: DB_Init+AB/w
     XAssetEntry entry;
-    XAssetEntryPoolEntry *next;
+    Ptr32<XAssetEntryPoolEntry> next;
 
     XAssetEntryPoolEntry()
     {
@@ -102,7 +102,7 @@ union XAssetEntryPoolEntry // sizeof=0x10
 
 struct XBlock // sizeof=0x8
 {                                       // XREF: XZone/r
-    unsigned __int8 *data;
+    Ptr32<unsigned __int8> data;
     unsigned int size;
 };
 
@@ -140,13 +140,13 @@ union XAssetPoolEntry // sizeof=0x10
         next = NULL;
     }
     T entry;
-    XAssetPoolEntry<T> *next;
+    Ptr32<XAssetPoolEntry<T>> next;
 };
 
 template <typename T, int LEN>
 struct XAssetPool
 {
-    XAssetPoolEntry<T> *freeHead;
+    Ptr32<XAssetPoolEntry<T>> freeHead;
     XAssetPoolEntry<T> entries[LEN];
 };
 

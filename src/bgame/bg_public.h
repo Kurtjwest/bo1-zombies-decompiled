@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <qcommon/msg_mp.h>
 #include <game/enthandle.h>
@@ -220,7 +221,7 @@ struct spawner_ent_t // sizeof=0x8
 
 struct flame_timed_damage_t // sizeof=0x1C
 {                                       // XREF: gentity_s/r
-    struct gentity_s *attacker;
+    Ptr32<struct gentity_s> attacker;
     int damage;
     float damageDuration;
     float damageInterval;
@@ -231,8 +232,8 @@ struct flame_timed_damage_t // sizeof=0x1C
 
 struct tagInfo_s // sizeof=0x70
 {                                       // XREF: tagInfo_t/r
-    struct gentity_s *parent;
-    struct gentity_s *next;
+    Ptr32<struct gentity_s> parent;
+    Ptr32<struct gentity_s> next;
     unsigned __int16 name;
     // padding byte
     // padding byte
@@ -250,15 +251,15 @@ struct gentity_s // sizeof=0x2F8
                                         // ClientDisconnect(int)+251/r ...
     entityShared_t r;                   // XREF: EntHandle::isDefined(void)+20/r
                                         // EntHandle::ent(void)+57/r ...
-    struct gclient_s *client;                  // XREF: GetFollowPlayerState(int,playerState_s *)+85/r
+    Ptr32<struct gclient_s> client;                  // XREF: GetFollowPlayerState(int,playerState_s *)+85/r
                                         // G_PlayerEvent(int,int)+F/r ...
-    struct actor_s *actor;                     // XREF: Actor_SetBodyPlantAngle+D3/r
+    Ptr32<struct actor_s> actor;                     // XREF: Actor_SetBodyPlantAngle+D3/r
                                         // Actor_SetBodyPlantAngle+E5/r ...
-    sentient_s *sentient;               // XREF: Actor_EventListener_Next(int,ai_event_t,int)+55/r
-    struct TurretInfo *pTurretInfo;            // XREF: turret_clientaim+397/r
+    Ptr32<sentient_s> sentient;               // XREF: Actor_EventListener_Next(int,ai_event_t,int)+55/r
+    Ptr32<struct TurretInfo> pTurretInfo;            // XREF: turret_clientaim+397/r
                                         // turret_clientaim+3C5/r
-    Destructible *destructible;
-    struct scr_vehicle_s *scr_vehicle;
+    Ptr32<Destructible> destructible;
+    Ptr32<struct scr_vehicle_s> scr_vehicle;
     unsigned __int16 model;
     unsigned __int8 physicsObject;
     unsigned __int8 takedamage;
@@ -289,7 +290,7 @@ struct gentity_s // sizeof=0x2F8
     flame_timed_damage_t flame_timed_damage[4];
     int last_timed_radius_damage;
     int count;
-    gentity_s *chain;
+    Ptr32<gentity_s> chain;
     //$69C5C147512A8F06DC355830F4729073 ___u36;
     union //$69C5C147512A8F06DC355830F4729073 // sizeof=0x60
     {                                       // XREF: gentity_s/r
@@ -301,18 +302,18 @@ struct gentity_s // sizeof=0x2F8
         spawner_ent_t spawner;
     };
     EntHandle missileTargetEnt;
-    tagInfo_s *tagInfo;
-    gentity_s *tagChildren;
+    Ptr32<tagInfo_s> tagInfo;
+    Ptr32<gentity_s> tagChildren;
     unsigned __int16 attachModelNames[19];
     unsigned __int16 attachTagNames[19];
-    XAnimTree_s *pAnimTree;
+    Ptr32<XAnimTree_s> pAnimTree;
     unsigned __int16 disconnectedLinks;
     // padding byte
     // padding byte
     int iDisconnectTime;
     int useCount;
     int physObjId;
-    gentity_s *nextFree;
+    Ptr32<gentity_s> nextFree;
     int birthTime;
     int ikPlayerclipTerrainTime;
     int ikDisableTerrainMappingTime;
@@ -331,14 +332,14 @@ struct gentity_s // sizeof=0x2F8
 
 struct pmoveHandler_t // sizeof=0x20
 {                                       // XREF: .data:pmoveHandler_t * pmoveHandlers/r
-    void (__cdecl *trace)(struct trace_t *, const float *, const float *, const float *, const float *, int, int, struct col_context_t *);
-    void (__cdecl *playerEvent)(int, int);
-    bool (__cdecl *getEntityOriginAngles)(int, int, float *, float *);
-    unsigned __int16 (__cdecl *getVehicleTypeString)(int, int);
-    void (__cdecl *entityLinkFromPMove)(unsigned int, int, int);
-    int (__cdecl *getPlayerWeapon)(const struct playerState_s *, const int);
-    void (__cdecl *setVehDriverInputs)(const int, const int, struct usercmd_s *);
-    bool (__cdecl *isEntWalkable)(int, int);
+    Ptr32<void __cdecl(struct trace_t *, const float *, const float *, const float *, const float *, int, int, struct col_context_t *)> trace;
+    Ptr32<void __cdecl(int, int)> playerEvent;
+    Ptr32<bool __cdecl(int, int, float *, float *)> getEntityOriginAngles;
+    Ptr32<unsigned __int16 __cdecl(int, int)> getVehicleTypeString;
+    Ptr32<void __cdecl(unsigned int, int, int)> entityLinkFromPMove;
+    Ptr32<int __cdecl(const struct playerState_s *, const int)> getPlayerWeapon;
+    Ptr32<void __cdecl(const int, const int, struct usercmd_s *)> setVehDriverInputs;
+    Ptr32<bool __cdecl(int, int)> isEntWalkable;
 };
 
 

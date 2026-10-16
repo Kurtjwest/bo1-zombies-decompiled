@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum EvalOperatorType : __int32
 {                                       // XREF: Eval/r
@@ -52,7 +53,7 @@ struct EvalValue // sizeof=0x10
     {                                       // XREF: EvalValue/r
         long double d;
         int i;
-        char *s;
+        Ptr32<char> s;
     } u;
 };
 

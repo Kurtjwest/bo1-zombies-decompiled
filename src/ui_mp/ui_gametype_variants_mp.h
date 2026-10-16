@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/dvar.h>
 #include <ui/ui_shared.h>
@@ -43,8 +44,8 @@ struct GVConditional // sizeof=0x4
 
 struct __declspec(align(4)) GVEvent // sizeof=0xC
 {
-    const char *m_name;
-    const char *m_scriptName;
+    Ptr32<const char> m_name;
+    Ptr32<const char> m_scriptName;
     unsigned __int8 m_targetMask;
     unsigned __int8 m_condMask;
     // padding byte
@@ -73,19 +74,19 @@ struct GVGlob // sizeof=0x4284
 
 struct GVValue // sizeof=0x8
 {
-    const char *m_displayValue;
-    const char *m_value;
+    Ptr32<const char> m_displayValue;
+    Ptr32<const char> m_value;
 };
 
 struct GVAction // sizeof=0x14
 {                                       // XREF: .data:stru_98A5D98/r
-    const char *m_name;
-    const char *m_scriptName;
+    Ptr32<const char> m_name;
+    Ptr32<const char> m_scriptName;
     unsigned __int8 m_parameterType;
     // padding byte
     // padding byte
     // padding byte
-    GVValue *m_parameters;
+    Ptr32<GVValue> m_parameters;
     int m_parametersSize;
 
     GVAction(
@@ -100,23 +101,23 @@ struct GVAction // sizeof=0x14
 
 struct GVConditionalRhs // sizeof=0xC
 {                                       // XREF: GVConditionalLhs/r
-    GVValue *m_values;
+    Ptr32<GVValue> m_values;
     int m_valuesSize;
     GVType m_type;
 };
 
 struct GVConditionalLhs // sizeof=0x18
 {
-    const char *m_displayName;
-    const char *m_scriptName;
+    Ptr32<const char> m_displayName;
+    Ptr32<const char> m_scriptName;
     GVConditionalLhsTypeMask m_type;
     GVConditionalRhs m_rhs;
 };
 
 struct __declspec(align(4)) GVTarget // sizeof=0xC
 {
-    char *m_name;
-    char *m_scriptName;
+    Ptr32<char> m_name;
+    Ptr32<char> m_scriptName;
     unsigned __int8 m_targetMask;
     // padding byte
     // padding byte
@@ -125,7 +126,7 @@ struct __declspec(align(4)) GVTarget // sizeof=0xC
 
 struct _CustomClassData_modifierDef // sizeof=0x8
 {
-    const char *modifierName;
+    Ptr32<const char> modifierName;
     int modifierOffset;
 };
 
@@ -133,7 +134,7 @@ struct _CustomClassData // sizeof=0x50
 {                                       // XREF: CustomClassData/r
     struct modifierDef // sizeof=0x8
     {
-        const char *modifierName;
+        const char *modifierName; // native: static constexpr descriptor table
         int modifierOffset;
     };
 

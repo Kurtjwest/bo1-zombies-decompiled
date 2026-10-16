@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <server/sv_world.h>
 #include "cm_staticmodel.h"
 #include "cm_trace.h"
@@ -22,9 +23,9 @@ struct locTraceWork_t // sizeof=0x34
 
 struct areaParms_t // sizeof=0x18
 {                                       // XREF: ?CM_AreaEntities@@YAHQBM0PAHHH@Z/r
-    const float *mins;                  // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+18/w
-    const float *maxs;                  // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+1E/w
-    int *list;                          // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+24/w
+    Ptr32<const float> mins;                  // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+18/w
+    Ptr32<const float> maxs;                  // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+1E/w
+    Ptr32<int> list;                          // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+24/w
     int count;                          // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+27/w
                                         // CM_AreaEntities(float const * const,float const * const,int *,int,int)+48/r
     int maxcount;                       // XREF: CM_AreaEntities(float const * const,float const * const,int *,int,int)+31/w
@@ -67,7 +68,7 @@ struct sightpointtrace_t // sizeof=0x2C
                                         // SV_SightTracePoint(int *,float const * const,float const * const,col_context_t &)+258/w
     int contentmask;                    // XREF: SV_SightTracePoint(int *,float const * const,float const * const,col_context_t &)+1FA/w
     int locational;                     // XREF: SV_SightTracePoint(int *,float const * const,float const * const,col_context_t &)+261/w
-    unsigned __int8 *priorityMap;       // XREF: SV_SightTracePoint(int *,float const * const,float const * const,col_context_t &)+26A/w
+    Ptr32<unsigned __int8> priorityMap;       // XREF: SV_SightTracePoint(int *,float const * const,float const * const,col_context_t &)+26A/w
 };
 
 struct worldContents_s // sizeof=0xC

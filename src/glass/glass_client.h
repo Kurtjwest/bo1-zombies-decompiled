@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "glass.h"
 
@@ -17,11 +18,11 @@ struct GlassClient // sizeof=0xC
         {
             unsigned int numVerts;
             unsigned int edgeFlags;
-            float (*verts)[2];
+            Ptr32<float[2]> verts;
         };
 
         unsigned int numOutlines;
-        GlassClient::Outlines::Outline *outlines;
+        Ptr32<GlassClient::Outlines::Outline> outlines;
 
         Outlines(const GlassShard *baseShard, const GlassShard **shards, int numShards);
 
@@ -30,9 +31,9 @@ struct GlassClient // sizeof=0xC
         static int __cdecl CalcMemorySize(const GlassShard **shards, int numShards);
     };
 
-    const Glass *glass;
+    Ptr32<const Glass> glass;
     GlassState state;
-    GlassClient::Outlines *outlines;
+    Ptr32<GlassClient::Outlines> outlines;
 
 
     void __thiscall Init(const Glass *gls);
@@ -56,7 +57,7 @@ struct GlassClient // sizeof=0xC
 
 struct StackAllocator // sizeof=0xC
 {                                       // XREF: .data:StackAllocator GlassesClient::allocator/r
-    unsigned __int8 *memory;            // XREF: GlassesClient::InitAllocator(Glasses *)+1B/w
+    Ptr32<unsigned __int8> memory;            // XREF: GlassesClient::InitAllocator(Glasses *)+1B/w
     unsigned int size;                  // XREF: GlassesClient::InitAllocator(Glasses *)+24/w
     // GlassesClient::GetFreeMem(void)+3/r
     unsigned int pos;                   // XREF: GlassesClient::InitAllocator(Glasses *)+2A/w
@@ -64,9 +65,9 @@ struct StackAllocator // sizeof=0xC
 
 struct GlassesClient // sizeof=0x10
 {
-    GlassClient *glasses;
+    Ptr32<GlassClient> glasses;
     unsigned int numGlasses;
-    GlassRenderer *renderer;
+    Ptr32<GlassRenderer> renderer;
     unsigned int lastPreShatter;
 
     void *operator new(size_t size);

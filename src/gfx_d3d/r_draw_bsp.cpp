@@ -383,7 +383,7 @@ void __cdecl R_DrawBspTris(GfxCmdBufPrimState *state, const srfTriangles_t *tris
 }
 
 int __cdecl R_ReadBspDrawSurfs(
-                const unsigned int **primDrawSurfPos,
+                Ptr32<const unsigned int> *primDrawSurfPos,
                 const unsigned __int16 **list,
                 unsigned int *count)
 {

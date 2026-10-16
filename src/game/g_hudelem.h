@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <bgame/bg_public.h>
 #include <game_mp/g_main_mp.h>
 #include <clientscript/cscr_variable.h>
@@ -36,15 +37,15 @@ enum hudelem_update_t : __int32
 struct game_hudelem_s;
 struct game_hudelem_field_t // sizeof=0x20
 {                                       // XREF: .rdata:fields_0/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;                            // XREF: HudElem_GetFlagForeground+9/r
                                         // HudElem_GetFontStyle3d+9/r ...
     int size;
     fieldtype_t type;
     int mask;
     int shift;
-    void (__cdecl *setter)(game_hudelem_s *, int);
-    void (__cdecl *getter)(game_hudelem_s *, int);
+    Ptr32<void __cdecl(game_hudelem_s *, int)> setter;
+    Ptr32<void __cdecl(game_hudelem_s *, int)> getter;
 };
 
 struct game_hudelem_s // sizeof=0x7C

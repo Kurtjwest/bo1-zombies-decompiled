@@ -716,14 +716,14 @@ void __cdecl Scr_CompilePrimitiveExpressionList(scriptInstance_t inst, sval_u *e
     expr_count = GetExpressionCount(*exprlist);
     if ( expr_count == 1 )
     {
-        nodea = *(sval_u **)BO1_I2P(exprlist->stringValue);
+        nodea = *(Ptr32<sval_u> *)BO1_I2P(exprlist->stringValue);
         Scr_CompileExpression(inst, nodea->node);
         *exprlist = *nodea->node;
     }
     else if ( expr_count == 3 )
     {
         i = 0;
-        for ( node = *(sval_u **)BO1_I2P(exprlist->stringValue); node; node = node[1].node )
+        for ( node = *(Ptr32<sval_u> *)BO1_I2P(exprlist->stringValue); node; node = node[1].node )
         {
             Scr_CompileExpression(inst, node->node);
             expr[i++] = *node->node;
@@ -790,7 +790,7 @@ void __cdecl Scr_CompileCallExpressionList(scriptInstance_t inst, sval_u *exprli
     sval_u expr; // [esp+Ch] [ebp-4h]
 
     expr = debugger_node0(inst, ENUM_NOP);
-    for ( node = *(sval_u **)BO1_I2P(exprlist->stringValue); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P(exprlist->stringValue); node; node = node[1].node )
     {
         Scr_CompileExpression(inst, node->node);
         expr = debugger_prepend_node(inst, *node->node, expr);
@@ -1635,7 +1635,7 @@ void __cdecl Scr_PreEvalBuiltin(scriptInstance_t inst, sval_u params, unsigned i
         __debugbreak();
     }
     index = 0;
-    for (node = *(sval_u **)BO1_I2P(params.stringValue); node; node = node[1].node)
+    for (node = *(Ptr32<sval_u> *)BO1_I2P(params.stringValue); node; node = node[1].node)
         Scr_EvalExpression(inst, *node, localId, &gScrVmPub[inst].top[-index++]);
     gScrVmPub[inst].outparamcount = expr_count;
     if (!gScrVarPub[inst].evaluate
@@ -2115,7 +2115,7 @@ bool __cdecl Scr_RefCall(scriptInstance_t inst, sval_u params)
     bool exprRemoved; // [esp+7h] [ebp-1h]
 
     exprRemoved = 0;
-    for ( node = *(sval_u **)BO1_I2P(params.stringValue); node; node = node[1].node )
+    for ( node = *(Ptr32<sval_u> *)BO1_I2P(params.stringValue); node; node = node[1].node )
     {
         if ( Scr_RefExpression(inst, *node) )
             exprRemoved = 1;

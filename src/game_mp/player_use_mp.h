@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <bgame/bg_public.h>
 #include "g_main_mp.h"
 
 struct useList_t // sizeof=0x8
 {                                       // XREF: ?Player_UpdateCursorHints@@YAXPAUgentity_s@@@Z/r
-    gentity_s *ent;                     // XREF: Player_UpdateCursorHints(gentity_s *)+2EA/r
+    Ptr32<gentity_s> ent;                     // XREF: Player_UpdateCursorHints(gentity_s *)+2EA/r
     float score;
 };
 

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 namespace avi
 {
@@ -171,20 +172,20 @@ namespace avi
 struct __declspec(align(4)) avi_s // sizeof=0xA7870
 {
     avi::RIFF_s riff;
-    void *hFile;
+    Ptr32<void> hFile;
     unsigned __int8 buffer[262144];
     unsigned __int8 encodeBuff[262144];
     unsigned __int8 audioBufferHeaders[8];
     __int16 audioBuffer[48000];
     int audioBufferCount;
-    unsigned __int8 *outputPtr;
-    unsigned __int8 *flushToPtr;
-    unsigned __int8 *writePtr;
+    Ptr32<unsigned __int8> outputPtr;
+    Ptr32<unsigned __int8> flushToPtr;
+    Ptr32<unsigned __int8> writePtr;
     unsigned int fileSize;
-    void *hOutput;
-    void *hOutputLock;
-    void *hOutputThread;
-    void *hOutputAddLock;
+    Ptr32<void> hOutput;
+    Ptr32<void> hOutputLock;
+    Ptr32<void> hOutputThread;
+    Ptr32<void> hOutputAddLock;
     bool threadQuit;
     // padding byte
     // padding byte

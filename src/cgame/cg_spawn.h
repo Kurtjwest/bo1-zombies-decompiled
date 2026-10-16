@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum fieldtype_t : __int32;
 
 struct cent_field_t // sizeof=0xC
 {                                       // XREF: .rdata:client_spawn_fields/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     fieldtype_t type;
 };

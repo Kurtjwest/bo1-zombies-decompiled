@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "cg_anim_commands.h"
 #include "cg_local_mp.h"
@@ -27,7 +28,7 @@ namespace
     };
     struct SnapshotCommands
     {
-        const snapshot_s *snapshot;
+        Ptr32<const snapshot_s> snapshot;
         int count;
         AnimCommand commands[1024];
         bool done[1024];

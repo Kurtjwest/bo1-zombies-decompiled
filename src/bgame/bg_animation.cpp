@@ -1555,7 +1555,7 @@ animScriptItem_t *__cdecl BG_FirstValidItem(unsigned int client, animScript_t *s
     const char *BodyPart; // eax
     int command; // [esp+0h] [ebp-Ch]
     int i; // [esp+4h] [ebp-8h]
-    animScriptItem_t **ppScriptItem; // [esp+8h] [ebp-4h]
+    Ptr32<animScriptItem_t> *ppScriptItem; // [esp+8h] [ebp-4h]
 
     BG_CheckThread();
     iassert(bgs);

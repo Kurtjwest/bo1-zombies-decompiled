@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "g_spawn_mp.h"
 #include <game/g_load_utils.h>
@@ -28,11 +29,11 @@
 
 struct ent_field_t // sizeof=0x14
 {                                       // XREF: .rdata:fields_1/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     int size[1];
     fieldtype_t type;
-    void (__cdecl *callback)(gentity_s *, int);
+    Ptr32<void __cdecl(gentity_s *, int)> callback;
 };
 
 static void __cdecl Scr_SetSpEntityField(gentity_s *ent, int offset);

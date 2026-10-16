@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "flame_system.h"
 
 struct flameChunkSpawnVars_t // sizeof=0x48
@@ -31,7 +32,7 @@ void __cdecl Flame_Class_Chunk_Age(bool is_server, int time);
 flameChunk_s *__cdecl Flame_Class_Chunk_Spawn(
                 bool is_server,
                 flameChunkSpawnVars_t *spawnVars,
-                flameGeneric_s **chunkList,
+                Ptr32<flameGeneric_s> *chunkList,
                 float *velocityAdd,
                 flameTable *fTable);
 void __cdecl Flame_Class_Chunk_Render_Item(int localClientNum, flameChunk_s *chunk);

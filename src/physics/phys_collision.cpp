@@ -818,8 +818,8 @@ void phys_contact_manifold_process::process(
         if (this->m_contact_point_count > 5)
         {
             int count = this->m_contact_point_count;
-            contact_manifold_mesh_point **isect = this->m_list_isect_point;
-            contact_manifold_mesh_point **isect_end = isect + count;
+            Ptr32<contact_manifold_mesh_point> *isect = this->m_list_isect_point;
+            Ptr32<contact_manifold_mesh_point> *isect_end = isect + count;
  
             // Weighted centroid direction vectors:
             //   dir1 = cman1.normal / d1,   dir2 = cman2.normal / d2
@@ -887,7 +887,7 @@ void phys_contact_manifold_process::process(
             while ((end - isect) > 5)
             {
                 // Find the point with the smallest area (excluding anchor)
-                contact_manifold_mesh_point **smallest_i = isect;
+                Ptr32<contact_manifold_mesh_point> *smallest_i = isect;
  
                 // Walk neighbours: prev->cur->next to compute triangle areas,
                 // then remove the one that adds the least area.
@@ -946,8 +946,8 @@ void phys_contact_manifold_process::process(
             phys_vec3 *out_b1 = cpi->m_list_b1_r_loc;
             phys_vec3 *out_b2 = cpi->m_list_b2_r_loc;
  
-            contact_manifold_mesh_point **mp_i    = this->m_list_isect_point;
-            contact_manifold_mesh_point **mp_end  = mp_i + this->m_contact_point_count;
+            Ptr32<contact_manifold_mesh_point> *mp_i    = this->m_list_isect_point;
+            Ptr32<contact_manifold_mesh_point> *mp_end  = mp_i + this->m_contact_point_count;
  
             for (; mp_i != mp_end; ++mp_i, ++out_b1, ++out_b2)
             {

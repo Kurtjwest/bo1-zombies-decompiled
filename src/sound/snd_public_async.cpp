@@ -1112,7 +1112,7 @@ void __cdecl SND_EntStateFrame()
 {
     unsigned int n; // [esp+8h] [ebp-28h]
     bool removed; // [esp+Fh] [ebp-21h]
-    snd_ent_state **list; // [esp+10h] [ebp-20h]
+    Ptr32<snd_ent_state> *list; // [esp+10h] [ebp-20h]
     snd_ent_state *v4; // [esp+14h] [ebp-1Ch]
     unsigned int m; // [esp+18h] [ebp-18h]
     snd_ent_state *EntState; // [esp+1Ch] [ebp-14h]

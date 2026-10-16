@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "bg_weapons.h"
 #include "bg_weapons_attachment.h"
@@ -53,9 +54,9 @@ struct WeaponComponentList // sizeof=0x138
 
 struct SurfaceTypeSoundList // sizeof=0x8
 {                                       // XREF: .data:SurfaceTypeSoundList * surfaceTypeSoundLists/r
-    char *surfaceSoundBase;             // XREF: BG_RegisterSurfaceTypeSounds+74/r
+    Ptr32<char> surfaceSoundBase;             // XREF: BG_RegisterSurfaceTypeSounds+74/r
                                         // BG_RegisterSurfaceTypeSounds+25E/w ...
-    Ptr32<const char> *soundAliasList;  // XREF: BG_RegisterSurfaceTypeSounds+8B/r (a weapon asset's bounceSound list)
+    Ptr32<Ptr32<const char>> soundAliasList;  // XREF: BG_RegisterSurfaceTypeSounds+8B/r (a weapon asset's bounceSound list)
                                         // BG_RegisterSurfaceTypeSounds+2DC/w
 };
 

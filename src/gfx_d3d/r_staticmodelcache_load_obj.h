@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_bsp.h"
 
 struct GfxSModelSurfStats // sizeof=0x10
 {                                       // XREF: ??$_Insertion_sort1@PAUGfxSModelSurfStats@@P6A_NAAU1@0@ZU1@@std@@YAXPAUGfxSModelSurfStats@@0P6A_NAAU1@1@Z0@Z/r
                                         // ??$_Adjust_heap@PAUGfxSModelSurfStats@@HU1@P6A_NAAU1@0@Z@std@@YAXPAUGfxSModelSurfStats@@HHU1@P6A_NAAU1@2@Z@Z/r ...
-    XModel *model;                      // XREF: std::_Adjust_heap<GfxSModelSurfStats *,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &)>(GfxSModelSurfStats *,int,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &)):loc_595D13/r
+    Ptr32<XModel> model;                      // XREF: std::_Adjust_heap<GfxSModelSurfStats *,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &)>(GfxSModelSurfStats *,int,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &)):loc_595D13/r
                                         // std::_Adjust_heap<GfxSModelSurfStats *,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &)>(GfxSModelSurfStats *,int,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &))+C6/w ...
     unsigned int lod;                   // XREF: std::_Adjust_heap<GfxSModelSurfStats *,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &)>(GfxSModelSurfStats *,int,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &))+C9/r
                                         // std::_Adjust_heap<GfxSModelSurfStats *,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &)>(GfxSModelSurfStats *,int,int,GfxSModelSurfStats,bool (*)(GfxSModelSurfStats &,GfxSModelSurfStats &))+CC/w ...

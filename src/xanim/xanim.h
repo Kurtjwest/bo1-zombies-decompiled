@@ -154,25 +154,25 @@ struct XAnimEntry // sizeof=0x10
         union //$AE2C40205408E7677B548FCC327D21B5 // sizeof=0x4
         {                                                                             // XREF: XAnimClearTreeGoalWeightsInternal+42/r
                                                                                         // XAnimClearTreeGoalWeightsInternal+5F/r ...
-            XAnimParts *parts;
+            Ptr32<XAnimParts> parts;
             XAnimParent animParent;
         };
 };
 
 struct XAnim_s // sizeof=0x28
 {                                                                             // XREF: XAnim/r
-        const char *debugName;
+        Ptr32<const char> debugName;
         unsigned int size;
         unsigned int paramSize;
-        XAnimParam *params;
-        const char **debugAnimNames;
-        bool *wasLoggedIfMissing;
+        Ptr32<XAnimParam> params;
+        Ptr32<Ptr32<const char>> debugAnimNames;
+        Ptr32<bool> wasLoggedIfMissing;
         XAnimEntry entries[1];
 };
 
 struct XAnimTree_s // sizeof=0x8
 {                                                                             // XREF: XAnimTree/r
-        XAnim_s *anims;
+        Ptr32<XAnim_s> anims;
         unsigned __int16 children;
         __int16 inst;
 };
@@ -324,14 +324,14 @@ struct __declspec(align(4)) XAnimInfo // sizeof=0x40
                                                                                 // XAnimClearGoalWeightKnobInternal+1D8/r
         union //$AE2C40205408E7677B548FCC327D21B5 // sizeof=0x4
         {                                       // XREF: XAnimClearTreeGoalWeightsInternal+42/r
-            XAnimParts *parts;
+            Ptr32<XAnimParts> parts;
             XAnimParent animParent;
         };
                                                                                 // XREF: XAnimClearTreeGoalWeightsInternal+42/r
                                                                                 // XAnimClearTreeGoalWeightsInternal+5F/r ...
         XAnimState state;                                     // XREF: XAnimInit(void)+6A/w
                                                                                 // XAnimInit(void)+70/w ...
-        XAnimParts *streamedParts;
+        Ptr32<XAnimParts> streamedParts;
         unsigned __int16 streamedAnimToModel;
         // padding byte
         // padding byte
@@ -349,7 +349,7 @@ struct XAnimServerNotify // sizeof=0xC
 
 struct XAnimServerNotifyList // sizeof=0xC
 {                                                                             // XREF: ?G_DObjUpdateServerTime@@YAXPAUgentity_s@@HP6AXXZ@Z/r
-        XAnimServerNotify *pList;                     // XREF: G_DObjUpdateServerTime(gentity_s *,int,void (*)(void))+41/w
+        Ptr32<XAnimServerNotify> pList;                     // XREF: G_DObjUpdateServerTime(gentity_s *,int,void (*)(void))+41/w
         int iNumElements;                                     // XREF: G_DObjUpdateServerTime(gentity_s *,int,void (*)(void))+4B/w
         int iCurrentElement;                                // XREF: G_DObjUpdateServerTime(gentity_s *,int,void (*)(void))+44/w
                                                                                 // G_DObjUpdateServerTime(gentity_s *,int,void (*)(void))+9E/r

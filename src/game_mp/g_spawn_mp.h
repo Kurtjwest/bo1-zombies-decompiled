@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <qcommon/common.h>
 #include <bgame/bg_public.h>
 #include <game/g_items.h>
@@ -7,8 +8,8 @@
 struct SpawnFuncEntry // sizeof=0x8
 {                                       // XREF: .rdata:s_bspOnlySpawns/r
                                         // .rdata:s_bspOrDynamicSpawns/r
-    const char *classname;
-    void (__cdecl *callback)(gentity_s *, SpawnVar *);
+    Ptr32<const char> classname;
+    Ptr32<void __cdecl(gentity_s *, SpawnVar *)> callback;
 };
 
 int __cdecl G_SpawnFloat(const SpawnVar *spawnVar, const char *key, const char *defaultString, float *out);

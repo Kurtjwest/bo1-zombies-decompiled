@@ -420,14 +420,14 @@ struct MaterialMemory // sizeof=0x8
 
 struct PerMapMaterialTable // sizeof=0x8
 {                                                                             // XREF: .rdata:s_permapMaterials/r
-        const char *name;
-        Material **material;
+        Ptr32<const char> name;
+        Ptr32<Ptr32<Material>> material;
 };
 
 struct BuiltInMaterialTable // sizeof=0x8
 {                                                                             // XREF: .rdata:s_builtInMaterials/r
-        const char *name;
-        Material **material;
+        Ptr32<const char> name;
+        Ptr32<Ptr32<Material>> material;
 };
 
 struct stream_dest_info_t // sizeof=0x2

@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include <game_mp/actor_mp.h> // mod: MAX_ACTORS
 #include "g_sp_ext.h"
@@ -1649,10 +1650,10 @@ static void G_f_deleterope()
 // (0x14 bytes) and allocators are SP's (record pool count SP 0x01d04898, map SP 0x01d0489c, restore flag SP 0x01d04878).
 struct pathnode_link_override_t
 {
-    pathnode_t *node;
-    pathlink_s *origLinks;
+    Ptr32<pathnode_t> node;
+    Ptr32<pathlink_s> origLinks;
     int origCount;
-    pathlink_s *links;
+    Ptr32<pathlink_s> links;
     int count;
 };
 extern phys_simple_allocator<generic_avl_map_node_t> g_generic_avl_map_node_allocator;

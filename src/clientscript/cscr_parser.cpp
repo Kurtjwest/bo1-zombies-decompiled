@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "cscr_parser.h"
 #include "cscr_variable.h"
@@ -1102,10 +1103,10 @@ SourceBufferInfo *__cdecl Scr_GetNewSourceBuffer(scriptInstance_t inst)
 // of the span), so line numbers and positions after it are unchanged. No match (another script version): left alone.
 struct ScrModSourcePatch
 {
-    const char *file;
-    const char *name;
-    const char *original;
-    const char *replacement;
+    Ptr32<const char> file;
+    Ptr32<const char> name;
+    Ptr32<const char> original;
+    Ptr32<const char> replacement;
 };
 static const ScrModSourcePatch s_scrModSourcePatches[] =
 {

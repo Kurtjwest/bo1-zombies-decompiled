@@ -1,16 +1,17 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <game_mp/g_main_mp.h>
 
 struct client_fields_s // sizeof=0x1C
 {                                       // XREF: .rdata:fields/r
                                         // client_fields_t/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     int size[1];
     fieldtype_t type;
     unsigned int whichbits;
-    void (__cdecl *setter)(gclient_s *, const client_fields_s *);
-    void (__cdecl *getter)(gclient_s *, const client_fields_s *);
+    Ptr32<void __cdecl(gclient_s *, const client_fields_s *)> setter;
+    Ptr32<void __cdecl(gclient_s *, const client_fields_s *)> getter;
 };
 
 void __cdecl ClientScr_ReadOnly(gclient_s *pSelf, const client_fields_s *pField);

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 // zombies: actor lane side storage for SP actor state KB's MP structs have no room for.
 // KB's structs keep their MP size and layout (decompiled code hard-codes strides), so SP-only
 // actor state lives here.
@@ -64,7 +65,7 @@ struct actor_sp_ext_t
     // SP actor+0x20c8: four 0x18-byte suppression records, absent from MP actor_s.
     // Only the time/normal/dist fields read by the exposed path helpers are stored here.
     struct { int time; float normal[2]; float dist; } suppression[4];
-    gentity_s *turret;                  // SP actor+0x21a8; no MP actor turret member
+    Ptr32<gentity_s> turret;                  // SP actor+0x21a8; no MP actor turret member
     int lookAtEntNum;                   // SP actor+0x88, lookatentity; ENTITYNUM_NONE at spawn (SP 0x007bbf50)
     unsigned short sightTraceHitNum[MAX_SENTIENTS_CAP]; // SP +0x31f8: per-sentient collision-brush hints
 };

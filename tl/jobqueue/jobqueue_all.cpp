@@ -1475,7 +1475,7 @@ char  jqPopNextBatch(
         jqBatch *PoppedBatch)
 {
   int v7; // esi
-  jqQueue **i; // edi
+  Ptr32<jqQueue> *i; // edi
 
   if ( !jqPopNextBatchFromQueue(&Worker->WorkerSpecific, GroupID, PoppedBatch) )
   {

@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "xanim.h"
 
 union XAnimPartQuatFrames // sizeof=0x4
 {                                       // XREF: XAnimPartQuatDataFrames/r
-    __int16 (*frames)[4];
-    __int16 (*frames2)[2];
+    Ptr32<__int16[4]> frames;
+    Ptr32<__int16[2]> frames2;
 };
 
 struct __declspec(align(4)) XAnimPartQuatDataFrames // sizeof=0x8
@@ -32,7 +33,7 @@ struct XAnimPartQuat // sizeof=0xC
 
 struct __declspec(align(4)) XAnimPartQuatPtr // sizeof=0x8
 {                                       // XREF: ?XAnimLoadFile@@YAPAUXAnimParts@@PBDP6APAXH@Z_N@Z/r
-    XAnimPartQuat *quat;                // XREF: XAnimLoadFile(char const *,void * (*)(int),bool)+BD3/r
+    Ptr32<XAnimPartQuat> quat;                // XREF: XAnimLoadFile(char const *,void * (*)(int),bool)+BD3/r
     unsigned __int8 partIndex;          // XREF: XAnimLoadFile(char const *,void * (*)(int),bool)+799/w
                                         // XAnimLoadFile(char const *,void * (*)(int),bool)+BB3/w ...
     // padding byte
@@ -42,7 +43,7 @@ struct __declspec(align(4)) XAnimPartQuatPtr // sizeof=0x8
 
 struct __declspec(align(4)) XAnimPartTransPtr // sizeof=0x8
 {                                       // XREF: ?XAnimLoadFile@@YAPAUXAnimParts@@PBDP6APAXH@Z_N@Z/r
-    XAnimPartTrans *trans;              // XREF: XAnimLoadFile(char const *,void * (*)(int),bool)+E13/r
+    Ptr32<XAnimPartTrans> trans;              // XREF: XAnimLoadFile(char const *,void * (*)(int),bool)+E13/r
     unsigned __int8 partIndex;          // XREF: XAnimLoadFile(char const *,void * (*)(int),bool)+7AC/w
                                         // XAnimLoadFile(char const *,void * (*)(int),bool)+BC6/w ...
     // padding byte

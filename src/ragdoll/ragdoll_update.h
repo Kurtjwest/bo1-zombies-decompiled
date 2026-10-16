@@ -1,18 +1,19 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <xanim/dobj.h>
 #include "ragdoll.h"
 
 struct RagdollSortStruct // sizeof=0x8
 {                                       // XREF: ?Ragdoll_ExplosionEvent@@YAXH_NQBMMM1M@Z/r
     float distSq;                       // XREF: Ragdoll_ExplosionEvent(int,bool,float const * const,float,float,float const * const,float)+1DB/w
-    RagdollBody *body;                  // XREF: Ragdoll_ExplosionEvent(int,bool,float const * const,float,float,float const * const,float)+1EE/w
+    Ptr32<RagdollBody> body;                  // XREF: Ragdoll_ExplosionEvent(int,bool,float const * const,float,float,float const * const,float)+1EE/w
 };
 
 struct StateEnt // sizeof=0xC
 {                                       // XREF: .data:stateEntries/r
-    bool (__cdecl *enterFunc)(RagdollBody *, RagdollBodyState, RagdollBodyState);
-    bool (__cdecl *exitFunc)(RagdollBody *, RagdollBodyState, RagdollBodyState);
-    void (__cdecl *updateFunc)(RagdollBody *, int);
+    Ptr32<bool __cdecl(RagdollBody *, RagdollBodyState, RagdollBodyState)> enterFunc;
+    Ptr32<bool __cdecl(RagdollBody *, RagdollBodyState, RagdollBodyState)> exitFunc;
+    Ptr32<void __cdecl(RagdollBody *, int)> updateFunc;
 };
 
 void __cdecl Ragdoll_AnimMatToMat43(const DObjAnimMat *mat, float (*out)[3]);

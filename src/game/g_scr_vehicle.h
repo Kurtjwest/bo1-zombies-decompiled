@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <vehicle/nitrous_vehicle.h>
 #include <clientscript/cscr_variable.h>
 #include <bgame/bg_public.h>
@@ -162,7 +163,7 @@ struct cgVehicle_s // sizeof=0x54
     int flags;
     float materialTime;
     float materialTime2;
-    vehicle_cache_t *vehicle_cache;
+    Ptr32<vehicle_cache_t> vehicle_cache;
     cgVehicleWheelEffect wheelEffects[3];
 };
 
@@ -245,7 +246,7 @@ struct scr_vehicle_s // sizeof=0xE2C
     int m_bFirePickupEventDown;
     int m_bSwapPickupEventDown;
     int m_bDropDeployableEventDown;
-    NitrousVehicle *nitrousVehicle;
+    Ptr32<NitrousVehicle> nitrousVehicle;
     vehicle_cache_t vehicle_cache;
     float heliHeightLockOffset;
 };

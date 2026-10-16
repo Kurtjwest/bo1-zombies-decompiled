@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 // The ordered SP builtin table lists (see scr_sp_tables.h) and their lookups.
 #include "scr_sp_tables.h"
 #include <string.h>
@@ -6,14 +7,14 @@ namespace
 {
 struct ScrSpFunctionTable
 {
-    const BuiltinFunctionDef *defs;
-    const unsigned int *count;
+    Ptr32<const BuiltinFunctionDef> defs;
+    Ptr32<const unsigned int> count;
 };
 
 struct ScrSpMethodTable
 {
-    const BuiltinMethodDef *defs;
-    const unsigned int *count;
+    Ptr32<const BuiltinMethodDef> defs;
+    Ptr32<const unsigned int> count;
 };
 
 #define SCR_SP_FUNCTION_ROW(prefix) { prefix##_functions, &prefix##_function_count },

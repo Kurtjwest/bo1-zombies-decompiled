@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct windowDef_t;
 struct menuDef_t;
@@ -16,8 +17,8 @@ struct ownerDrawDef_s;
 
 struct stringDef_s // sizeof=0x8
 {                                       // XREF: stringDef_t/r
-    stringDef_s *next;
-    const char *str;
+    Ptr32<stringDef_s> next;
+    Ptr32<const char> str;
 };
 
 void __cdecl Window_SetDynamicFlags(int contextIndex, windowDef_t *w, int flags);

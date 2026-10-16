@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <gfx_d3d/r_gfx.h>
 #include <universal/com_stringtable.h>
 #include <gfx_d3d/r_material.h>
@@ -17,20 +18,20 @@ struct WeaponOptions // sizeof=0x8500
         struct ToGold // sizeof=0x14
         {                                       // XREF: WeaponOptions::WeaponOverride/r
                                                 // WeaponOptions::WeaponOverride/r ...
-            const Material *material;
-            const GfxImage *diffuseTexture;
-            const GfxImage *specularTexture;
-            const GfxImage *reflectionTexture;
-            const GfxImage *camoTexture;
+            Ptr32<const Material> material;
+            Ptr32<const GfxImage> diffuseTexture;
+            Ptr32<const GfxImage> specularTexture;
+            Ptr32<const GfxImage> reflectionTexture;
+            Ptr32<const GfxImage> camoTexture;
 
             bool Init(const char *matName);
             int Set(int textureOverrideIndex, unsigned __int16 modelMask, const WeaponOptions::WeaponOverride::ToGold *gold);
         };
 
         int lastFrame;
-        const WeaponVariantDef *weapon;
-        const GfxImage *camoBaseTexture1;
-        const GfxImage *camoBaseTexture2;
+        Ptr32<const WeaponVariantDef> weapon;
+        Ptr32<const GfxImage> camoBaseTexture1;
+        Ptr32<const GfxImage> camoBaseTexture2;
         unsigned int camoOverrideIndex1;
         unsigned int camoOverrideIndex2;
         unsigned int numToGold;
@@ -42,22 +43,22 @@ struct WeaponOptions // sizeof=0x8500
         void Init(const WeaponVariantDef *weapVarDef);
     };
 
-    const GfxImage *camoTextureOverrides[10][64];
-    const GfxImage *lensTextureOverrides[10][16];
-    const GfxImage *reticleTextureOverrides[10][64];
+    Ptr32<const GfxImage> camoTextureOverrides[10][64];
+    Ptr32<const GfxImage> lensTextureOverrides[10][16];
+    Ptr32<const GfxImage> reticleTextureOverrides[10][64];
     float reticleColors[16][4];
     float lensColors[16][4];
-    Material *facepaintMaterials[64];
+    Ptr32<Material> facepaintMaterials[64];
     float facepaintColors[16][4];
-    Font_s *clanFont;
-    const GfxImage *emblemClearTexture;
+    Ptr32<Font_s> clanFont;
+    Ptr32<const GfxImage> emblemClearTexture;
     WeaponOverride weaponOverrides[100];
     int numWeaponOverrides;
     int goldCamoIndex;
     WeaponOverride::ToGold gold;
     WeaponOverride::ToGold black;
-    const GfxImage *lightClanTagFont;
-    const GfxImage *darkClanTagFont;
+    Ptr32<const GfxImage> lightClanTagFont;
+    Ptr32<const GfxImage> darkClanTagFont;
 
     static const GfxImage *GetImageFromTable(const StringTable *table, int row, int column);
     void InitWeaponOptionTextures(
@@ -65,14 +66,14 @@ struct WeaponOptions // sizeof=0x8500
         const char *label,
         int labelCol,
         int textureCol,
-        const GfxImage **overrides,
+        Ptr32<const GfxImage> *overrides,
         unsigned int num);
     void InitWeaponOptionMaterials(
         const char *tableName,
         const char *label,
         int labelCol,
         int materialCol,
-        Material **overrides,
+        Ptr32<Material> *overrides,
         unsigned int num);
     void InitWeaponOptionColors(
         const char *tableName,

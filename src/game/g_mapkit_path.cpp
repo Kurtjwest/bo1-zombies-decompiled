@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 // mod: mapkit pathnodes (bo1_mod_mapkit, off by default = nothing here runs). Adds the layout's pathnodes to the
 // fastfile's PathData after load and links them into the map's graph with the game's own link test (Path_CanLinkNodes,
 // actor physics through the world traces, which include the mapkit boxes), and cuts retail links that the new boxes
@@ -40,7 +41,7 @@ struct MkNodeSrc
     float yaw;
     char target[32];
     char targetname[32];
-    const char *animscript;
+    Ptr32<const char> animscript;
 };
 static MkNodeSrc s_mkSrc[0x2000];
 static int s_mkGridOmitted;

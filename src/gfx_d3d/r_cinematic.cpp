@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "r_cinematic.h"
 #include <win32/win_main.h>
@@ -51,18 +52,18 @@ struct CinematicGlob // sizeof=0x980
     // padding byte
     // padding byte
     // padding byte
-    BINK *bink;                        // XREF: R_Cinematic_Advance+195/w
+    Ptr32<BINK> bink;                        // XREF: R_Cinematic_Advance+195/w
                                         // R_Cinematic_Advance+3B5/w ...
     BINKTEXTURESET binkTextureSet;      // XREF: Unlock_Bink_textures_Callback(void)+3/r
                                         // Unlock_Bink_textures_Callback(void)+9/o ...
     // inferment
-    void *YTextures[2];                 // XREF: R_Cinematic_Advance+2D2/r
+    Ptr32<void> YTextures[2];                 // XREF: R_Cinematic_Advance+2D2/r
                                         // R_Cinematic_InitBinkTextures+1A5/w
-    void *crTextures[2];                // XREF: R_Cinematic_Advance+2EE/r
+    Ptr32<void> crTextures[2];                // XREF: R_Cinematic_Advance+2EE/r
                                         // R_Cinematic_InitBinkTextures+1E6/w
-    void *cbTextures[2];                // XREF: R_Cinematic_Advance+30A/r
+    Ptr32<void> cbTextures[2];                // XREF: R_Cinematic_Advance+30A/r
                                         // R_Cinematic_InitBinkTextures+227/w
-    void *aTextures[2];                 // XREF: R_Cinematic_Advance+32F/r
+    Ptr32<void> aTextures[2];                 // XREF: R_Cinematic_Advance+32F/r
                                         // R_Cinematic_InitBinkTextures+277/w ...
     int bufferWidth;  
     // inferment end
@@ -81,11 +82,11 @@ struct CinematicGlob // sizeof=0x980
     CinematicTextureSet textureSets[2]; // ...
     int activeTextureSet;
     int activeImageFrameTextureSet;
-    GfxImage *nextYTexture;
-    GfxImage *nextCRTexture;
-    GfxImage *nextCBTexture;
-    GfxImage *nextATexture;
-    void *memPool;
+    Ptr32<GfxImage> nextYTexture;
+    Ptr32<GfxImage> nextCRTexture;
+    Ptr32<GfxImage> nextCBTexture;
+    Ptr32<GfxImage> nextATexture;
+    Ptr32<void> memPool;
     float playbackVolume;
     bool underrun;
     // padding byte

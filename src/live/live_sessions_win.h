@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <client_mp/cl_main_mp.h>
 
 enum taskCompleteResults : __int32;
@@ -58,7 +59,7 @@ struct LocalTalkerInfo // sizeof=0x1
 struct __declspec(align(8)) SessionData_s // sizeof=0x978
 {                                       // XREF: .data:SessionData_s g_serverSession/r
                                         // .data:SessionData_s g_partySession/r ...
-    char *sessionName;                  // XREF: Session_Init(void)+38/w
+    Ptr32<char> sessionName;                  // XREF: Session_Init(void)+38/w
     bool sessionHandle;                 // XREF: SV_SpawnServer(int,char const *,int,int)+690/r
                                         // Live_IsInLiveGame(void)+4/r
     XSESSION_INFO sessionInfo;          // XREF: _dynamic_initializer_for__g_serverSession__+4/o
@@ -77,7 +78,7 @@ struct __declspec(align(8)) SessionData_s // sizeof=0x978
     int privateSlots;                   // XREF: Live_Frame_MP(int,int)+1FB/r
     int publicSlots;                    // XREF: Live_Frame_MP(int,int)+202/r
     int flags;
-    struct PS3VoiceEngine *voiceEngine;
+    Ptr32<struct PS3VoiceEngine> voiceEngine;
     bool qosListenEnabled;
     // padding byte
     // padding byte
@@ -112,7 +113,7 @@ struct __declspec(align(8)) SessionJoinData // sizeof=0x20
     // padding byte
     // padding byte
     unsigned __int64 player;
-    SessionData_s *session;
+    Ptr32<SessionData_s> session;
     // padding byte
     // padding byte
     // padding byte
@@ -127,7 +128,7 @@ struct SessionCreateData // sizeof=0x8
 // padding byte
 // padding byte
 // padding byte
-    SessionData_s *session;             // XREF: Session_StartHost(SessionData_s *,int,int,int)+154/w
+    Ptr32<SessionData_s> session;             // XREF: Session_StartHost(SessionData_s *,int,int,int)+154/w
 };
 
 struct SessionGraveYard // sizeof=0x980

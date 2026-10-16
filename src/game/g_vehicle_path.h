@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <qcommon/common.h>
 #include <qcommon/radiant_remote.h>
 #include "sentient_fields.h"
@@ -80,14 +81,14 @@ struct vehicle_pathpos_t // sizeof=0xDC
     float lookPos[3];
     vehicle_node_t switchNode[2];
     int flags;
-    vehicle_custom_path_t *customPath;
+    Ptr32<vehicle_custom_path_t> customPath;
     float customGoalLength;
     float customGoalDir[3];
 };
 
 struct __declspec(align(4)) vn_field_t // sizeof=0x14
 {                                       // XREF: .data:vn_fields/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     int size[1];
     fieldtype_t type;

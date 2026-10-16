@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct GfxWorld;
 struct GfxImage;
@@ -9,7 +10,7 @@ struct OutdoorGlob // sizeof=0x40
     float scale[3];                     // XREF: Outdoor_UpdateTransforms+50/w
     float invScale[3];                  // XREF: Outdoor_UpdateTransforms+70/w
     float add[3];                       // XREF: Outdoor_UpdateTransforms+9B/w
-    unsigned __int8 *pic;               // XREF: R_GenerateOutdoorImage(GfxImage *)+43/w
+    Ptr32<unsigned __int8> pic;               // XREF: R_GenerateOutdoorImage(GfxImage *)+43/w
 };
 
 void __cdecl R_RegisterOutdoorImage(GfxWorld *world, const float *outdoorMin, const float *outdoorMax);

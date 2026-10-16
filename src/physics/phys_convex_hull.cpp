@@ -803,7 +803,7 @@ void __cdecl free_chull_lists()
 {
     chull_t *next_list; // [esp+0h] [ebp-Ch]
     chull_t *first_list; // [esp+4h] [ebp-8h]
-    chull_t **prev_next; // [esp+8h] [ebp-4h]
+    Ptr32<chull_t> *prev_next; // [esp+8h] [ebp-4h]
 
     first_list = chull_list;
     prev_next = &chull_list;

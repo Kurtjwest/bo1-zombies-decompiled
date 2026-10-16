@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "ragdoll_cmds.h"
 #include <qcommon/cmd.h>
 #include "ragdoll_update.h"
@@ -11,7 +12,7 @@ const char *jointNames[3] =
 
 struct $226EAEAF211E69CAF5BF90DB1F921A0C // sizeof=0x10
 {                                       // XREF: .data:axisTable/r
-    const char *name;                   // XREF: Ragdoll_ReadAxis+A6/r
+    Ptr32<const char> name;                   // XREF: Ragdoll_ReadAxis+A6/r
     float axis[3];                      // XREF: Ragdoll_ReadAxis+C3/o
 };
 $226EAEAF211E69CAF5BF90DB1F921A0C axisTable[4] =

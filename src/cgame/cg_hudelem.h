@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/dvar.h>
 #include <bgame/bg_local.h>
@@ -19,7 +20,7 @@ struct cg_hudelem_t // sizeof=0x23C
     char hudElemText[256];              // XREF: DrawSingleHudElem2d:$LN8_10/r
                                         // DrawSingleHudElem2d+232/o ...
     float textWidth;
-    Font_s *font;
+    Ptr32<Font_s> font;
     float fontScale;
     float fontHeight;
     float color[4];                     // XREF: DrawSingleHudElem2d:loc_4BAB0E/o
@@ -28,7 +29,7 @@ struct cg_hudelem_t // sizeof=0x23C
 
 struct ScopedScrPlaceViewStack // sizeof=0x4
 {                                       // XREF: ?Menu_Paint@@YA_NHPAUUiContext@@PAUScreenPlacementStack@@PAUmenuDef_t@@H@Z/r
-    ScreenPlacementStack *mStack;
+    Ptr32<ScreenPlacementStack> mStack;
 
     ScopedScrPlaceViewStack(ScreenPlacementStack *stack, const ScreenPlacement *newPlacement);
     ~ScopedScrPlaceViewStack();

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <client/cl_compositing.h>
 
 struct __declspec(align(8)) PCacheComponent // sizeof=0x20
@@ -20,9 +21,9 @@ struct PCacheComponentPool // sizeof=0x14
 {                                       // XREF: .data:s_componentPools/r
     int count;                          // XREF: PCache_Init(void)+4E/r
     int componentSize;                  // XREF: PCache_Init(void)+54/r
-    void *array;                        // XREF: PCache_Init(void)+64/r
+    Ptr32<void> array;                        // XREF: PCache_Init(void)+64/r
     unsigned int updateInterval;        // XREF: PCache_TouchComponent(PCacheComponent *)+C3/r
-    void (__cdecl *release)(PCacheComponent *);
+    Ptr32<void __cdecl(PCacheComponent *)> release;
 };
 
 struct PCachePublicProfile // sizeof=0x120
@@ -38,7 +39,7 @@ struct PCacheEntry // sizeof=0x20
     unsigned int neighborhood;
     unsigned int hash;
     unsigned int touchTime;
-    PCacheComponent *components[2];
+    Ptr32<PCacheComponent> components[2];
 };
 
 struct PCachePlayerEmblem // sizeof=0x1B0
@@ -46,11 +47,11 @@ struct PCachePlayerEmblem // sizeof=0x1B0
     PCacheComponent c;
     CompositeEmblemLayer layers[12];
     int jobID;
-    GfxImage *image;
+    Ptr32<GfxImage> image;
     __int16 backgroundID;
     // padding byte
     // padding byte
-    Material *background;
+    Ptr32<Material> background;
 };
 
 __int64 __cdecl PCache_Time();

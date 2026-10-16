@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "win_localize.h"
 #include <universal/com_fileaccess.h>
 #include <universal/assertive.h>
@@ -8,8 +9,8 @@
 
 struct// $8CB265A9D3778DFC1F2AA7A5F0192391 // sizeof=0x8
 {                                       // XREF: .data:localization/r
-    char *language;                     // XREF: Win_InitLocalization(void)+6/w
-    char *strings;                      // XREF: Win_InitLocalization(void)+10/w
+    Ptr32<char> language;                     // XREF: Win_InitLocalization(void)+6/w
+    Ptr32<char> strings;                      // XREF: Win_InitLocalization(void)+10/w
 } localization;
 
 char language_buffer[4096];

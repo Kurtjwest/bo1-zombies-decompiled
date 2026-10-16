@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <game/teams.h>
 #include <universal/dvar.h>
 
@@ -54,7 +55,7 @@ struct listColumnInfo_t // sizeof=0x14
 {                                       // XREF: .rdata:columnInfoParty/r
     listColumnTypes_t type;
     float fWidth;
-    const char *pszName;
+    Ptr32<const char> pszName;
     int iAlignment;
     scoreboardColumnType_t sbColumnType;
 };
@@ -71,7 +72,7 @@ struct matchClientScoreData_t // sizeof=0x70
                                         // CG_UpdateMatchScoreboard(int)+149/w ...
     int clientNum;                      // XREF: CG_UpdateMatchScoreboard(int)+112/w
                                         // CG_GetInGamePlayerListIcon(int,int,int,team_t,Material * *)+B1/r ...
-    struct Material *hRankIcon;                // XREF: CG_UpdateMatchScoreboard(int)+19B/w
+    Ptr32<struct Material> hRankIcon;                // XREF: CG_UpdateMatchScoreboard(int)+19B/w
                                         // CG_GetMatchScoreboardRankIcon(int,int,team_t,Material * *)+49/r
     char name[32];                      // XREF: CG_UpdateMatchScoreboard(int)+220/o
                                         // CG_GetMatchScoreboardInfo(int,int,int,team_t)+DC/o ...

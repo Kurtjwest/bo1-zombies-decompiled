@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <windows.h>
 #include <d3d9.h>
 #include "r_bsp.h"
@@ -45,9 +46,9 @@ struct __declspec(align(4)) vidConfig_t // sizeof=0x38
 
 struct GfxWindowTarget // sizeof=0x10
 {                                       // XREF: DxGlobals/r
-    HWND__ *hwnd;                       // XREF: R_ReleaseForShutdownOrReset(void)+28/r
+    Ptr32<HWND__> hwnd;                       // XREF: R_ReleaseForShutdownOrReset(void)+28/r
                                         // R_CreateDevice(GfxWindowParms const *):loc_A4ED89/r ...
-    IDirect3DSwapChain9 *swapChain;     // XREF: R_ResizeWindow(void)+84/r
+    Ptr32<IDirect3DSwapChain9> swapChain;     // XREF: R_ResizeWindow(void)+84/r
                                         // R_FinishAttachingToWindow+85/w ...
     int width;                          // XREF: R_ReleaseForShutdownOrReset(void)+5A/r
                                         // R_ReleaseForShutdownOrReset(void)+69/w ...
@@ -57,10 +58,10 @@ struct GfxWindowTarget // sizeof=0x10
 
 struct __declspec(align(8)) DxGlobals // sizeof=0x2D00
 {                                       // XREF: .data:DxGlobals dx/r
-    HINSTANCE__ *hinst;
-    IDirect3D9 *d3d9;                   // XREF: DB_TryLoadXFileInternal+554/r
+    Ptr32<HINSTANCE__> hinst;
+    Ptr32<IDirect3D9> d3d9;                   // XREF: DB_TryLoadXFileInternal+554/r
                                         // DB_TryLoadXFileInternal+574/r ...
-    IDirect3DDevice9 *device;           // XREF: yuv_init_internal(void)+154/r
+    Ptr32<IDirect3DDevice9> device;           // XREF: yuv_init_internal(void)+154/r
                                         // yuv_init_internal(void)+15B/r ...
     unsigned int adapterIndex;          // XREF: DB_TryLoadXFileInternal+56E/r
                                         // R_CreateDeviceInternal+54/r ...
@@ -87,11 +88,11 @@ struct __declspec(align(8)) DxGlobals // sizeof=0x2D00
                                         // R_PreCreateWindow+FC/w ...
     bool nvStereoActivated;             // XREF: R_CreateDeviceInternal+7C/w
                                         // R_CreateDeviceInternal+C6/w ...
-    void *nvStereoHandle;               // XREF: R_CreateDeviceInternal+83/w
+    Ptr32<void> nvStereoHandle;               // XREF: R_CreateDeviceInternal+83/w
                                         // R_CreateDeviceInternal+8D/o ...
-    void *nvDepthBufferHandle;          // XREF: R_ResolveIntZ_PC(void)+42/r
+    Ptr32<void> nvDepthBufferHandle;          // XREF: R_ResolveIntZ_PC(void)+42/r
                                         // R_ResolveIntZ_PC(void)+66/r ...
-    void *nvFloatZBufferHandle;         // XREF: R_ResolveIntZ_PC(void)+4B/r
+    Ptr32<void> nvFloatZBufferHandle;         // XREF: R_ResolveIntZ_PC(void)+4B/r
                                         // R_ResolveIntZ_PC(void)+5D/r ...
     bool resizeWindow;                  // XREF: R_CheckResizeWindow(void):loc_A4F4E0/w
                                         // R_CheckResizeWindow(void):loc_A4F4E7/r ...
@@ -104,14 +105,14 @@ struct __declspec(align(8)) DxGlobals // sizeof=0x2D00
                                         // R_EnumDisplayModes+28/w ...
     _D3DDISPLAYMODE displayModes[256];  // XREF: R_ClosestRefreshRateForMode+34/r
                                         // R_ClosestRefreshRateForMode+48/r ...
-    const char *resolutionNameTable[257];
+    Ptr32<const char> resolutionNameTable[257];
                                         // XREF: R_EnumDisplayModes+212/w
                                         // R_EnumDisplayModes+284/w ...
-    const char *refreshRateNameTable[257];
+    Ptr32<const char> refreshRateNameTable[257];
                                         // XREF: R_EnumDisplayModes+2FB/w
                                         // R_EnumDisplayModes+346/w ...
     char modeText[5120];                // XREF: R_EnumDisplayModes:loc_A50749/o
-    IDirect3DQuery9 *fencePool[8];      // XREF: R_HW_InsertFence(IDirect3DQuery9 * *)+18/r
+    Ptr32<IDirect3DQuery9> fencePool[8];      // XREF: R_HW_InsertFence(IDirect3DQuery9 * *)+18/r
                                         // R_ReleaseForShutdownOrReset(void)+170/r ...
     unsigned int nextFence;             // XREF: R_HW_InsertFence(IDirect3DQuery9 * *)+12/r
                                         // R_HW_InsertFence(IDirect3DQuery9 * *)+21/r ...
@@ -127,7 +128,7 @@ struct __declspec(align(8)) DxGlobals // sizeof=0x2D00
     int sunSpriteSamples;               // XREF: R_Init(void)+4F/w
                                         // R_Init(void)+54/r ...
     int sunShadowmapSize; // not a real name, not in IDA for some reason
-    struct IDirect3DSurface9 *singleSampleDepthStencilSurface;
+    Ptr32<struct IDirect3DSurface9> singleSampleDepthStencilSurface;
                                         // XREF: R_GenerateSortedDrawSurfs+381/r
                                         // R_GenerateSortedDrawSurfs:loc_A62FDD/r ...
     bool inScene;                       // XREF: R_AssignSingleSampleDepthStencilSurface+6/r
@@ -141,9 +142,9 @@ struct __declspec(align(8)) DxGlobals // sizeof=0x2D00
                                         // RB_SetGammaRamp(GfxGammaRamp const *)+123/r ...
     GfxWindowTarget windows[1];         // XREF: R_ReleaseForShutdownOrReset(void)+28/r
                                         // R_ReleaseForShutdownOrReset(void)+5A/r ...
-    IDirect3DQuery9 *flushGpuQuery;     // XREF: R_ResizeWindow(void)+D0/w
+    Ptr32<IDirect3DQuery9> flushGpuQuery;     // XREF: R_ResizeWindow(void)+D0/w
                                         // R_FinishAttachingToWindow+AD/w ...
-    IDirect3DQuery9 *gpuSyncDelay;      // XREF: R_ReleaseForShutdownOrReset(void):loc_A4EB31/r
+    Ptr32<IDirect3DQuery9> gpuSyncDelay;      // XREF: R_ReleaseForShutdownOrReset(void):loc_A4EB31/r
                                         // R_ReleaseForShutdownOrReset(void):loc_A4EB5E/r ...
     unsigned __int64 gpuSyncStart;      // XREF: RB_CallExecuteRenderCommands(void)+4EE/w
                                         // RB_CallExecuteRenderCommands(void)+4F8/w
@@ -159,7 +160,7 @@ struct __declspec(align(8)) DxGlobals // sizeof=0x2D00
     int anisotropyFor4x;
     int mipFilterMode;
     unsigned int mipBias;
-    IDirect3DQuery9 *swapFence[4];      // XREF: R_ReleaseForShutdownOrReset(void)+1F9/r
+    Ptr32<IDirect3DQuery9> swapFence[4];      // XREF: R_ReleaseForShutdownOrReset(void)+1F9/r
                                         // R_ReleaseForShutdownOrReset(void)+206/w ...
     // padding byte
     // padding byte
@@ -215,13 +216,13 @@ struct GfxConfiguration // sizeof=0x34
                                         // R_GenerateMarkVertsForDynamicModels+10F/r ...
     int threadContextCount;
     int critSectCount;
-    const char *codeFastFileName;
-    const char *patchFastFileName;
-    const char *uiFastFileName;
-    const char *uiViewerFastFileName;
-    const char *commonFastFileName;
-    const char *modFastFileName;
-    const char *devFastFileName;
+    Ptr32<const char> codeFastFileName;
+    Ptr32<const char> patchFastFileName;
+    Ptr32<const char> uiFastFileName;
+    Ptr32<const char> uiViewerFastFileName;
+    Ptr32<const char> commonFastFileName;
+    Ptr32<const char> modFastFileName;
+    Ptr32<const char> devFastFileName;
 };
 
 struct GfxGammaRamp // sizeof=0x200
@@ -232,7 +233,7 @@ struct GfxGammaRamp // sizeof=0x200
 struct GfxWindowParms // sizeof=0x28
 {                                       // XREF: ?R_ResizeWindow@@YAXXZ/r
                                         // R_InitGraphicsApi/r ...
-    HWND__ *hwnd;                       // XREF: R_ResetDevice+B/w
+    Ptr32<HWND__> hwnd;                       // XREF: R_ResetDevice+B/w
                                         // R_ResetDevice+DF/r ...
     int hz;                             // XREF: R_ResetDevice+40/w
     bool fullscreen;                    // XREF: R_ResizeWindow(void)+D6/r
@@ -274,7 +275,7 @@ struct Image_MemUsage // sizeof=0xC
 
 struct trStatistics_t // sizeof=0x10
 {                                       // XREF: .data:rendererStats/r
-    trViewStatistics_t *views;          // XREF: CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+699/w
+    Ptr32<trViewStatistics_t> views;          // XREF: CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+699/w
     Image_MemUsage c_imageUsage;        // XREF: CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+8B6/r
 };
 
@@ -289,244 +290,244 @@ struct SavedScreenParams // sizeof=0x14
 
 struct r_global_permap_assets_t // sizeof=0xC
 {                                       // XREF: r_global_permanent_t/r
-    Material *flameThrowerFXMaterial;   // XREF: R_InitAssets_PostMapFastfileLoad(void)+5/w
-    Material *electrifiedFXMaterial;    // XREF: R_InitAssets_PostMapFastfileLoad(void)+A/w
-    Material *transportedFXMaterial;    // XREF: R_InitAssets_PostMapFastfileLoad(void)+F/w
+    Ptr32<Material> flameThrowerFXMaterial;   // XREF: R_InitAssets_PostMapFastfileLoad(void)+5/w
+    Ptr32<Material> electrifiedFXMaterial;    // XREF: R_InitAssets_PostMapFastfileLoad(void)+A/w
+    Ptr32<Material> transportedFXMaterial;    // XREF: R_InitAssets_PostMapFastfileLoad(void)+F/w
 };
 
 struct __declspec(align(128)) r_global_permanent_t // sizeof=0x4300
 {                                       // XREF: .data:r_global_permanent_t rgp/r
-    Material *sortedMaterials[4096];    // XREF: GDT_RemoteMaterialUpdate+2A1/r
+    Ptr32<Material> sortedMaterials[4096];    // XREF: GDT_RemoteMaterialUpdate+2A1/r
                                         // Material_Add+BA/w ...
     int needSortMaterials;              // XREF: Material_DirtySort(void)+3/w
                                         // Material_Duplicate(Material *,char const *)+A7/w ...
     int materialCount;                  // XREF: GDT_RemoteMaterialUpdate+28F/r
                                         // Material_Add+79/r ...
     int needMaterialPreload;            // XREF: R_BeginFrame(void)+BE/w
-    GfxImage *whiteImage;               // XREF: R_SetDLightsConstantsDefaults+6/r
+    Ptr32<GfxImage> whiteImage;               // XREF: R_SetDLightsConstantsDefaults+6/r
                                         // R_SetDLightsConstantsDefaults+8E/r ...
-    GfxImage *blackImage;               // XREF: R_GenerateSortedDrawSurfs+7A2/r
+    Ptr32<GfxImage> blackImage;               // XREF: R_GenerateSortedDrawSurfs+7A2/r
                                         // RB_StandardDrawCommandsCommon+256/r ...
-    GfxImage *blankImage;               // XREF: R_InitCodeImages+9E/w
+    Ptr32<GfxImage> blankImage;               // XREF: R_InitCodeImages+9E/w
                                         // R_InitCodeImages+A3/r ...
-    GfxImage *g16r16Image;              // XREF: R_InitCodeImages+E3/w
+    Ptr32<GfxImage> g16r16Image;              // XREF: R_InitCodeImages+E3/w
                                         // R_InitCodeImages+E8/r ...
-    GfxImage *r5g6b5Image;              // XREF: R_InitCodeImages+128/w
+    Ptr32<GfxImage> r5g6b5Image;              // XREF: R_InitCodeImages+128/w
                                         // R_InitCodeImages+12D/r ...
-    GfxImage *grayImage;                // XREF: R_Cinematic_BlackRendererImages+34/r
+    Ptr32<GfxImage> grayImage;                // XREF: R_Cinematic_BlackRendererImages+34/r
                                         // R_Cinematic_BlackRendererImages+40/r ...
-    GfxImage *identityNormalMapImage;   // XREF: RB_InitCodeImages(void)+65/r
+    Ptr32<GfxImage> identityNormalMapImage;   // XREF: RB_InitCodeImages(void)+65/r
                                         // Image_AssignDefaultTexture+1F/r ...
-    GfxImage *whiteTransparentImage;    // XREF: R_InitCodeImages+1F7/w
+    Ptr32<GfxImage> whiteTransparentImage;    // XREF: R_InitCodeImages+1F7/w
                                         // R_InitCodeImages+1FC/r ...
-    GfxImage *blackTransparentImage;    // XREF: R_InitCodeImages+23C/w
+    Ptr32<GfxImage> blackTransparentImage;    // XREF: R_InitCodeImages+23C/w
                                         // R_InitCodeImages+241/r ...
-    GfxImage *outdoorImage;
-    GfxImage *heatMapImage;             // XREF: RB_UI3D_RenderToTexture(void const *,GfxUI3DBackend const *,GfxCmdBufInput const *)+2F3/r
+    Ptr32<GfxImage> outdoorImage;
+    Ptr32<GfxImage> heatMapImage;             // XREF: RB_UI3D_RenderToTexture(void const *,GfxUI3DBackend const *,GfxCmdBufInput const *)+2F3/r
                                         // RB_UI3D_RenderToTexture(void const *,GfxUI3DBackend const *,GfxCmdBufInput const *)+2FC/r ...
-    GfxImage *pixelCostColorCodeImage;  // XREF: R_InitCodeImages+281/w
+    Ptr32<GfxImage> pixelCostColorCodeImage;  // XREF: R_InitCodeImages+281/w
                                         // R_InitCodeImages+286/r
-    GfxLightDef *dlightDef;             // XREF: R_AddOmniLightToScene(float const * const,float const (* const)[3],float,float,float,float)+40E/r
+    Ptr32<GfxLightDef> dlightDef;             // XREF: R_AddOmniLightToScene(float const * const,float const (* const)[3],float,float,float,float)+40E/r
                                         // R_InitLightDefs(void)+3C/w
-    GfxLightDef *flashLightDef;         // XREF: R_AddSpotLightToScene(float const * const,float const (* const)[3],float,float,float,float)+61F/r
+    Ptr32<GfxLightDef> flashLightDef;         // XREF: R_AddSpotLightToScene(float const * const,float const (* const)[3],float,float,float,float)+61F/r
                                         // R_ShadowedSpotLightScore+F/r
-    Material *defaultMaterial;          // XREF: Material_IsDefault(Material const *):loc_A4C6CF/r
+    Ptr32<Material> defaultMaterial;          // XREF: Material_IsDefault(Material const *):loc_A4C6CF/r
                                         // Material_IsDefault(Material const *)+61/r ...
-    Material *whiteMaterial;            // XREF: RB_DrawPoints2D+37/r
+    Ptr32<Material> whiteMaterial;            // XREF: RB_DrawPoints2D+37/r
                                         // RB_DrawLines2D(int,int,GfxPointVertex const * const)+67/r ...
-    Material *additiveMaterial;         // XREF: RB_DrawCoronaQuerySprite+264/r
+    Ptr32<Material> additiveMaterial;         // XREF: RB_DrawCoronaQuerySprite+264/r
                                         // RB_CalcSunSpriteSamples(void)+257/r ...
-    Material *additiveMaterialNoDepth;  // XREF: RB_DrawCoronaQuerySprite+2B9/r
+    Ptr32<Material> additiveMaterialNoDepth;  // XREF: RB_DrawCoronaQuerySprite+2B9/r
                                         // .rdata:s_builtInMaterials/o
-    Material *pointMaterial;            // XREF: RB_DrawPoints3D+8/r
+    Ptr32<Material> pointMaterial;            // XREF: RB_DrawPoints3D+8/r
                                         // .rdata:s_builtInMaterials/o
-    Material *lineMaterial;             // XREF: RB_DrawLines3D(int,int,GfxPointVertex const * const,bool)+10/r
+    Ptr32<Material> lineMaterial;             // XREF: RB_DrawLines3D(int,int,GfxPointVertex const * const,bool)+10/r
                                         // RB_DebugPolyGetMaterialByDepthTest+2C/r ...
-    Material *lineMaterialNoDepth;      // XREF: RB_DrawLines3D(int,int,GfxPointVertex const * const,bool)+23/r
+    Ptr32<Material> lineMaterialNoDepth;      // XREF: RB_DrawLines3D(int,int,GfxPointVertex const * const,bool)+23/r
                                         // RB_DebugPolyGetMaterialByDepthTest:loc_AEF99E/r ...
-    Material *blendMaterial;            // XREF: RB_DebugPolyGetMaterialByDepthTest+13/r
+    Ptr32<Material> blendMaterial;            // XREF: RB_DebugPolyGetMaterialByDepthTest+13/r
                                         // .rdata:s_builtInMaterials/o
-    Material *blendMaterialNoDepth;     // XREF: RB_StandardDrawCommands+C4F/r
+    Ptr32<Material> blendMaterialNoDepth;     // XREF: RB_StandardDrawCommands+C4F/r
                                         // RB_DebugPolyGetMaterialByDepthTest+45/r ...
-    Material *whiteDebugExteriorMaterial;
+    Ptr32<Material> whiteDebugExteriorMaterial;
                                         // XREF: RB_DrawDebugSphere:loc_AF08FD/r
                                         // .rdata:s_builtInMaterials/o
-    Material *whiteDepthInteriorMaterial;
+    Ptr32<Material> whiteDepthInteriorMaterial;
                                         // XREF: RB_DrawDebugSphere+CC2/r
                                         // .rdata:s_builtInMaterials/o
-    Material *clearAlphaMaterial;       // XREF: R_DrawPointLitSurfsCallback+3C/r
+    Ptr32<Material> clearAlphaMaterial;       // XREF: R_DrawPointLitSurfsCallback+3C/r
                                         // .rdata:s_builtInMaterials/o
-    Material *clearAlphaStencilMaterial;
+    Ptr32<Material> clearAlphaStencilMaterial;
                                         // XREF: .rdata:s_builtInMaterials/o
-    Material *setAlphaMaterial;         // XREF: RB_SetFrameBufferAlpha+EB/r
+    Ptr32<Material> setAlphaMaterial;         // XREF: RB_SetFrameBufferAlpha+EB/r
                                         // RB_SetFrameBufferAlpha+170/r ...
-    Material *shadowClearMaterial;      // XREF: R_DepthPrepassCallback+136/r
+    Ptr32<Material> shadowClearMaterial;      // XREF: R_DepthPrepassCallback+136/r
                                         // R_DrawSpotShadowMapCallback+76/r ...
-    Material *shadowCasterMaterial;     // XREF: .rdata:s_builtInMaterials/o
-    Material *shadowOverlayMaterial;    // XREF: RB_DrawSpotShadowOverlay(void)+1A0/r
+    Ptr32<Material> shadowCasterMaterial;     // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> shadowOverlayMaterial;    // XREF: RB_DrawSpotShadowOverlay(void)+1A0/r
                                         // RB_DrawSunShadowOverlay(void)+16D/r ...
-    Material *depthPrepassMaterial;     // XREF: R_SunShadowMaps(GfxSunShadow *)+4C/r
+    Ptr32<Material> depthPrepassMaterial;     // XREF: R_SunShadowMaps(GfxSunShadow *)+4C/r
                                         // R_SetPrepassMaterial+89/r ...
-    Material *glareBlindMaterial;       // XREF: RB_DrawBlindAndGlare+D0/r
+    Ptr32<Material> glareBlindMaterial;       // XREF: RB_DrawBlindAndGlare+D0/r
                                         // .rdata:s_builtInMaterials/o
-    Material *lightCoronaMaterial;      // XREF: RB_DrawCoronas(int):loc_A8C212/r
+    Ptr32<Material> lightCoronaMaterial;      // XREF: RB_DrawCoronas(int):loc_A8C212/r
                                         // .rdata:s_builtInMaterials/o
-    Material *pixelCostAddDepthAlwaysMaterial;
+    Ptr32<Material> pixelCostAddDepthAlwaysMaterial;
                                         // XREF: R_PixelCost_GetAccumulationMaterial(Material const *):$LN10_118/r
                                         // .rdata:s_builtInMaterials/o
-    Material *pixelCostAddDepthDisableMaterial;
+    Ptr32<Material> pixelCostAddDepthDisableMaterial;
                                         // XREF: R_PixelCost_GetAccumulationMaterial(Material const *)+F/r
                                         // R_PixelCost_GetAccumulationMaterial(Material const *)+22/r ...
-    Material *pixelCostAddDepthEqualMaterial;
+    Ptr32<Material> pixelCostAddDepthEqualMaterial;
                                         // XREF: R_PixelCost_GetAccumulationMaterial(Material const *):$LN6_203/r
                                         // .rdata:s_builtInMaterials/o
-    Material *pixelCostAddDepthLessMaterial;
+    Ptr32<Material> pixelCostAddDepthLessMaterial;
                                         // XREF: R_PixelCost_GetAccumulationMaterial(Material const *):$LN8_146/r
                                         // .rdata:s_builtInMaterials/o
-    Material *pixelCostAddDepthWriteMaterial;
+    Ptr32<Material> pixelCostAddDepthWriteMaterial;
                                         // XREF: R_PixelCost_GetAccumulationMaterial(Material const *):$LN3_250/r
                                         // .rdata:s_builtInMaterials/o
-    Material *pixelCostAddNoDepthWriteMaterial;
+    Ptr32<Material> pixelCostAddNoDepthWriteMaterial;
                                         // XREF: R_PixelCost_GetAccumulationMaterial(Material const *):$LN4_249/r
                                         // R_PixelCost_GetAccumulationMaterial(Material const *):loc_B08C27/r ...
-    Material *pixelCostColorCodeMaterial;
+    Ptr32<Material> pixelCostColorCodeMaterial;
                                         // XREF: .rdata:s_builtInMaterials/o
-    Material *stencilShadowMaterial;    // XREF: .rdata:s_builtInMaterials/o
-    Material *stencilDisplayMaterial;   // XREF: .rdata:s_builtInMaterials/o
-    Material *floatZDisplayMaterial;    // XREF: RB_ShowFloatZDebug+DE/r
+    Ptr32<Material> stencilShadowMaterial;    // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> stencilDisplayMaterial;   // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> floatZDisplayMaterial;    // XREF: RB_ShowFloatZDebug+DE/r
                                         // .rdata:s_builtInMaterials/o
-    Material *colorChannelMixerMaterial;
+    Ptr32<Material> colorChannelMixerMaterial;
                                         // XREF: RB_ShowFbColorDebug_Feedback+297/r
                                         // RB_ShowFbColorDebug_Feedback+4AD/r ...
-    Material *frameColorDebugMaterial;  // XREF: RB_ShowFbColorDebug_Screen+CF/r
+    Ptr32<Material> frameColorDebugMaterial;  // XREF: RB_ShowFbColorDebug_Screen+CF/r
                                         // RB_ShowFbColorDebug_Screen+13E/r ...
-    Material *frameAlphaDebugMaterial;  // XREF: RB_ShowFbColorDebug_Screen+1FC/r
+    Ptr32<Material> frameAlphaDebugMaterial;  // XREF: RB_ShowFbColorDebug_Screen+1FC/r
                                         // .rdata:s_builtInMaterials/o
-    GfxImage *rawImage;                 // XREF: R_InitRawImage+11/w
+    Ptr32<GfxImage> rawImage;                 // XREF: R_InitRawImage+11/w
                                         // R_InitRawImage+16/r
-    GfxWorld *world;                    // XREF: TerrainScorch_AllowSurfacesCallback(int,void *)+C/r
+    Ptr32<GfxWorld> world;                    // XREF: TerrainScorch_AllowSurfacesCallback(int,void *)+C/r
                                         // GDT_RemoteXModelUpdate:loc_6DDAFA/r ...
-    Material *feedbackReplaceMaterial;  // XREF: RB_StandardDrawCommandsCommon+1F4/r
+    Ptr32<Material> feedbackReplaceMaterial;  // XREF: RB_StandardDrawCommandsCommon+1F4/r
                                         // RB_StandardDrawCommandsCommon+2DE/r ...
-    Material *feedbackBlendMaterial;    // XREF: RB_BlurScreen+2BA/r
+    Ptr32<Material> feedbackBlendMaterial;    // XREF: RB_BlurScreen+2BA/r
                                         // .rdata:s_builtInMaterials/o
-    Material *feedbackFilmBlendMaterial;
+    Ptr32<Material> feedbackFilmBlendMaterial;
                                         // XREF: .rdata:s_builtInMaterials/o
-    Material *cinematicMaterial;        // XREF: .rdata:s_builtInMaterials/o
-    Material *dofDownsampleMaterial;    // XREF: RB_GetDepthOfFieldInputImages:loc_B27F6D/r
+    Ptr32<Material> cinematicMaterial;        // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> dofDownsampleMaterial;    // XREF: RB_GetDepthOfFieldInputImages:loc_B27F6D/r
                                         // .rdata:s_builtInMaterials/o
-    Material *dofDownsampleNvIntzMaterial;
+    Ptr32<Material> dofDownsampleNvIntzMaterial;
                                         // XREF: RB_GetDepthOfFieldInputImages+4C/r
                                         // .rdata:s_builtInMaterials/o
-    Material *dofNearCocMaterial;       // XREF: RB_GetDepthOfFieldInputImages+CA/r
+    Ptr32<Material> dofNearCocMaterial;       // XREF: RB_GetDepthOfFieldInputImages+CA/r
                                         // .rdata:s_builtInMaterials/o
-    Material *smallBlurMaterial;        // XREF: RB_GetDepthOfFieldInputImages+11B/r
+    Ptr32<Material> smallBlurMaterial;        // XREF: RB_GetDepthOfFieldInputImages+11B/r
                                         // .rdata:s_builtInMaterials/o
-    Material *postFxDofMaterial;        // XREF: RB_ApplyDepthOfField+3E4/r
+    Ptr32<Material> postFxDofMaterial;        // XREF: RB_ApplyDepthOfField+3E4/r
                                         // .rdata:s_builtInMaterials/o
-    Material *postFxDofNvIntzMaterial;  // XREF: RB_ApplyDepthOfField+3D0/r
+    Ptr32<Material> postFxDofNvIntzMaterial;  // XREF: RB_ApplyDepthOfField+3D0/r
                                         // .rdata:s_builtInMaterials/o
-    Material *postFxDofColorMaterial;   // XREF: .rdata:s_builtInMaterials/o
-    Material *postFxDofColorNvIntzMaterial;
+    Ptr32<Material> postFxDofColorMaterial;   // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> postFxDofColorNvIntzMaterial;
                                         // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur1Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur2Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur3Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur4Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur5Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur6Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur7Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblur8Material;      // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblurRadialMaterial; // XREF: .rdata:s_builtInMaterials/o
-    Material *motionblurFrameBasedMaterial;
+    Ptr32<Material> motionblur1Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblur2Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblur3Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblur4Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblur5Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblur6Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblur7Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblur8Material;      // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblurRadialMaterial; // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> motionblurFrameBasedMaterial;
                                         // XREF: .rdata:s_builtInMaterials/o
-    Material *redactMaterial1;          // XREF: DrawText2D+2195/r
+    Ptr32<Material> redactMaterial1;          // XREF: DrawText2D+2195/r
                                         // SetupRedactFXVars+82/r ...
-    Material *redactMaterial2;          // XREF: SetupRedactFXVars+8E/r
+    Ptr32<Material> redactMaterial2;          // XREF: SetupRedactFXVars+8E/r
                                         // .rdata:s_builtInMaterials/o
-    Material *redactMaterial3;          // XREF: SetupRedactFXVars+9B/r
+    Ptr32<Material> redactMaterial3;          // XREF: SetupRedactFXVars+9B/r
                                         // .rdata:s_builtInMaterials/o
-    Material *waterSheetingFXMaterial;  // XREF: RB_WaterSheetingFX(GfxViewInfo const *)+35A/r
+    Ptr32<Material> waterSheetingFXMaterial;  // XREF: RB_WaterSheetingFX(GfxViewInfo const *)+35A/r
                                         // .rdata:s_builtInMaterials/o
-    Material *waterDropletMaterial;
-    Material *reviveFXMaterial;         // XREF: RB_ReviveFX(GfxViewInfo const *)+5A3/r
+    Ptr32<Material> waterDropletMaterial;
+    Ptr32<Material> reviveFXMaterial;         // XREF: RB_ReviveFX(GfxViewInfo const *)+5A3/r
                                         // .rdata:s_builtInMaterials/o
-    Material *postFxColorMaterial;      // XREF: RB_BloomLDR(GfxViewInfo const *)+851/r
+    Ptr32<Material> postFxColorMaterial;      // XREF: RB_BloomLDR(GfxViewInfo const *)+851/r
                                         // .rdata:s_builtInMaterials/o
-    Material *postFxLutMaterial[10];    // XREF: .rdata:s_builtInMaterials/o
-    Material *postFxMaterial;           // XREF: .rdata:s_builtInMaterials/o
-    Material *poisonFXMaterial;         // XREF: RB_PoisonFX(GfxViewInfo const *)+545/r
+    Ptr32<Material> postFxLutMaterial[10];    // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> postFxMaterial;           // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> poisonFXMaterial;         // XREF: RB_PoisonFX(GfxViewInfo const *)+545/r
                                         // RB_PickSymmetricFilterMaterial+3C/r ...
-    Material *symmetricFilterMaterial[8];
+    Ptr32<Material> symmetricFilterMaterial[8];
                                         // XREF: .rdata:s_builtInMaterials/o
-    Material *godRaysFilterMaterial;    // XREF: .rdata:s_builtInMaterials/o
-    Material *shellShockBlurredMaterial;
+    Ptr32<Material> godRaysFilterMaterial;    // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> shellShockBlurredMaterial;
                                         // XREF: RB_SaveScreen_BlendBlurred(GfxBlendSaveScreenBlurredParam const *,GfxViewInfo const *)+315/r
                                         // .rdata:s_builtInMaterials/o
-    Material *shellShockFlashedMaterial;
+    Ptr32<Material> shellShockFlashedMaterial;
                                         // XREF: RB_SaveScreen_BlendFlashed(GfxBlendSaveScreenFlashedParam const *,GfxViewInfo const *)+27C/r
                                         // .rdata:s_builtInMaterials/o
-    Material *glowConsistentSetupMaterial;
+    Ptr32<Material> glowConsistentSetupMaterial;
                                         // XREF: .rdata:s_builtInMaterials/o
-    Material *glowApplyBloomMaterial;   // XREF: .rdata:s_builtInMaterials/o
-    Material *ropeMaterial;             // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> glowApplyBloomMaterial;   // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> ropeMaterial;             // XREF: .rdata:s_builtInMaterials/o
     int savedScreenTimes[4];            // XREF: RB_SaveScreen_BlendBlurred(GfxBlendSaveScreenBlurredParam const *,GfxViewInfo const *)+AC/r
                                         // RB_SaveScreen(GfxSaveScreenParam const *,GfxViewInfo const *)+C3/w ...
     SavedScreenParams savedScreenParams[4];
                                         // XREF: RB_SaveScreen_BlendBlurred(GfxBlendSaveScreenBlurredParam const *,GfxViewInfo const *)+1EB/o
                                         // RB_SaveScreen_BlendFlashed(GfxBlendSaveScreenFlashedParam const *,GfxViewInfo const *)+152/o ...
-    GfxImage *r32fWhiteImage;           // XREF: R_InitCodeImages+2C6/w
+    Ptr32<GfxImage> r32fWhiteImage;           // XREF: R_InitCodeImages+2C6/w
                                         // R_InitCodeImages+2CB/r ...
-    Material *resampleFinal;            // XREF: RB_BloomLDR(GfxViewInfo const *)+1CA/r
+    Ptr32<Material> resampleFinal;            // XREF: RB_BloomLDR(GfxViewInfo const *)+1CA/r
                                         // .rdata:s_builtInMaterials/o
-    Material *resampleShift;            // XREF: .rdata:s_builtInMaterials/o
-    Material *bloomDownsampleLDR;       // XREF: RB_BloomLDR(GfxViewInfo const *)+164/r
+    Ptr32<Material> resampleShift;            // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> bloomDownsampleLDR;       // XREF: RB_BloomLDR(GfxViewInfo const *)+164/r
                                         // .rdata:s_builtInMaterials/o
-    Material *bloomDownsampleHDR;       // XREF: .rdata:s_builtInMaterials/o
-    Material *bloomDownsampleConvolution;
+    Ptr32<Material> bloomDownsampleHDR;       // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> bloomDownsampleConvolution;
                                         // XREF: RB_BloomLDR(GfxViewInfo const *)+328/r
                                         // .rdata:s_builtInMaterials/o
-    Material *bloomRemap;               // XREF: RB_BloomLDR(GfxViewInfo const *)+3AF/r
+    Ptr32<Material> bloomRemap;               // XREF: RB_BloomLDR(GfxViewInfo const *)+3AF/r
                                         // .rdata:s_builtInMaterials/o
-    Material *bloomExpansion;           // XREF: .rdata:s_builtInMaterials/o
-    Material *bloomRemapStreak;         // XREF: RB_BloomStreak(GfxViewInfo const *,uchar &,uchar &)+46A/r
+    Ptr32<Material> bloomExpansion;           // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> bloomRemapStreak;         // XREF: RB_BloomStreak(GfxViewInfo const *,uchar &,uchar &)+46A/r
                                         // RB_BloomStreak(GfxViewInfo const *,uchar &,uchar &)+1F14/r ...
-    Material *bloomStreakX;             // XREF: RB_BloomStreak(GfxViewInfo const *,uchar &,uchar &)+1BAF/r
+    Ptr32<Material> bloomStreakX;             // XREF: RB_BloomStreak(GfxViewInfo const *,uchar &,uchar &)+1BAF/r
                                         // .rdata:s_builtInMaterials/o
-    Material *bloomStreakY;             // XREF: RB_BloomStreak(GfxViewInfo const *,uchar &,uchar &)+3448/r
+    Ptr32<Material> bloomStreakY;             // XREF: RB_BloomStreak(GfxViewInfo const *,uchar &,uchar &)+3448/r
                                         // .rdata:s_builtInMaterials/o
-    Material *bloomApplyStreak;         // XREF: .rdata:s_builtInMaterials/o
-    Material *bloomBlurX;               // XREF: RB_BloomLDR(GfxViewInfo const *)+447/r
+    Ptr32<Material> bloomApplyStreak;         // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> bloomBlurX;               // XREF: RB_BloomLDR(GfxViewInfo const *)+447/r
                                         // RB_GenericFilterFX(GfxViewInfo const *)+1BF4/r ...
-    Material *bloomBlurY;               // XREF: RB_BloomLDR(GfxViewInfo const *)+4DF/r
+    Ptr32<Material> bloomBlurY;               // XREF: RB_BloomLDR(GfxViewInfo const *)+4DF/r
                                         // RB_GenericFilterFX(GfxViewInfo const *)+1CB4/r ...
-    Material *bloomMip3Blur;            // XREF: .rdata:s_builtInMaterials/o
-    Material *bloomApplyHDR;            // XREF: .rdata:s_builtInMaterials/o
-    Material *bloomApplyLDR;            // XREF: RB_BloomLDR(GfxViewInfo const *)+801/r
+    Ptr32<Material> bloomMip3Blur;            // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> bloomApplyHDR;            // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> bloomApplyLDR;            // XREF: RB_BloomLDR(GfxViewInfo const *)+801/r
                                         // .rdata:s_builtInMaterials/o
-    Material *bloomSmoothA;             // XREF: RB_BloomLDR(GfxViewInfo const *)+761/r
+    Ptr32<Material> bloomSmoothA;             // XREF: RB_BloomLDR(GfxViewInfo const *)+761/r
                                         // .rdata:s_builtInMaterials/o
-    Material *bloomSmoothB;             // XREF: .rdata:s_builtInMaterials/o
-    Material *superFlareApply;          // XREF: RB_GenericFilterFX(GfxViewInfo const *)+1D4E/r
+    Ptr32<Material> bloomSmoothB;             // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> superFlareApply;          // XREF: RB_GenericFilterFX(GfxViewInfo const *)+1D4E/r
                                         // .rdata:s_builtInMaterials/o
-    Material *superFlareOccluder;       // XREF: RB_DrawSuperFlareOccluders(GfxViewInfo const *):loc_B03C70/r
+    Ptr32<Material> superFlareOccluder;       // XREF: RB_DrawSuperFlareOccluders(GfxViewInfo const *):loc_B03C70/r
                                         // .rdata:s_builtInMaterials/o
-    Material *superFlareOccluderDebug;  // XREF: RB_DrawSuperFlareOccluders(GfxViewInfo const *)+375/r
+    Ptr32<Material> superFlareOccluderDebug;  // XREF: RB_DrawSuperFlareOccluders(GfxViewInfo const *)+375/r
                                         // .rdata:s_builtInMaterials/o
-    Material *superFlareOccluderNoZ;    // XREF: RB_DrawSuperFlareOccluders(GfxViewInfo const *):loc_B03C49/r
+    Ptr32<Material> superFlareOccluderNoZ;    // XREF: RB_DrawSuperFlareOccluders(GfxViewInfo const *):loc_B03C49/r
                                         // .rdata:s_builtInMaterials/o
-    Material *superFlareOccluderNoZDebug;
+    Ptr32<Material> superFlareOccluderNoZDebug;
                                         // XREF: RB_DrawSuperFlareOccluders(GfxViewInfo const *)+34E/r
                                         // .rdata:s_builtInMaterials/o
-    Material *createLut2d;              // XREF: .rdata:s_builtInMaterials/o
-    Material *createLut2dv;             // XREF: .rdata:s_builtInMaterials/o
-    Material *applyLut2d;               // XREF: .rdata:s_builtInMaterials/o
-    Material *applyLut3d;               // XREF: .rdata:s_builtInMaterials/o
-    Material *dummyMaterial;            // XREF: Material_LoadBuiltIn:loc_A4E13F/w
+    Ptr32<Material> createLut2d;              // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> createLut2dv;             // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> applyLut2d;               // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> applyLut3d;               // XREF: .rdata:s_builtInMaterials/o
+    Ptr32<Material> dummyMaterial;            // XREF: Material_LoadBuiltIn:loc_A4E13F/w
                                         // .rdata:s_builtInMaterials/o
-    Material *compositeResult;          // XREF: RB_StretchCompositeCmd+9C/r
+    Ptr32<Material> compositeResult;          // XREF: RB_StretchCompositeCmd+9C/r
                                         // .rdata:s_builtInMaterials/o
-    Material *infraredWhite;            // XREF: R_AddDObjSurfacesCamera(GfxSceneEntity restrict *,uint,uint,GfxDrawSurf restrict * * const,GfxDrawSurf restrict * * const,uint,bool)+2FB/o
+    Ptr32<Material> infraredWhite;            // XREF: R_AddDObjSurfacesCamera(GfxSceneEntity restrict *,uint,uint,GfxDrawSurf restrict * * const,GfxDrawSurf restrict * * const,uint,bool)+2FB/o
                                         // .rdata:s_builtInMaterials/o
     r_global_permap_assets_t permapAssets;
                                         // XREF: R_InitAssets_PostMapFastfileLoad(void)+5/w
@@ -650,15 +651,15 @@ struct GfxClientFog // sizeof=0x194
 struct VertUsage // sizeof=0x8
 {
     int index;
-    VertUsage *next;
+    Ptr32<VertUsage> next;
 };
 
 struct MaterialUsage // sizeof=0xC
 {                                       // XREF: r_globals_t/r
     int memory;
-    VertUsage *verts;                   // XREF: R_ShutdownMaterialUsage(void)+2D/r
+    Ptr32<VertUsage> verts;                   // XREF: R_ShutdownMaterialUsage(void)+2D/r
                                         // R_ShutdownMaterialUsage(void)+64/w
-    Material *material;
+    Ptr32<Material> material;
 };
 
 struct GfxLodRamp // sizeof=0xC
@@ -703,7 +704,7 @@ struct __declspec(align(8)) r_globals_t // sizeof=0x10A10
     unsigned int frontEndFrameCount;    // XREF: R_ToggleSmpFrame+3D/r
                                         // R_ToggleSmpFrame+46/w ...
     int totalImageMemory;
-    Material *materialHashTable[4096];  // XREF: Material_Duplicate(Material *,char const *)+80/r
+    Ptr32<Material> materialHashTable[4096];  // XREF: Material_Duplicate(Material *,char const *)+80/r
                                         // Material_Add+3E/r ...
     MaterialUsage materialUsage[4096];  // XREF: R_GetMaterialUsageData(Material const *)+2F/o
                                         // R_CreateMaterialList(void)+37/o ...
@@ -713,9 +714,9 @@ struct __declspec(align(8)) r_globals_t // sizeof=0x10A10
                                         // RB_LookupColor+2A/r
     GfxColor color_allies;              // XREF: R_UpdateTeamColors(float const * const,float const * const)+9/o
                                         // RB_LookupColor+1D/r
-    trStatistics_t *globalstats;        // XREF: R_TrackStatistics(trStatistics_t *)+6/w
+    Ptr32<trStatistics_t> globalstats;        // XREF: R_TrackStatistics(trStatistics_t *)+6/w
                                         // RB_CopyBackendStats(void):loc_AAB3AF/r ...
-    trViewStatistics_t *stats;          // XREF: RB_CopyBackendStats(void)+3/r
+    Ptr32<trViewStatistics_t> stats;          // XREF: RB_CopyBackendStats(void)+3/r
                                         // RB_CopyBackendStats(void)+C/r ...
     GfxLodParms lodParms;               // XREF: R_AddDObjSurfacesCamera(GfxSceneEntity restrict *,uint,uint,GfxDrawSurf restrict * * const,GfxDrawSurf restrict * * const,uint,bool)+783/o
                                         // R_SetLodOrigin(refdef_s const *):loc_A614A1/o ...
@@ -736,7 +737,7 @@ struct __declspec(align(8)) r_globals_t // sizeof=0x10A10
     float sunDirOverrideTarget[3];      // XREF: R_UpdateFrameSun+C2/o
     int sunDirLerpBeginTime;            // XREF: R_UpdateFrameSun+BB/r
     int sunDirLerpEndTime;              // XREF: R_UpdateFrameSun+B4/r
-    const GfxViewParms *debugViewParms; // XREF: R_AddWorldSurfacesDpvs(GfxViewParms const *,int)+96/w
+    Ptr32<const GfxViewParms> debugViewParms; // XREF: R_AddWorldSurfacesDpvs(GfxViewParms const *,int)+96/w
                                         // ShodLodInfo(float const * const,int,int,float,float,bool)+10C/r ...
     int endTime;                        // XREF: R_SetEndTime(int)+6/w
                                         // R_WaitEndTime(void)+1A/r
@@ -761,7 +762,7 @@ struct __declspec(align(8)) r_globals_t // sizeof=0x10A10
                                         // R_UpdateFrontEndDvarOptions+282/w
     bool drawBModels;                   // XREF: R_DrawAllDynEnt(GfxViewInfo const *):loc_A41634/r
                                         // R_UpdateFrontEndDvarOptions+266/w
-    const char *codeImageNames[TEXTURE_SRC_CODE_COUNT]; // index = MaterialTextureSource
+    Ptr32<const char> codeImageNames[TEXTURE_SRC_CODE_COUNT]; // index = MaterialTextureSource
                                         // RB_InitCodeImages(void)+5B/w ...
     unsigned int viewInfoCount;         // XREF: R_GenerateSortedDrawSurfs+B/r
                                         // R_GenerateSortedDrawSurfs+4B/r ...
@@ -841,7 +842,7 @@ struct __declspec(align(4)) GfxMetrics // sizeof=0x28
 
 struct GfxAssets // sizeof=0x10
 {                                       // XREF: .data:GfxAssets gfxAssets/r
-    IDirect3DQuery9 *pixelCountQuery[4];
+    Ptr32<IDirect3DQuery9> pixelCountQuery[4];
                                         // XREF: R_ReleaseForShutdownOrReset(void)+23D/r
                                         // R_ReleaseForShutdownOrReset(void)+26E/r ...
 };

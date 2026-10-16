@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "cscr_save.h"
 #include "cscr_animtree.h"
 #include "cscr_readwrite.h"
@@ -183,7 +184,7 @@ void Scr_CheckSaveObjects(scriptInstance_t inst)
 struct ScrSaveContext
 {
     scriptInstance_t inst;
-    MemoryFile *memFile;
+    Ptr32<MemoryFile> memFile;
     unsigned short history[16];
     unsigned int historyIndex;
 };

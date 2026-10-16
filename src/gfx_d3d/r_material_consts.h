@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_material.h"
 
 struct GfxShaderConstantBlock // sizeof=0xC4
 {                                       // XREF: R_ComparePixelConsts(Material const * * const,MaterialPass const * * const)+1EC/r
     unsigned int count;                 // XREF: R_ComparePixelConsts(Material const * * const,MaterialPass const * * const)+44/w
     unsigned __int16 dest[32];          // XREF: R_ComparePixelConsts(Material const * * const,MaterialPass const * * const)+223/r
-    const float *value[32];             // XREF: R_ComparePixelConsts(Material const * * const,MaterialPass const * * const)+26C/r
+    Ptr32<const float> value[32];             // XREF: R_ComparePixelConsts(Material const * * const,MaterialPass const * * const)+26C/r
 };
 
 void __cdecl R_GetPixelLiteralConsts(

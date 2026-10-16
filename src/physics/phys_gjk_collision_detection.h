@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include "phys_local.h"
 #include "phys_gjk.h"
@@ -35,7 +36,7 @@ struct destructible_ent_aa : phys_auto_activate_callback // sizeof=0xC
     // padding byte
     // padding byte
     // padding byte
-    centity_s *m_cent;
+    Ptr32<centity_s> m_cent;
 
 
     bool has_auto_activated()
@@ -52,7 +53,7 @@ struct dynamic_ent_aa : phys_auto_activate_callback // sizeof=0xC
     // padding byte
     // padding byte
     // padding byte
-    DynEntityDef *m_dynEntDef;
+    Ptr32<DynEntityDef> m_dynEntDef;
 
     bool has_auto_activated()
     {
@@ -73,7 +74,7 @@ struct __declspec(align(8)) gjk_entity_info_t // sizeof=0x50
     };
     phys_mat44 m_mat;
     gjk_entity_info_t::ENTITY_TYPE m_ent_type;
-    const void *m_ent;
+    Ptr32<const void> m_ent;
     int m_query_visitor_count;
     // padding byte
     // padding byte

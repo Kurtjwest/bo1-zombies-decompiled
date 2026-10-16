@@ -1,12 +1,13 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 #include <dsound.h>
 
 struct __declspec(align(4)) dsound_sample_t // sizeof=0x48
 {                                       // XREF: .data:s_recordingSamples/r
-    IDirectSoundCaptureBuffer *DSCB;
-    IDirectSoundBuffer *DSB;
+    Ptr32<IDirectSoundCaptureBuffer> DSCB;
+    Ptr32<IDirectSoundBuffer> DSB;
     unsigned int dwBufferSize;
     unsigned int dwCaptureOffset;
     unsigned int currentOffset;

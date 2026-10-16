@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/dvar.h>
 #include <physics/phys_colgeom.h>
@@ -133,24 +134,24 @@ struct IKSystem // sizeof=0x18C
     // padding byte
     // padding byte
     // padding byte
-    char *boneStrings[23];              // XREF: IK_InitSystem(void)+13/o
+    Ptr32<char> boneStrings[23];              // XREF: IK_InitSystem(void)+13/o
     IKBoneNames ikBoneParents[23];      // XREF: IK_InitSystem(void)+45/w
                                         // IKImport_DrawDebugSkeleton(IKState *)+122/r ...
     IKJointBones joints[4];             // XREF: IK_InitSystem(void):loc_86CECE/o
                                         // IK_InitSystem(void)+7C/o ...
     int systemFrameNumber;              // XREF: IK_UpdateTimeAll(int,int,bool)+A5/w
                                         // IK_ResetTime(void):loc_86DBC4/w
-    unsigned __int16 *ikImportBoneStringVars;
+    Ptr32<unsigned __int16> ikImportBoneStringVars;
                                         // XREF: IKImport_GetBoneStrings(char * * const):loc_86E69F/w
-    unsigned __int16 *ikImportMiscBoneStringVars;
+    Ptr32<unsigned __int16> ikImportMiscBoneStringVars;
                                         // XREF: IKImport_GetBoneStrings(char * * const)+99/w
     //$61DB84DF2E94E53D7788C0F08FDC33D5 ___u7;
     union //$61DB84DF2E94E53D7788C0F08FDC33D5 // sizeof=0x4
     {                                       // XREF: IKSystem/r
-        unsigned __int8 *localClipMap;
-        unsigned __int8 *clipMap;
+        Ptr32<unsigned __int8> localClipMap;
+        Ptr32<unsigned __int8> clipMap;
     };
-    const dvar_s *dvars[23];            // XREF: IK_UpdateDvarValues(IKState *)+4/r
+    Ptr32<const dvar_s> dvars[23];            // XREF: IK_UpdateDvarValues(IKState *)+4/r
                                         // IK_UpdateDvarValues(IKState *)+42/r ...
     bool inViewer;                      // XREF: IK_InitSystem(void)+106/w
                                         // IK_UpdateTimeAll(int,int,bool)+AD/w ...
@@ -209,15 +210,15 @@ struct __declspec(align(16)) IKState // sizeof=0xE60
     //$5C27F401DEE3D99C87E4E6F6FAC05DC6 ___u4;
     union //$5C27F401DEE3D99C87E4E6F6FAC05DC6 // sizeof=0x4
     {                                       // XREF: IKState/r
-        unsigned __int8 *model;
-        unsigned __int8 *localModel;
+        Ptr32<unsigned __int8> model;
+        Ptr32<unsigned __int8> localModel;
     };
     int isIKModel;
     //$215420D412D800E242F2B271FC5EBB99 ___u6;
     union //$215420D412D800E242F2B271FC5EBB99 // sizeof=0x4
     {                                       // XREF: IKState/r
-        IKSystem *localIkSystem;
-        IKSystem *ikSystem;
+        Ptr32<IKSystem> localIkSystem;
+        Ptr32<IKSystem> ikSystem;
     };
     int timeMS;
     int frameUsed;
@@ -238,11 +239,11 @@ struct __declspec(align(16)) IKState // sizeof=0xE60
     float leftHandFromRightHandMat[4][4];
     float entityXform[4][4];
     float entityLegsXform[4][4];
-    float (*matArrayPreIK)[4][4];
-    float (*matArrayPostIK)[4][4];
-    float (*matArrayXforms)[4][4];
-    float (*matArrayCache)[4][4];
-    float (*matArrayCachePre)[4][4];
+    Ptr32<float[4][4]> matArrayPreIK;
+    Ptr32<float[4][4]> matArrayPostIK;
+    Ptr32<float[4][4]> matArrayXforms;
+    Ptr32<float[4][4]> matArrayCache;
+    Ptr32<float[4][4]> matArrayCachePre;
     int cacheActive;
     float rootOffset[3];
     float rootQuat[4];

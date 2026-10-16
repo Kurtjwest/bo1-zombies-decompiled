@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <stdio.h> // FILE?
 #include <win32/win_common.h>
@@ -42,8 +43,8 @@ enum FsThread : __int32
 union qfile_gus // sizeof=0x4
 {                                       // XREF: FS_SV_FOpenFileRead(char const *,char const *,int *)+BE/w
                                         // FS_SV_FOpenFileRead(char const *,char const *,int *)+CD/r ...
-    FILE *o;
-    unsigned __int8 *z;
+    Ptr32<FILE> o;
+    Ptr32<unsigned __int8> z;
 };
 
 struct qfile_us // sizeof=0x8
@@ -65,7 +66,7 @@ struct fileHandleData_t // sizeof=0x11C
                                         // FS_FOpenFileByMode(char const *,int *,fsMode_t)+C8/w
     int zipFilePos;                     // XREF: FS_FOpenFileReadForThread+5ED/w
                                         // FS_Seek(int,long,int)+6E/r ...
-    struct iwd_t *zipFile;                     // XREF: FS_SV_FOpenFileRead(char const *,char const *,int *)+89/w
+    Ptr32<struct iwd_t> zipFile;                     // XREF: FS_SV_FOpenFileRead(char const *,char const *,int *)+89/w
                                         // FS_FileForHandle(int)+42/r ...
     int streamed;                       // XREF: FS_FCloseFile(int)+12/r
                                         // FS_Seek(int,long,int)+14/r ...
@@ -76,8 +77,8 @@ struct fileHandleData_t // sizeof=0x11C
 struct fileInIwd_s // sizeof=0xC
 {                                       // XREF: fileInIwd_t/r
     unsigned int pos;
-    char *name;
-    fileInIwd_s *next;
+    Ptr32<char> name;
+    Ptr32<fileInIwd_s> next;
 };
 
 struct iwd_t // sizeof=0x324
@@ -85,7 +86,7 @@ struct iwd_t // sizeof=0x324
     char iwdFilename[256];
     char iwdBasename[256];
     char iwdGamename[256];
-    unsigned __int8 *handle;
+    Ptr32<unsigned __int8> handle;
     int checksum;
     int pure_checksum;
     //volatile int hasOpenFile;
@@ -96,8 +97,8 @@ struct iwd_t // sizeof=0x324
     // padding byte
     // padding byte
     unsigned int hashSize;
-    fileInIwd_s **hashTable;
-    fileInIwd_s *buildBuffer;
+    Ptr32<Ptr32<fileInIwd_s>> hashTable;
+    Ptr32<fileInIwd_s> buildBuffer;
 };
 
 struct directory_t // sizeof=0x200
@@ -108,9 +109,9 @@ struct directory_t // sizeof=0x200
 
 struct searchpath_s // sizeof=0x1C
 {                                       // XREF: searchpath_t/r
-    searchpath_s *next;
-    iwd_t *iwd;
-    directory_t *dir;
+    Ptr32<searchpath_s> next;
+    Ptr32<iwd_t> iwd;
+    Ptr32<directory_t> dir;
     int bLocalized;
     int ignore;
     int ignorePureCheck;
@@ -119,7 +120,7 @@ struct searchpath_s // sizeof=0x1C
 
 struct iwd_pure_check_s // sizeof=0x208
 {                                       // XREF: iwd_pure_check_t/r
-    iwd_pure_check_s *next;
+    Ptr32<iwd_pure_check_s> next;
     int checksum;
     char iwdBasename[256];
     char iwdGamename[256];

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "l_script.h"
 #include "ui_shared.h"
 
@@ -15,8 +16,8 @@ int __cdecl PC_ReadDefineParms(source_s *source, define_s *define, token_s **par
 int __cdecl PC_StringizeTokens(token_s *tokens, token_s *token);
 int __cdecl PC_MergeTokens(token_s *t1, token_s *t2);
 int __cdecl PC_NameHash(char *name);
-void __cdecl PC_AddDefineToHash(define_s *define, define_s **definehash);
-define_s *__cdecl PC_FindHashedDefine(define_s **definehash, char *name);
+void __cdecl PC_AddDefineToHash(define_s *define, Ptr32<define_s> *definehash);
+define_s *__cdecl PC_FindHashedDefine(Ptr32<define_s> *definehash, char *name);
 int __cdecl PC_FindDefineParm(define_s *define, const char *name);
 void __cdecl PC_FreeDefine(define_s *define);
 int __cdecl PC_ExpandBuiltinDefine(

@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "actor_events.h"
 #include "actor_zombie_exposed.h"
 #include <game_mp/g_main_mp.h>
@@ -12,8 +13,8 @@
 
 const struct $97E41B13BD0B431546CEBD7708497565 // sizeof=0xC
 {                                       // XREF: .rdata:g_ai_event_info/r
-    const char *name;                   // XREF: Actor_DumpEvents+6E/r
-    const dvar_s **defaultDistDvar;     // XREF: Actor_EventDefaultRadiusSqrd(ai_event_t)+F/r
+    Ptr32<const char> name;                   // XREF: Actor_DumpEvents+6E/r
+    const dvar_s **defaultDistDvar; // static table (native layout)     // XREF: Actor_EventDefaultRadiusSqrd(ai_event_t)+F/r
                                         // Actor_EventDefaultRadiusSqrd(ai_event_t)+41/r
     float defaultHeight;
 };

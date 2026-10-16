@@ -1,24 +1,25 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "fxprimitives.h"
 
 struct FxCmd // sizeof=0x34
 {                                       // XREF: ?CG_DrawActiveFrame@@YAHHHW4DemoType@@W4CubemapShot@@HH@Z/r
-    FxSystem *system;
+    Ptr32<FxSystem> system;
     int localClientNum;                 // XREF: R_GenerateSortedDrawSurfs+1316/w
-    volatile int *spawnLock;
+    Ptr32<volatile int> spawnLock;
     bool useReflection;
     // padding byte
     // padding byte
     // padding byte
     float reflectionHeight;
     unsigned int smodelCount;
-    unsigned __int8 *smodelVisData;
+    Ptr32<unsigned __int8> smodelVisData;
     float elemRemoveChance;
     unsigned __int8 updateCameraType;   // XREF: CG_DrawExtraCamFrame(int,int,DemoType,CubemapShot,int,int)+565/w
     // padding byte
     // padding byte
     // padding byte
-    const GfxLight *visibleLights;      // XREF: R_GenerateSortedDrawSurfs+1322/w
+    Ptr32<const GfxLight> visibleLights;      // XREF: R_GenerateSortedDrawSurfs+1322/w
     int visibleLightCount;              // XREF: R_GenerateSortedDrawSurfs+132E/w
     int updateEffectBegin;
     int updateEffectEnd;

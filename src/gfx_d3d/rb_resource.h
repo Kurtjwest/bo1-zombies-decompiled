@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "r_bsp.h"
 
@@ -22,8 +23,8 @@ enum Action_t : __int32 // not a real enum
 struct r_resource_action // sizeof=0x18
 {                                       // XREF: .data:r_resource_action * resourceActions/r
     Action_t action;
-    void *resource;
-    void *data;
+    Ptr32<void> resource;
+    Ptr32<void> data;
     int p1;
     int p2;
     int p3;

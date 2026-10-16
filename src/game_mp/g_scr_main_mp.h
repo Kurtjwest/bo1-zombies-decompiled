@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <clientscript/cscr_main.h>
 #include <clientscript/cscr_variable.h>
 #include <database/db_registry.h>
@@ -68,7 +69,7 @@ struct scr_data_t
     corpseInfo_t playerCorpseInfo[4];
     // zombies: SP's actor tree bank has 32 slots (SP 0x01C7AE80, filled by G_LoadAnimTreeInstances 0x007E2CA0,
     // read by 0x00566030); MP had 16 and KB's MP actors keep their tree on the entity. Used on SP levels only.
-    XAnimTree_s *actorXAnimTrees[32];
+    Ptr32<XAnimTree_s> actorXAnimTrees[32];
     corpseInfo_t actorCorpseInfo[MAX_ACTOR_CORPSES_SP]; // zombies: MP 8, SP 32 (Com_GetMaxActorCorpses)
     // zombies: SP keeps the dying actor's ProneInfo in its corpse slot (SP actorCorpseInfo +8, G_CorpseFromActor
     // 0x00642B80); Actor_OrientCorpseToGround (SP 0x004C30D0) reads it once the actor is gone. KB's corpseInfo_t
@@ -861,8 +862,8 @@ void __cdecl Scr_GlassSmash(float *pos, float *dir);
 
 extern scr_data_t g_scr_data;
 // mod: anim trees for actor slots 32 and up (bo1_mod_maxactors > 32); g_scr_data.actorXAnimTrees holds the retail 32
-extern XAnimTree_s *g_actorXAnimTreesExt[1024 - 32]; // mod: MAX_ACTORS_CAP - 32
-inline XAnimTree_s *&G_ActorXAnimTreeSlot(int i)
+extern Ptr32<XAnimTree_s> g_actorXAnimTreesExt[1024 - 32]; // mod: MAX_ACTORS_CAP - 32
+inline Ptr32<XAnimTree_s> &G_ActorXAnimTreeSlot(int i)
 {
     return i < 32 ? g_scr_data.actorXAnimTrees[i] : g_actorXAnimTreesExt[i - 32];
 }

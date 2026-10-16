@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #undef GetObject
 
@@ -19,7 +20,7 @@ struct ScriptFunctions // sizeof=0xC
                                                                                 // CGScr_LoadClientScriptsAndAnims(void)+43/w ...
         int count;                                                    // XREF: CGScr_LoadClientScriptsAndAnims(void)+10/w
                                                                                 // CGScr_LoadClientScriptsAndAnims(void)+40/r ...
-        int *address;                                             // XREF: CGScr_LoadClientScriptsAndAnims(void)+1D/w
+        Ptr32<int> address;                                             // XREF: CGScr_LoadClientScriptsAndAnims(void)+1D/w
                                                                                 // CGScr_LoadScriptsAndAnims+1D/w
 };
 
@@ -125,13 +126,13 @@ struct ParseValue;
 struct ExpressionOperatorData // sizeof=0x14
 {                                       // XREF: .rdata:g_ExprOperatorList/r
     int iArity;
-    const char *strValue;               // XREF: DetermineParseType+76/r
+    Ptr32<const char> strValue;               // XREF: DetermineParseType+76/r
     // ConvertParseTypeToStr+10/r
     bool isFunction;                    // XREF: ParseBottomRankExpr+B5/r
     // padding byte
     // padding byte
     // padding byte
-    XExpr::MathTypes(__cdecl *FuncTypeTesting)(const ParseValue *, int, scriptInstance_t);
+    Ptr32<XExpr::MathTypes __cdecl(const ParseValue *, int, scriptInstance_t)> FuncTypeTesting;
     XExpr::MathOpcodes eMathType;
 };
 
@@ -175,14 +176,14 @@ struct HashEntry // sizeof=0x8
 
 struct __declspec(align(128)) scrStringGlob_t // sizeof=0x100
 {                                       // XREF: .data:scrStringGlob_t * gScrStringGlob/r
-    HashEntry *hashTable;               // XREF: SL_Init(scriptInstance_t)+59/r
+    Ptr32<HashEntry> hashTable;               // XREF: SL_Init(scriptInstance_t)+59/r
                                         // SL_Init(scriptInstance_t)+D0/r ...
     bool inited;                        // XREF: SL_Init(scriptInstance_t)+C/r
                                         // SL_Init(scriptInstance_t)+1B2/w ...
     // padding byte
     // padding byte
     // padding byte
-    HashEntry *nextFreeEntry;           // XREF: SL_FreeString+198/w
+    Ptr32<HashEntry> nextFreeEntry;           // XREF: SL_FreeString+198/w
                                         // SL_ShutdownSystem(scriptInstance_t,uint)+EF/w ...
     int indentLevel;                    // XREF: Scr_LoadScriptInternal(scriptInstance_t,char const *,PrecacheEntry *,int)+212/r
                                         // Scr_LoadScriptInternal(scriptInstance_t,char const *,PrecacheEntry *,int)+221/w ...

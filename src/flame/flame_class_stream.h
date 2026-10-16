@@ -1,12 +1,13 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "flame_system.h"
 
 struct flameStream_s // sizeof=0x8C
 {                                                                             // XREF: flameStream_t/r
     flameGeneric_s gen;
-    flameRenderList_s *renderList;            // XREF: Flame_Class_Stream_Init(void)+70/w
-    flameTable *flameVars;
-    flameChunk_s *chunkList;
+    Ptr32<flameRenderList_s> renderList;            // XREF: Flame_Class_Stream_Init(void)+70/w
+    Ptr32<flameTable> flameVars;
+    Ptr32<flameChunk_s> chunkList;
     int lastSmokeChunkTime;
     int lastDripChunkTime;
     int entityNum;

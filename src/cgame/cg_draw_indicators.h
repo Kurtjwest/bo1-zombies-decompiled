@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <cgame_mp/cg_local_mp.h>
 #include <bgame/bg_weapons.h>
 
@@ -9,7 +10,7 @@ struct HudGrenade // sizeof=0x18
                                         // CG_DrawGrenadeIndicators(int)+1EB/r
     float predicted_time_ratio;         // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *)+4D8/w
                                         // CG_AddHudGrenade(cg_s const *,centity_s const *)+4F3/w
-    Material *material;                 // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *)+42C/w
+    Ptr32<Material> material;                 // XREF: CG_AddHudGrenade(cg_s const *,centity_s const *)+42C/w
 };
 
 void __cdecl CG_DrawFlashDamage(const cg_s *cgameGlob);

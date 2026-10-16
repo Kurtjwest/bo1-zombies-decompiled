@@ -1,12 +1,13 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <bgame/bg_local.h>
 
 struct CEntityAreaParms // sizeof=0x18
 {                                       // XREF: ?CG_AreaEntities@@YAHQBM0PAHHH@Z/r
-    const float *mins;                  // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+297/w
-    const float *maxs;                  // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+29D/w
+    Ptr32<const float> mins;                  // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+297/w
+    Ptr32<const float> maxs;                  // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+29D/w
     int contentMask;                    // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+2A3/w
-    int *list;                          // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+2A9/w
+    Ptr32<int> list;                          // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+2A9/w
     int maxCount;                       // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+2AF/w
     int count;                          // XREF: CG_AreaEntities(float const * const,float const * const,int *,int,int)+2B2/w
 };

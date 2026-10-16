@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <database/db_registry.h>
 
 struct GfxImage;
@@ -20,7 +21,7 @@ struct ImageList // sizeof=0x4004
                                         // ?R_ImageList_Output@@YAXXZ/r ...
     unsigned int count;                 // XREF: R_SumOfUsedImages(Image_MemUsage *)+B1/r
                                         // R_ImageList_Output(void)+73/r ...
-    GfxImage *image[7168];              // the exe holds 0x1080 (4224, the retail image pool; the decompiled 4096 overflowed).
+    Ptr32<GfxImage> image[7168];              // the exe holds 0x1080 (4224, the retail image pool; the decompiled 4096 overflowed).
                                         // mod: 7168 = POOLSIZE_IMAGE_MOD (bo1_mod_zones)              // XREF: R_SumOfUsedImages(Image_MemUsage *)+C3/r
                                         // R_ImageList_Output(void)+A8/w ...
 };

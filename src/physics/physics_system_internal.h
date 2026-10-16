@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rigid_body.h"
 
 struct __declspec(align(16)) physics_system // sizeof=0x32C0
 {
     int m_flags;
     float m_outside_sub_delta_t;
-    void (__cdecl *m_collision_callback)();
+    Ptr32<void __cdecl()> m_collision_callback;
     float m_max_delta_t;
     int m_max_vel_iters;
     int m_max_vel_pos_iters;
@@ -33,7 +34,7 @@ struct __declspec(align(16)) physics_system // sizeof=0x32C0
     phys_free_list<rigid_body_constraint_upright> m_list_rbc_upright;
     phys_transient_allocator m_contact_point_buffer_1;
     phys_transient_allocator m_contact_point_buffer_2;
-    rigid_body **m_list_island;
+    Ptr32<Ptr32<rigid_body>> m_list_island;
     int m_list_island_count;
     int m_solver_memory_high_water;
     int m_contact_point_buffer_high_water;

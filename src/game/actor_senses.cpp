@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "actor_senses.h"
 #include <game_mp/g_main_mp.h>
 #include <server/sv_world.h>
@@ -402,7 +403,7 @@ char __fastcall Actor_CanSeeEnemy(actor_s *self)
 
 struct sentient_sort_t // sizeof=0x8
 {                                       // XREF: ?Actor_UpdateSight@@YIXPAUactor_s@@@Z/r
-    sentient_s *sentient;               // XREF: Actor_UpdateSight(actor_s *)+324/w
+    Ptr32<sentient_s> sentient;               // XREF: Actor_UpdateSight(actor_s *)+324/w
                                         // Actor_UpdateSight(actor_s *)+3DF/r
     float fMetric;                      // XREF: Actor_UpdateSight(actor_s *)+314/w
 };

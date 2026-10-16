@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <gfx_d3d/r_font.h>
 #include <gfx_d3d/r_material.h>
 #include "screen_placement.h"
@@ -81,10 +82,10 @@ struct Message // sizeof=0x8
 struct MessageWindow // sizeof=0x34
 {                                       // XREF: MessageBuffer/r
                                         // MessageBuffer/r ...
-    MessageLine *lines;                 // XREF: Con_GetTextCopy(char *,int)+23/r
+    Ptr32<MessageLine> lines;                 // XREF: Con_GetTextCopy(char *,int)+23/r
                                         // Con_DrawOutputText+BE/r
-    Message *messages;
-    char *circularTextBuffer;           // XREF: Con_GetTextCopy(char *,int)+9B/r
+    Ptr32<Message> messages;
+    Ptr32<char> circularTextBuffer;           // XREF: Con_GetTextCopy(char *,int)+9B/r
                                         // Con_GetTextCopy(char *,int)+BC/r ...
     int textBufSize;                    // XREF: Con_GetTextCopy(char *,int)+47/r
                                         // Con_GetTextCopy(char *,int)+6F/r ...
@@ -165,7 +166,7 @@ struct ConDrawInputGlob // sizeof=0x64
                                         // Con_CycleAutoComplete(int):loc_5497F0/r ...
     int matchCount;                     // XREF: Con_HasTooManyMatchesToShow(void)+3/r
                                         // Con_CycleAutoComplete(int)+E/r ...
-    const char *inputText;              // XREF: Con_DrawInput+149/w
+    Ptr32<const char> inputText;              // XREF: Con_DrawInput+149/w
                                         // Con_DrawInput+14E/r ...
     int inputTextLen;                   // XREF: Con_DrawInput+13B/r
                                         // Con_DrawInput+183/w ...

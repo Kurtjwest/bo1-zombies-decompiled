@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "yuv.h"
 
 #include <d3d9.h>
@@ -701,18 +702,18 @@ struct //$9B0FD635EC932744DEFCA28AAEF2899C // sizeof=0x3C
     int width;                          // XREF: yuv_init_internal(void)+9/r
     int height;                         // XREF: yuv_init_internal(void)+11/r
                                         // yuv_init(int,int,bool)+1C/w ...
-    unsigned __int8 *outY;              // XREF: yuv_init_internal(void)+40/w
-    unsigned __int8 *outU;              // XREF: yuv_init_internal(void)+83/w
-    unsigned __int8 *outV;              // XREF: yuv_init_internal(void)+D9/w
+    Ptr32<unsigned __int8> outY;              // XREF: yuv_init_internal(void)+40/w
+    Ptr32<unsigned __int8> outU;              // XREF: yuv_init_internal(void)+83/w
+    Ptr32<unsigned __int8> outV;              // XREF: yuv_init_internal(void)+D9/w
                                         // yuv_init_internal(void)+F5/r ...
-    IDirect3DTexture9 *renderTarget1;   // XREF: yuv_init_internal(void)+13F/o
-    IDirect3DTexture9 *renderTarget2;   // XREF: yuv_init_internal(void)+207/o
-    IDirect3DTexture9 *srcTexture;      // XREF: yuv_init_internal(void)+2BE/o
-    IDirect3DTexture9 *dstTexture;      // XREF: yuv_init_internal(void)+377/o
-    IDirect3DPixelShader9 *pixelShader; // XREF: yuv_init_internal(void)+95F/o
-    IDirect3DVertexShader9 *vertexShader;
-    IDirect3DVertexBuffer9 *vertexBuffer;
-    IDirect3DVertexDeclaration9 *vertexDeclaration;
+    Ptr32<IDirect3DTexture9> renderTarget1;   // XREF: yuv_init_internal(void)+13F/o
+    Ptr32<IDirect3DTexture9> renderTarget2;   // XREF: yuv_init_internal(void)+207/o
+    Ptr32<IDirect3DTexture9> srcTexture;      // XREF: yuv_init_internal(void)+2BE/o
+    Ptr32<IDirect3DTexture9> dstTexture;      // XREF: yuv_init_internal(void)+377/o
+    Ptr32<IDirect3DPixelShader9> pixelShader; // XREF: yuv_init_internal(void)+95F/o
+    Ptr32<IDirect3DVertexShader9> vertexShader;
+    Ptr32<IDirect3DVertexBuffer9> vertexBuffer;
+    Ptr32<IDirect3DVertexDeclaration9> vertexDeclaration;
 } yuv_globals;
 
 void __cdecl yuv_init_internal()

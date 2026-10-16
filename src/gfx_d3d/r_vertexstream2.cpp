@@ -4,7 +4,7 @@
 #include <cstring>
 #include "r_buffers.h"
 
-IDirect3DVertexBuffer9 *stream2VertexBuffer;
+Ptr32<IDirect3DVertexBuffer9> stream2VertexBuffer;
 unsigned int stream2AllocatedSize;
 
 void __cdecl R_VertexStream2_Init(unsigned int stream2ByteSize)

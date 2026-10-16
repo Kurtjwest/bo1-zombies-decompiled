@@ -1,14 +1,15 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 
 struct WinVars_t // sizeof=0x20
 {                                       // XREF: .data:WinVars_t g_wv/r
-    HINSTANCE__ *reflib_library;
+    Ptr32<HINSTANCE__> reflib_library;
     int reflib_active;
-    HWND__ *hWnd;                       // XREF: IN_RecenterMouse(void)+A/r
+    Ptr32<HWND__> hWnd;                       // XREF: IN_RecenterMouse(void)+A/r
                                         // IN_IsForegroundWindow(void)+B/r ...
-    HINSTANCE__ *hInstance;             // XREF: WinMain(x,x,x,x)+13F/w
+    Ptr32<HINSTANCE__> hInstance;             // XREF: WinMain(x,x,x,x)+13F/w
                                         // Win_RegisterClass+24/r ...
     int activeApp;                      // XREF: Sys_UpdateHotkeyBlock(void)+8/r
                                         // MainWndProc(HWND__ *,uint,uint,long)+3C2/r ...

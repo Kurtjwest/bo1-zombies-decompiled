@@ -31,7 +31,7 @@ const phys_vec3 *__cdecl phys_v2_to_v3_multiply(phys_vec3 *result, const phys_ma
 }
 
 void    displace_contact_p(
-                contact_manifold_mesh_point **mp,
+                Ptr32<contact_manifold_mesh_point> *mp,
                 const phys_vec2 *d,
                 const phys_mat44 *contact_mat)
 {
@@ -55,7 +55,7 @@ void    displace_contact_p(
 
 double __thiscall phys_contact_manifold::compute_convex_poly_area()
 {
-    contact_manifold_mesh_point **m_list_contact_point; // edx
+    Ptr32<contact_manifold_mesh_point> *m_list_contact_point; // edx
     contact_manifold_mesh_point *v2; // esi
     int *v3; // eax
     int v4; // edi
@@ -76,7 +76,7 @@ double __thiscall phys_contact_manifold::compute_convex_poly_area()
     v2 = *m_list_contact_point;
     v3 = (int *)(m_list_contact_point + 1);
     v4 = (int)BO1_P2I(&m_list_contact_point[this->m_list_contact_point_count - 1]);
-    if ( m_list_contact_point + 1 != (contact_manifold_mesh_point **)BO1_I2P(v4) )
+    if ( m_list_contact_point + 1 != (Ptr32<contact_manifold_mesh_point> *)BO1_I2P(v4) )
     {
         do
         {
@@ -101,9 +101,9 @@ double __thiscall phys_contact_manifold::compute_convex_poly_area()
 
 double __thiscall phys_contact_manifold::compute_convex_poly_perimeter()
 {
-    contact_manifold_mesh_point **m_list_contact_point; // esi
-    contact_manifold_mesh_point **v2; // edi
-    contact_manifold_mesh_point **i; // eax
+    Ptr32<contact_manifold_mesh_point> *m_list_contact_point; // esi
+    Ptr32<contact_manifold_mesh_point> *v2; // edi
+    Ptr32<contact_manifold_mesh_point> *i; // eax
     contact_manifold_mesh_point *v4; // eax
     float v6; // [esp+4h] [ebp-10h]
     float v7; // [esp+8h] [ebp-Ch]
@@ -126,15 +126,15 @@ double __thiscall phys_contact_manifold::compute_convex_poly_perimeter()
     return perimeter;
 }
 
-void __cdecl feature_qsort(contact_manifold_mesh_point **list, int list_count)
+void __cdecl feature_qsort(Ptr32<contact_manifold_mesh_point> *list, int list_count)
 {
     int v2; // eax
     bool v3; // cc
-    contact_manifold_mesh_point **v4; // edx
+    Ptr32<contact_manifold_mesh_point> *v4; // edx
     contact_manifold_mesh_point *v5; // edi
-    contact_manifold_mesh_point **v6; // ebx
-    contact_manifold_mesh_point **v7; // ecx
-    contact_manifold_mesh_point **v8; // esi
+    Ptr32<contact_manifold_mesh_point> *v6; // ebx
+    Ptr32<contact_manifold_mesh_point> *v7; // ecx
+    Ptr32<contact_manifold_mesh_point> *v8; // esi
     contact_manifold_mesh_point *v9; // edx
     contact_manifold_mesh_point *v10; // eax
     contact_manifold_mesh_point *v11; // edx
@@ -235,15 +235,15 @@ LABEL_20:
     }
 }
 
-void __cdecl convex_poly_qsort(contact_manifold_mesh_point **list, int list_count)
+void __cdecl convex_poly_qsort(Ptr32<contact_manifold_mesh_point> *list, int list_count)
 {
     int v2; // eax
     bool v3; // cc
-    contact_manifold_mesh_point **v4; // edx
+    Ptr32<contact_manifold_mesh_point> *v4; // edx
     contact_manifold_mesh_point *v5; // edi
-    contact_manifold_mesh_point **v6; // ebx
-    contact_manifold_mesh_point **v7; // ecx
-    contact_manifold_mesh_point **v8; // esi
+    Ptr32<contact_manifold_mesh_point> *v6; // ebx
+    Ptr32<contact_manifold_mesh_point> *v7; // ecx
+    Ptr32<contact_manifold_mesh_point> *v8; // esi
     contact_manifold_mesh_point *v9; // edx
     contact_manifold_mesh_point *v10; // eax
     contact_manifold_mesh_point *v11; // edx
@@ -360,16 +360,16 @@ void __thiscall phys_contact_manifold::generate_convex_poly_internal()
 {
     phys_contact_manifold *v1; // ebx
     int m_list_mesh_point_count; // eax
-    contact_manifold_mesh_point **m_list_sorted_mesh_point; // edi
-    contact_manifold_mesh_point **m_list_contact_point; // esi
-    contact_manifold_mesh_point **v5; // eax
+    Ptr32<contact_manifold_mesh_point> *m_list_sorted_mesh_point; // edi
+    Ptr32<contact_manifold_mesh_point> *m_list_contact_point; // esi
+    Ptr32<contact_manifold_mesh_point> *v5; // eax
     contact_manifold_mesh_point *v6; // ebx
     int v7; // eax
     unsigned int v8; // edi
     float *p_x; // ecx
     phys_memory_heap *m_allocator; // eax
-    contact_manifold_mesh_point **v11; // eax
-    contact_manifold_mesh_point **v12; // edi
+    Ptr32<contact_manifold_mesh_point> *v11; // eax
+    Ptr32<contact_manifold_mesh_point> *v12; // edi
     contact_manifold_mesh_point *v13; // ebx
     int v14; // eax
     unsigned int v15; // edi
@@ -377,13 +377,13 @@ void __thiscall phys_contact_manifold::generate_convex_poly_internal()
     phys_memory_heap *v17; // eax
     int v18; // esi
     bool v19; // cc
-    contact_manifold_mesh_point **min_length2; // [esp+0h] [ebp-34h]
+    Ptr32<contact_manifold_mesh_point> *min_length2; // [esp+0h] [ebp-34h]
     phys_vec2 e1; // [esp+14h] [ebp-20h] BYREF
     phys_vec2 e2; // [esp+1Ch] [ebp-18h] BYREF
-    contact_manifold_mesh_point **last_i_smp; // [esp+24h] [ebp-10h]
+    Ptr32<contact_manifold_mesh_point> *last_i_smp; // [esp+24h] [ebp-10h]
     phys_contact_manifold *v24; // [esp+28h] [ebp-Ch]
-    contact_manifold_mesh_point **i_smp; // [esp+2Ch] [ebp-8h]
-    contact_manifold_mesh_point **min_cp_mp; // [esp+30h] [ebp-4h]
+    Ptr32<contact_manifold_mesh_point> *i_smp; // [esp+2Ch] [ebp-8h]
+    Ptr32<contact_manifold_mesh_point> *min_cp_mp; // [esp+30h] [ebp-4h]
 
     v1 = this;
     m_list_mesh_point_count = this->m_list_mesh_point_count;
@@ -503,8 +503,8 @@ void __thiscall phys_contact_manifold_process::intersect_poly_segment(
                 const phys_vec2 *p0,
                 const phys_vec2 *p1)
 {
-    contact_manifold_mesh_point **m_list_contact_point; // ecx
-    contact_manifold_mesh_point **v7; // edi
+    Ptr32<contact_manifold_mesh_point> *m_list_contact_point; // ecx
+    Ptr32<contact_manifold_mesh_point> *v7; // edi
     contact_manifold_mesh_point *v8; // eax
     double v9; // st7
     double v10; // st5
@@ -517,7 +517,7 @@ void __thiscall phys_contact_manifold_process::intersect_poly_segment(
     bool v17; // c0
     double v18; // st4
     double v19; // rtt
-    contact_manifold_mesh_point **v20; // eax
+    Ptr32<contact_manifold_mesh_point> *v20; // eax
     contact_manifold_mesh_point *v21; // eax
     double v22; // st5
     int v23; // eax
@@ -639,8 +639,8 @@ bool phys_contact_manifold_process::find_bottom(
                 phys_contact_manifold_process::isect_info *left_cman,
                 phys_contact_manifold_process::isect_info *right_cman)
 {
-    contact_manifold_mesh_point **left_next;
-    contact_manifold_mesh_point **right_prev;
+    Ptr32<contact_manifold_mesh_point> *left_next;
+    Ptr32<contact_manifold_mesh_point> *right_prev;
     phys_vec2 left_edge;
     phys_vec2 right_edge;
     phys_vec2 left_base_p;   // saved base point of left edge (left_pt->m_contact_p)
@@ -648,18 +648,18 @@ bool phys_contact_manifold_process::find_bottom(
     float det;
     float t;
 
-    contact_manifold_mesh_point **start_left_i = b->m_left_i;
-    contact_manifold_mesh_point **start_right_i = b->m_right_i;
+    Ptr32<contact_manifold_mesh_point> *start_left_i = b->m_left_i;
+    Ptr32<contact_manifold_mesh_point> *start_right_i = b->m_right_i;
 
-    contact_manifold_mesh_point **l_i, **r_i;
+    Ptr32<contact_manifold_mesh_point> *l_i, **r_i;
     do
     {
         l_i = b->m_left_i;
         r_i = b->m_right_i;
 
         // Compute left edge: current left point -> next left point
-        contact_manifold_mesh_point **left_i = b->m_left_i;
-        contact_manifold_mesh_point **left_next_i = (left_i == left_cman->m_last_i)
+        Ptr32<contact_manifold_mesh_point> *left_i = b->m_left_i;
+        Ptr32<contact_manifold_mesh_point> *left_next_i = (left_i == left_cman->m_last_i)
             ? left_cman->m_cman->m_list_contact_point
             : left_i + 1;
 
@@ -673,7 +673,7 @@ bool phys_contact_manifold_process::find_bottom(
         // Advance right pointer while right_prev is below the left edge
         while (true)
         {
-            contact_manifold_mesh_point **right_i = b->m_right_i;
+            Ptr32<contact_manifold_mesh_point> *right_i = b->m_right_i;
             right_prev = (right_i == right_cman->m_cman->m_list_contact_point)
                 ? right_cman->m_last_i
                 : right_i - 1;
@@ -692,7 +692,7 @@ bool phys_contact_manifold_process::find_bottom(
         }
 
         // Compute right edge: right_prev_pt -> current right point (i.e. prev -> cur on right poly)
-        contact_manifold_mesh_point **right_i = b->m_right_i;
+        Ptr32<contact_manifold_mesh_point> *right_i = b->m_right_i;
         right_prev = (right_i == right_cman->m_cman->m_list_contact_point)
             ? right_cman->m_last_i
             : right_i - 1;
@@ -707,7 +707,7 @@ bool phys_contact_manifold_process::find_bottom(
         // Advance left pointer while left_next is above the right edge
         while (true)
         {
-            contact_manifold_mesh_point **left_i2 = b->m_left_i;
+            Ptr32<contact_manifold_mesh_point> *left_i2 = b->m_left_i;
             left_next = (left_i2 == left_cman->m_last_i)
                 ? left_cman->m_cman->m_list_contact_point
                 : left_i2 + 1;
@@ -760,12 +760,12 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
     int m_list_mesh_point_count; // ecx
     phys_memory_heap *v6; // eax
     const char *v7; // edx
-    contact_manifold_mesh_point **m_list_sorted_mesh_point; // eax
+    Ptr32<contact_manifold_mesh_point> *m_list_sorted_mesh_point; // eax
     contact_manifold_mesh_point *m_list_mesh_point; // ecx
     unsigned int v10; // esi
     bool v11; // cc
     double v12; // st7
-    contact_manifold_mesh_point **v13; // edx
+    Ptr32<contact_manifold_mesh_point> *v13; // edx
     float *v14; // ecx
     double v15; // st6
     double v16; // st4
@@ -773,7 +773,7 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
     double v18; // st2
     float *v19; // eax
     float *v20; // eax
-    contact_manifold_mesh_point **v21; // eax
+    Ptr32<contact_manifold_mesh_point> *v21; // eax
     int m_close_mesh_point_count; // edx
     unsigned int v23; // ecx
     float *v24; // eax
@@ -791,7 +791,7 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
     float *v36; // edx
     float *v37; // edx
     double v38; // st6
-    contact_manifold_mesh_point **v39; // edx
+    Ptr32<contact_manifold_mesh_point> *v39; // edx
     float **v40; // esi
     float *v41; // ecx
     double v42; // st5
@@ -829,11 +829,11 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
     float v74; // [esp+14h] [ebp-2Ch]
     float **v75; // [esp+14h] [ebp-2Ch]
     float v76; // [esp+14h] [ebp-2Ch]
-    contact_manifold_mesh_point ***v77; // [esp+18h] [ebp-28h]
+    Ptr32<Ptr32<contact_manifold_mesh_point>> *v77; // [esp+18h] [ebp-28h]
     float v78; // [esp+18h] [ebp-28h]
     float dot_p_fn; // [esp+1Ch] [ebp-24h]
-    contact_manifold_mesh_point **start_mp; // [esp+20h] [ebp-20h]
-    contact_manifold_mesh_point **mp_j_it; // [esp+24h] [ebp-1Ch]
+    Ptr32<contact_manifold_mesh_point> *start_mp; // [esp+20h] [ebp-20h]
+    Ptr32<contact_manifold_mesh_point> *mp_j_it; // [esp+24h] [ebp-1Ch]
     float best_cos_sqa; // [esp+28h] [ebp-18h]
     float best_cos_sqb; // [esp+28h] [ebp-18h]
     float best_cos_sqc; // [esp+28h] [ebp-18h]
@@ -879,7 +879,7 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
         __debugbreak();
     }
     m_list_mesh_point_count = this->m_list_mesh_point_count;
-    this->m_list_sorted_mesh_point = (contact_manifold_mesh_point **)m_allocator->m_buffer_cur;
+    this->m_list_sorted_mesh_point = (Ptr32<contact_manifold_mesh_point> *)m_allocator->m_buffer_cur;
     v6 = this->m_allocator;
     v7 = g_contact_manifold_error_msg;
     v6->m_buffer_cur += 4 * m_list_mesh_point_count;
@@ -967,11 +967,11 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
         {
             do
             {
-                mp_j_it = *(contact_manifold_mesh_point ***)BO1_I2P(v23);
+                mp_j_it = *(Ptr32<Ptr32<contact_manifold_mesh_point>> *)BO1_I2P(v23);
                 if ( dot_p_fn > (double)*(float *)BO1_I2P((*(unsigned int *)BO1_I2P(v23) + 16)) )
                     break;
                 v65 = v23 + 4;
-                v77 = (contact_manifold_mesh_point ***)BO1_I2P((v23 + 4));
+                v77 = (Ptr32<Ptr32<contact_manifold_mesh_point>> *)BO1_I2P((v23 + 4));
                 if ( v23 + 4 < v10 )
                 {
                     do
@@ -1189,19 +1189,19 @@ void __thiscall phys_contact_manifold::generate_convex_poly(const phys_mat44 *co
     phys_memory_heap *m_allocator; // edi
     const char *v4; // ecx
     unsigned int v5; // eax
-    contact_manifold_mesh_point **m_buffer_cur; // edi
+    Ptr32<contact_manifold_mesh_point> *m_buffer_cur; // edi
     phys_memory_heap *v7; // eax
-    contact_manifold_mesh_point **m_list_sorted_mesh_point; // edx
-    contact_manifold_mesh_point **i; // edi
+    Ptr32<contact_manifold_mesh_point> *m_list_sorted_mesh_point; // edx
+    Ptr32<contact_manifold_mesh_point> *i; // edi
     float *v10; // eax
     double x; // st7
     double v12; // st7
     double z; // st6
-    contact_manifold_mesh_point **m_list_contact_point; // ecx
+    Ptr32<contact_manifold_mesh_point> *m_list_contact_point; // ecx
     contact_manifold_mesh_point *v15; // eax
     contact_manifold_mesh_point *v16; // ecx
     phys_memory_heap *v17; // eax
-    contact_manifold_mesh_point **v18; // edi
+    Ptr32<contact_manifold_mesh_point> *v18; // edi
     const char *v19; // edx
     char *v20; // ecx
     float v21; // [esp+8h] [ebp-8h]
@@ -1238,7 +1238,7 @@ void __thiscall phys_contact_manifold::generate_convex_poly(const phys_mat44 *co
     {
         __debugbreak();
     }
-    m_buffer_cur = (contact_manifold_mesh_point **)m_allocator->m_buffer_cur;
+    m_buffer_cur = (Ptr32<contact_manifold_mesh_point> *)m_allocator->m_buffer_cur;
     v7 = this->m_allocator;
     this->m_list_contact_point = m_buffer_cur;
     if ( ((char *)m_buffer_cur < v7->m_buffer_start
@@ -1280,7 +1280,7 @@ void __thiscall phys_contact_manifold::generate_convex_poly(const phys_mat44 *co
         __debugbreak();
     }
     v17 = this->m_allocator;
-    v18 = (contact_manifold_mesh_point **)v17->m_buffer_cur;
+    v18 = (Ptr32<contact_manifold_mesh_point> *)v17->m_buffer_cur;
     v19 = g_contact_manifold_error_msg;
     v20 = (char *)&v18[this->m_list_contact_point_count];
     v17->m_buffer_cur = v20;
@@ -1459,8 +1459,8 @@ void phys_contact_manifold_process::intersect_poly_poly()
         else
         {
             // Build intersection point list by stitching together bridge arcs
-            contact_manifold_mesh_point **ip_list =
-                (contact_manifold_mesh_point **)m_allocator.fast_align_start(4, g_contact_manifold_error_msg);
+            Ptr32<contact_manifold_mesh_point> *ip_list =
+                (Ptr32<contact_manifold_mesh_point> *)m_allocator.fast_align_start(4, g_contact_manifold_error_msg);
 
             m_list_isect_point = ip_list;
 
@@ -1474,7 +1474,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
                 //iassert(m_allocator.fast_is_within_buffer_limits(ip_cur, sizeof(contact_manifold_mesh_point *)));
 
                 // Duplicate check
-                for (contact_manifold_mesh_point **chk = ip_list;
+                for (Ptr32<contact_manifold_mesh_point> *chk = ip_list;
                     (char *)chk != ip_cur;
                     ++chk)
                 {
@@ -1483,7 +1483,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
                 }
 
                 // Write the vertex pointer
-                *(contact_manifold_mesh_point **)ip_cur = *bk->m_left_i;
+                *(Ptr32<contact_manifold_mesh_point> *)ip_cur = *bk->m_left_i;
 
                 // Copy the bridge's intersection point into the vertex's m_contact_p
                 contact_manifold_mesh_point *vtx = *bk->m_left_i;
@@ -1493,9 +1493,9 @@ void phys_contact_manifold_process::intersect_poly_poly()
 
                 // Walk the arc along left_gb's polygon from bk->m_left_i up to
                 // list_bridge[(k+1) % num_bridges]->m_right_i
-                contact_manifold_mesh_point **arc_cur = bk->m_left_i;
-                contact_manifold_mesh_point **arc_last = left_gb->m_last_i;
-                contact_manifold_mesh_point **arc_end = list_bridge[(k + 1) % num_bridges].m_right_i;
+                Ptr32<contact_manifold_mesh_point> *arc_cur = bk->m_left_i;
+                Ptr32<contact_manifold_mesh_point> *arc_last = left_gb->m_last_i;
+                Ptr32<contact_manifold_mesh_point> *arc_end = list_bridge[(k + 1) % num_bridges].m_right_i;
 
                 // Advance one step (past the bridge vertex we just emitted)
                 if (arc_cur == arc_last)
@@ -1507,7 +1507,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
                 {
                     //iassert(m_allocator.fast_is_within_buffer_limits(ip_cur, sizeof(contact_manifold_mesh_point *)));
 
-                    for (contact_manifold_mesh_point **chk = ip_list;
+                    for (Ptr32<contact_manifold_mesh_point> *chk = ip_list;
                         (char *)chk != ip_cur;
                         ++chk)
                     {
@@ -1515,7 +1515,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
                             tlWarning("contact manifold failure.");
                     }
 
-                    *(contact_manifold_mesh_point **)ip_cur = *arc_cur;
+                    *(Ptr32<contact_manifold_mesh_point> *)ip_cur = *arc_cur;
                     ip_cur += sizeof(contact_manifold_mesh_point *);
 
                     if (arc_cur == arc_last)
@@ -1574,8 +1574,8 @@ bool __cdecl phys_contact_manifold::rht(const phys_vec2 *e1, const phys_vec2 *e2
 
 void __thiscall phys_contact_manifold_process::isect_info::init(phys_contact_manifold *cman)
 {
-    contact_manifold_mesh_point **m_list_contact_point; // edx
-    contact_manifold_mesh_point **m_i; // edx
+    Ptr32<contact_manifold_mesh_point> *m_list_contact_point; // edx
+    Ptr32<contact_manifold_mesh_point> *m_i; // edx
     float *v4; // eax
     contact_manifold_mesh_point *v5; // edx
     phys_vec2 v6; // [esp+0h] [ebp-8h]
@@ -1596,9 +1596,9 @@ void __thiscall phys_contact_manifold_process::isect_info::init(phys_contact_man
 
 void __thiscall phys_contact_manifold_process::isect_info::update()
 {
-    contact_manifold_mesh_point **m_next_i; // eax
-    contact_manifold_mesh_point **m_list_contact_point; // edx
-    contact_manifold_mesh_point **m_i; // eax
+    Ptr32<contact_manifold_mesh_point> *m_next_i; // eax
+    Ptr32<contact_manifold_mesh_point> *m_list_contact_point; // edx
+    Ptr32<contact_manifold_mesh_point> *m_i; // eax
     contact_manifold_mesh_point *v4; // edx
     float *p_x; // eax
     phys_vec2 v6; // [esp+0h] [ebp-8h]

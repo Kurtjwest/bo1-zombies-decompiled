@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <qcommon/cm_trace.h>
 #include <qcommon/cm_test.h>
@@ -36,8 +37,8 @@ struct col_prim_t // sizeof=0x8
     //$9DB6BB71550D5B679E9F92FB2EA07EBE ___u1;
     union //$9DB6BB71550D5B679E9F92FB2EA07EBE // sizeof=0x4
     {                                       // XREF: col_prim_t/r
-        const CollisionAabbTree *tree;
-        const cbrush_t *brush;
+        Ptr32<const CollisionAabbTree> tree;
+        Ptr32<const cbrush_t> brush;
     };
 };
 
@@ -97,7 +98,7 @@ struct colgeom_visitor_t : visitor_base_t // sizeof=0x70
     hybrid_vector m_rvec;
     float m_radius;
     int m_mask;                                                 // XREF: query_brush_model_gjk_geom(ushort,int,gjk_collision_visitor *)+A3/w
-    TraceThreadInfo *m_threadInfo;
+    Ptr32<TraceThreadInfo> m_threadInfo;
 
     void intersect_box(float *mn, float *mx, int mask);
     void intersect_box_brushes(struct cLeaf_s *leaf);
@@ -108,7 +109,7 @@ struct colgeom_visitor_t : visitor_base_t // sizeof=0x70
 
 struct query_brush_model_gjk_geom_visitor : colgeom_visitor_t // sizeof=0x74
 {                                                                             // XREF: ?query_brush_model_gjk_geom@@YAXGHPAVgjk_collision_visitor@@@Z/r
-    struct gjk_collision_visitor *m_allocator; // XREF: query_brush_model_gjk_geom(ushort,int,gjk_collision_visitor *)+A9/w
+    Ptr32<struct gjk_collision_visitor> m_allocator; // XREF: query_brush_model_gjk_geom(ushort,int,gjk_collision_visitor *)+A9/w
 
     // virtual ~colgeom_visitor_t() = default;
     // virtual void prolog()
@@ -134,9 +135,9 @@ struct query_brush_model_gjk_geom_visitor : colgeom_visitor_t // sizeof=0x74
 struct static_colgeom_visitor_t : colgeom_visitor_t // sizeof=0x1078
 {
     int ntrees;
-    const CollisionAabbTree *trees[512];
+    Ptr32<const CollisionAabbTree> trees[512];
     int nbrushes;
-    const cbrush_t *brushes[512];
+    Ptr32<const cbrush_t> brushes[512];
 
     // virtual ~colgeom_visitor_t() = default;
     // virtual void prolog()

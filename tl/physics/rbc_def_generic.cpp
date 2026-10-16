@@ -1251,7 +1251,7 @@ void __thiscall pulse_sum_angular::setup_vel_uni_standard(
 pulse_sum_normal *__thiscall pulse_sum_constraint_solver::create_pulse_sum_normal()
 {
   pulse_sum_normal **v2; // edi
-  pulse_sum_normal **m_last_next_ptr; // ecx
+  Ptr32<pulse_sum_normal> *m_last_next_ptr; // ecx
 
   //v2 = (pulse_sum_normal **)phys_transient_allocator::allocate(&this->m_solver_memory_allocator, 160, 16, 0, SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
   v2 = (pulse_sum_normal **)this->m_solver_memory_allocator.allocate(160, 16, 0, SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
@@ -1284,7 +1284,7 @@ void __thiscall pulse_sum_constraint_solver::create_point(
         float damp_k)
 {
   pulse_sum_point *v11; // edi
-  pulse_sum_point **m_last_next_ptr; // ecx
+  Ptr32<pulse_sum_point> *m_last_next_ptr; // ecx
   int savedregs; // [esp+18h] [ebp+0h] BYREF
 
   //v11 = (pulse_sum_point *)phys_transient_allocator::allocate(&this->m_solver_memory_allocator, 272, 16, 0, SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
@@ -1316,7 +1316,7 @@ pulse_sum_angular *__thiscall pulse_sum_constraint_solver::create_pulse_sum_angu
         pulse_sum_cache *const ps_cache)
 {
   pulse_sum_angular *v8; // edi
-  pulse_sum_angular **m_last_next_ptr; // ecx
+  Ptr32<pulse_sum_angular> *m_last_next_ptr; // ecx
   int savedregs; // [esp+8h] [ebp+0h] BYREF
 
   //v8 = (pulse_sum_angular *)phys_transient_allocator::allocate(&this->m_solver_memory_allocator, 144, 16, 0, SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);

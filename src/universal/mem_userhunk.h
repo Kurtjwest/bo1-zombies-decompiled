@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #define HF_FIXEDSIZE 4
 
@@ -15,15 +16,15 @@ struct HunkUser // sizeof=0x10
 {                                                                             // XREF: HunkUserDefault/r
     HU_ALLOCATION_SCHEME scheme;
     unsigned int flags;
-    const char *name;
+    Ptr32<const char> name;
     int type;
 };
 
 struct __declspec(align(4)) HunkUserDefault // sizeof=0x2C
 {
     HunkUser hunkUser;
-    HunkUserDefault *current;
-    HunkUserDefault *next;
+    Ptr32<HunkUserDefault> current;
+    Ptr32<HunkUserDefault> next;
     int maxSize;
     int end;
     int pos;

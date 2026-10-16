@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "cscr_main.h"
 #include <universal/q_shared.h>
 
@@ -115,7 +116,7 @@ struct __declspec(align(128)) scrMemTreeGlob_t // sizeof=0x100380
 
 struct scrMemTreePub_t // sizeof=0x4
 {
-    char *mt_buffer;
+    Ptr32<char> mt_buffer;
 };
 
 struct scrMemTreeDebugGlob_t // sizeof=0x20000

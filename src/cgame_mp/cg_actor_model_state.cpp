@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <qcommon/actor_model_state.h>
 #include <qcommon/msg.h>
 #include <game_sp/actor_sp_ext.h>
@@ -18,7 +19,7 @@ namespace
     struct ClientModels
     {
         ModelSnapshot parsed[32];
-        const snapshot_s *snapshots[2];
+        Ptr32<const snapshot_s> snapshots[2];
         ModelSnapshot models[2];
         SPActorModelInfo actors[MAX_ACTORS_CAP];
         SPActorModelInfo corpses[MAX_ACTOR_CORPSES_SP];

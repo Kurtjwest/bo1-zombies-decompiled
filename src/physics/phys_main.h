@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/dvar.h>
 
 #include "rigid_body.h"
@@ -82,10 +83,10 @@ struct PhysImpulse // sizeof=0x1C
 
 struct PhysObjUserData // sizeof=0x130
 {                                       // XREF: phys_free_list<PhysObjUserData>::T_internal/r
-    struct rigid_body *body;
-    struct NitrousVehicle *vehicle;
+    Ptr32<struct rigid_body> body;
+    Ptr32<struct NitrousVehicle> vehicle;
     gjk_geom_list_t m_gjk_geom_list;
-    PhysObjUserData *m_next_link;
+    Ptr32<PhysObjUserData> m_next_link;
     // padding byte
     // padding byte
     // padding byte
@@ -100,7 +101,7 @@ struct PhysObjUserData // sizeof=0x130
     // padding byte
     phys_mat44 cg2rb;
     phys_mat44 cg2w;
-    struct broad_phase_base *m_bpb;
+    Ptr32<struct broad_phase_base> m_bpb;
     float savedPos[3];
     float savedRot[3][3];
     float friction;
@@ -146,7 +147,7 @@ struct PhysGlob // sizeof=0x480
 
     phys_free_list<PhysObjUserData> objects;
     phys_link_list1<PhysObjUserData> objects_by_world[3];
-    PhysObjUserData *userRigidBodies[16];
+    Ptr32<PhysObjUserData> userRigidBodies[16];
     int timeLastSnapshot;               // XREF: Phys_Init(void)+6/w
     int timeLastUpdate;                 // XREF: Phys_ObjCreateNitrousVehicle(float const * const,float const * const,float const * const,float const * const,PhysPreset const *,gjk_geom_list_t *)+2B6/r
 };

@@ -127,13 +127,13 @@ struct expressionEntry // sizeof=0x10
 {                                       // XREF: expressionEntryNext/r
     int type;
     entryInternalData data;
-    expressionEntry *next;
+    Ptr32<expressionEntry> next;
 };
 
 struct ExpressionAllocState // sizeof=0x8
 {                                       // XREF: ?Expression_Parse@@YA_NPAPBDPAUExpressionStatement@@PAXH@Z/r
     int size;                           // XREF: Expression_Parse(char const * *,ExpressionStatement *,void *,int)+32/w
-    void *buffer;                       // XREF: Expression_Parse(char const * *,ExpressionStatement *,void *,int)+2C/w
+    Ptr32<void> buffer;                       // XREF: Expression_Parse(char const * *,ExpressionStatement *,void *,int)+2C/w
 };
 
 void __cdecl Expression_Free(ExpressionStatement *statement);

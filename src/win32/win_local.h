@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum sysEventType_t : __int32
 {                                       // XREF: sysEvent_t/r
@@ -16,5 +17,5 @@ struct sysEvent_t // sizeof=0x18
     int evValue;                        // XREF: Com_EventLoop(void)+53/w
     int evValue2;                       // XREF: Com_EventLoop(void)+59/w
     int evPtrLength;                    // XREF: Com_EventLoop(void)+5F/w
-    void *evPtr;                        // XREF: Com_EventLoop(void)+65/w
+    Ptr32<void> evPtr;                        // XREF: Com_EventLoop(void)+65/w
 };

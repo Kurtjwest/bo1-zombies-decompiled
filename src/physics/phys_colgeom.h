@@ -127,8 +127,8 @@ public:
         phys_vec3 m_aabb_mn_loc;
         phys_vec3 m_aabb_mx_loc;
         unsigned int m_gjk_geom_id;
-        const phys_mat44 *m_xform_;
-        gjk_base_t *m_next_geom;
+        Ptr32<const phys_mat44> m_xform_;
+        Ptr32<gjk_base_t> m_next_geom;
         unsigned int m_flags;
         int stype;
         int m_contents;
@@ -213,7 +213,7 @@ struct __declspec(align(16)) gjk_aabb_t : gjk_base_t // sizeof=0x80
 {
         phys_vec3 m_center_local;
         phys_vec3 m_dims;
-        const struct cbrush_t *m_brush;
+        Ptr32<const struct cbrush_t> m_brush;
         // padding byte
         // padding byte
         // padding byte
@@ -345,8 +345,8 @@ BO1_LAYOUT32_ASSERT(sizeof(gjk_obb_t) == 160);
 struct __declspec(align(8)) gjk_brush_t : gjk_base_t // sizeof=0x60
 {
         int nverts;
-        const float (*verts)[3];
-        const cbrush_t *brush;
+        Ptr32<const float[3]> verts;
+        Ptr32<const cbrush_t> brush;
         // padding byte
         // padding byte
         // padding byte
@@ -427,10 +427,10 @@ struct CollisionAabbTree;
 struct __declspec(align(16)) gjk_partition_t : gjk_base_t // sizeof=0x70
 {
         int ninds;
-        const float (*verts)[3];
-        unsigned __int16 *inds;
-        const CollisionPartition *partition;
-        const CollisionAabbTree *tree;
+        Ptr32<const float[3]> verts;
+        Ptr32<unsigned __int16> inds;
+        Ptr32<const CollisionPartition> partition;
+        Ptr32<const CollisionAabbTree> tree;
         // padding byte
         // padding byte
         // padding byte
@@ -741,7 +741,7 @@ BO1_LAYOUT32_ASSERT(sizeof(gjk_polygon_cylinder_t) == 128);
 
 struct gjk_geom_list_t // sizeof=0x8
 {
-    gjk_base_t *m_first_geom;
+    Ptr32<gjk_base_t> m_first_geom;
     int m_geom_count;
 public:
     inline int get_geom_count()

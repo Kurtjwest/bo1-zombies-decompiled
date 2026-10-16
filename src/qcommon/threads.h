@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 
@@ -38,7 +39,7 @@ enum ThreadOwner : __int32
 typedef struct tagTHREADNAME_INFO
 {
     DWORD dwType;     // Must be 0x1000.
-    LPCSTR szName;    // Pointer to name (in user addr space).
+    Ptr32T<LPCSTR> szName;    // Pointer to name (in user addr space).
     DWORD dwThreadID; // Thread ID (-1=caller thread).
     DWORD dwFlags;    // Reserved for future use, must be zero.
 } THREADNAME_INFO;

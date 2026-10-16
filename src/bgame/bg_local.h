@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 
 #include <qcommon/ent.h>
@@ -30,7 +31,7 @@ struct clientControllers_t // sizeof=0x60
 struct CEntPlayerInfo // sizeof=0x18
 {                                                                             // XREF: $251974A72D8ACF7EC8C19B3B5F3F224B/r
                                                                                 // ?G_PlayerController@@YAXPBUgentity_s@@QAH@Z/r
-        clientControllers_t *control;             // XREF: G_PlayerController(gentity_s const *,int * const)+166/w
+        Ptr32<clientControllers_t> control;             // XREF: G_PlayerController(gentity_s const *,int * const)+166/w
         unsigned __int8 tag[6];                         // XREF: G_PlayerController(gentity_s const *,int * const)+133/w
                                                                                 // G_PlayerController(gentity_s const *,int * const)+13D/o
         // padding byte
@@ -52,7 +53,7 @@ struct __declspec(align(4)) CEntTurretInfo // sizeof=0x20
         union //$4EE5A6C5EBB6111004F076A4831D37E2 // sizeof=0x8
         {                                                                             // XREF: CEntTurretInfo/r
             CEntTurretAngles angles;
-            const float *viewAngles;
+            Ptr32<const float> viewAngles;
         };
         float barrelPitch;
         float pivotOffset;
@@ -287,25 +288,25 @@ struct centity_s // sizeof=0x328
         int lastMuzzleFlash;
         unsigned __int16 attachModelNames[2];
         unsigned __int16 attachTagNames[2];
-        XAnimTree_s *tree;
-        Destructible *destructible;
-        NitrousVehicle *nitrousVeh;
-        cLinkInfo_s *linkInfo;
-        cgVehicle_s *vehicle;
-        ClientTagCache *clientTagCache;
-        AimTargetCache *aimTargetInfo;
-        cgScriptMover_s *cScriptMover;
+        Ptr32<XAnimTree_s> tree;
+        Ptr32<Destructible> destructible;
+        Ptr32<NitrousVehicle> nitrousVeh;
+        Ptr32<cLinkInfo_s> linkInfo;
+        Ptr32<cgVehicle_s> vehicle;
+        Ptr32<ClientTagCache> clientTagCache;
+        Ptr32<AimTargetCache> aimTargetInfo;
+        Ptr32<cgScriptMover_s> cScriptMover;
         int numBulletImpacts;
         int nextSlideFX;
         int fireTime;
         unsigned __int16 flagIndex;
         unsigned __int16 flagState;
-        Material *compassMaterial;
+        Ptr32<Material> compassMaterial;
         int lastTrailTime;
         unsigned int fxTrailHandle;
         unsigned int fxProjExplosion;
         unsigned int fxHeartbeat;
-        centity_s *updateDelayedNext;
+        Ptr32<centity_s> updateDelayedNext;
         unsigned __int32 applyLeftHandIK : 1;
         unsigned __int32 nextValid : 1;
         unsigned __int32 bMuzzleFlash : 1;
@@ -538,7 +539,7 @@ struct objective_t // sizeof=0x30
         int icon;
         int use3D;
         int color;
-        const char *alt_3D_text;
+        Ptr32<const char> alt_3D_text;
 };
 
 struct playerState_s // sizeof=0x26A4
@@ -744,7 +745,7 @@ struct lerpFrame_t // sizeof=0x34
         float pitchAngle;
         int pitching;
         int animationNumber;
-        struct animation_s *animation;
+        Ptr32<struct animation_s> animation;
         int animationTime;
         float oldFramePos[3];
         float oldFrameYaw;
@@ -773,8 +774,8 @@ struct __declspec(align(4)) clientInfo_t // sizeof=0x5C8
         unsigned __int64 xuid;
         char clanAbbrev[8];
         score_s score;
-        Material *hStatusIcon;
-        Material *hRankIcon;
+        Ptr32<Material> hStatusIcon;
+        Ptr32<Material> hRankIcon;
         int location;
         int health;
         char model[64];
@@ -793,7 +794,7 @@ struct __declspec(align(4)) clientInfo_t // sizeof=0x5C8
         __int64 moveType;
         __int64 eventType;
         unsigned int clientConditions[23];
-        XAnimTree_s *pXAnimTree;                        // XREF: G_FreeAnimTreeInstances+2D/r
+        Ptr32<XAnimTree_s> pXAnimTree;                        // XREF: G_FreeAnimTreeInstances+2D/r
                                                                                 // G_FreeAnimTreeInstances+43/r ...
         unsigned int iDObjWeapon;
         unsigned __int8 weaponModel;
@@ -877,7 +878,7 @@ struct actorInfo_t // sizeof=0x54
         int entityNum;
         animInfo_t animInfo;
         int dobjDirty;
-        XAnimTree_s *pXAnimTree;
+        Ptr32<XAnimTree_s> pXAnimTree;
 };
 
 struct pml_t // sizeof=0x8C
@@ -911,27 +912,27 @@ struct bgsAnim_s;
 struct bgs_t // sizeof=0xBF00
 {                                       // XREF: .data:bgs_t level_bgs/r
                                         // cg_s/r ...
-    bgsAnim_s *animData;                // XREF: G_PlayerVehiclePositionAndBlend(gentity_s *,gentity_s *)+4F2/r
+    Ptr32<bgsAnim_s> animData;                // XREF: G_PlayerVehiclePositionAndBlend(gentity_s *,gentity_s *)+4F2/r
                                         // G_InitGame(int,int,int,int,int)+127/w ...
     int time;                           // XREF: G_RunFrame(int)+5A/w
     int latestSnapshotTime;             // XREF: G_RunFrame(int)+66/w
     int frametime;                      // XREF: G_RunFrame(int)+71/w
     int anim_user;                      // XREF: G_InitGame(int,int,int,int,int)+16D/w
     int proneTime[32];
-    struct XModel *(__cdecl *GetXModel)(char *);
+    Ptr32<struct XModel * __cdecl(char *)> GetXModel;
                                         // XREF: G_InitGame(int,int,int,int,int)+131/w
-    void (__cdecl *CreateDObj)(struct DObjModel_s *, unsigned __int16, XAnimTree_s *, int, int, clientInfo_t *);
+    Ptr32<void __cdecl(struct DObjModel_s *, unsigned __int16, XAnimTree_s *, int, int, clientInfo_t *)> CreateDObj;
                                         // XREF: G_InitGame(int,int,int,int,int)+13B/w
-    unsigned __int16 (__cdecl *AttachWeapon)(struct DObjModel_s *, unsigned __int16, clientInfo_t *);
+    Ptr32<unsigned __int16 __cdecl(struct DObjModel_s *, unsigned __int16, clientInfo_t *)> AttachWeapon;
                                         // XREF: G_InitGame(int,int,int,int,int)+145/w
-    struct DObj *(__cdecl *GetDObj)(unsigned int, int); // XREF: G_InitGame(int,int,int,int,int)+14F/w
-    void (__cdecl *SafeDObjFree)(unsigned int, int);
+    Ptr32<struct DObj * __cdecl(unsigned int, int)> GetDObj; // XREF: G_InitGame(int,int,int,int,int)+14F/w
+    Ptr32<void __cdecl(unsigned int, int)> SafeDObjFree;
                                         // XREF: G_InitGame(int,int,int,int,int)+159/w
-    void *(__cdecl *AllocXAnim)(unsigned int);   // XREF: G_InitGame(int,int,int,int,int)+163/w
-    int (__cdecl *Rand)();              // XREF: G_InitGame(int,int,int,int,int)+177/w
-    float (__cdecl *Random)();          // XREF: G_InitGame(int,int,int,int,int)+181/w
-    void (__cdecl *AnimCmdRefCount)(__int16, __int16, int);
-    void (__cdecl *AnimCmdAddDependent)(__int16, __int16);
+    Ptr32<void * __cdecl(unsigned int)> AllocXAnim;   // XREF: G_InitGame(int,int,int,int,int)+163/w
+    Ptr32<int __cdecl()> Rand;              // XREF: G_InitGame(int,int,int,int,int)+177/w
+    Ptr32<float __cdecl()> Random;          // XREF: G_InitGame(int,int,int,int,int)+181/w
+    Ptr32<void __cdecl(__int16, __int16, int)> AnimCmdRefCount;
+    Ptr32<void __cdecl(__int16, __int16)> AnimCmdAddDependent;
     // padding byte
     // padding byte
     // padding byte

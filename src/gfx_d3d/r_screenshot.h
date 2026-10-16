@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum GfxScreenshotType : __int32
 {                                       // XREF: ?R_ScreenshotCommand@@YAXW4GfxScreenshotType@@@Z/r
@@ -111,7 +112,7 @@ void __cdecl R_CubemapLighting(
                 int width,
                 int height,
                 const float *baseColor,
-                unsigned __int8 **pixels);
+                Ptr32<unsigned __int8> *pixels);
 void __cdecl R_GetDirForCubemapPixel(int faceIndex, float x, float y, float *dir);
 void __cdecl R_CubemapLightingForDir(
                 float (**linearColors)[3],
@@ -121,7 +122,7 @@ void __cdecl R_CubemapLightingForDir(
                 const float *baseColor,
                 unsigned __int8 *pixel);
 void __cdecl R_CubemapShotExtractLinearLight(
-                unsigned __int8 **pixels,
+                Ptr32<unsigned __int8> *pixels,
                 int width,
                 int height,
                 float (**linearColors)[3]);

@@ -470,7 +470,7 @@ void __cdecl DObjCompleteHierarchyBits(DObj *obj, int *partBits)
     unsigned __int8 *parentList; // [esp+ACh] [ebp-10h]
     int objBoneIndex; // [esp+B0h] [ebp-Ch]
     const int *duplicatePartBits; // [esp+B4h] [ebp-8h]
-    XModel **models; // [esp+B8h] [ebp-4h]
+    Ptr32<struct XModel> *models; // [esp+B8h] [ebp-4h]
 
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp", 767, 0, "%s", "obj") )
         __debugbreak();

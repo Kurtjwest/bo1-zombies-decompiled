@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "l_precomp.h"
 #include <qcommon/common.h>
@@ -6,8 +7,8 @@
 
 struct directive_s // sizeof=0x8
 {                                       // XREF: .rdata:directives/r
-    const char *name;                         // XREF: PC_ReadDirective(source_s *)+92/r
-    int (__cdecl *func)(source_s *);    // XREF: PC_ReadDirective(source_s *)+141/r
+    Ptr32<const char> name;                         // XREF: PC_ReadDirective(source_s *)+92/r
+    Ptr32<int __cdecl(source_s *)> func;    // XREF: PC_ReadDirective(source_s *)+141/r
 };
 
 const directive_s directives[15] =
@@ -334,7 +335,7 @@ int __cdecl PC_NameHash(char *name)
     return ((unsigned __int16)(hash >> 20) ^ (unsigned __int16)(hash ^ (hash >> 10))) & 0x3FF;
 }
 
-void __cdecl PC_AddDefineToHash(define_s *define, define_s **definehash)
+void __cdecl PC_AddDefineToHash(define_s *define, Ptr32<define_s> *definehash)
 {
     int hash; // [esp+0h] [ebp-4h]
 
@@ -343,7 +344,7 @@ void __cdecl PC_AddDefineToHash(define_s *define, define_s **definehash)
     definehash[hash] = define;
 }
 
-define_s *__cdecl PC_FindHashedDefine(define_s **definehash, char *name)
+define_s *__cdecl PC_FindHashedDefine(Ptr32<define_s> *definehash, char *name)
 {
     define_s *d; // [esp+14h] [ebp-8h]
 

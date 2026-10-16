@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "r_material.h"
 #include "r_rendercmds.h"
@@ -32,7 +33,7 @@ enum GfxPrimStatsTarget : __int32
 
 struct GfxRenderCommandExecState // sizeof=0x4
 {                                       // XREF: ?RB_ExecuteRenderCommandsLoop@@YAXPBXPAH@Z/r
-    const void *cmd;                    // XREF: RB_ExecuteRenderCommandsLoop(void const *,int *)+C1/w
+    Ptr32<const void> cmd;                    // XREF: RB_ExecuteRenderCommandsLoop(void const *,int *)+C1/w
 };
 
 struct GfxVertex // sizeof=0x20
@@ -51,7 +52,7 @@ struct GfxDrawSurfListArgs // sizeof=0x10
                                         // R_DrawSurfs(GfxCmdBufContext,GfxCmdBufState *,GfxDrawSurfListInfo const *)+504/w
     unsigned int firstDrawSurfIndex;    // XREF: R_DrawSurfs(GfxCmdBufContext,GfxCmdBufState *,GfxDrawSurfListInfo const *)+507/w
                                         // R_DrawSurfs(GfxCmdBufContext,GfxCmdBufState *,GfxDrawSurfListInfo const *):loc_AAF03B/r ...
-    const GfxDrawSurfListInfo *info;    // XREF: R_DrawSurfs(GfxCmdBufContext,GfxCmdBufState *,GfxDrawSurfListInfo const *)+511/w
+    Ptr32<const GfxDrawSurfListInfo> info;    // XREF: R_DrawSurfs(GfxCmdBufContext,GfxCmdBufState *,GfxDrawSurfListInfo const *)+511/w
 };
 
 struct GfxPointVertex // sizeof=0x10
@@ -72,9 +73,9 @@ struct GfxCmdDrawPoints // sizeof=0x18
 struct r_backEndGlobals_t // sizeof=0x28C
 {                                       // XREF: .data:r_backEndGlobals_t backEnd/r
     int glowCount;
-    GfxImage *glowImage;
-    GfxImage *godRaysImage;
-    Font_s *debugFont;                  // XREF: RB_RegisterBackendAssets(void)+12/w
+    Ptr32<GfxImage> glowImage;
+    Ptr32<GfxImage> godRaysImage;
+    Ptr32<Font_s> debugFont;                  // XREF: RB_RegisterBackendAssets(void)+12/w
                                         // RB_DrawDebugStrings+128/r ...
     GfxFrameStats frameStatsMax;        // XREF: RB_ResetStatTracking(int)+3/o
                                         // RB_Stats_f(void)+5E/o ...
@@ -104,7 +105,7 @@ struct __declspec(align(4)) materialCommands_t // sizeof=0x22A95C
 struct GfxCmdStretchComposite // sizeof=0x2C
 {
     GfxCmdHeader header;
-    GfxImage *image;
+    Ptr32<GfxImage> image;
     float x;
     float y;
     float w;
@@ -119,7 +120,7 @@ struct GfxCmdStretchComposite // sizeof=0x2C
 struct GfxCmdStretchPic // sizeof=0x30
 {
     GfxCmdHeader header;
-    const Material *material;
+    Ptr32<const Material> material;
     float x;
     float y;
     float w0;
@@ -135,7 +136,7 @@ struct GfxCmdStretchPic // sizeof=0x30
 struct GfxCmdStretchPicRotateXY // sizeof=0x34
 {
     GfxCmdHeader header;
-    const Material *material;
+    Ptr32<const Material> material;
     float x;
     float y;
     float w0;
@@ -152,7 +153,7 @@ struct GfxCmdStretchPicRotateXY // sizeof=0x34
 struct GfxCmdStretchPicRotateST // sizeof=0x34
 {
     GfxCmdHeader header;
-    const Material *material;
+    Ptr32<const Material> material;
     float x;
     float y;
     float w;
@@ -169,7 +170,7 @@ struct GfxCmdStretchPicRotateST // sizeof=0x34
 struct GfxCmdDrawQuadPic // sizeof=0x30
 {
     GfxCmdHeader header;
-    const Material *material;
+    Ptr32<const Material> material;
     float verts[4][2];
     float w;
     GfxColor color;
@@ -178,8 +179,8 @@ struct GfxCmdDrawQuadPic // sizeof=0x30
 struct GfxCmdDrawEmblemLayer // sizeof=0x68
 {
     GfxCmdHeader header;
-    const Material *material;
-    const GfxImage *image;
+    Ptr32<const Material> material;
+    Ptr32<const GfxImage> image;
     int colorIdx;
     float outlineSize;
     float smoothSize;
@@ -198,15 +199,15 @@ struct GfxCmdDrawFramed2D // sizeof=0x2C
     float thicknessTex;
     int sides;
     GfxColor color;
-    const Material *material;
+    Ptr32<const Material> material;
 };
          
 struct GfxCmdPCCopyImageGenMIP // sizeof=0x10
 {
     GfxCmdHeader header;
-    void (__cdecl *callback)(void *);
-    GfxImage *image;
-    void *job;
+    Ptr32<void __cdecl(void *)> callback;
+    Ptr32<GfxImage> image;
+    Ptr32<void> job;
 };
 
 struct GfxCachedSModelSurf // sizeof=0x8
@@ -218,8 +219,8 @@ struct GfxCachedSModelSurf // sizeof=0x8
 
 struct static_model_node_list_t // sizeof=0x8
 {                                       // XREF: static_model_leaf_t/r
-    static_model_node_list_t *prev;     // XREF: SMC_GetFreeBlockOfSize+94/r
-    static_model_node_list_t *next;
+    Ptr32<static_model_node_list_t> prev;     // XREF: SMC_GetFreeBlockOfSize+94/r
+    Ptr32<static_model_node_list_t> next;
 };
 
 union static_model_leaf_t // sizeof=0x8
@@ -230,8 +231,8 @@ union static_model_leaf_t // sizeof=0x8
 
 struct static_model_tree_list_t // sizeof=0x8
 {                                       // XREF: static_model_tree_t/r
-    static_model_tree_list_t *prev;     // XREF: SMC_ForceFreeBlock+9/r
-    static_model_tree_list_t *next;     // XREF: SMC_ClearCache+90/w
+    Ptr32<static_model_tree_list_t> prev;     // XREF: SMC_ForceFreeBlock+9/r
+    Ptr32<static_model_tree_list_t> next;     // XREF: SMC_ClearCache+90/w
 };
 
 struct static_model_node_t // sizeof=0x4
@@ -253,7 +254,7 @@ struct ScopedShaderConstantSetUndo;
 struct GfxCmdResolveComposite // sizeof=0x8
 {
     GfxCmdHeader header;
-    void (__cdecl *callback)(GfxImage *);
+    Ptr32<void __cdecl(GfxImage *)> callback;
 };
 
 struct GfxCmdSetMaterialColor // sizeof=0x14

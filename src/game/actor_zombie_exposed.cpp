@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "actor_zombie_exposed.h"
 #include "actor_exposed.h"
 #include "actor_state.h"
@@ -2201,10 +2202,10 @@ static bool FUN_005f3580(actor_s *self, pathnode_t *node, bool useSuppression)
 struct flee_search_sp_t
 {
     float origin[3], radius, radiusSq, startDistSq, bestDistSq;
-    pathnode_t *bestNode;
+    Ptr32<pathnode_t> bestNode;
     int planeCount;
-    float (*normal)[2];
-    float *distance;
+    Ptr32<float[2]> normal;
+    Ptr32<float> distance;
 };
 
 // zombies: Path_AStarAlgorithm flee variants (SP 0x007c65b0)

@@ -1766,7 +1766,7 @@ void __cdecl constraint_solver_process(
                 physics_system *psys,
                 float outside_delta_t)
 {
-    rigid_body **m_list_island; // ebx
+    Ptr32<rigid_body> *m_list_island; // ebx
     int m_list_island_count; // edi
     constraint_solver_task_input *input; // eax
     int m_max_vel_pos_iters; // edx
@@ -1861,7 +1861,7 @@ void __thiscall pulse_sum_constraint_solver::add_urb(
                 phys_simple_link_list<pulse_sum_constraint_solver::user_rigid_body_restore_info> *list_urbri,
                 rigid_body_constraint *rbc)
 {
-    rigid_body **p_b1; // edi
+    Ptr32<struct rigid_body> *p_b1; // edi
     rigid_body *b2; // eax
     pulse_sum_constraint_solver::temp_user_rigid_body *v7; // esi
     pulse_sum_constraint_solver::user_rigid_body_restore_info *v8; // eax
@@ -4468,7 +4468,7 @@ void __thiscall pulse_sum_constraint_solver::execute_constraint_solver(rigid_bod
     int v24; // eax
     rigid_body *v25; // ebx
     pulse_sum_node *v26; // edi
-    pulse_sum_node **m_last_next_ptr; // edx
+    Ptr32<pulse_sum_node> *m_last_next_ptr; // edx
     rigid_body_constraint_point *i2; // edi
     rigid_body_constraint_hinge *i3; // edi
     rigid_body_constraint_distance *i4; // edi

@@ -1532,7 +1532,7 @@ void __cdecl Flame_List_Move_Global(flameGeneric_s *item, flameGeneric_s **fromL
     }
 }
 
-void __cdecl Flame_List_Add_Local(flameGeneric_s *item, flameGeneric_s **localList)
+void __cdecl Flame_List_Add_Local(flameGeneric_s *item, Ptr32<flameGeneric_s> *localList)
 {
     item->listLocal.prev = 0;
     item->listLocal.next = *localList;
@@ -1541,7 +1541,7 @@ void __cdecl Flame_List_Add_Local(flameGeneric_s *item, flameGeneric_s **localLi
     *localList = item;
 }
 
-void __cdecl Flame_List_Sub_Local(flameGeneric_s *item, flameGeneric_s **localList)
+void __cdecl Flame_List_Sub_Local(flameGeneric_s *item, Ptr32<flameGeneric_s> *localList)
 {
     if ( *localList == item )
         *localList = item->listLocal.next;

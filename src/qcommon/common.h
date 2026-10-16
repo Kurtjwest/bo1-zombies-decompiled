@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "msg_mp.h"
 #include "net_chan_mp.h"
 
@@ -46,7 +47,7 @@ struct SpawnVar // sizeof=0xA0C
     // padding byte
     int numSpawnVars;                   // XREF: CScr_LoadStructs(void)+1FC/r
                                         // CG_SpawnNode+7F/r ...
-    char *spawnVars[64][2];             // XREF: CScr_LoadStructs(void)+20C/r
+    Ptr32<char> spawnVars[64][2];             // XREF: CScr_LoadStructs(void)+20C/r
                                         // CScr_LoadStructs(void)+223/r ...
     int numSpawnVarChars;
     char spawnVarChars[2048];

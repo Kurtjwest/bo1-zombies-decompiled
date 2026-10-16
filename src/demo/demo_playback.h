@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "demo_common.h"
 
 #include <qcommon/msg_mp.h>
@@ -8,7 +9,7 @@ struct playerState_s;
 
 struct __declspec(align(4)) streamingState_s // sizeof=0x1C
 {                                       // XREF: .data:streamingState/r
-    unsigned __int8 *buffer;            // XREF: Demo_SetupClipStreamingState(void)+2E/w
+    Ptr32<unsigned __int8> buffer;            // XREF: Demo_SetupClipStreamingState(void)+2E/w
                                         // Demo_SetupClipStreamingState(void)+6F/w ...
     int bufferSize;                     // XREF: Demo_SetupClipStreamingState(void)+3F/w
                                         // Demo_SetupClipStreamingState(void)+8D/w ...

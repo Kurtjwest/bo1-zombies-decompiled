@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "rb_backend.h"
 #include "rb_stats.h"
@@ -4701,11 +4702,11 @@ namespace
 {
 struct BO1GpuQuerySet
 {
-    IDirect3DQuery9 *disjoint;
-    IDirect3DQuery9 *freq;
-    IDirect3DQuery9 *begin;
-    IDirect3DQuery9 *end;
-    IDirect3DQuery9 *mark[BO1_GPU_SEGS - 1];
+    Ptr32<IDirect3DQuery9> disjoint;
+    Ptr32<IDirect3DQuery9> freq;
+    Ptr32<IDirect3DQuery9> begin;
+    Ptr32<IDirect3DQuery9> end;
+    Ptr32<IDirect3DQuery9> mark[BO1_GPU_SEGS - 1];
     unsigned int markMask; // marks issued this frame
     long frame; // frame the set measures, 0 = free
 };
@@ -4731,7 +4732,7 @@ void RB_BO1GpuInit()
             s_kgqFailed = true;
             return;
         }
-        for (IDirect3DQuery9 *&m : q.mark)
+        for (auto &m : q.mark)
         {
             if (dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, &m) < 0)
             {
@@ -4859,7 +4860,7 @@ double s_kgCyclesPerMs;
 struct BO1ThreadInfo
 {
     DWORD id;
-    HANDLE handle;
+    Ptr32T<HANDLE> handle;
     char start[40];
     unsigned long long cycles;
 };

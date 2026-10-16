@@ -27,9 +27,12 @@
 // Ptr32<T> is T* itself: overloads written for the class form must not be declared
 #define BO1_PTR32_IS_CLASS 0
 template <typename T> using Ptr32 = T *;
+// pointer typedefs (HANDLE, HWND, ...) as 32-bit pointer fields
+template <typename P> using Ptr32T = P;
 
 inline uint32_t Ptr32_Encode(const volatile void *p) { return (uint32_t)p; }
 inline void *Ptr32_Decode(uint32_t v) { return (void *)v; }
+#define BO1_NATIVE_ARRAY(a, n) (a)
 
 #else
 
@@ -162,12 +165,41 @@ template <typename T> struct Ptr32
         return old;
     }
 
-    // Calls through a function-pointer member (Ptr32<void(int)> cb; cb(3);)
-    template <typename... A, typename U = T, typename = std::enable_if_t<std::is_function_v<U>>> decltype(auto) operator()(A &&...a) const
-    {
-        return get()(static_cast<A &&>(a)...);
-    }
+    // Calls through a function-pointer member (Ptr32<void(int)> cb; cb(3);) use operator T*(): a conversion to a
+    // function pointer makes the object callable with the function's exact parameter types.
 };
+
+// pointer typedefs (HANDLE, HWND, ...) as 32-bit pointer fields
+template <typename P> using Ptr32T = Ptr32<std::remove_pointer_t<P>>;
+
+namespace bo1ptr
+{
+// a Ptr32 already holds its handle
+template <typename T> inline uint32_t EncodeAny(const Ptr32<T> &p) { return p.v; }
+
+// A native T*[] copy of an array of 32-bit pointers, for functions that take an array of native pointers
+// (const char **list, int count). Lives until the end of the full expression it is created in.
+template <typename T> struct NativeArray
+{
+    T **p;
+    T *small[64];
+    T **big = nullptr;
+    NativeArray(const Ptr32<T> *src, size_t n)
+    {
+        p = n <= 64 ? small : (big = new T *[n]);
+        for (size_t i = 0; i < n; ++i)
+            p[i] = src[i].get();
+    }
+    NativeArray(const NativeArray &) = delete;
+    NativeArray &operator=(const NativeArray &) = delete;
+    ~NativeArray() { delete[] big; }
+    operator T **() { return p; }
+};
+template <typename T> inline NativeArray<T> MakeNativeArray(const Ptr32<T> *src, size_t n) { return NativeArray<T>(src, n); }
+template <typename T> inline NativeArray<T> MakeNativeArray(const Ptr32<Ptr32<T>> &src, size_t n) { return NativeArray<T>(src.get(), n); }
+} // namespace bo1ptr
+// (T **)-typed argument from an array of 32-bit pointers (a temporary native copy, valid for the call)
+#define BO1_NATIVE_ARRAY(a, n) (::bo1ptr::MakeNativeArray((a), (n)))
 
 static_assert(sizeof(Ptr32<int>) == 4, "Ptr32 must be 4 bytes");
 static_assert(std::is_trivially_copyable_v<Ptr32<int>>, "Ptr32 must be trivially copyable");

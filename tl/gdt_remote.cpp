@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "gdt_remote.h"
 
 #include <cstring>
@@ -17,8 +18,8 @@ char GDTCommands[4][128];
 
 struct gdt_remote_cmd_handler // sizeof=0x8
 {                                       // XREF: .data:gdt_remote_handlers/r
-    const char *assetType;              // XREF: ProcessGDTCmds(void)+A2/r
-    bool (__cdecl *action)(const char *);
+    Ptr32<const char> assetType;              // XREF: ProcessGDTCmds(void)+A2/r
+    Ptr32<bool __cdecl(const char *)> action;
 };
 
 gdt_remote_cmd_handler gdt_remote_handlers[17] =

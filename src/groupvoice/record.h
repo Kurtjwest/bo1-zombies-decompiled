@@ -1,9 +1,10 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "directsound.h"
 
 struct audioSample_t // sizeof=0x20
 {                                       // XREF: ?DSOUNDRecord_UpdateSample@@YAXPAUdsound_sample_t@@@Z/r
-    unsigned __int8 *buffer;            // XREF: DSOUNDRecord_UpdateSample(dsound_sample_t *)+1A7/w
+    Ptr32<unsigned __int8> buffer;            // XREF: DSOUNDRecord_UpdateSample(dsound_sample_t *)+1A7/w
                                         // DSOUNDRecord_UpdateSample(dsound_sample_t *)+1D7/w
     int lengthInBytes;                  // XREF: DSOUNDRecord_UpdateSample(dsound_sample_t *)+1A1/w
                                         // DSOUNDRecord_UpdateSample(dsound_sample_t *)+1D1/w

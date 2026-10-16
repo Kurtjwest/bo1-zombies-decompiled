@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <universal/assertive.h>
 #include <cstring>
@@ -242,12 +243,12 @@ struct chull_t // sizeof=0x20
 {
     unsigned int key;
     int nverts;
-    phys_vec3 *verts;
+    Ptr32<phys_vec3> verts;
     int ninds;
-    unsigned __int16 *inds;
-    chull_t *next;
+    Ptr32<unsigned __int16> inds;
+    Ptr32<chull_t> next;
     int touched;
-    chull_t *next_list;
+    Ptr32<chull_t> next_list;
 };
 BO1_LAYOUT32_ASSERT(sizeof(chull_t) == 0x20);
 
@@ -428,14 +429,14 @@ inline void assert_mat44_initialized(const phys_mat44 &m)
 template <typename T>
 struct phys_link_list_base // sizeof=0x4
 {                                                                             // XREF: pulse_sum_node/r
-    T *m_next_link;
+    Ptr32<T> m_next_link;
 };
 
 template <typename T>
 struct phys_link_list // sizeof=0xC
 { 
-    T *m_first;
-    T **m_last_next_ptr;
+    Ptr32<T> m_first;
+    Ptr32<Ptr32<T>> m_last_next_ptr;
     volatile unsigned int m_alloc_count;
 
     phys_link_list() // INLINED
@@ -489,8 +490,8 @@ struct phys_link_list1 //<PhysObjUserData> // sizeof=0xC
 {                                       // XREF: PhysGlob/r
     //PhysObjUserData *m_first;
     //PhysObjUserData *m_last;
-    T *m_first;
-    T *m_last;
+    Ptr32<T> m_first;
+    Ptr32<T> m_last;
     int m_alloc_count;                  // XREF: Phys_CollisionCallback(void)+1C/r
 
     void add(T *p)
@@ -566,12 +567,12 @@ struct phys_simple_link_list//<contact_point_info> // sizeof=0x4
 {                                                                             // XREF: rigid_body_constraint_contact/r
                                                                                 // rigid_body_constraint_contact/r
         //contact_point_info *m_first;
-        T *m_first;
+        Ptr32<T> m_first;
 
         struct iterator//phys_simple_link_list<contact_point_info>::iterator // sizeof=0x4
         {                                       // XREF: ?render_contact@@YAXPAVrigid_body_constraint_contact@@@Z/r
             //contact_point_info *m_ptr;
-            T *m_ptr;
+            Ptr32<T> m_ptr;
         };
 };
 
@@ -579,7 +580,7 @@ template <typename T, int TABLE_SIZE>
 struct minspec_hash_table//<phys_slot_pool,64> // sizeof=0x10C
 {                                       // XREF: phys_memory_manager/r
     //phys_slot_pool *m_hash_table[64];
-    T *m_hash_table[TABLE_SIZE];
+    Ptr32<T> m_hash_table[TABLE_SIZE];
     unsigned int m_mod;
     unsigned int m_highest_collision;
     unsigned int m_total_collisions;
@@ -765,10 +766,10 @@ struct phys_simple_allocator//<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cac
 
 struct phys_memory_heap // sizeof=0x10
 {                                                                             // XREF: phys_contact_manifold_process/r
-        char *m_buffer_start;
-        char *m_buffer_end;
-        char *m_buffer_cur;
-        char *m_user_start;
+        Ptr32<char> m_buffer_start;
+        Ptr32<char> m_buffer_end;
+        Ptr32<char> m_buffer_cur;
+        Ptr32<char> m_user_start;
 
         //char *phys_memory_heap::fast_allocate(phys_memory_heap *this, int size, const char *error_msg);
         char *fast_allocate(int size, const char *error_msg);
@@ -780,13 +781,13 @@ template <typename T, int SIZE>
 struct __declspec(align(16)) phys_static_array
 {
     char m_buffer[sizeof(T) * SIZE];
-    T * m_slot_array;
+    Ptr32<T> m_slot_array;
     int m_alloc_count;
 
     struct iterator//phys_static_array<phys_convex_hull::ch_edge,128>::iterator // sizeof=0x4
     {                                       // XREF: ?compute_convex_hull@phys_convex_hull@@QAEXHM@Z/r
         //phys_convex_hull::ch_edge *m_ptr;   // XREF: phys_convex_hull::add_intermediate_edge(phys_vec3 *,phys_vec3 *)+4D/w
-        T *m_ptr;
+        Ptr32<T> m_ptr;
     };
 
 private:
@@ -902,8 +903,8 @@ struct phys_free_list
 public:
     struct T_internal_base
     {
-        T_internal_base *m_prev_T_internal;
-        T_internal_base *m_next_T_internal;
+        Ptr32<T_internal_base> m_prev_T_internal;
+        Ptr32<T_internal_base> m_next_T_internal;
     };
     //static_assert(sizeof(T_internal_base) == 8);
 
@@ -917,7 +918,7 @@ public:
     struct iterator//phys_free_list<broad_phase_collision_pair>::iterator // sizeof=0x4
     {
         //phys_free_list<broad_phase_collision_pair>::T_internal_base *m_ptr;
-        T_internal_base *m_ptr;
+        Ptr32<T_internal_base> m_ptr;
 
         iterator()                             : m_ptr(NULL) {}
         iterator(T_internal_base *p)           : m_ptr(p)    {}
@@ -938,7 +939,7 @@ public:
     int m_list_count;
     int m_list_count_high_water;
 
-    T *m_ptr_list[PTR_LIST_SIZE];
+    Ptr32<T> m_ptr_list[PTR_LIST_SIZE];
     int m_ptr_list_count;
 
 public:
@@ -1120,8 +1121,8 @@ inline phys_vec3 *__cdecl phys_AbsValue(phys_vec3 *result, const phys_vec3 *a)
 template <typename T>
 struct phys_inplace_avl_tree_node // sizeof=0xC
 {                                       // XREF: auto_rigid_body/r
-    T *m_left;
-    T *m_right;
+    Ptr32<T> m_left;
+    Ptr32<T> m_right;
     int m_balance;
 };
 
@@ -1142,11 +1143,11 @@ struct phys_inplace_avl_tree
 {
     struct stack_item
     {
-        T2 **m_node;
+        Ptr32<T2> *m_node; // slot holding the node (a tree link or the root)
         int  m_child;
     };
 
-    T2 *m_tree_root;
+    Ptr32<T2> m_tree_root;
 
     phys_inplace_avl_tree() { m_tree_root = nullptr; }
 
@@ -1157,7 +1158,7 @@ struct phys_inplace_avl_tree
     /* rotations                                                     */
     /* ------------------------------------------------------------ */
 
-    inline void rotate_left(T2 **root)
+    inline void rotate_left(Ptr32<T2> *root)
     {
         T2 *save_right = ni(*root)->m_right;
 
@@ -1173,7 +1174,7 @@ struct phys_inplace_avl_tree
         *root = save_right;
     }
 
-    inline void rotate_right(T2 **root)
+    inline void rotate_right(Ptr32<T2> *root)
     {
         T2 *save_left = ni(*root)->m_left;
 
@@ -1259,7 +1260,7 @@ struct phys_inplace_avl_tree
                 break;
 
             --cur_item;
-            T2 **m_node = cur_item->m_node;
+            Ptr32<T2> *m_node = cur_item->m_node;
             ni(*m_node)->m_balance += cur_item->m_child;
 
             if (ni(*m_node)->m_balance == -2)
@@ -1336,7 +1337,7 @@ struct phys_inplace_avl_tree
             }
         }
 
-        T2 **node_to_be_removed = cur_item->m_node;
+        Ptr32<T2> *node_to_be_removed = cur_item->m_node;
 
         if (ni(*node_to_be_removed)->m_right)
         {
@@ -1387,7 +1388,7 @@ struct phys_inplace_avl_tree
                 break;
 
             --cur_item;
-            T2 **m_node = cur_item->m_node;
+            Ptr32<T2> *m_node = cur_item->m_node;
             ni(*m_node)->m_balance -= cur_item->m_child;
 
             if (ni(*m_node)->m_balance == -2)

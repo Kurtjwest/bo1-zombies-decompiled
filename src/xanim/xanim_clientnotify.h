@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <clientscript/cscr_stringlist.h>
 
 struct ClientNotifyData // sizeof=0x10
@@ -27,7 +28,7 @@ struct XAnimClientNotifyList // sizeof=0x604
 
 struct XAnimClientNotify // sizeof=0x14
 {
-    const char *name;
+    Ptr32<const char> name;
     unsigned int svNotetrackName;
     unsigned int clNotetrackName;
     unsigned int notifyType;

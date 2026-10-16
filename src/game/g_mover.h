@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <physics/phys_local.h>
 #include <bgame/bg_public.h>
 #include <ragdoll/ragdoll.h>
@@ -13,7 +14,7 @@ struct __declspec(align(16)) mover_info_t // sizeof=0xC0
     float m_prev_origin[3];
     float m_angles[3];
     float m_prev_angles[3];
-    gentity_s *m_ent;
+    Ptr32<gentity_s> m_ent;
     bool m_do_collision;
     // padding byte
     // padding byte

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/dvar.h>
 #include <bgame/bg_public.h>
 
@@ -92,7 +93,7 @@ struct SpawnInfluencer // sizeof=0x7C
     int disableTime;
     int teamMask;
     EntHandle entity;
-    SpawnInfluencerPreset *preset;
+    Ptr32<SpawnInfluencerPreset> preset;
     float boundingRadius;
     float bounds[2];
     float length;

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_gfx.h"
 
 struct GfxViewInfo;
@@ -8,18 +9,18 @@ struct GfxDrawSurfListInfo;
 
 struct BspSpotLightCallback // sizeof=0x4
 {                                       // XREF: R_GetBspSpotLightSurfs/r
-    const unsigned __int8 *surfaceVisData;
+    Ptr32<const unsigned __int8> surfaceVisData;
 };
 
 struct LightGlobals // sizeof=0x104
 {                                       // XREF: .data:lightGlob/r
     int defCount;                       // XREF: R_RegisterLightDef_LoadObj+44/r
-    GfxLightDef *defs[64];              // XREF: R_RegisterLightDef_LoadObj+53/r
+    Ptr32<GfxLightDef> defs[64];              // XREF: R_RegisterLightDef_LoadObj+53/r
 };
 
 struct StaticModelLightCallback // sizeof=0x14
 {                                       // XREF: .data:g_staticModelLightCallback/r
-    unsigned __int8 *smodelVisData;     // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+5A/w
+    Ptr32<unsigned __int8> smodelVisData;     // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+5A/w
     float position[3];                  // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+1E8/w
     float radiusSq;                     // XREF: R_GetStaticModelLightSurfs(GfxLight const *,int)+22C/w
 };

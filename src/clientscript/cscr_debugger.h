@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "cscr_main.h"
 #include "cscr_variable.h"
 
@@ -43,16 +44,16 @@ union sval_u // sizeof=0x4
     unsigned int idValue;
     float floatValue;
     int intValue;
-    sval_u *node;
+    Ptr32<sval_u> node;
     unsigned int sourcePosValue;
-    const char *codePosValue;
-    const char *debugString;
-    scr_block_s *block;
+    Ptr32<const char> codePosValue;
+    Ptr32<const char> debugString;
+    Ptr32<scr_block_s> block;
 };
 
 struct debugger_sval_s // sizeof=0x4
 {                                       // XREF: debugger_sval_t/r
-    debugger_sval_s *next;
+    Ptr32<debugger_sval_s> next;
 };
 
 struct ScriptExpression_t // sizeof=0xC
@@ -61,15 +62,15 @@ struct ScriptExpression_t // sizeof=0xC
     sval_u parseData;                   // XREF: Scr_ScriptWatch::AddElement(scriptInstance_t,Scr_WatchElement_s *,char const *)+5E/r
                                         // Scr_ScriptWatch::AddElement(scriptInstance_t,Scr_WatchElement_s *,char const *)+D0/r ...
     int breakonExpr;                    // XREF: Scr_ScriptWatch::AddElement(scriptInstance_t,Scr_WatchElement_s *,char const *)+1CD/r
-    debugger_sval_s *exprHead;          // XREF: Scr_ScriptWatch::AddElement(scriptInstance_t,Scr_WatchElement_s *,char const *):loc_8AD863/w
+    Ptr32<debugger_sval_s> exprHead;          // XREF: Scr_ScriptWatch::AddElement(scriptInstance_t,Scr_WatchElement_s *,char const *):loc_8AD863/w
                                         // Scr_ScriptWatch::AddElement(scriptInstance_t,Scr_WatchElement_s *,char const *)+1D3/r
 };
 
 struct Scr_WatchElement_s // sizeof=0x64
 {                                       // XREF: Scr_WatchElement_t/r
     ScriptExpression_t expr;
-    const char *valueText;
-    const char *refText;
+    Ptr32<const char> valueText;
+    Ptr32<const char> refText;
     bool directObject;
     // padding byte
     // padding byte
@@ -92,27 +93,27 @@ struct Scr_WatchElement_s // sizeof=0x64
     unsigned int childCount;
     unsigned int hardcodedCount;
     int id;
-    struct Scr_Breakpoint *breakpoint;
-    const char *deadCodePos;
+    Ptr32<struct Scr_Breakpoint> breakpoint;
+    Ptr32<const char> deadCodePos;
     unsigned int bufferIndex;
     unsigned int sourcePos;
     int changedTime;
-    Scr_WatchElement_s *parent;
-    Scr_WatchElement_s *childArrayHead;
-    Scr_WatchElement_s *childHead;
-    Scr_WatchElement_s *next;
+    Ptr32<Scr_WatchElement_s> parent;
+    Ptr32<Scr_WatchElement_s> childArrayHead;
+    Ptr32<Scr_WatchElement_s> childHead;
+    Ptr32<Scr_WatchElement_s> next;
 };
 
 struct Scr_Breakpoint // sizeof=0x1C
 {                                       // XREF: .data:g_breakpoints/r
     int line;
     unsigned int bufferIndex;
-    char *codePos;
-    Scr_WatchElement_s *element;
+    Ptr32<char> codePos;
+    Ptr32<Scr_WatchElement_s> element;
     int builtinIndex;
-    Scr_Breakpoint *next;               // XREF: Scr_InitBreakpoints+31/w
+    Ptr32<Scr_Breakpoint> next;               // XREF: Scr_InitBreakpoints+31/w
                                         // Scr_InitBreakpoints:loc_8AF469/r
-    Scr_Breakpoint **prev;
+    Ptr32<Ptr32<Scr_Breakpoint>> prev;
 };
 
 struct Scr_SourcePos_t // sizeof=0xC
@@ -127,20 +128,20 @@ struct Scr_SourcePos_t // sizeof=0xC
 
 struct Scr_OpcodeList_s // sizeof=0x8
 {                                       // XREF: Scr_OpcodeList_t/r
-    char *codePos;
-    Scr_OpcodeList_s *next;
+    Ptr32<char> codePos;
+    Ptr32<Scr_OpcodeList_s> next;
 };
 
 struct Scr_WatchElementNode_s // sizeof=0x8
 {                                       // XREF: Scr_WatchElementNode_t/r
-    Scr_WatchElement_s *element;
-    Scr_WatchElementNode_s *next;
+    Ptr32<Scr_WatchElement_s> element;
+    Ptr32<Scr_WatchElementNode_s> next;
 };
 
 struct Scr_WatchElementDoubleNode_t // sizeof=0x8
 {
-    Scr_WatchElementNode_s *list;
-    Scr_WatchElementNode_s *removedList;
+    Ptr32<Scr_WatchElementNode_s> list;
+    Ptr32<Scr_WatchElementNode_s> removedList;
 };
 
 class UI_Component
@@ -179,16 +180,16 @@ public:
 
     unsigned int bufferIndex;
     int currentTopLine;
-    const char *currentBufPos;
-    Scr_Breakpoint *breakpointHead;
-    Scr_Breakpoint *builtinHead;
+    Ptr32<const char> currentBufPos;
+    Ptr32<Scr_Breakpoint> breakpointHead;
+    Ptr32<Scr_Breakpoint> builtinHead;
     int numCols;
 
 public:
     void SetScriptFile(scriptInstance_t inst, const char *name);
     void AddBreakpoint(
         scriptInstance_t inst,
-        Scr_Breakpoint **pBreakpoint,
+        Ptr32<Scr_Breakpoint> *pBreakpoint,
         char *codePos,
         int builtinIndex,
         Scr_WatchElement_s *element,
@@ -202,7 +203,7 @@ public:
         Scr_WatchElement_s *element,
         unsigned __int8 breakpointType,
         bool user,
-        Scr_Breakpoint **pBreakpoint,
+        Ptr32<Scr_Breakpoint> *pBreakpoint,
         unsigned int startSourcePos,
         unsigned int endSourcePos);
     void ToggleBreakpointInternal(
@@ -236,7 +237,7 @@ public:
 class Scr_AbstractScriptList : public UI_LinesComponent // sizeof=0xC
 {
 public:
-    Scr_ScriptWindow **scriptWindows;   // XREF: Scr_ToggleBreakpointRemote+17/r
+    Ptr32<Ptr32<Scr_ScriptWindow>> scriptWindows;   // XREF: Scr_ToggleBreakpointRemote+17/r
                                         // Scr_RunToCursorRemote+17/r ...
 public:
     void Init(scriptInstance_t inst);
@@ -268,7 +269,7 @@ public:
 class Scr_ScriptWatch: UI_LinesComponent // sizeof=0x18
 {
 public:
-    Scr_WatchElement_s *elementHead;    // XREF: Scr_ResumeBreakpoints+30/r
+    Ptr32<Scr_WatchElement_s> elementHead;    // XREF: Scr_ResumeBreakpoints+30/r
                                         // Scr_CheckBreakonNotify(scriptInstance_t,uint,uint,VariableValue *,char const *,uint)+FF/r ...
     int elementId;
     unsigned int localId;               // XREF: Scr_CheckBreakonNotify(scriptInstance_t,uint,uint,VariableValue *,char const *,uint)+59/w
@@ -278,7 +279,7 @@ public:
 public:
     Scr_WatchElement_s * GetElementWithId_r(Scr_WatchElement_s *element, int id);
     Scr_WatchElement_s * GetElementWithId(int id);
-    Scr_WatchElement_s ** GetElementRef(Scr_WatchElement_s *element);
+    Ptr32<Scr_WatchElement_s> *GetElementRef(Scr_WatchElement_s *element);
     Scr_WatchElement_s * GetElementPrev(Scr_WatchElement_s *element);
     void ToggleExpandElement(
         scriptInstance_t inst,
@@ -332,7 +333,7 @@ public:
     Scr_WatchElement_s *CreateWatchElement(
         scriptInstance_t inst,
         char *text,
-        Scr_WatchElement_s **prevElem,
+        Ptr32<Scr_WatchElement_s> *prevElem,
         const char *name);
     void AddElement(
         scriptInstance_t inst,
@@ -385,11 +386,11 @@ struct scrDebuggerGlob_t // sizeof=0x1C4
     // padding byte
     // padding byte
     // padding byte
-    char *breakpoints;                  // XREF: Scr_FindBreakpointInfo+85/r
+    Ptr32<char> breakpoints;                  // XREF: Scr_FindBreakpointInfo+85/r
     // Scr_InitDebugger(scriptInstance_t)+9B/w ...
     int breakpointOpcode;               // XREF: Scr_SpecialBreakpoint+113/w
     // Scr_Step+BF/r ...
-    const char *breakpointCodePos;      // XREF: Scr_ScriptCallStack::UpdateStack(scriptInstance_t)+7B/r
+    Ptr32<const char> breakpointCodePos;      // XREF: Scr_ScriptCallStack::UpdateStack(scriptInstance_t)+7B/r
     // Scr_SpecialBreakpoint+101/w ...
     Scr_SourcePos_t breakpointPos;      // XREF: Scr_ResumeBreakpoints+1D/w
     // Scr_SetTempBreakpoint+86/r ...
@@ -399,7 +400,7 @@ struct scrDebuggerGlob_t // sizeof=0x1C4
     // Scr_ResetAbortDebugger(scriptInstance_t)+C/w ...
 // padding byte
 // padding byte
-    char *nextBreakpointCodePos;        // XREF: Scr_AddManualBreakpoint(scriptInstance_t,uchar *)+57/r
+    Ptr32<char> nextBreakpointCodePos;        // XREF: Scr_AddManualBreakpoint(scriptInstance_t,uchar *)+57/r
     // Scr_RemoveManualBreakpoint+C/r ...
     unsigned int nextBreakpointThreadId;
     // XREF: Scr_SetTempBreakpoint+9E/w
@@ -409,14 +410,14 @@ struct scrDebuggerGlob_t // sizeof=0x1C4
 // padding byte
 // padding byte
 // padding byte
-    char *killThreadCodePos;            // XREF: Scr_SetTempBreakpoint+17/r
+    Ptr32<char> killThreadCodePos;            // XREF: Scr_SetTempBreakpoint+17/r
     // Scr_InitDebuggerSystem(scriptInstance_t)+74/w ...
     bool kill_thread;                   // XREF: Scr_HitBreakpoint(scriptInstance_t,VariableValue *,char const *,uint,int)+161/r
     // Scr_HitBreakpoint(scriptInstance_t,VariableValue *,char const *,uint,int)+17F/w ...
 // padding byte
 // padding byte
 // padding byte
-    VariableValue *breakpointTop;       // XREF: Scr_SpecialBreakpoint+EF/w
+    Ptr32<VariableValue> breakpointTop;       // XREF: Scr_SpecialBreakpoint+EF/w
     // Scr_Step+13B/r ...
     bool run_debugger;                  // XREF: Scr_InitDebuggerSystem(scriptInstance_t)+111/w
     // Scr_DebugKillThread(scriptInstance_t,uint,char const *)+178/w ...
@@ -425,9 +426,9 @@ struct scrDebuggerGlob_t // sizeof=0x1C4
 // padding byte
     int step_mode;                      // XREF: Scr_DisplayDebuggerRemoteInternal+FB/w
     // Scr_Step+38/r ...
-    Scr_OpcodeList_s *assignHead;       // XREF: Scr_UnbreakAllAssignmentPos+33/r
+    Ptr32<Scr_OpcodeList_s> assignHead;       // XREF: Scr_UnbreakAllAssignmentPos+33/r
     // Scr_BreakOnAllAssignmentPos+52/r ...
-    char *assignHeadCodePos;            // XREF: Scr_InitDebuggerMain(scriptInstance_t)+DA/w
+    Ptr32<char> assignHeadCodePos;            // XREF: Scr_InitDebuggerMain(scriptInstance_t)+DA/w
     // Scr_AddAssignmentPos(scriptInstance_t,char *)+58/r ...
     bool assignBreakpointSet;           // XREF: Scr_UnbreakAllAssignmentPos+D/r
     // Scr_UnbreakAllAssignmentPos+23/w ...
@@ -435,11 +436,11 @@ struct scrDebuggerGlob_t // sizeof=0x1C4
     // Scr_RefToVariable(scriptInstance_t,uint,int)+1CE/r ...
 // padding byte
 // padding byte
-    Scr_WatchElement_s *currentElement; // XREF: Scr_RefToVariable(scriptInstance_t,uint,int)+81/r
+    Ptr32<Scr_WatchElement_s> currentElement; // XREF: Scr_RefToVariable(scriptInstance_t,uint,int)+81/r
     // Scr_RefToVariable(scriptInstance_t,uint,int)+1B9/r ...
     unsigned int removeId;              // XREF: Scr_RefToVariable(scriptInstance_t,uint,int)+53/r
     // Scr_RefToVariable(scriptInstance_t,uint,int)+65/r ...
-    Scr_WatchElementDoubleNode_t **variableBreakpoints;
+    Ptr32<Ptr32<Scr_WatchElementDoubleNode_t>> variableBreakpoints;
     // XREF: Scr_RefToVariable(scriptInstance_t,uint,int)+B9/r
     // Scr_RefToVariable(scriptInstance_t,uint,int)+F1/r ...
     bool debugger_inited_main;          // XREF: Scr_InitDebuggerMain(scriptInstance_t)+22/r
@@ -451,7 +452,7 @@ struct scrDebuggerGlob_t // sizeof=0x1C4
 // padding byte
     unsigned int objectId;              // XREF: Scr_BreakOnAllAssignmentPos+43/w
     // Scr_HitAssignmentBreakpoint(scriptInstance_t,VariableValue *,char const *,uint,int)+E0/r ...
-    char *colBuf;                       // XREF: Scr_ScriptList::Init(scriptInstance_t)+297/w
+    Ptr32<char> colBuf;                       // XREF: Scr_ScriptList::Init(scriptInstance_t)+297/w
     // Scr_ScriptList::Shutdown(scriptInstance_t)+12/r ...
     int prevBreakpointLineNum;          // XREF: Scr_SetTempBreakpoint+8C/w
     // Scr_HitBreakpoint(scriptInstance_t,VariableValue *,char const *,uint,int)+460/r ...
@@ -497,7 +498,7 @@ int __cdecl CompareThreadElements(int *arg1, int *arg2);
 Scr_WatchElement_s *__cdecl Scr_CreateWatchElement(
     scriptInstance_t inst,
     char *text,
-    Scr_WatchElement_s **prevElem,
+    Ptr32<Scr_WatchElement_s> *prevElem,
     const char *name);
 void __cdecl Scr_Evaluate(scriptInstance_t inst);
 void __cdecl Scr_CheckBreakonNotify(

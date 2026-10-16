@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <xanim/xanim.h>
 
 struct GfxFilm // sizeof=0x94
@@ -248,7 +249,7 @@ struct visionSetLerpData_t // sizeof=0xC
 
 struct visField_t // sizeof=0xC
 {                                       // XREF: .data:visionDefFields/r
-    const char *name;                   // XREF: LoadVisionSettingsFromBuffer+A6/r
+    Ptr32<const char> name;                   // XREF: LoadVisionSettingsFromBuffer+A6/r
     int offset;
     int fieldType;
 };

@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "g_anim_commands_sp.h"
 #include <game_mp/g_main_mp.h>
 #include <game/enthandle.h>

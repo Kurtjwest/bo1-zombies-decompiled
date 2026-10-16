@@ -1,8 +1,9 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct GfxReadCmdBuf // sizeof=0x4
 {                                       // XREF: ?R_DrawBspDrawSurfsLitPreTess@@YAXPBIUGfxCmdBufContext@@@Z/r
-    const unsigned int *primDrawSurfPos;
+    Ptr32<const unsigned int> primDrawSurfPos;
 };
 
 const unsigned int *__cdecl R_ReadPrimDrawSurfData(GfxReadCmdBuf *cmdBuf, unsigned int count);

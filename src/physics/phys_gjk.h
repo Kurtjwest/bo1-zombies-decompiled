@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 
 #include "phys_local.h"
@@ -66,10 +67,10 @@ struct broad_phase_environment_info // sizeof=0x24
         }
     };
 
-    void *m_data;
+    Ptr32<void> m_data;
     minspec_mutex m_mutex;
     unsigned int m_gjk_geom_id;
-    broad_phase_environment_info *m_next_bpei;
+    Ptr32<broad_phase_environment_info> m_next_bpei;
     phys_inplace_avl_tree_node<broad_phase_environment_info> m_avl_tree_node;
     bpei_database_id m_database_id;
 };
@@ -78,7 +79,7 @@ struct bpei_database_t // sizeof=0x10
 {                                       // XREF: broad_phase_memory/r
     phys_inplace_avl_tree<bpei_database_id, broad_phase_environment_info, broad_phase_environment_info::avl_tree_accessor> m_bpei_map;
     phys_simple_allocator<broad_phase_environment_info> m_bpei_allocator;
-    broad_phase_environment_info *m_bpei_list;
+    Ptr32<broad_phase_environment_info> m_bpei_list;
     minspec_read_write_mutex m_mutex;
 
     bpei_database_t()
@@ -236,14 +237,14 @@ struct phys_heap_gjk_cache_system_avl_tree // sizeof=0x10
         };
 
         phys_inplace_avl_tree_node<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal> m_avl_tree_node;
-        phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal *m_next_gjk_ci;
+        Ptr32<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal> m_next_gjk_ci;
     };
     BO1_LAYOUT32_ASSERT(sizeof(phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal) == 0x90);
 
     phys_simple_allocator<phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal> m_list_phys_gjk_cache_info_internal;
     phys_inplace_avl_tree<phys_gjk_geom_id_pair_key, phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal, phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal::avl_tree_accessor> m_search_tree;
     int m_max_num_gjk_ci;
-    phys_gjk_cache_info_internal *m_list_head;
+    Ptr32<phys_gjk_cache_info_internal> m_list_head;
 
 
     ~phys_heap_gjk_cache_system_avl_tree()
@@ -300,12 +301,12 @@ struct __declspec(align(16)) gjk_geom_info_t // sizeof=0x40
 {
     phys_vec3 m_aabb_min;
     phys_vec3 m_aabb_max;
-    gjk_base_t *m_cg;
-    struct gjk_entity_info_t *m_ent_info;
+    Ptr32<gjk_base_t> m_cg;
+    Ptr32<struct gjk_entity_info_t> m_ent_info;
     int m_query_visitor_count;
     float m_hit_time;
-    gjk_geom_info_t *m_next_link;
-    gjk_geom_info_t *m_total_next_link;
+    Ptr32<gjk_geom_info_t> m_next_link;
+    Ptr32<gjk_geom_info_t> m_total_next_link;
     // padding byte
     // padding byte
     // padding byte
@@ -334,7 +335,7 @@ const struct __declspec(align(16)) gjk_query_input // sizeof=0x80
     // padding byte
     // padding byte
     // padding byte
-    colgeom_visitor_inlined_t<200> *m_proximity_data;
+    Ptr32<colgeom_visitor_inlined_t<200>> m_proximity_data;
     int m_proximity_mask;
     unsigned int m_gjk_query_flags; // 1 = terrain/prims; 2 = gents/cents/glass; 4 = dents(dynents)
     phys_link_list<gjk_geom_info_t> m_geom_skip_list;
@@ -406,8 +407,8 @@ struct gjk_collision_visitor // sizeof=0x4
 struct gjk_physics_collision_visitor : gjk_collision_visitor // sizeof=0x80
 {
     bpei_database_id m_local_database_id;
-    broad_phase_environment_info *m_local_bpei;
-    const void *m_local_entity;
+    Ptr32<broad_phase_environment_info> m_local_bpei;
+    Ptr32<const void> m_local_entity;
     // padding byte
     // padding byte
     // padding byte
@@ -423,17 +424,17 @@ struct gjk_physics_collision_visitor : gjk_collision_visitor // sizeof=0x80
     phys_vec3 m_local_query_trace_aabb_min;
     phys_vec3 m_local_query_trace_aabb_max;
     phys_vec3 m_local_query_trace_translation;
-    const centity_s *cent;
-    const DynEntityDef *dynEntDef;
-    const Glass *glass;
-    struct rigid_body *rb;
-    const phys_mat44 *rb_to_world_xform;
-    const phys_mat44 *cg_to_world_xform;
-    const phys_mat44 *cg_to_rb_xform;
+    Ptr32<const centity_s> cent;
+    Ptr32<const DynEntityDef> dynEntDef;
+    Ptr32<const Glass> glass;
+    Ptr32<struct rigid_body> rb;
+    Ptr32<const phys_mat44> rb_to_world_xform;
+    Ptr32<const phys_mat44> cg_to_world_xform;
+    Ptr32<const phys_mat44> cg_to_rb_xform;
     unsigned int env_collision_flags;
-    const struct broad_phase_environment_query_input *bpeqi;
-    struct broad_phase_environement_query_results *bpeqr;
-    struct phys_auto_activate_callback *auto_activate_callback;
+    Ptr32<const struct broad_phase_environment_query_input> bpeqi;
+    Ptr32<struct broad_phase_environement_query_results> bpeqr;
+    Ptr32<struct phys_auto_activate_callback> auto_activate_callback;
     // padding byte
     // padding byte
     // padding byte
@@ -467,7 +468,7 @@ struct gjk_physics_collision_visitor : gjk_collision_visitor // sizeof=0x80
 struct create_gjk_geom_collision_visitor : gjk_collision_visitor // sizeof=0x8
 {                                       // XREF: .data:create_gjk_geom_collision_visitor g_empty_collision_visitor/r
                                         // XDoll_CreatePhysObj/r ...
-    gjk_geom_list_t *gjk_geom_list;     // XREF: DynEntCl_CreatePhysObj(DynEntityDef const *,DynEntityClient *,GfxPlacement const *)+E8/w
+    Ptr32<gjk_geom_list_t> gjk_geom_list;     // XREF: DynEntCl_CreatePhysObj(DynEntityDef const *,DynEntityClient *,GfxPlacement const *)+E8/w
     // FX_SpawnModelPhysics+5D6/w ...
 
     //struct /*VFT*/ gjk_collision_visitor_vtbl // sizeof=0x1C
@@ -525,16 +526,16 @@ struct gjk_query_output : gjk_collision_visitor // sizeof=0x150
     phys_vec3 m_query_aabb_max;
     phys_vec3 m_local_query_aabb_min;
     phys_vec3 m_local_query_aabb_max;
-    const gjk_query_input *m_local_query_input;
+    Ptr32<const gjk_query_input> m_local_query_input;
     bpei_database_id m_local_database_id;
-    struct broad_phase_environment_info *m_local_bpei;
-    gjk_entity_info_t *m_local_ent_info;
+    Ptr32<struct broad_phase_environment_info> m_local_bpei;
+    Ptr32<gjk_entity_info_t> m_local_ent_info;
     bpei_database_t m_bpei_database;
     phys_transient_allocator m_allocator;
     phys_transient_allocator::allocator_state m_allocator_state;
     int m_ent_count;
     int m_geom_count;
-    gjk_geom_info_t *m_total_list_geom_info;
+    Ptr32<gjk_geom_info_t> m_total_list_geom_info;
     phys_link_list<gjk_geom_info_t> m_list_geom_info;
     int m_query_visitor_count;
     int m_gent_query_visitor_count;
@@ -694,7 +695,7 @@ struct __declspec(align(16)) gjkcc_info // sizeof=0x200
     // padding byte
     // padding byte
     // padding byte
-    gjk_base_t *m_cg_;
+    Ptr32<gjk_base_t> m_cg_;
     float m_last_origin[3];
     // padding byte
     // padding byte
@@ -713,22 +714,22 @@ struct __declspec(align(16)) gjkcc_info // sizeof=0x200
 struct __declspec(align(16)) gjk_trace_input_t // sizeof=0xB0
 {                                       // XREF: gjk_player_trace(gjkcc_input_t const &,trace_t *,float const * const,float const * const,float const * const,float const * const,int,int)+10/w
                                         // ?gjk_player_trace@@YAXABUgjkcc_input_t@@PAUtrace_t@@QBM222HH@Z/r ...
-    const gjk_base_t *m_cg;
+    Ptr32<const gjk_base_t> m_cg;
     float m_gjk_ac_eps;
     bool m_keep_all_collisions;
     bool m_exit_on_penetration;
     // padding byte
     // padding byte
     float m_extra_time;
-    phys_heap_gjk_cache_system_avl_tree *m_gjk_cache;
-    gjk_query_output *m_query_output;
-    gjkcc_info *m_gcci;
+    Ptr32<phys_heap_gjk_cache_system_avl_tree> m_gjk_cache;
+    Ptr32<gjk_query_output> m_query_output;
+    Ptr32<gjkcc_info> m_gcci;
     // padding byte
     // padding byte
     // padding byte
     // padding byte
     gjk_query_input m_query_input;
-    phys_transient_allocator *m_allocator;
+    Ptr32<phys_transient_allocator> m_allocator;
     // padding byte
     // padding byte
     // padding byte
@@ -752,7 +753,7 @@ struct __declspec(align(16)) gjk_trace_input_t // sizeof=0xB0
 
 struct generic_avl_map_node_t // sizeof=0x14
 {
-    void *m_data;
+    Ptr32<void> m_data;
     unsigned int m_avl_key;
     phys_inplace_avl_tree_node<generic_avl_map_node_t> m_avl_tree_node;
 
@@ -829,13 +830,13 @@ struct gjkcc_input_t // sizeof=0x20
     // padding byte
     // padding byte
     // padding byte
-    colgeom_visitor_inlined_t<200> *proximity_data;
+    Ptr32<colgeom_visitor_inlined_t<200>> proximity_data;
     // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+5F/w
     int proximity_mask;                 // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+66/w
     int m_ent_num;                      // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+6D/w
     unsigned int m_gjk_query_flags;     // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+74/w
-    const gjk_base_t *m_gjk_cg;         // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+7B/w
-    const phys_mat44 *m_mat;            // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+82/w
+    Ptr32<const gjk_base_t> m_gjk_cg;         // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+7B/w
+    Ptr32<const phys_mat44> m_mat;            // XREF: ai_physics_trace(trace_t *,float const * const,float const * const,float const * const,float const * const,int,int,actor_physics_t *)+82/w
 };
 
 struct __declspec(align(16)) gjk_trace_output_t // sizeof=0x50
@@ -849,8 +850,8 @@ struct __declspec(align(16)) gjk_trace_output_t // sizeof=0x50
     // padding byte
     // padding byte
     // padding byte
-    gjk_geom_info_t *m_gi;
-    gjk_trace_output_t *m_next_link;
+    Ptr32<gjk_geom_info_t> m_gi;
+    Ptr32<gjk_trace_output_t> m_next_link;
     // padding byte
     // padding byte
     // padding byte
@@ -871,12 +872,12 @@ struct __declspec(align(4)) gjk_slide_move_input_t // sizeof=0x2C
                                         // player_gjk_slide_move_input_t/r ...
     //gjk_slide_move_input_t_vtbl *__vftable; // XREF: PM_SlideMove+22/w
                                         // PM_SlideMove+2C/w ...
-    const float (*position)[3];
-    const float (*velocity)[3];
+    Ptr32<const float[3]> position;
+    Ptr32<const float[3]> velocity;
     int gravity;
     int has_gravity;
-    const float (*mins)[3];
-    const float (*maxs)[3];
+    Ptr32<const float[3]> mins;
+    Ptr32<const float[3]> maxs;
     int tracemask;
     int clientnum;
     float frametime;
@@ -890,7 +891,7 @@ struct __declspec(align(4)) gjk_slide_move_input_t // sizeof=0x2C
 
 struct ai_gjk_slide_move_input_t : gjk_slide_move_input_t // sizeof=0x30
 {                                       // XREF: AIPhys_SlideMove/r
-    struct actor_physics_t *m_pPhys;
+    Ptr32<struct actor_physics_t> m_pPhys;
 
     virtual void custom_process(gjk_trace_output_t *gto) override;
 };
@@ -910,7 +911,7 @@ struct __declspec(align(4)) gjk_slide_move_output_t // sizeof=0x1C
 
 struct player_gjk_slide_move_input_t : gjk_slide_move_input_t // sizeof=0x30
 {                                       // XREF: PM_SlideMove/r
-    pmove_t *pm;
+    Ptr32<pmove_t> pm;
 
     virtual void custom_process(gjk_trace_output_t *gto) override;
 };
@@ -928,7 +929,7 @@ struct player_push_slide_move_input_t : gjk_slide_move_input_t // sizeof=0x38
 struct list_gjk_trace_output // sizeof=0x10
 {                                       // XREF: ?gjk_player_trace@@YAXABUgjkcc_input_t@@PAUtrace_t@@QBM222HH@Z/r
     phys_link_list<gjk_trace_output_t> m_list;
-    gjk_trace_output_t *m_first_hit;
+    Ptr32<gjk_trace_output_t> m_first_hit;
 
     list_gjk_trace_output() // inlined
     {
@@ -966,11 +967,11 @@ struct __declspec(align(8)) phys_gjk_input // sizeof=0x50
     float m_end_time;
     //const phys_gjk_geom *gjk_cg1;
     //const phys_gjk_geom *gjk_cg2;
-    const gjk_base_t *gjk_cg1; // I am changing this to the sub-class so I can call more methods.
-    const gjk_base_t *gjk_cg2;
-    const phys_mat44 *cg1_to_world_xform;
-    const phys_mat44 *cg2_to_world_xform;
-    phys_gjk_cache_info *gjk_ci;
+    Ptr32<const gjk_base_t> gjk_cg1; // I am changing this to the sub-class so I can call more methods.
+    Ptr32<const gjk_base_t> gjk_cg2;
+    Ptr32<const phys_mat44> cg1_to_world_xform;
+    Ptr32<const phys_mat44> cg2_to_world_xform;
+    Ptr32<phys_gjk_cache_info> gjk_ci;
     float cg1_radius;
     float cg2_radius;
     float m_sep_thresh;

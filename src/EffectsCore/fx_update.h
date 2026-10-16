@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/com_math.h>
 
@@ -16,7 +17,7 @@ enum FxUpdateResult : __int32
 struct FxUpdateElem // sizeof=0x7C
 {                                       // XREF: FX_UpdateElement/r
                                         // FX_UpdateTrailElement/r
-    struct FxEffect *effect;
+    Ptr32<struct FxEffect> effect;
     int elemIndex;
     int atRestFraction;                 // XREF: FX_UpdateElement:loc_5EC147/r
                                         // FX_UpdateElement+29B/r
@@ -30,8 +31,8 @@ struct FxUpdateElem // sizeof=0x7C
     int msecUpdateEnd;                  // XREF: FX_UpdateElement:loc_5EC1A6/r
     float msecElapsed;
     float normTimeUpdateEnd;
-    float *elemOrigin;
-    float *elemBaseVel;                 // XREF: FX_UpdateElement+13E/w
+    Ptr32<float> elemOrigin;
+    Ptr32<float> elemBaseVel;                 // XREF: FX_UpdateElement+13E/w
                                         // FX_UpdateTrailElement+D7/w
     float posWorld[3];                  // XREF: FX_UpdateElement+1A2/o
     bool onGround;                      // XREF: FX_UpdateElement+14A/w

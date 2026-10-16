@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 //unzip.h
 
 //#include <zlib32/zip.h>
@@ -67,7 +68,7 @@ typedef struct unz_file_info_internal_s
     when reading and decompress it */
 typedef struct
 {
-	char  *read_buffer;         /* internal buffer for compressed data */
+	Ptr32<char> read_buffer;         /* internal buffer for compressed data */
 	z_stream stream;            /* zLib stream structure for inflate */
 
 	unsigned long pos_in_zipfile;       /* position in unsigned char on the zipfile, for fseek*/
@@ -81,7 +82,7 @@ typedef struct
 //	unsigned long crc32_wait;           /* crc32 we must obtain after decompress all */
 	unsigned long rest_read_compressed; /* number of unsigned char to be decompressed */
 	unsigned long rest_read_uncompressed;/*number of unsigned char to be obtained after decomp*/
-	ZIP_FILE *file;                 /* io structore of the zipfile */
+	Ptr32<ZIP_FILE> file;                 /* io structore of the zipfile */
 	unsigned long compression_method;   /* compression method (0==store) */
 	unsigned long byte_before_the_zipfile;/* unsigned char before the zipfile, (>0 for sfx)*/
 } file_in_zip_read_info_s;
@@ -91,7 +92,7 @@ typedef struct
 */
 typedef struct
 {
-	ZIP_FILE* file;                 /* io structore of the zipfile */
+	Ptr32<ZIP_FILE> file;                 /* io structore of the zipfile */
 	unz_global_info gi;       /* public global information */
 	unsigned long byte_before_the_zipfile;/* unsigned char before the zipfile, (>0 for sfx)*/
 	unsigned long num_file;             /* number of the current file in the zipfile*/
@@ -105,9 +106,9 @@ typedef struct
 
 	unz_file_info cur_file_info; /* public info about the current file in zip*/
 	unz_file_info_internal cur_file_info_internal; /* private info about it*/
-    file_in_zip_read_info_s* pfile_in_zip_read; /* structure about the current
+    Ptr32<file_in_zip_read_info_s> pfile_in_zip_read; /* structure about the current
 	                                    file if we are decompressing it */
-	unsigned char*	tmpFile;
+	Ptr32<unsigned char> tmpFile;
 	int	tmpPos,tmpSize;
 } unz_s;
 

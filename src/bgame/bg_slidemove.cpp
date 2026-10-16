@@ -374,7 +374,7 @@ void __cdecl gjkcc_epilog(const gjkcc_input_t *gjkcc_in, const float *origin)
 
 void __thiscall phys_heap_gjk_cache_system_avl_tree::update_cache()
 {
-    phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal **gjk_ci_i; // [esp+158h] [ebp-8h]
+    Ptr32<phys_gjk_cache_info_internal> *gjk_ci_i; // [esp+158h] [ebp-8h]
     phys_heap_gjk_cache_system_avl_tree::phys_gjk_cache_info_internal *gjk_ci; // [esp+15Ch] [ebp-4h]
 
     gjk_ci_i = &this->m_list_head;

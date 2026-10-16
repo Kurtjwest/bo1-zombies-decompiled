@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <gfx_d3d/fxprimitives.h>
 
 struct FxPostLight // sizeof=0x24
@@ -10,7 +11,7 @@ struct FxPostLight // sizeof=0x24
     // CG_Laser_Add_Core+65E/w ...
     float radius;                       // XREF: CG_Laser_Add_Core+67D/w
     GfxColor color;                     // XREF: CG_Laser_Add_Core+6B1/w
-    Material *material;                 // XREF: CG_Laser_Add_Core+6BA/w
+    Ptr32<Material> material;                 // XREF: CG_Laser_Add_Core+6BA/w
 };
 
 struct FxPostLightInfo // sizeof=0xD84

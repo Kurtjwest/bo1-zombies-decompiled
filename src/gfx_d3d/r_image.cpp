@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "r_image.h"
 #include <universal/com_memory.h>
@@ -55,7 +56,7 @@ const char *g_imageProgNames[29] =
 //$240FF632105687D15E57E43F247C9BAA imageGlobals;
 struct //$240FF632105687D15E57E43F247C9BAA // sizeof=0x2014
 {                                       // XREF: .data:imageGlobals/r
-    GfxImage *imageHashTable[2048];     // XREF: Image_AllocProg(int,uchar,uchar)+AE/w
+    Ptr32<GfxImage> imageHashTable[2048];     // XREF: Image_AllocProg(int,uchar,uchar)+AE/w
     int picmip;                         // XREF: Image_PicmipForSemantic(uchar,Picmip *):$LN6_197/r
     int picmipBump;                     // XREF: Image_PicmipForSemantic(uchar,Picmip *):$LN5_202/r
     int picmipSpec;                     // XREF: Image_PicmipForSemantic(uchar,Picmip *):$LN4_244/r

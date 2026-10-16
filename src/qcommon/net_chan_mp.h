@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "msg_mp.h"
 
 #include <universal/dvar.h>
@@ -68,12 +69,12 @@ struct netchan_t // sizeof=0x6C0
         int qport;
         int fragmentSequence;
         int fragmentLength;
-        unsigned __int8 *fragmentBuffer;
+        Ptr32<unsigned __int8> fragmentBuffer;
         int fragmentBufferSize;
         int unsentFragments;
         int unsentFragmentStart;
         int unsentLength;
-        unsigned __int8 *unsentBuffer;
+        Ptr32<unsigned __int8> unsentBuffer;
         int unsentBufferSize;
         int reliable_fragments;
         unsigned __int8 fragment_send_count[128];

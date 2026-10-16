@@ -17,7 +17,7 @@ CompositeJob s_jobs[4];
 
 int s_jobID = 1;
 
-IDirect3DQuery9 *s_compositingFence;
+Ptr32<IDirect3DQuery9> s_compositingFence;
 
 void __cdecl CL_CompositeSetupImageCallback(unsigned int *param)
 {
@@ -208,7 +208,7 @@ void __cdecl CL_CompositeEmblemCallback(GfxImage *result)
         __debugbreak();
 }
 
-void __cdecl R_HW_InsertFence(IDirect3DQuery9 **fence)
+void __cdecl R_HW_InsertFence(Ptr32<IDirect3DQuery9> *fence)
 {
     const char *v1; // eax
     int hr; // [esp+4h] [ebp-8h]
@@ -349,7 +349,7 @@ void __cdecl CL_CompositeRender()
 }
 
 // changed to blops2011
-bool __cdecl R_HW_IsFencePending(IDirect3DQuery9 *const *fence)
+bool __cdecl R_HW_IsFencePending(const Ptr32<IDirect3DQuery9> *fence)
 {
     HRESULT hr; // [esp+4h] [ebp-Ch]
     unsigned int data; // [esp+8h] [ebp-8h] BYREF

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <universal/dvar.h>
 
@@ -31,8 +32,8 @@ enum parseBlockTypes : __int32
 
 struct playlistEntry // sizeof=0x14
 {                                       // XREF: .data:nullPlaylistEntry/r
-    const char *mapname;
-    const char *gametype;
+    Ptr32<const char> mapname;
+    Ptr32<const char> gametype;
     int fullWeight;
     int remainingWeight;
     int ignore;
@@ -40,13 +41,13 @@ struct playlistEntry // sizeof=0x14
 
 struct __declspec(align(4)) playlistGametype // sizeof=0x14
 {                                       // XREF: .data:gametypes/r
-    const char *scriptName;             // XREF: Playlist_ParsePlaylists(char const *)+2D0/r
+    Ptr32<const char> scriptName;             // XREF: Playlist_ParsePlaylists(char const *)+2D0/r
                                         // Playlist_ParsePlaylists(char const *)+3C1/w ...
-    const char *internalName;           // XREF: Playlist_ParsePlaylists(char const *)+31F/r
+    Ptr32<const char> internalName;           // XREF: Playlist_ParsePlaylists(char const *)+31F/r
                                         // Playlist_ParsePlaylists(char const *)+39F/w ...
-    const char *localizedName;          // XREF: Playlist_ParsePlaylists(char const *)+2E6/r
+    Ptr32<const char> localizedName;          // XREF: Playlist_ParsePlaylists(char const *)+2E6/r
                                         // Playlist_ParsePlaylists(char const *)+30A/r ...
-    const char *rules;                  // XREF: Playlist_ParsePlaylists(char const *)+3B3/w
+    Ptr32<const char> rules;                  // XREF: Playlist_ParsePlaylists(char const *)+3B3/w
                                         // Playlist_ParsePlaylists(char const *)+9E5/r
     bool teamBased;                     // XREF: Playlist_ParsePlaylists(char const *)+3E7/w
                                         // Playlist_ParsePlaylists(char const *)+1256/w
@@ -57,17 +58,17 @@ struct __declspec(align(4)) playlistGametype // sizeof=0x14
 
 struct categoryInfo // sizeof=0x34
 {                                       // XREF: .data:categories/r
-    const char *internalName;           // XREF: Playlist_GetCategoryIdByName(char const *)+57/r
+    Ptr32<const char> internalName;           // XREF: Playlist_GetCategoryIdByName(char const *)+57/r
                                         // Playlist_ParsePlaylists(char const *)+4C3/w ...
-    const char *filter;                 // XREF: Playlist_ParsePlaylists(char const *)+4E6/w
+    Ptr32<const char> filter;                 // XREF: Playlist_ParsePlaylists(char const *)+4E6/w
                                         // Playlist_ParsePlaylists(char const *)+E30/w ...
-    const char *localizedName;          // XREF: Playlist_ParsePlaylists(char const *)+4F8/w
+    Ptr32<const char> localizedName;          // XREF: Playlist_ParsePlaylists(char const *)+4F8/w
                                         // Playlist_ParsePlaylists(char const *)+BF3/w ...
-    const char *description;            // XREF: Playlist_ParsePlaylists(char const *)+50B/w
+    Ptr32<const char> description;            // XREF: Playlist_ParsePlaylists(char const *)+50B/w
                                         // Playlist_ParsePlaylists(char const *)+F80/w ...
-    const char *lockdescription;        // XREF: Playlist_ParsePlaylists(char const *)+51E/w
+    Ptr32<const char> lockdescription;        // XREF: Playlist_ParsePlaylists(char const *)+51E/w
                                         // Playlist_ParsePlaylists(char const *)+1164/w ...
-    const char *iconName;               // XREF: Playlist_ParsePlaylists(char const *)+530/w
+    Ptr32<const char> iconName;               // XREF: Playlist_ParsePlaylists(char const *)+530/w
                                         // Playlist_ParsePlaylists(char const *)+DA9/w ...
     int unlockXp;                       // XREF: Playlist_ParsePlaylists(char const *)+1605/w
                                         // Playlist_CategoryIsLocked(int,int,int,int,int,int)+75/r
@@ -81,30 +82,30 @@ struct categoryInfo // sizeof=0x34
     // padding byte
     int playlistCount;                  // XREF: Playlist_ParsePlaylists(char const *)+543/w
                                         // Playlist_ParsePlaylists(char const *)+1B5F/r ...
-    const char *rules;                  // XREF: Playlist_ParsePlaylists(char const *)+4D7/w
+    Ptr32<const char> rules;                  // XREF: Playlist_ParsePlaylists(char const *)+4D7/w
                                         // Playlist_ParsePlaylists(char const *)+A2F/r ...
     bool visible_dvar;                  // XREF: Playlist_ParsePlaylists(char const *)+1434/w
                                         // Playlist_CategoryIsLocked(int,int,int,int,int,int)+BD/r
     // padding byte
     // padding byte
     // padding byte
-    const dvar_s *visDvar;              // XREF: Playlist_ParsePlaylists(char const *)+1453/w
+    Ptr32<const dvar_s> visDvar;              // XREF: Playlist_ParsePlaylists(char const *)+1453/w
                                         // Playlist_ParsePlaylists(char const *)+1462/r ...
 };
 
 struct playlistInfo // sizeof=0x90
 {                                       // XREF: .data:playlists/r
-    const char *name;                   // XREF: Playlist_ParsePlaylists(char const *)+6AB/w
+    Ptr32<const char> name;                   // XREF: Playlist_ParsePlaylists(char const *)+6AB/w
                                         // Playlist_ParsePlaylists(char const *)+BB9/w ...
-    const char *description;            // XREF: Playlist_ParsePlaylists(char const *)+6BE/w
+    Ptr32<const char> description;            // XREF: Playlist_ParsePlaylists(char const *)+6BE/w
                                         // Playlist_ParsePlaylists(char const *)+F63/w ...
-    const char *lockdescription;        // XREF: Playlist_ParsePlaylists(char const *)+6D1/w
+    Ptr32<const char> lockdescription;        // XREF: Playlist_ParsePlaylists(char const *)+6D1/w
                                         // Playlist_ParsePlaylists(char const *)+1147/w ...
-    const char *iconName;               // XREF: Playlist_ParsePlaylists(char const *)+6E4/w
+    Ptr32<const char> iconName;               // XREF: Playlist_ParsePlaylists(char const *)+6E4/w
                                         // Playlist_ParsePlaylists(char const *)+D77/w ...
-    const char *rules;                  // XREF: Playlist_ParsePlaylists(char const *)+69C/w
+    Ptr32<const char> rules;                  // XREF: Playlist_ParsePlaylists(char const *)+69C/w
                                         // Playlist_ParsePlaylists(char const *)+9A1/r ...
-    const char *category[16];           // XREF: Playlist_ParsePlaylists(char const *)+7DF/w
+    Ptr32<const char> category[16];           // XREF: Playlist_ParsePlaylists(char const *)+7DF/w
                                         // Playlist_ParsePlaylists(char const *)+1AF2/w ...
     int baseEntry;                      // XREF: Playlist_ParsePlaylists(char const *)+6FD/w
                                         // Playlist_GetEntry(int,int)+61/r
@@ -140,7 +141,7 @@ struct playlistInfo // sizeof=0x90
                                         // Playlist_IsLocked(int,int,int,int,int,int)+F7/r
     // padding byte
     // padding byte
-    const dvar_s *visDvar;              // XREF: Playlist_ParsePlaylists(char const *)+13F1/w
+    Ptr32<const dvar_s> visDvar;              // XREF: Playlist_ParsePlaylists(char const *)+13F1/w
                                         // Playlist_ParsePlaylists(char const *)+1400/r ...
     int categoryCount;                  // XREF: Playlist_ParsePlaylists(char const *)+78E/w
                                         // Playlist_ParsePlaylists(char const *)+1A43/w ...

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "DynEntity_gamestate.h"
 #include "DynEntity_client.h"
@@ -58,7 +59,7 @@ struct __declspec(align(4)) DynEntityCreateParams // sizeof=0x2BC
 
 struct DynEntityProps // sizeof=0x8
 {                                       // XREF: .rdata:dynEntProps/r
-    const char *name;                   // XREF: DynEnt_GetType+4B/r
+    Ptr32<const char> name;                   // XREF: DynEnt_GetType+4B/r
     bool clientOnly;                    // XREF: DynEnt_CompareEntities+102/r
                                         // DynEnt_CompareEntities+118/r
     bool clipMove;

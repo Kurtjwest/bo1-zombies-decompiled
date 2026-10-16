@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <universal/memfile.h>
 #include <universal/q_shared.h>
@@ -63,7 +64,7 @@ struct SPSaveGame
     MemoryFile memFile[2];          // +0x00000 game state (0x200000 bytes), +0x08024 (0x140000 bytes)
     int state;                      // +0x10048, SPSaveState
     SPMemorySaveHeader header;      // +0x1004C
-    void (*callback)(SPSaveGame *save, int arg); // +0x104E4 (SP 0x0068BE40)
+    Ptr32<void(SPSaveGame *save, int arg)> callback; // +0x104E4 (SP 0x0068BE40)
     int callbackArg;                // +0x104E8
     bool isUsingGlobalBuffer;       // +0x104EC, set by 0x008190B0; 0 makes 0x00497520 drop the save
     bool unknown104ED;

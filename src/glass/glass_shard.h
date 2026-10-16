@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <universal/bo1_layout.h>
 #include <universal/com_math.h>
 #include <physics/phys_local.h>
@@ -67,8 +68,8 @@ struct GlassDef;
 struct ShardGroup // sizeof=0x54
 {
     unsigned int packedPos;
-    const GlassDef *glassDef;
-    struct GlassShard *head;
+    Ptr32<const GlassDef> glassDef;
+    Ptr32<struct GlassShard> head;
     float worldBBoxMin[3];
     float worldBBoxMax[3];
     float origin[3];
@@ -82,7 +83,7 @@ struct ShardGroup // sizeof=0x54
     __int16 numVerts;
     unsigned __int16 lightingHandle;
     GfxLightingInfo lightingInfo;
-    unsigned __int16 *renderIndices;
+    Ptr32<unsigned __int16> renderIndices;
 
     void __thiscall Init(unsigned int p, const GlassDef *gd);
     void __thiscall Reset();
@@ -132,7 +133,7 @@ struct GlassShard // sizeof=0x90
     struct Outline;
     struct Triangles // sizeof=0x108
     {                                       // XREF: ?Create@GlassShard@@QAE_NPBUGlass@@@Z/r
-        const struct Outline *outline;
+        Ptr32<const struct Outline> outline;
         unsigned __int8 triangleIndices[256];
         unsigned int nIndices;
 
@@ -167,7 +168,7 @@ struct GlassShard // sizeof=0x90
             void operator=(const GlassShard::Outline::Vertex *other);
         };
         static_assert(sizeof(Outline::Vertex) == 24);
-        GlassShard::Outline::Vertex *verts; // XREF: GlassClient::Outlines::InitShards(GlassShard const *,GlassShard * * const,int)+4F/w
+        Ptr32<GlassShard::Outline::Vertex> verts; // XREF: GlassClient::Outlines::InitShards(GlassShard const *,GlassShard * * const,int)+4F/w
                                             // GlassShard::Create(Glass const *)+35/w ...
         float length;
         float area;
@@ -222,8 +223,8 @@ struct GlassShard // sizeof=0x90
 
     struct __declspec(align(4)) Mesh // sizeof=0x10
     {                                       // XREF: GlassShard/r
-        PackedUnitVec *normArray;
-        unsigned __int8 *indices;
+        Ptr32<PackedUnitVec> normArray;
+        Ptr32<unsigned __int8> indices;
         unsigned __int8 numNorm;
         unsigned __int8 numVerts;
         unsigned __int8 numVertsLow;
@@ -247,8 +248,8 @@ struct GlassShard // sizeof=0x90
         static unsigned int __cdecl GetMemorySize(unsigned int numOutineVerts);
     };
 
-    GlassShard *groupNext;
-    unsigned __int8 *memoryPtr;
+    Ptr32<GlassShard> groupNext;
+    Ptr32<unsigned __int8> memoryPtr;
     unsigned __int16 memorySize;
     unsigned __int16 glassIndex;
     GlassShard::Outline outline;
@@ -258,11 +259,11 @@ struct GlassShard // sizeof=0x90
     float axis[3][3];
     float origin[3];
     int physObjId;
-    GlassPhysics *glassPhysics;
+    Ptr32<GlassPhysics> glassPhysics;
     float timeUntilAction;
     float worldBBoxMin[3];
     float worldBBoxMax[3];
-    ShardGroup *group;
+    Ptr32<ShardGroup> group;
     bool isOriginalEdge;
     bool remove;
     bool inGroupChange;

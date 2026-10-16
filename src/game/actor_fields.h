@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "actor.h"
 
 enum actorFieldtype_t : __int32
@@ -11,12 +12,12 @@ enum actorFieldtype_t : __int32
 
 struct actor_fields_s // sizeof=0x18
 {                                       // XREF: .rdata:aifield_list/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     int size[1];
     fieldtype_t type;
-    void (__cdecl *setter)(actor_s *, const actor_fields_s *);
-    void (__cdecl *getter)(actor_s *, const actor_fields_s *);
+    Ptr32<void __cdecl(actor_s *, const actor_fields_s *)> setter;
+    Ptr32<void __cdecl(actor_s *, const actor_fields_s *)> getter;
 };
 
 struct actor_field_t // sizeof=0xC

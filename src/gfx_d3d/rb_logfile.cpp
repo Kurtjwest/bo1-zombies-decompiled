@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "rb_logfile.h"
 #include <universal/dvar.h>
 #include "r_dvars.h"
@@ -8,7 +9,7 @@
 
 struct
 {
-    FILE *fp;
+    Ptr32<FILE> fp;
 } r_logFileGlob;
 
 void __cdecl RB_UpdateLogging()

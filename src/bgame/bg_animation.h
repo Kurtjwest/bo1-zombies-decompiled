@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <clientscript/cscr_animtree.h>
 #include <bgame/bg_local.h>
@@ -160,7 +161,7 @@ struct animConditionTable_t // sizeof=0x10
 {                                       // XREF: .data:animConditionsTable/r
     animScriptConditionTypes_t type;    // XREF: BG_EvaluateConditions+269/r
                                         // BG_SetConditionBit(int,int,int)+4C/r ...
-    struct animStringItem_t *values;           // XREF: BG_AnimParseAnimScript+4C4/r
+    Ptr32<struct animStringItem_t> values;           // XREF: BG_AnimParseAnimScript+4C4/r
                                         // BG_ParseConditions+C0/r ...
     int minValue;
     int maxValue;
@@ -191,7 +192,7 @@ struct __declspec(align(8)) animation_s // sizeof=0x78
 
 struct animStringItem_t // sizeof=0x8
 {                                                                             // XREF: BG_AddVehicleName(char const *,int,int,int,int)+19A/w
-        const char *string;                                 // XREF: BG_InitWeaponString(int,char const *)+9/w
+        Ptr32<const char> string;                                 // XREF: BG_InitWeaponString(int,char const *)+9/w
         int hash;                                                     // XREF: BG_InitWeaponString(int,char const *)+1F/w
 };
 
@@ -206,7 +207,7 @@ struct animScriptCommand_t // sizeof=0x14
         __int16 bodyPart[2];
         __int16 animIndex[2];
         unsigned __int16 animDuration[2];
-        snd_alias_list_t *soundAlias;
+        Ptr32<snd_alias_list_t> soundAlias;
         unsigned __int16 tagName;                     // XREF: _Com_InitHunkMemory+BD/o
                                                                                 // Sys_GetPhysicalCpuCount+131/o ...
         unsigned __int16 flags;
@@ -230,7 +231,7 @@ struct animVehicleSeats_t // sizeof=0x4
 struct animScript_t // sizeof=0x204
 {                                       // XREF: animScriptData_t/r
     int numItems;
-    animScriptItem_t *items[128];
+    Ptr32<animScriptItem_t> items[128];
 };
 
 struct __declspec(align(8)) animScriptData_t // sizeof=0x8D388
@@ -252,8 +253,8 @@ struct __declspec(align(8)) animScriptData_t // sizeof=0x8D388
     unsigned __int16 turningAnim;
     // padding byte
     // padding byte
-    snd_alias_list_t *(__cdecl *soundAlias)(const char *);
-    void(__cdecl *playSoundAlias)(int, snd_alias_list_t *);
+    Ptr32<snd_alias_list_t * __cdecl(const char *)> soundAlias;
+    Ptr32<void __cdecl(int, snd_alias_list_t *)> playSoundAlias;
     // padding byte
     // padding byte
     // padding byte

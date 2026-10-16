@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 enum DvarSetSource : __int32
 {                                                                             // XREF: Dvar_SetVariant/r
@@ -36,14 +37,14 @@ union DvarValue // sizeof=0x10
         unsigned __int64 unsignedInt64;
         float value;
         float vector[4];
-        const char *string;
+        Ptr32<const char> string;
         unsigned __int8 color[4];
 };
 
 struct DvarLimits_enum // sizeof=0x8
 {                                                                             // XREF: DvarLimits/r
         int stringCount;
-        const char **strings;
+        Ptr32<Ptr32<const char>> strings;
 };
 
 struct DvarLimits_int // sizeof=0x8
@@ -83,8 +84,8 @@ union DvarLimits // sizeof=0x10
 struct __declspec(align(8)) dvar_s // sizeof=0x70
 {                                                                             // XREF: .data:dvarPool/r
                                                                                 // dvar_t/r
-        const char *name;
-        const char *description;
+        Ptr32<const char> name;
+        Ptr32<const char> description;
         int hash;
         unsigned int flags;                                 // XREF: Dvar_ResetScriptInfo(void)+4A/r
                                                                                 // Dvar_ResetScriptInfo(void)+5C/w
@@ -98,7 +99,7 @@ struct __declspec(align(8)) dvar_s // sizeof=0x70
         DvarValue reset;
         DvarValue saved;
         DvarLimits domain;
-        dvar_s *hashNext;
+        Ptr32<dvar_s> hashNext;
         // padding byte
         // padding byte
         // padding byte
@@ -145,7 +146,10 @@ void __cdecl Sys_UnlockRead(FastCriticalSection *critSect);
 const dvar_s *__cdecl Dvar_FindVar(int dvarHash);
 void __cdecl Dvar_ClearModified(const dvar_s *dvar);
 void __cdecl Dvar_SetModified(const dvar_s *dvar);
-void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, const char **stringTable);
+void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, Ptr32<const char> *stringTable);
+#if BO1_PTR32_IS_CLASS
+void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, const char **stringTable); // copies the table (see dvar.cpp)
+#endif
 DvarValue *__cdecl Dvar_ClampValueToDomain(
                 DvarValue *result,
                 dvarType_t type,
@@ -297,10 +301,18 @@ const dvar_s *__cdecl _Dvar_RegisterString(
                 const char *description);
 const dvar_s *__cdecl _Dvar_RegisterEnum(
                 const char *dvarName,
-                const char **valueList,
+                Ptr32<const char> *valueList,
                 int defaultIndex,
                 unsigned __int16 flags,
                 const char *description);
+#if BO1_PTR32_IS_CLASS
+const dvar_s *__cdecl _Dvar_RegisterEnum(
+                const char *dvarName,
+                const char **valueList,
+                int defaultIndex,
+                unsigned __int16 flags,
+                const char *description); // copies the table (see dvar.cpp)
+#endif
 const dvar_s *__cdecl _Dvar_RegisterColor(
                 const char *dvarName,
                 float r,

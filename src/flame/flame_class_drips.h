@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "flame_system.h"
 
 struct flameDrips_t // sizeof=0x64
 {
     flameGeneric_s gen;
-    flameRender_s *flameRend;
+    Ptr32<flameRender_s> flameRend;
 };
 
 void __cdecl Flame_Class_Drips_Init();

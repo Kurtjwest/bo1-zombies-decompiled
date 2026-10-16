@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include "r_image_load_obj.h"
 #include <qcommon/common.h>
 #include "r_image.h"
@@ -654,14 +655,14 @@ void __cdecl Image_PrintTruncatedFileError(const char *filepath)
 
 struct __declspec(align(4))// $3429FE2B485ED1F097C487ED1F67B3DD // sizeof=0x10
 {                                       // XREF: .data:callbackParams/r
-    GfxImage *image;                    // XREF: readCallback(void)+11/r
+    Ptr32<GfxImage> image;                    // XREF: readCallback(void)+11/r
                                         // Image_LoadFromFileWithReader+12/w
     bool loadHighmip;                   // XREF: readCallback(void)+9/r
                                         // Image_LoadFromFileWithReader+1B/w
     // padding byte
     // padding byte
     // padding byte
-    int (__cdecl *OpenFileRead)(const char *, int *);
+    Ptr32<int __cdecl(const char *, int *)> OpenFileRead;
                                         // XREF: readCallback(void)+3/r
                                         // Image_LoadFromFileWithReader+24/w
     bool ret;                           // XREF: readCallback(void)+20/w

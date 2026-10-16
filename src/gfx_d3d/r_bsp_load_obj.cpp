@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "r_bsp_load_obj.h"
 #include <universal/q_shared.h>
@@ -33,16 +34,16 @@
 
 struct r_globals_load_t // sizeof=0x2C4
 {                                       // XREF: .data:rgl/r
-    int *cullGroupIndices;              // XREF: R_LoadCells+135/r
+    Ptr32<int> cullGroupIndices;              // XREF: R_LoadCells+135/r
                                         // R_LoadCullGroupIndices+35/w
-    float (*portalVerts)[3];            // XREF: R_LoadPortalVerts+35/w
+    Ptr32<float[3]> portalVerts;            // XREF: R_LoadPortalVerts+35/w
                                         // R_LoadPortals+19B/r ...
-    GfxAabbTree *aabbTrees;             // XREF: R_LoadAabbTrees+36/w
+    Ptr32<GfxAabbTree> aabbTrees;             // XREF: R_LoadAabbTrees+36/w
                                         // R_LoadAabbTrees+1B2/r ...
     int aabbTreeCount;                  // XREF: R_LoadAabbTrees+3F/w
     int nodeCount;                      // XREF: R_LoadNodesAndLeafs+83/w
                                         // R_SetParentAndCell_r+12/r ...
-    mnode_load_t *nodes;                // XREF: R_LoadNodesAndLeafs+7A/w
+    Ptr32<mnode_load_t> nodes;                // XREF: R_LoadNodesAndLeafs+7A/w
                                         // R_LoadNodesAndLeafs:loc_A9BE52/r ...
     int reflectionProbesLoaded;         // XREF: R_CreateDefaultProbes+3E/w
                                         // R_LoadReflectionProbes:loc_A95321/w ...

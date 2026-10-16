@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "enthandle.h"
 
 enum fieldtype_t : __int32
@@ -36,12 +37,12 @@ enum fieldtype_t : __int32
 
 struct sentient_fields_s // sizeof=0x18
 {                                       // XREF: .rdata:fields_2/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     int size[1];
     fieldtype_t type;
-    void (__cdecl *setter)(sentient_s *, const sentient_fields_s *);
-    void (__cdecl *getter)(sentient_s *, const sentient_fields_s *);
+    Ptr32<void __cdecl(sentient_s *, const sentient_fields_s *)> setter;
+    Ptr32<void __cdecl(sentient_s *, const sentient_fields_s *)> getter;
 };
 
 void __cdecl SentientScr_ReadOnly(sentient_s *pSelf, const sentient_fields_s *pField);

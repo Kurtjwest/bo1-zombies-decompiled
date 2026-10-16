@@ -1,3 +1,4 @@
+#include <universal/ptr32.h>
 #include <universal/bo1_ptrcast.h>
 #include "phys_main.h"
 #include "phys_effects.h"
@@ -123,7 +124,7 @@ const dvar_t *phys_fluid;
 
 struct smodel_debug_info_t // sizeof=0x8
 {                                       // XREF: .data:smodel_debug_info_t * smodel_debug_infos/r
-    cStaticModel_s *smodel;             // XREF: draw_static_models_bounds(void)+DE/w
+    Ptr32<cStaticModel_s> smodel;             // XREF: draw_static_models_bounds(void)+DE/w
     float dist2;                        // XREF: draw_static_models_bounds(void)+ED/w
 };
 
@@ -571,8 +572,8 @@ void __cdecl create_broad_phase_info(rigid_body *body)
 {
     unsigned int v1; // eax
     unsigned int geom_id; // eax
-    gjk_base_t **p_m_first_geom; // [esp+4h] [ebp-2Ch]
-    gjk_base_t **v4; // [esp+10h] [ebp-20h]
+    Ptr32<gjk_base_t> *p_m_first_geom; // [esp+4h] [ebp-2Ch]
+    Ptr32<gjk_base_t> *v4; // [esp+10h] [ebp-20h]
     broad_phase_info *new_bpi; // [esp+18h] [ebp-18h]
     gjk_base_t *gjk_geom; // [esp+1Ch] [ebp-14h]
     broad_phase_info *bpi; // [esp+20h] [ebp-10h]
@@ -772,7 +773,7 @@ void __cdecl environment_collision_list_remove(broad_phase_base *bpb)
 void __thiscall broad_phase_memory::list_bpb_remove(broad_phase_base *bpb_to_remove)
 {
     broad_phase_base *bpb; // [esp+4h] [ebp-8h]
-    broad_phase_base **bpb_cur; // [esp+8h] [ebp-4h]
+    Ptr32<broad_phase_base> *bpb_cur; // [esp+8h] [ebp-4h]
 
     bpb_cur = &this->g_list_bpb;
     for ( bpb = this->g_list_bpb; bpb != bpb_to_remove; bpb = bpb->m_list_bpb_next )

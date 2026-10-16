@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <DemonWare/bdCore/bdReference/bdReferencable.h>
 #include <live/live_storage.h>
@@ -18,9 +19,9 @@ struct overlappedTask // sizeof=0x24
     // padding byte
     int controllerIndex;                // XREF: MatchRecordEventComplete+86/r
                                         // LB_ReadLeaderboardComplete(int)+1E6/r ...
-    void *data;                         // XREF: LB_ReadHiddenLeaderboardComplete(int)+8B/r
+    Ptr32<void> data;                         // XREF: LB_ReadHiddenLeaderboardComplete(int)+8B/r
                                         // LB_ReadHiddenLeaderboardComplete(int)+1B7/r ...
-    void *miscData;
+    Ptr32<void> miscData;
     float startMS;
 };
 

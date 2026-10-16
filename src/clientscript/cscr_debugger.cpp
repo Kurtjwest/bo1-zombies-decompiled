@@ -170,7 +170,7 @@ void __thiscall Scr_ScriptWindow::SetScriptFile(scriptInstance_t inst, const cha
 
 void __thiscall Scr_ScriptWindow::AddBreakpoint(
                 scriptInstance_t inst,
-                Scr_Breakpoint **pBreakpoint,
+                Ptr32<Scr_Breakpoint> *pBreakpoint,
                 char *codePos,
                 int builtinIndex,
                 Scr_WatchElement_s *element,
@@ -285,7 +285,7 @@ char __thiscall Scr_ScriptWindow::AddBreakpointAtSourcePos(
                 Scr_WatchElement_s *element,
                 unsigned __int8 breakpointType,
                 bool user,
-                Scr_Breakpoint **pBreakpoint,
+                Ptr32<Scr_Breakpoint> *pBreakpoint,
                 unsigned int startSourcePos,
                 unsigned int endSourcePos)
 {
@@ -381,7 +381,7 @@ void __thiscall Scr_ScriptWindow::ToggleBreakpointInternal(
     const char *s; // [esp+18h] [ebp-14h]
     Scr_WatchElement_s *breakpointElement; // [esp+1Ch] [ebp-10h]
     int line; // [esp+20h] [ebp-Ch]
-    Scr_Breakpoint **pBreakpoint; // [esp+24h] [ebp-8h]
+    Ptr32<Scr_Breakpoint> *pBreakpoint; // [esp+24h] [ebp-8h]
     unsigned int endSourcePos; // [esp+28h] [ebp-4h] BYREF
 
     if ( this->selectedLine < 0
@@ -534,7 +534,7 @@ void __cdecl Scr_WriteElement(Scr_WatchElement_s *element)
 void __cdecl Scr_FreeLineBreakpoint(scriptInstance_t inst, Scr_Breakpoint *breakpoint, bool deleteElement)
 {
     unsigned __int8 breakpointType; // [esp+7h] [ebp-9h]
-    Scr_Breakpoint **pBreakpoint; // [esp+8h] [ebp-8h]
+    Ptr32<Scr_Breakpoint> *pBreakpoint; // [esp+8h] [ebp-8h]
     Scr_WatchElement_s *element; // [esp+Ch] [ebp-4h]
 
     pBreakpoint = breakpoint->prev;
@@ -765,7 +765,7 @@ void __thiscall Scr_ScriptWindow::EnterCallInternal(scriptInstance_t inst)
     unsigned int startSourcePos; // [esp+1Ch] [ebp-18h] BYREF
     const char *codePos; // [esp+20h] [ebp-14h]
     unsigned int sourcePos; // [esp+24h] [ebp-10h] BYREF
-    Scr_Breakpoint **pBreakpoint; // [esp+28h] [ebp-Ch]
+    Ptr32<Scr_Breakpoint> *pBreakpoint; // [esp+28h] [ebp-Ch]
     const char *destCodePos; // [esp+2Ch] [ebp-8h]
     unsigned int endSourcePos; // [esp+30h] [ebp-4h] BYREF
 
@@ -954,7 +954,7 @@ void __thiscall Scr_ScriptList::Init(scriptInstance_t inst)
         this->numLines - 1,
         4u,
         (int (__cdecl *)(const void *, const void *))ConDrawInput_CompareStrings);
-    this->scriptWindows = (Scr_ScriptWindow **)Scr_AllocDebugMem(inst, 4 * this->numLines, "Scr_ScriptList::Init2");
+    this->scriptWindows = (Ptr32<Scr_ScriptWindow> *)Scr_AllocDebugMem(inst, 4 * this->numLines, "Scr_ScriptList::Init2");
     memset(&info, 0, sizeof(info));
     Hunk_CheckTempMemoryHighClear();
     Scr_AddSourceBuffer(inst, 0, (char*)"scriptdebugger/help.txt", 0, 0);
@@ -1069,9 +1069,9 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::GetElementWithId(int id)
     return Scr_ScriptWatch::GetElementWithId_r(this->elementHead, id);
 }
 
-Scr_WatchElement_s **__thiscall Scr_ScriptWatch::GetElementRef(Scr_WatchElement_s *element)
+Ptr32<Scr_WatchElement_s> *__thiscall Scr_ScriptWatch::GetElementRef(Scr_WatchElement_s *element)
 {
-    Scr_WatchElement_s **pElement; // [esp+4h] [ebp-4h]
+    Ptr32<Scr_WatchElement_s> *pElement; // [esp+4h] [ebp-4h]
 
     for ( pElement = &this->elementHead; *pElement != element; pElement = &(*pElement)->next )
     {
@@ -1166,9 +1166,9 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::CreateBreakpointElement(
                 unsigned int sourcePos,
                 bool user)
 {
-    Scr_WatchElement_s **ElementRef; // eax
+    Ptr32<Scr_WatchElement_s> *ElementRef; // eax
     Scr_WatchElement_s *ElementRoot; // [esp+0h] [ebp-1ACh]
-    Scr_WatchElement_s **pElement; // [esp+8h] [ebp-1A4h]
+    Ptr32<Scr_WatchElement_s> *pElement; // [esp+8h] [ebp-1A4h]
     char refText[136]; // [esp+Ch] [ebp-1A0h] BYREF
     char valueText[268]; // [esp+94h] [ebp-118h] BYREF
     Scr_WatchElement_s *newElement; // [esp+1A4h] [ebp-8h]
@@ -1208,7 +1208,7 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::PasteNonBreakpointElement(
                 char *text,
                 bool user)
 {
-    Scr_WatchElement_s **ElementRef; // eax
+    Ptr32<Scr_WatchElement_s> *ElementRef; // eax
     Scr_WatchElement_s *ElementRoot; // [esp+0h] [ebp-10h]
     Scr_WatchElement_s *newElement; // [esp+Ch] [ebp-4h]
 
@@ -1245,7 +1245,7 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::DeleteElementInternal(
                 scriptInstance_t inst,
                 Scr_WatchElement_s *element)
 {
-    Scr_WatchElement_s **pElement; // [esp+4h] [ebp-4h]
+    Ptr32<Scr_WatchElement_s> *pElement; // [esp+4h] [ebp-4h]
 
     if ( !element
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_debugger.cpp", 4105, 0, "%s", "element") )
@@ -1262,7 +1262,7 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::DeleteElementInternal(
 
 Scr_WatchElement_s *__thiscall Scr_ScriptWatch::BackspaceElementInternal(scriptInstance_t inst, Scr_WatchElement_s *element)
 {
-    Scr_WatchElement_s **pElement; // [esp+4h] [ebp-8h]
+    Ptr32<Scr_WatchElement_s> *pElement; // [esp+4h] [ebp-8h]
     Scr_WatchElement_s *prevElement; // [esp+8h] [ebp-4h]
 
     if ( !element
@@ -1457,7 +1457,7 @@ void __thiscall Scr_ScriptWatch::EvaluateWatchChildren(
     int function_count; // [esp+108h] [ebp-3Ch]
     unsigned int objectId; // [esp+10Ch] [ebp-38h]
     Scr_WatchElement_s *oldElement; // [esp+110h] [ebp-34h]
-    Scr_WatchElement_s **newElementOldRef; // [esp+114h] [ebp-30h]
+    Ptr32<Scr_WatchElement_s> *newElementOldRef; // [esp+114h] [ebp-30h]
     int compareResult; // [esp+118h] [ebp-2Ch]
     bool elementChanged; // [esp+11Fh] [ebp-25h]
     unsigned int threadId; // [esp+120h] [ebp-24h]
@@ -1654,7 +1654,7 @@ void __thiscall Scr_ScriptWatch::EvaluateWatchChildren(
                 100 * count,
                 "Scr_ScriptWatch::EvaluateWatchChildren3");
             memset((unsigned __int8 *)&newElements->expr.parseData, 0, 100 * count);
-            newElementOldRef = (Scr_WatchElement_s **)Scr_AllocDebugMem(
+            newElementOldRef = (Ptr32<Scr_WatchElement_s> *)Scr_AllocDebugMem(
                 inst,
                 4 * count,
                 "Scr_ScriptWatch::EvaluateWatchChildren");
@@ -2585,7 +2585,7 @@ void __thiscall Scr_ScriptWatch::EvaluateWatchElement(
 Scr_WatchElement_s *__thiscall Scr_ScriptWatch::CreateWatchElement(
                 scriptInstance_t inst,
                 char *text,
-                Scr_WatchElement_s **prevElem,
+                Ptr32<Scr_WatchElement_s> *prevElem,
                 const char *name)
 {
     Scr_WatchElement_s *element; // [esp+4h] [ebp-4h]
@@ -2608,7 +2608,7 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::CreateWatchElement(
 Scr_WatchElement_s *__cdecl Scr_CreateWatchElement(
                 scriptInstance_t inst,
                 char *text,
-                Scr_WatchElement_s **prevElem,
+                Ptr32<Scr_WatchElement_s> *prevElem,
                 const char *name)
 {
     Scr_WatchElement_s *element; // [esp+0h] [ebp-4h]
@@ -2698,7 +2698,7 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::CloneElement(
                 Scr_WatchElement_s *element)
 {
     Scr_WatchElement_s *ElementRoot; // eax
-    Scr_WatchElement_s **ElementRef; // eax
+    Ptr32<Scr_WatchElement_s> *ElementRef; // eax
     Scr_WatchElement_s *newElement; // [esp+4h] [ebp-4h]
 
     ElementRoot = Scr_GetElementRoot(element);
@@ -3001,7 +3001,7 @@ void __cdecl Scr_RemoveAssignmentBreakpoint(scriptInstance_t inst, unsigned __in
 
 bool __cdecl Scr_RefToVariable(scriptInstance_t inst, unsigned int id, int isObject)
 {
-    Scr_WatchElementNode_s **pElementNode; // [esp+Ch] [ebp-1Ch]
+    Ptr32<Scr_WatchElementNode_s> *pElementNode; // [esp+Ch] [ebp-1Ch]
     Scr_WatchElementNode_s *elementNodeNext; // [esp+10h] [ebp-18h]
     Scr_WatchElementDoubleNode_t *breakpoints; // [esp+14h] [ebp-14h]
     unsigned int *elementNodec; // [esp+18h] [ebp-10h]
@@ -3367,8 +3367,8 @@ void __thiscall Scr_ScriptWatch::ToggleBreakpointInternal(
 
 void __thiscall Scr_ScriptWatch::SortHitBreakpointsTop(scriptInstance_t inst)
 {
-    Scr_WatchElement_s **pElement; // [esp+4h] [ebp-14h]
-    Scr_WatchElement_s **pInsertPoint; // [esp+8h] [ebp-10h]
+    Ptr32<Scr_WatchElement_s> *pElement; // [esp+4h] [ebp-14h]
+    Ptr32<Scr_WatchElement_s> *pInsertPoint; // [esp+8h] [ebp-10h]
     int hitBreakpoint; // [esp+Ch] [ebp-Ch]
     Scr_WatchElement_s *element; // [esp+14h] [ebp-4h]
 
@@ -3423,7 +3423,7 @@ void __cdecl Scr_InitDebuggerMain(scriptInstance_t inst)
         // Same rule as Scr_AllocVarsMem (cscr_variable.cpp): the grown pools live in OS memory, retail keeps the hunk.
         if ( g_scrVarChildSize[inst] != 0x3FFFE )
         {
-            gScrDebuggerGlob[inst].variableBreakpoints = (Scr_WatchElementDoubleNode_t **)Z_VirtualAlloc(
+            gScrDebuggerGlob[inst].variableBreakpoints = (Ptr32<Scr_WatchElementDoubleNode_t> *)Z_VirtualAlloc(
                 4 * VARIABLELIST_SIZE(inst), "gScrDebuggerGlob[inst].variableBreakpoints", 0);
             if ( !gScrDebuggerGlob[inst].variableBreakpoints )
                 Com_Error(ERR_FATAL, "mod: out of memory for the script debugger breakpoints (%u bytes)", 4 * VARIABLELIST_SIZE(inst));
@@ -3431,7 +3431,7 @@ void __cdecl Scr_InitDebuggerMain(scriptInstance_t inst)
         }
         else
         {
-            gScrDebuggerGlob[inst].variableBreakpoints = (Scr_WatchElementDoubleNode_t **)Hunk_UserAlloc(
+            gScrDebuggerGlob[inst].variableBreakpoints = (Ptr32<Scr_WatchElementDoubleNode_t> *)Hunk_UserAlloc(
                                                                                                                                                                             g_DebugHunkUser,
                                                                                                                                                                             4 * VARIABLELIST_SIZE(inst) /* retail 1179640 */,
                                                                                                                                                                             4,

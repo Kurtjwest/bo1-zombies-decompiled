@@ -1,8 +1,9 @@
 #pragma once
+#include <universal/ptr32.h>
 
 struct infoParm_t // sizeof=0x14
 {
-    const char *name;
+    Ptr32<const char> name;
     int clearSolid;
     int surfaceFlags;
     int contents;

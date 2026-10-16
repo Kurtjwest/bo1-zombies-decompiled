@@ -1,13 +1,14 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <qcommon/common.h>
 #include <game_mp/g_main_mp.h>
 
 struct BuiltinMethodDef // sizeof=0xC
 {                                       // XREF: .rdata:client_methods/r
                                         // .rdata:client_project_methods/r ...
-    const char *actionString;           // XREF: CScr_GetMethod(char const * *,int *)+30/r
+    Ptr32<const char> actionString;           // XREF: CScr_GetMethod(char const * *,int *)+30/r
                                         // CScr_GetMethod(char const * *,int *)+99/r ...
-    void (__cdecl *actionFunc)(scr_entref_t);
+    Ptr32<void __cdecl(scr_entref_t)> actionFunc;
                                         // XREF: CScr_GetMethod(char const * *,int *)+B8/r
                                         // CScr_GetMethodProjectSpecific(char const * *,int *)+B8/r ...
     int type;                           // XREF: CScr_GetMethod(char const * *,int *)+AA/r
@@ -16,9 +17,9 @@ struct BuiltinMethodDef // sizeof=0xC
 
 struct BuiltinFunctionDef // sizeof=0xC
 {                                       // XREF: .data:BuiltinFunctionDef * client_functions/r
-    const char *actionString;           // XREF: CScr_GetFunction(char const * *,int *)+33/r
+    Ptr32<const char> actionString;           // XREF: CScr_GetFunction(char const * *,int *)+33/r
                                         // CScr_GetFunction(char const * *,int *)+9C/r
-    void (__cdecl *actionFunc)();       // XREF: CScr_GetFunction(char const * *,int *)+BB/r
+    Ptr32<void __cdecl()> actionFunc;       // XREF: CScr_GetFunction(char const * *,int *)+BB/r
     int type;                           // XREF: CScr_GetFunction(char const * *,int *)+AD/r
 };
 
@@ -46,12 +47,12 @@ struct cg_level_locals_t // sizeof=0x3A1C
 
 struct cent_field_s // sizeof=0x18
 {                                       // XREF: .rdata:cent_fields/r
-    const char *name;
+    Ptr32<const char> name;
     int ofs;
     int size[1];
     fieldtype_t type;
-    void (__cdecl *setter)(centity_s *, const cent_field_s *);
-    void (__cdecl *getter)(centity_s *, const cent_field_s *);
+    Ptr32<void __cdecl(centity_s *, const cent_field_s *)> setter;
+    Ptr32<void __cdecl(centity_s *, const cent_field_s *)> getter;
 };
 
 struct cscr_data_t // sizeof=0x68

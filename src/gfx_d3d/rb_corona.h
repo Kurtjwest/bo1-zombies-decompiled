@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rb_backend.h"
 
 struct Corona // sizeof=0x48
@@ -8,7 +9,7 @@ struct Corona // sizeof=0x48
     // padding byte
     // padding byte
     // padding byte
-    GfxLightCorona *info;
+    Ptr32<GfxLightCorona> info;
     int timeSinceSpawned;
     float currentVisibility;
     float targetVisibility;
@@ -17,8 +18,8 @@ struct Corona // sizeof=0x48
     bool queryIssued[5];
     // padding byte
     // padding byte
-    IDirect3DQuery9 *query[5];
-    IDirect3DQuery9 *queryMax[5];
+    Ptr32<IDirect3DQuery9> query[5];
+    Ptr32<IDirect3DQuery9> queryMax[5];
 };
 
 struct CoronaState // sizeof=0x908

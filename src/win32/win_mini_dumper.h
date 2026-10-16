@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 
 struct __declspec(align(4)) miniDumper // sizeof=0x314
 {                                       // XREF: .data:g_miniDumper/r
-    _EXCEPTION_POINTERS *m_pExceptionInfo;
+    Ptr32<_EXCEPTION_POINTERS> m_pExceptionInfo;
     char m_szMiniDumpPath[260];
     char m_szAppPath[260];
     char m_szAppBaseName[260];

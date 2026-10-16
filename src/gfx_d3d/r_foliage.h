@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_bsp.h"
 #include "rb_state.h"
 #include "r_state.h"
@@ -140,17 +141,17 @@ struct FoliageShakeParams // sizeof=0x14
 
 struct DynSModelDrawStateCmd // sizeof=0x24
 {                                       // XREF: ?R_DynSModelBuildClientView@@YAXPBUDynSModelClient@@PAUDynSModelClientView@@PAUDynSModelGfxState@@@Z/r
-    PerFrameFoliageInfo *frameInfo;     // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+A95/w
-    unsigned __int16 *smodelList;       // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+AD3/w
+    Ptr32<PerFrameFoliageInfo> frameInfo;     // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+A95/w
+    Ptr32<unsigned __int16> smodelList;       // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+AD3/w
     unsigned int listBegin;             // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+ADC/w
     unsigned int listEnd;               // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+AEB/w
-    DynSModelClientView *view;          // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+AF4/w
-    DynSModelGfxState *dynData;         // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+AFD/w
+    Ptr32<DynSModelClientView> view;          // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+AF4/w
+    Ptr32<DynSModelGfxState> dynData;         // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+AFD/w
     unsigned int persistForceIndexOffset;
                                         // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+B03/w
     unsigned int instantForceIndexOffset;
                                         // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+B0D/w
-    ForceBoundsInfo *boundsInfo;        // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+B1D/w
+    Ptr32<ForceBoundsInfo> boundsInfo;        // XREF: R_DynSModelBuildClientView(DynSModelClient const *,DynSModelClientView *,DynSModelGfxState *)+B1D/w
 };
 
 bool __cdecl ModelIsFullySquashed(unsigned int drawInstIndex);

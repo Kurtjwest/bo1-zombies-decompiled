@@ -82,7 +82,7 @@ struct DpvsView // sizeof=0x120
 
 struct PortalHeapNode // sizeof=0x8
 {                                       // XREF: R_VisitPortalsNoFrustum/r
-    GfxPortal *portal;
+    Ptr32<GfxPortal> portal;
     float dist;
 };
 
@@ -97,11 +97,11 @@ struct DpvsGlob // sizeof=0xC320
     // padding byte
     // padding byte
     // padding byte
-    const GfxMatrix *viewProjMtx;       // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+C9/w
+    Ptr32<const GfxMatrix> viewProjMtx;       // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+C9/w
                                         // R_ProjectPortal+B9/r ...
-    const GfxMatrix *invViewProjMtx;    // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+D8/w
+    Ptr32<const GfxMatrix> invViewProjMtx;    // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+D8/w
                                         // R_UnprojectPoint+3/r ...
-    const GfxMatrix *projMtx;           // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+E4/w
+    Ptr32<const GfxMatrix> projMtx;           // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+E4/w
     float viewOrg[4];                   // XREF: R_GenerateShadowMapCasterCells(void)+127/w
                                         // R_GenerateShadowMapCasterCells(void)+13E/w ...
     int viewOrgIsDir;                   // XREF: R_GenerateShadowMapCasterCells(void)+16D/w
@@ -110,9 +110,9 @@ struct DpvsGlob // sizeof=0xC320
                                         // R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+176/w ...
     int queuedCount;                    // XREF: R_VisitPortalsNoFrustum+D6/w
                                         // R_VisitPortalsNoFrustum:loc_A43756/r ...
-    PortalHeapNode *portalQueue;        // XREF: R_VisitPortalsNoFrustum+D0/w
+    Ptr32<PortalHeapNode> portalQueue;        // XREF: R_VisitPortalsNoFrustum+D0/w
                                         // R_NextQueuedPortal:loc_A43FBC/r ...
-    union GfxHullPointsPool *nextFreeHullPoints;
+    Ptr32<union GfxHullPointsPool> nextFreeHullPoints;
                                         // XREF: R_VisitPortalsNoFrustum+C5/w
                                         // R_FreeHullPoints+3B/r ...
     float cullDist;                     // XREF: R_GetFarPlaneDist(void):loc_A4AF45/r
@@ -121,11 +121,11 @@ struct DpvsGlob // sizeof=0xC320
                                         // R_VisitPortals+541/o
     DpvsView views[4][3];               // XREF: R_DrawAllSceneEnt(GfxViewInfo const *)+8E/o
                                         // R_FilterXModelIntoScene(XModel const *,GfxScaledPlacement const *,ushort,ushort *,float)+116/o ...
-    DpvsPlane *sideFrustumPlanes;       // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+444/w
+    Ptr32<DpvsPlane> sideFrustumPlanes;       // XREF: R_SetupWorldSurfacesDpvs(GfxViewParms const *,uint)+444/w
                                         // R_SetupShadowSurfacesDpvs(GfxViewParms const *,float const (* const)[4],uint,int)+2DA/r ...
-    unsigned int *entVisBits[4];        // XREF: R_DrawAllSceneEnt(GfxViewInfo const *)+C/r
+    Ptr32<unsigned int> entVisBits[4];        // XREF: R_DrawAllSceneEnt(GfxViewInfo const *)+C/r
                                         // R_UnfilterEntFromCells(int,uint)+18F/r ...
-    unsigned int *cellCasterBitsForCell;
+    Ptr32<unsigned int> cellCasterBitsForCell;
                                         // XREF: R_GenerateShadowMapCasterCells(void)+21C/w
                                         // R_VisitPortalsForCellNoFrustum+6/r ...
     unsigned int cellVisibleBits[32];   // XREF: R_AddWorldSurfacesFrustumOnly(uint)+F3/r
@@ -168,7 +168,7 @@ union GfxEntCellRefInfo // sizeof=0x4
 {                                       // XREF: R_FilterDObjIntoCells(int,uint,float * const,float)+10A/w
                                         // R_FilterBModelIntoCells(int,uint,GfxBrushModel *)+8D/w ...
     float radius;
-    GfxBrushModel *bmodel;
+    Ptr32<GfxBrushModel> bmodel;
 };
 
 struct FilterEntInfo // sizeof=0x10
@@ -188,7 +188,7 @@ struct GfxPortal;
 
 union GfxHullPointsPool // sizeof=0x200
 {                                       // XREF: GfxHullPointsPoolArray/r
-    GfxHullPointsPool *nextFree;
+    Ptr32<GfxHullPointsPool> nextFree;
     float points[64][2];
 };
 
@@ -196,7 +196,7 @@ struct GfxWorld;
 
 struct DpvsDynamicCellCmd // sizeof=0xC
 {                                       // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed/r
-    const DpvsPlane *planes;            // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+6A/w
+    Ptr32<const DpvsPlane> planes;            // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+6A/w
     unsigned int cellIndex;             // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+64/w
     unsigned __int16 viewIndex;         // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+8F/w
     unsigned __int8 planeCount;         // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+70/w
@@ -207,13 +207,13 @@ struct DpvsDynamicCellCmd // sizeof=0xC
 
 struct DpvsStaticCellCmd // sizeof=0xC
 {                                       // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed/r
-    const DpvsPlane *planes;            // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+F/w
+    Ptr32<const DpvsPlane> planes;            // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+F/w
     //$FE217278708CFE8B64B0580037FD6900 ___u1;
     union //$FE217278708CFE8B64B0580037FD6900 // sizeof=0x4
     {                                       // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+9/w
                                             // DpvsStaticCellCmd/r
-        const GfxCell *cell;
-        const GfxCell *cell_local;
+        Ptr32<const GfxCell> cell;
+        Ptr32<const GfxCell> cell_local;
     };
                                         // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+9/w
     unsigned __int8 planeCount;         // XREF: R_AddCellSurfacesAndCullGroupsInFrustumDelayed+15/w

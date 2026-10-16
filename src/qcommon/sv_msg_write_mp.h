@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "net_chan_mp.h"
 #include <client_mp/cl_main_mp.h>
 #include <server/server.h>
@@ -49,7 +50,7 @@ struct __declspec(align(4)) SnapshotInfo_s // sizeof=0x18
                                         // SnapshotInfo/r ...
     int clientNum;                      // XREF: CL_WriteUncompressedDemoInfo(int)+78C/w
                                         // SV_ArchiveSnapshot(msg_t *)+25/w ...
-    const clientHeader_t *client;       // XREF: CL_WriteUncompressedDemoInfo(int)+78F/w
+    Ptr32<const clientHeader_t> client;       // XREF: CL_WriteUncompressedDemoInfo(int)+78F/w
                                         // SV_ArchiveSnapshot(msg_t *)+2B/w ...
     int snapshotDeltaTime;              // XREF: CL_WriteUncompressedDemoInfo(int)+792/w
                                         // SV_ArchiveSnapshot(msg_t *)+31/w ...

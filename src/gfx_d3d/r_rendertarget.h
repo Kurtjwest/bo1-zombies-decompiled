@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <d3d9.h>
 #include "r_gfx.h"
 #include "rb_state.h"
@@ -28,14 +29,14 @@ enum ShadowmapRTTiling : __int32
 
 struct GfxRenderTargetSurface // sizeof=0x8
 {                                       // XREF: GfxRenderTarget/r
-    IDirect3DSurface9 *color;           // XREF: yuv_encode_frame(void)+3F/r
-    IDirect3DSurface9 *depthStencil;    // XREF: R_Resolve(GfxCmdBufContext,GfxImage *)+1C8/r
+    Ptr32<IDirect3DSurface9> color;           // XREF: yuv_encode_frame(void)+3F/r
+    Ptr32<IDirect3DSurface9> depthStencil;    // XREF: R_Resolve(GfxCmdBufContext,GfxImage *)+1C8/r
 };
 
 struct __declspec(align(4)) GfxRenderTarget // sizeof=0x14
 {                                       // XREF: RB_SaveScreen_BlendBlurred(GfxBlendSaveScreenBlurredParam const *,GfxViewInfo const *):loc_AB807E/r
                                         // RB_SaveScreen_BlendFlashed(GfxBlendSaveScreenFlashedParam const *,GfxViewInfo const *):loc_AB8345/r ...
-    GfxImage *image;                    // XREF: R_GenerateSortedDrawSurfs+689/r
+    Ptr32<GfxImage> image;                    // XREF: R_GenerateSortedDrawSurfs+689/r
                                         // R_GenerateSortedDrawSurfs+715/r ...
     GfxRenderTargetSurface surface;     // XREF: yuv_encode_frame(void)+3F/r
                                         // R_SetDepthOfField+762/r ...

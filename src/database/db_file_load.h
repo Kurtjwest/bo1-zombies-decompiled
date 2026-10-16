@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include <windows.h>
 #include <zlib/zlib.h>
@@ -6,11 +7,11 @@
 
 struct DB_LoadData // sizeof=0x807C
 {                                       // XREF: .data:g_load/r
-    void *f;                            // XREF: DB_CancelLoadXFile(void)+2E/r
+    Ptr32<void> f;                            // XREF: DB_CancelLoadXFile(void)+2E/r
                                         // DB_CancelLoadXFile(void):loc_57A38D/r ...
-    const char *filename;               // XREF: DB_LoadXFileData(uchar *,int)+263/r
+    Ptr32<const char> filename;               // XREF: DB_LoadXFileData(uchar *,int)+263/r
                                         // DB_LoadXFileData(uchar *,int)+304/r ...
-    struct XBlock *blocks;                     // XREF: DB_LoadXFileInternal(void)+33B/r
+    Ptr32<struct XBlock> blocks;                     // XREF: DB_LoadXFileInternal(void)+33B/r
                                         // DB_LoadXFileInternal(void)+354/r ...
     int flags;                          // XREF: DB_LoadXFileInternal(void)+32D/r
                                         // DB_LoadXFileInternal(void)+426/r ...
@@ -20,12 +21,12 @@ struct DB_LoadData // sizeof=0x807C
                                         // DB_ReadData+9B/o ...
     z_stream_s stream;                  // XREF: DB_CancelLoadXFile(void):loc_57A351/o
                                         // DB_WaitXFileStage+AD/r ...
-    unsigned __int8 *compressBufferStart;
+    Ptr32<unsigned __int8> compressBufferStart;
                                         // XREF: DB_CancelLoadXFile(void)+3/r
                                         // DB_LoadXFileData(uchar *,int)+288/r ...
-    unsigned __int8 *compressBufferEnd; // XREF: DB_LoadXFileData(uchar *,int)+2C2/r
+    Ptr32<unsigned __int8> compressBufferEnd; // XREF: DB_LoadXFileData(uchar *,int)+2C2/r
                                         // DB_LoadXFile(char const *,void *,char const *,XBlock *,void (*)(void),uchar *,int,int)+121/w
-    void (__cdecl *interrupt)();        // XREF: DB_ReadData:loc_57AA24/r
+    Ptr32<void __cdecl()> interrupt;        // XREF: DB_ReadData:loc_57AA24/r
                                         // DB_ReadData+6D/r ...
     int allocType;                      // XREF: DB_LoadXFileInternal(void)+334/r
                                         // DB_LoadXFile(char const *,void *,char const *,XBlock *,void (*)(void),uchar *,int,int)+73/w

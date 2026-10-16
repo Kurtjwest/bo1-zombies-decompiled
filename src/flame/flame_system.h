@@ -24,9 +24,9 @@ struct flameAge_t // sizeof=0xC
 struct flameList_t // sizeof=0x8
 {                                                                             // XREF: flameGeneric_s/r
                                                                                 // flameGeneric_s/r ...
-        struct flameGeneric_s *prev;                             // XREF: Flame_Item_Init(flameGeneric_s *,int)+F/w
+        Ptr32<struct flameGeneric_s> prev;                             // XREF: Flame_Item_Init(flameGeneric_s *,int)+F/w
                                                                                 // Flame_Item_Init(flameGeneric_s *,int)+1E/w ...
-        struct flameGeneric_s *next;                             // XREF: Flame_Item_Init(flameGeneric_s *,int)+12/w
+        Ptr32<struct flameGeneric_s> next;                             // XREF: Flame_Item_Init(flameGeneric_s *,int)+12/w
                                                                                 // Flame_Item_Init(flameGeneric_s *,int)+21/w ...
 };
 
@@ -38,7 +38,7 @@ struct flameGeneric_s // sizeof=0x60
     flameAge_t age;
     flameList_t listGlobal;
     flameList_t listLocal;
-    flameStream_s *stream;
+    Ptr32<flameStream_s> stream;
     unsigned __int32 type : 3;
     unsigned __int32 delete_chunk : 1;
     unsigned __int32 id : 28;
@@ -47,15 +47,15 @@ struct flameGeneric_s // sizeof=0x60
 struct flameRender_s // sizeof=0x88
 {                                                                             // XREF: .data:flameRender_s * flameVarList/r
         char name[128];
-        flameGeneric_s *fireList;                     // XREF: Flame_Generate_Verts(int)+9C/r
-        flameGeneric_s *dripsList;                    // XREF: Flame_Generate_Verts(int)+B8/r
+        Ptr32<flameGeneric_s> fireList;                     // XREF: Flame_Generate_Verts(int)+9C/r
+        Ptr32<flameGeneric_s> dripsList;                    // XREF: Flame_Generate_Verts(int)+B8/r
 };
 
 struct flameRenderList_s // sizeof=0xC04
 {                                                                             // XREF: .data:flameStreamRenderList/r
         float fuelVerts[128][3];
         float flameVerts[128][3];
-        flameRender_s *flameRend;
+        Ptr32<flameRender_s> flameRend;
 };
 
 struct flameChunk_s // sizeof=0x70
@@ -73,7 +73,7 @@ struct __declspec(align(4)) flameSource_t // sizeof=0x58
         float origin[3];
         float angle[3];
         float entityOrigin[3];
-        flameStream_s *currentStream;
+        Ptr32<flameStream_s> currentStream;
         int lastUsedTime;
         int isKillcamFlame;
         int firingThroughGeo;
@@ -236,7 +236,7 @@ struct flameWeaponConfig_t // sizeof=0x44
                                                                                 // Weapon_Flamethrower_Fire(gentity_s *,weaponParms *)+1EF/w ...
         float entityOrigin[3];                            // XREF: Weapon_Flamethrower_Update(gentity_s *,weaponParms *)+1FA/w
                                                                                 // Weapon_Flamethrower_Update(gentity_s *,weaponParms *)+20A/w ...
-        flameTable *fTable;                                 // XREF: Weapon_Flamethrower_Update(gentity_s *,weaponParms *)+1AD/w
+        Ptr32<flameTable> fTable;                                 // XREF: Weapon_Flamethrower_Update(gentity_s *,weaponParms *)+1AD/w
                                                                                 // Weapon_Flamethrower_Fire(gentity_s *,weaponParms *)+1A0/w ...
         int damage;                                                 // XREF: Weapon_Flamethrower_Update(gentity_s *,weaponParms *)+22B/w
                                                                                 // Weapon_Flamethrower_Fire(gentity_s *,weaponParms *)+258/w ...
@@ -248,12 +248,12 @@ struct flameWeaponConfig_t // sizeof=0x44
 
 struct flameVarDef_t // sizeof=0x18
 {
-    const char *dvarName;
-    const char *name;
+    Ptr32<const char> dvarName;
+    Ptr32<const char> name;
     float defaultVal;
     float minVal;
     float maxVal;
-    const char *description;
+    Ptr32<const char> description;
 };
 
 void __cdecl Flame_Init_FlameVars();
@@ -277,8 +277,8 @@ flameRender_s *__cdecl Flame_Get_FlameRender(const char *name);
 void __cdecl Flame_Item_Init(flameGeneric_s *item, unsigned int itemSize);
 void __cdecl Flame_List_Init(flameGeneric_s *list, int itemSize, int listSize);
 void __cdecl Flame_List_Move_Global(flameGeneric_s *item, flameGeneric_s **fromList, flameGeneric_s **toList);
-void __cdecl Flame_List_Add_Local(flameGeneric_s *item, flameGeneric_s **localList);
-void __cdecl Flame_List_Sub_Local(flameGeneric_s *item, flameGeneric_s **localList);
+void __cdecl Flame_List_Add_Local(flameGeneric_s *item, Ptr32<flameGeneric_s> *localList);
+void __cdecl Flame_List_Sub_Local(flameGeneric_s *item, Ptr32<flameGeneric_s> *localList);
 void __cdecl CG_Flame_Age_All_Objects(int time);
 void __cdecl SV_Flame_Age_All_Objects(int time);
 flameSource_t *__cdecl Flame_Source_Alloc(int entityNum);

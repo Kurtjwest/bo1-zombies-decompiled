@@ -1,11 +1,12 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_rendercmds.h"
 #include "rb_state.h"
 
 struct SpotShadowMapCallbackUserData
 {
-    const GfxSpotShadow *shadow;
-    const GfxDrawSurfListInfo *drawList;
+    Ptr32<const GfxSpotShadow> shadow;
+    Ptr32<const GfxDrawSurfListInfo> drawList;
 };
 
 void __cdecl R_DrawSpotShadowMapCallback(const void *userData, GfxCmdBufContext context, GfxCmdBufContext prepassContext);

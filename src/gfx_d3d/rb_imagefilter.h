@@ -1,10 +1,11 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "r_material.h"
 #include "rb_state.h"
 
 struct __declspec(align(4)) GfxImageFilterPass // sizeof=0x9C
 {                                       // XREF: GfxImageFilter/r
-    const Material *material;
+    Ptr32<const Material> material;
     float srcWidth;
     float srcHeight;
     int dstWidth;
@@ -22,7 +23,7 @@ struct __declspec(align(4)) GfxImageFilter // sizeof=0x138C
     int passCount;                      // XREF: RB_GaussianFilterImage(float,uchar,uchar,int)+E0/w
                                         // RB_GaussianFilterImage(float,uchar,uchar,int)+E6/r
     GfxImageFilterPass passes[32];      // XREF: RB_GaussianFilterImage(float,uchar,uchar,int)+9F/o
-    GfxImage *sourceImage;              // XREF: RB_GaussianFilterImage(float,uchar,uchar,int)+96/w
+    Ptr32<GfxImage> sourceImage;              // XREF: RB_GaussianFilterImage(float,uchar,uchar,int)+96/w
     GfxRenderTargetId finalTarget;        // XREF: RB_GaussianFilterImage(float,uchar,uchar,int)+9C/w
     // padding byte
     // padding byte
@@ -41,7 +42,7 @@ int __cdecl RB_GenerateGaussianFilterChain(
                 int passLimit,
                 GfxImageFilterPass *filterPass);
 void __cdecl RB_GenerateGaussianFilter1D(float radius, int *res, int axis, GfxImageFilterPass *filterPass);
-int __cdecl RB_PickSymmetricFilterMaterial(int halfTapCount, const Material **material);
+int __cdecl RB_PickSymmetricFilterMaterial(int halfTapCount, Ptr32<const Material> *material);
 int __cdecl RB_GaussianFilterPoints1D(
                 float pixels,
                 int srcRes,

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "rigid_body.h"
 #include "phys_gjk_collision_detection.h"
 
@@ -28,10 +29,10 @@ struct auto_rigid_body // sizeof=0x1C
         node->cent = key;
     }
 
-    user_rigid_body *rb;
-    const centity_s *cent;
+    Ptr32<user_rigid_body> rb;
+    Ptr32<const centity_s> cent;
     int frame_count;
-    auto_rigid_body *next;
+    Ptr32<auto_rigid_body> next;
     phys_inplace_avl_tree_node<auto_rigid_body> m_avl_tree_node;
 
     static void add(const centity_s *cent, gjk_physics_collision_visitor *collision_visitor, int mask);
