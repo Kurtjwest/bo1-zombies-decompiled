@@ -2619,18 +2619,20 @@ void Device::ApplyRasterState()
     const float slope = DwordAsFloat(m_rs[D3DRS_SLOPESCALEDEPTHBIAS]);
     rhi::SetDepthBias(0.0f, slope, 0.0f);
     m_dirty &= ~DIRTY_RASTER;
-    ApplyDepthBiasFixup();
 }
 
 // The vertex shaders add bo1_vsfix.x * w to the clip-space z (mojoshader_profile_metal.c): D3DRS_DEPTHBIAS added to
-// the window-space depth is that much in normalized depth once divided by the viewport's depth range.
-void Device::ApplyDepthBiasFixup()
+// the window-space depth is that much in normalized depth once divided by the viewport's depth range. Direct3D 9
+// doesn't bias points and lines. (Checked on every draw: the value only changes when the bias, the viewport's depth
+// range or the kind of primitive does.)
+void Device::ApplyDepthBiasFixup(D3DPRIMITIVETYPE pt)
 {
-    const float bias = DwordAsFloat(m_rs[D3DRS_DEPTHBIAS]);
+    const bool triangles = pt == D3DPT_TRIANGLELIST || pt == D3DPT_TRIANGLESTRIP || pt == D3DPT_TRIANGLEFAN;
+    const float bias = triangles ? DwordAsFloat(m_rs[D3DRS_DEPTHBIAS]) : 0.0f;
     const float range = m_vp.MaxZ - m_vp.MinZ;
     float fix[4] = {0.0f, 0.0f, 0.0f, 0.0f};
-    if (bias != 0.0f)
-        fix[0] = bias / (std::fabs(range) > 1e-6f ? range : 1e-6f);
+    if (bias != 0.0f && std::fabs(range) > 1e-6f)
+        fix[0] = bias / range;
     if (!m_vsfixValid || memcmp(fix, m_vsfix, sizeof(fix)) != 0)
     {
         memcpy(m_vsfix, fix, sizeof(fix));
@@ -2678,8 +2680,8 @@ bool Device::PrepareDraw(D3DPRIMITIVETYPE pt)
         rhi::SetViewport((double)m_vp.X + 0.5, (double)m_vp.Y + 0.5, (double)m_vp.Width, (double)m_vp.Height,
                          (double)m_vp.MinZ, (double)m_vp.MaxZ);
         m_dirty &= ~DIRTY_VIEWPORT;
-        ApplyDepthBiasFixup(); // in units of the viewport's depth range
     }
+    ApplyDepthBiasFixup(pt);
     if (m_dirty & DIRTY_SCISSOR)
     {
         rhi::SetScissor(m_rs[D3DRS_SCISSORTESTENABLE] != 0, m_scissor.left, m_scissor.top,

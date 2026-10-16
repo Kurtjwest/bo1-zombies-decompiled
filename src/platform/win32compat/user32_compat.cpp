@@ -798,7 +798,7 @@ BOOL ShowWindow(HWND h, int cmd)
             // Windows activates a top-level window when it is shown: WM_ACTIVATEAPP, WM_ACTIVATE, WM_SETFOCUS.
             // The app's own activation (Bridge_Init, before WinMain) came while no window existed to receive it,
             // and without it the engine never marks itself active (no mouse input, cursor never released).
-            if (g_appActive)
+            if (g_appActive && Bridge_IsAppActive())
             {
                 Post(h, WM_ACTIVATEAPP, 1, 0);
                 Post(h, WM_ACTIVATE, MAKEWPARAM(WA_ACTIVE, 0), 0);

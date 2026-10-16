@@ -243,13 +243,11 @@ static void *MixerThread(void *arg)
         const int stallAfter = std::max(10, (int)(period * 3 * 50 / (uint64_t)o->sampleRate) + 1); // 20 ms waits
         if (++stalls >= stallAfter)
         {
-            uint64_t w = o->writePos.load(std::memory_order_relaxed);
-            uint64_t r = o->readPos.load(std::memory_order_acquire);
-            uint64_t drop = (uint64_t)o->sampleRate / 50; // 20 ms
-            if (drop > w - r)
-                drop = w - r;
-            // only if the device hasn't read in the meantime (it owns readPos once it is back)
-            o->readPos.compare_exchange_strong(r, r + drop, std::memory_order_acq_rel);
+            // the 20 ms the device would have played are rendered and discarded: readPos stays the device's alone,
+            // and when it comes back it plays what is still queued, then the new sound
+            for (int done = 0; done < o->sampleRate / 50 && !o->quit.load(); done += o->quantum)
+                if (o->rendering.load())
+                    o->render(o->user, o->scratch.data(), o->quantum, o->channels);
         }
     }
     return nullptr;

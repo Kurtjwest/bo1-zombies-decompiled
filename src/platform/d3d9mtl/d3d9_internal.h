@@ -16,6 +16,7 @@
 #include <atomic>
 #include <cstdint>
 #include <cstring>
+#include <chrono>
 #include <mutex>
 #include <thread>
 #include <string>
@@ -42,10 +43,15 @@ struct DeviceLock
             DeviceMutex().lock();
             return;
         }
-        while (!DeviceMutex().try_lock())
+        // (Present can hold it for up to a second in nextDrawable while the window is hidden: back off as
+        // EnterCriticalSection does instead of spinning a core)
+        for (unsigned tries = 0; !DeviceMutex().try_lock(); ++tries)
         {
             w32::ServiceMainThreadCalls();
-            std::this_thread::yield();
+            if (tries < 64)
+                std::this_thread::yield();
+            else
+                std::this_thread::sleep_for(std::chrono::microseconds(50));
         }
     }
     ~DeviceLock() { DeviceMutex().unlock(); }
@@ -826,7 +832,7 @@ private:
     void UploadUniforms();
     void BindStreams();
     void ApplyRasterState();
-    void ApplyDepthBiasFixup();
+    void ApplyDepthBiasFixup(D3DPRIMITIVETYPE pt);
     VertexDecl *DeclForFVF(DWORD fvf);
     HRESULT DrawConverted(D3DPRIMITIVETYPE prim, UINT primCount, UINT startVertex, int baseVertex, UINT startIndex,
                           bool indexed, const void *upIndices, D3DFORMAT upIndexFormat);

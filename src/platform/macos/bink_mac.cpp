@@ -11,6 +11,8 @@
 #include "coreaudio_out.h"
 #include "ffmpeg_media.h"
 
+#include <universal/ptr32.h>
+
 #include <mach/mach_time.h>
 #include <algorithm>
 #include <atomic>
@@ -315,8 +317,10 @@ void BinkSetSoundTrack(U32 total_tracks, U32 *tracks)
 S32 BinkSetSoundSystem(BINKSNDSYSOPEN, UINTa param)
 {
     // Sound always goes to CoreAudio. The parameter is the engine's DirectSound object, created for the device
-    // picked in the sound options (R_CinematicInitSound): movies play on that device too.
-    const char *uid = param ? DSoundMac_DeviceUID((const void *)param) : nullptr;
+    // picked in the sound options (R_CinematicInitSound): movies play on that device too. The engine passes it as a
+    // 32-bit integer (r_cinematic.cpp: BO1_P2I), so it is a Ptr32 handle here, not an address.
+    const void *ds = param ? bo1ptr::Decode((uint32_t)param) : nullptr;
+    const char *uid = ds ? DSoundMac_DeviceUID(ds) : nullptr;
     g_deviceUID = uid ? uid : "";
     return 1;
 }

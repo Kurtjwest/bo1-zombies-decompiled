@@ -684,6 +684,7 @@ void emit_METAL_finalize(Context *ctx)
         output_line(ctx, "    return float4(t.sample(s, c.xy, gradient2d(dx.xy, dy.xy)));");
         output_line(ctx, "}");
         output_line(ctx, "static inline float4 bo1_texcube(texturecube<float> t, sampler s, float4 c, int kind, int mode) {");
+        output_line(ctx, "    if (kind == 1) return t.sample(s, c.xyz / c.w);");
         output_line(ctx, "    if (kind == 2) return t.sample(s, c.xyz, bias(c.w));");
         output_line(ctx, "    if (kind == 3) return t.sample(s, c.xyz, level(c.w));");
         output_line(ctx, "    return t.sample(s, c.xyz);");
@@ -2071,9 +2072,9 @@ static void metal_texld(Context *ctx, const int texldd, const int texldl)
             kind = 3;
         else if (ctx->instruction_controls == CONTROL_TEXLDP)
         {
-            // BO1: texCUBEproj compiles to texldp on a cube map; dividing a direction by w doesn't change where it
-            //  points (for w > 0), so it is a plain lookup
-            kind = (sreg->index == TEXTURE_TYPE_CUBE) ? 0 : 1;
+            // BO1: texCUBEproj compiles to texldp on a cube map (bo1_texcube divides by w too: a negative w turns
+            //  the direction around)
+            kind = 1;
         } // else if
         else if (ctx->instruction_controls == CONTROL_TEXLDB)
             kind = 2;
@@ -2422,7 +2423,12 @@ void emit_METAL_comparison_operations(Context *ctx, const char *cmp)
     char src2[512]; make_METAL_srcarg_string_masked(ctx, 2, src2, sizeof (src2));
     char code[4096];
     ctx->metal_need_header_relational = 1;
-    make_METAL_destarg_assign(ctx, code, sizeof (code), "select(%s, %s, (%s %s))", src2, src1, src0, cmp);
+    // the condition as wide as the mask, also when src0 is a scalar register (vFace)
+    const int vecsize = vecsize_from_writemask(ctx->dest_arg.writemask);
+    if (vecsize > 1 && !isscalar(ctx, ctx->shader_type, ctx->dest_arg.regtype, ctx->dest_arg.regnum))
+        make_METAL_destarg_assign(ctx, code, sizeof (code), "select(%s, %s, bool%d(%s %s))", src2, src1, vecsize, src0, cmp);
+    else
+        make_METAL_destarg_assign(ctx, code, sizeof (code), "select(%s, %s, (%s %s))", src2, src1, src0, cmp);
     output_line(ctx, "%s", code);
 } // emit_METAL_comparison_operations
 

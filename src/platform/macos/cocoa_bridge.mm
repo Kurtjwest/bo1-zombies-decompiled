@@ -10,6 +10,7 @@
 
 #include "cocoa_bridge.h"
 #include "../win32compat/main_thread.h"
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <algorithm>
@@ -521,7 +522,13 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
         const OSType reason = why.typeCodeValue;
         if (reason == 'logo' || reason == 'rlgo' || reason == 'rrst' || reason == 'rest' || reason == 'rsdn' ||
             reason == 'shut')
-            return NSTerminateNow;
+        {
+            // NSTerminateNow would call exit(), running the static destructors while the render, sound and worker
+            // threads still use those objects; Windows simply ends the process at logoff, and so does this
+            // (TerminateProcess in kernel32_misc.cpp does the same)
+            fflush(nullptr);
+            _Exit(0);
+        }
     }
     BridgeEvent ev = {};
     ev.type = BRIDGE_EV_QUIT;
