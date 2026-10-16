@@ -166,6 +166,9 @@ void UploadTexture(Texture *tex, uint32_t slice, uint32_t level, uint32_t x, uin
 // Reads texels back (waits for the GPU). Depth/stencil formats are not readable.
 void ReadTexture(Texture *tex, uint32_t slice, uint32_t level, uint32_t x, uint32_t y, uint32_t w, uint32_t h,
                  void *dst, uint32_t rowPitch);
+// the same for a box of a 3D texture (slicePitch: bytes per depth slice in dst)
+void ReadTexture3D(Texture *tex, uint32_t level, uint32_t x, uint32_t y, uint32_t z, uint32_t w, uint32_t h, uint32_t d,
+                   void *dst, uint32_t rowPitch, uint32_t slicePitch);
 void GenerateMipmaps(Texture *tex);
 // texel copy between textures of the same format (and sample count)
 void CopyTexture(Texture *src, uint32_t srcSlice, uint32_t srcLevel, uint32_t sx, uint32_t sy, uint32_t w, uint32_t h,

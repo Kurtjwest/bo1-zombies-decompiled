@@ -14,6 +14,10 @@
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
+// the functions @autoreleasepool compiles to: pools that span calls (CycleFramePool)
+extern "C" void *objc_autoreleasePoolPush(void);
+extern "C" void objc_autoreleasePoolPop(void *pool);
+
 #include "mtl_rhi.h"
 
 #include <algorithm>
@@ -196,6 +200,9 @@ struct BoundBuffer
     uint32_t offset = 0;
     bool inlineBytes = false; // data in 'bytes' (setVertexBytes / setFragmentBytes)
     std::vector<uint8_t> bytes;
+    // uniforms too large for inline bytes live in a transient chunk: while bound, every encoder that binds them
+    // again uses the chunk, so it cannot be recycled before those command buffers finish
+    TransientChunk *chunk = nullptr;
 };
 
 struct EncoderState
@@ -479,6 +486,14 @@ void CommitCurrent()
 // ======================================================================================================================
 // scratch memory
 // ======================================================================================================================
+bool ChunkStillBound(const TransientChunk *ch)
+{
+    for (uint32_t i = 0; i < MAX_VERTEX_BUFFERS; ++i)
+        if (G->vbuf[i].chunk == ch)
+            return true;
+    return G->fbuf[0].chunk == ch;
+}
+
 void *Transient(size_t length, size_t alignment, Buffer **buf, uint32_t *offset)
 {
     EnsureCmdBuf();
@@ -490,7 +505,7 @@ void *Transient(size_t length, size_t alignment, Buffer **buf, uint32_t *offset)
         c = nullptr;
         for (auto &ch : G->chunks)
         {
-            if (ch.get() != G->chunk && ch->serial <= done && ch->size >= length)
+            if (ch.get() != G->chunk && ch->serial <= done && ch->size >= length && !ChunkStillBound(ch.get()))
             {
                 c = ch.get();
                 break;
@@ -548,19 +563,20 @@ VisBuffer *AcquireVisBuffer()
     return r;
 }
 
-// starts counting for the active query in the current render pass
-void StartVisibilitySegment()
+// starts counting for the active query in the current render pass; returns true when it ended the pass instead
+// (its visibility buffer was full), for the caller to start a new one
+bool StartVisibilitySegment()
 {
     Visibility *v = G->activeVis;
     if (!v || !G->renc)
-        return;
+        return false;
     VisBuffer *vb = G->vis;
     if (!vb || vb->used >= vb->slots)
     {
         // out of slots in this pass's buffer: the next pass gets a fresh one
         EndRenderEncoder();
         G->vis = AcquireVisBuffer();
-        return; // the caller re-creates the encoder, which starts the segment
+        return true; // the caller re-creates the encoder, which starts the segment
     }
     const uint32_t slot = vb->used++;
     vb->serial = G->recordingSerial;
@@ -568,6 +584,7 @@ void StartVisibilitySegment()
     ((uint64_t *)vb->buf.contents)[slot] = 0;
     v->segments.push_back({G->recordingSerial, vb, slot * 8});
     [G->renc setVisibilityResultMode:MTLVisibilityResultModeCounting offset:slot * 8];
+    return false;
 }
 
 // ======================================================================================================================
@@ -655,12 +672,8 @@ id<MTLRenderCommandEncoder> EnsureRenderEncoder()
     G->renc = [G->cmd renderCommandEncoderWithDescriptor:pd];
     G->pendingClear = 0;
     G->haveValid = false;
-    if (G->activeVis)
-    {
-        StartVisibilitySegment();
-        if (!G->renc) // ran out of slots: started over with a new visibility buffer
-            return EnsureRenderEncoder();
-    }
+    if (G->activeVis && StartVisibilitySegment())
+        return EnsureRenderEncoder(); // ran out of slots: start over with a new visibility buffer
     return G->renc;
 }
 
@@ -776,7 +789,11 @@ void Sync()
         if (b.inlineBytes)
             [enc setVertexBytes:b.bytes.data() length:b.bytes.size() atIndex:i];
         else if (b.buf)
+        {
             [enc setVertexBuffer:b.buf offset:b.offset atIndex:i];
+            if (b.chunk)
+                b.chunk->serial = std::max(b.chunk->serial, G->recordingSerial);
+        }
     }
     if (G->fbufDirty[0])
     {
@@ -785,7 +802,11 @@ void Sync()
         if (b.inlineBytes)
             [enc setFragmentBytes:b.bytes.data() length:b.bytes.size() atIndex:0];
         else if (b.buf)
+        {
             [enc setFragmentBuffer:b.buf offset:b.offset atIndex:0];
+            if (b.chunk)
+                b.chunk->serial = std::max(b.chunk->serial, G->recordingSerial);
+        }
     }
     for (uint32_t i = 0; G->vtexDirty && i < kMaxVertexTextures; ++i)
     {
@@ -1389,6 +1410,36 @@ void ReadTexture(Texture *tex, uint32_t slice, uint32_t level, uint32_t x, uint3
     }
 }
 
+void ReadTexture3D(Texture *tex, uint32_t level, uint32_t x, uint32_t y, uint32_t z, uint32_t w, uint32_t h, uint32_t d,
+                   void *dst, uint32_t rowPitch, uint32_t slicePitch)
+{
+    if (!tex || !dst || !w || !h || !d)
+        return;
+    const uint32_t rows = RowCount(tex->format, h);
+    const uint32_t tight = RowBytes(tex->format, w);
+    @autoreleasepool
+    {
+        id<MTLBuffer> staging = [G->device newBufferWithLength:(size_t)tight * rows * d options:MTLResourceStorageModeShared];
+        [Blit() copyFromTexture:tex->tex
+                         sourceSlice:0
+                         sourceLevel:level
+                        sourceOrigin:MTLOriginMake(x, y, z)
+                          sourceSize:MTLSizeMake(w, h, d)
+                            toBuffer:staging
+                   destinationOffset:0
+              destinationBytesPerRow:tight
+            destinationBytesPerImage:(size_t)tight * rows];
+        const uint64_t serial = G->recordingSerial;
+        CommitCurrent();
+        WaitForSerial(serial);
+        const uint8_t *s = (const uint8_t *)staging.contents;
+        for (uint32_t k = 0; k < d; ++k)
+            for (uint32_t r = 0; r < rows; ++r)
+                memcpy((uint8_t *)dst + (size_t)k * slicePitch + (size_t)r * rowPitch,
+                       s + ((size_t)k * rows + r) * tight, std::min(tight, rowPitch));
+    }
+}
+
 void GenerateMipmaps(Texture *tex)
 {
     if (!tex || tex->levels < 2 || IsCompressed(tex->format) || IsDepthFormat(tex->format) || tex->samples > 1)
@@ -1906,6 +1957,7 @@ void SetVertexBuffer(uint32_t index, Buffer *buf, uint32_t offset)
     b.bytes.clear();
     b.buf = mb;
     b.offset = offset;
+    b.chunk = nullptr;
     G->vbufDirty[index] = mb != nil;
 }
 
@@ -1917,18 +1969,21 @@ void SetBytes(BoundBuffer &b, bool &dirty, const void *data, size_t length)
     {
         b.inlineBytes = true;
         b.buf = nil;
+        b.chunk = nullptr;
         b.bytes.assign((const uint8_t *)data, (const uint8_t *)data + length);
     }
     else
     {
         Buffer *tb;
         uint32_t off;
+        b.chunk = nullptr; // (not protecting the old chunk while allocating the new block)
         void *p = Transient(length, 256, &tb, &off);
         memcpy(p, data, length);
         b.inlineBytes = false;
         b.bytes.clear();
         b.buf = tb->buf;
         b.offset = off;
+        b.chunk = G->chunk;
     }
     dirty = true;
 }
@@ -2069,12 +2124,8 @@ void BeginVisibility(Visibility *v)
     v->result = 0;
     G->activeVis = v;
     EnsureCmdBuf();
-    if (G->renc)
-    {
-        StartVisibilitySegment();
-        if (!G->renc)
-            EnsureRenderEncoder(); // re-created with a fresh visibility buffer; it starts the segment
-    }
+    if (G->renc && StartVisibilitySegment())
+        EnsureRenderEncoder(); // re-created with a fresh visibility buffer; it starts the segment
 }
 
 void EndVisibility(Visibility *v)
@@ -2168,10 +2219,29 @@ void WaitForSerial(uint64_t serial)
 
 double LastFrameGpuTime() { return G ? G->lastFrameGpuTime : 0.0; }
 
+// The render thread is the engine's, without an autorelease pool of its own: what the Metal calls of a frame
+// autorelease (command buffers, render pass descriptors, encoders, and the attachments those reference) would pile
+// up in the thread's implicit pool until it exits. Each Present releases the previous frame's.
+static thread_local void *t_framePool;
+static void PresentFrame(Texture *backBuffer, const uint16_t *gammaRamp);
+
+static void CycleFramePool()
+{
+    if (t_framePool)
+        objc_autoreleasePoolPop(t_framePool);
+    t_framePool = objc_autoreleasePoolPush();
+}
+
 void Present(Texture *backBuffer, const uint16_t *gammaRamp)
 {
     if (!G)
         return;
+    PresentFrame(backBuffer, gammaRamp);
+    CycleFramePool();
+}
+
+static void PresentFrame(Texture *backBuffer, const uint16_t *gammaRamp)
+{
     @autoreleasepool
     {
         if (gammaRamp && memcmp(gammaRamp, G->gammaCache, sizeof(G->gammaCache)) != 0)

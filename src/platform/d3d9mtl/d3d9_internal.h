@@ -178,9 +178,18 @@ struct TexStorage
         UINT x = 0, y = 0, z = 0, w = 0, h = 0, d = 0;
         UINT pitch = 0, slicePitch = 0;
         bool readOnly = false;
+        bool inShadow = false; // the caller writes into the level's shadow copy (no staging)
         bool active = false;
     };
     std::vector<LockState> locks;
+
+    // A Direct3D lock without DISCARD sees the level's current texels, and whatever part of the locked box the caller
+    // leaves alone keeps them; a GPU texture has no CPU view. A level the engine locks again after its first fill
+    // (the model lighting volume: patched block by block) therefore gets a CPU copy of its texels (Direct3D layout,
+    // one block per level and face, read back once), which later locks hand out and upload from. GPU-side writes
+    // to the level (copies, fills, mipmap generation) drop the copy.
+    std::vector<uint8_t *> shadow;
+    std::vector<uint8_t> filled; // the level has been uploaded (its contents are defined)
 
     bool Init(Device *dev, D3DRESOURCETYPE type, UINT w, UINT h, UINT d, UINT levels, DWORD usage, D3DFORMAT format,
               D3DPOOL pool, UINT samples, const char *label);
@@ -192,7 +201,13 @@ struct TexStorage
     uint8_t *Sysmem(UINT face, UINT level) const { return sysmem.empty() ? nullptr : sysmem[face * levels + level]; }
     HRESULT Lock(UINT face, UINT level, const D3DBOX *box, DWORD flags, uint64_t lastUse, void **bits, UINT *pitch,
                  UINT *slicePitch);
-    HRESULT Unlock(UINT face, UINT level, uint64_t lastUse);
+    // 'lastUse' is the owner's: an upload recorded in the current command buffer is a use of the texture
+    HRESULT Unlock(UINT face, UINT level, uint64_t &lastUse);
+    // the GPU wrote the level (or all levels): CPU copies of it are stale
+    void GpuWrote(UINT face, UINT level);
+    void GpuWroteAll();
+    // reads a whole level back (Direct3D layout, the texture's own pitches), waiting for the GPU's use of it
+    void ReadLevel(UINT face, UINT level, uint8_t *dst, uint64_t lastUse);
     // uploads Direct3D-layout texels (converting the format if needed)
     void Upload(UINT face, UINT level, UINT x, UINT y, UINT z, UINT w, UINT h, UINT d, const uint8_t *src, UINT pitch,
                 UINT slicePitch, bool ordered);

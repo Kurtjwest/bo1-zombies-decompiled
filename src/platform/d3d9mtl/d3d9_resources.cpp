@@ -51,6 +51,8 @@ bool TexStorage::Init(Device *, D3DRESOURCETYPE rtype, UINT w, UINT h, UINT d, U
     if (samples > 1)
         levels = 1;
     locks.assign(faces * levels, LockState{});
+    shadow.assign(faces * levels, nullptr);
+    filled.assign(faces * levels, 0);
 
     if (pool == D3DPOOL_SYSTEMMEM || pool == D3DPOOL_SCRATCH)
     {
@@ -100,6 +102,11 @@ void TexStorage::Destroy()
         if (p)
             Arena_Free(p);
     sysmem.clear();
+    for (uint8_t *p : shadow)
+        if (p)
+            Arena_Free(p);
+    shadow.clear();
+    filled.clear();
     if (srgbView)
         rhi::ReleaseTexture(srgbView);
     if (rtSrgbView)
@@ -154,6 +161,56 @@ void TexStorage::Read(UINT face, UINT level, UINT x, UINT y, UINT w, UINT h, uin
     ConvertRowsBack(fi, tmp.data(), mpitch, dst, pitch, w, rows);
 }
 
+void TexStorage::GpuWrote(UINT face, UINT level)
+{
+    if (face >= faces || level >= levels || shadow.empty())
+        return;
+    const size_t idx = (size_t)face * levels + level;
+    filled[idx] = 1;
+    if (shadow[idx] && !locks[idx].active)
+    {
+        Arena_Free(shadow[idx]);
+        shadow[idx] = nullptr;
+    }
+}
+
+void TexStorage::GpuWroteAll()
+{
+    for (UINT f = 0; f < faces; ++f)
+        for (UINT l = 0; l < levels; ++l)
+            GpuWrote(f, l);
+}
+
+void TexStorage::ReadLevel(UINT face, UINT level, uint8_t *dst, uint64_t lastUse)
+{
+    const UINT lw = LevelWidth(level), lh = LevelHeight(level), ld = LevelDepth(level);
+    const UINT rowPitch = RowPitch(fi, lw);
+    const UINT imagePitch = rowPitch * RowCount(fi, lh);
+    if (!tex)
+    {
+        memset(dst, 0, (size_t)imagePitch * ld);
+        return;
+    }
+    if (GpuMayUse(lastUse))
+        rhi::WaitForSerial(lastUse);
+    if (type != D3DRTYPE_VOLUMETEXTURE)
+    {
+        Read(face, level, 0, 0, lw, lh, dst, rowPitch);
+        return;
+    }
+    const UINT rows = RowCount(fi, lh);
+    const UINT mpitch = MtlRowPitch(fi, lw);
+    if (fi->conv == CONV_NONE)
+    {
+        rhi::ReadTexture3D(tex, level, 0, 0, 0, lw, lh, ld, dst, rowPitch, imagePitch);
+        return;
+    }
+    std::vector<uint8_t> tmp((size_t)mpitch * rows * ld);
+    rhi::ReadTexture3D(tex, level, 0, 0, 0, lw, lh, ld, tmp.data(), mpitch, mpitch * rows);
+    for (UINT z = 0; z < ld; ++z)
+        ConvertRowsBack(fi, tmp.data() + (size_t)z * mpitch * rows, mpitch, dst + (size_t)z * imagePitch, rowPitch, lw, rows);
+}
+
 HRESULT TexStorage::Lock(UINT face, UINT level, const D3DBOX *box, DWORD flags, uint64_t lastUse, void **bits,
                          UINT *pitch, UINT *slicePitch)
 {
@@ -181,10 +238,10 @@ HRESULT TexStorage::Lock(UINT face, UINT level, const D3DBOX *box, DWORD flags, 
     }
     const UINT rowPitch = RowPitch(fi, lw);
     const UINT imagePitch = rowPitch * RowCount(fi, lh);
+    const UINT bx = fi->compressed ? x / 4 : x, by = fi->compressed ? y / 4 : y;
     if (!sysmem.empty())
     {
         uint8_t *base = Sysmem(face, level);
-        const UINT bx = fi->compressed ? x / 4 : x, by = fi->compressed ? y / 4 : y;
         *bits = base + (size_t)z * imagePitch + (size_t)by * rowPitch + (size_t)bx * fi->bytes;
         if (pitch)
             *pitch = rowPitch;
@@ -192,7 +249,8 @@ HRESULT TexStorage::Lock(UINT face, UINT level, const D3DBOX *box, DWORD flags, 
             *slicePitch = imagePitch;
         return D3D_OK;
     }
-    LockState &ls = locks[face * levels + level];
+    const size_t idx = (size_t)face * levels + level;
+    LockState &ls = locks[idx];
     if (ls.active)
         return D3DERR_INVALIDCALL;
     ls.x = x;
@@ -201,19 +259,51 @@ HRESULT TexStorage::Lock(UINT face, UINT level, const D3DBOX *box, DWORD flags, 
     ls.w = w;
     ls.h = h;
     ls.d = std::max<UINT>(d, 1);
+    ls.readOnly = (flags & D3DLOCK_READONLY) != 0;
+    ls.inShadow = false;
+    // a level locked again after its first fill keeps its texels in a CPU copy (see 'shadow')
+    if (!shadow[idx] && filled[idx] && !(flags & (D3DLOCK_DISCARD | D3DLOCK_READONLY)) && w && h)
+    {
+        shadow[idx] = (uint8_t *)Arena_Malloc(std::max<size_t>((size_t)imagePitch * ld, 16));
+        if (shadow[idx])
+            ReadLevel(face, level, shadow[idx], lastUse);
+    }
+    if (shadow[idx] && !(flags & D3DLOCK_DISCARD))
+    {
+        ls.inShadow = true;
+        ls.pitch = rowPitch;
+        ls.slicePitch = imagePitch;
+        ls.active = true;
+        *bits = shadow[idx] + (size_t)z * imagePitch + (size_t)by * rowPitch + (size_t)bx * fi->bytes;
+        if (pitch)
+            *pitch = rowPitch;
+        if (slicePitch)
+            *slicePitch = imagePitch;
+        return D3D_OK;
+    }
     ls.pitch = RowPitch(fi, std::max<UINT>(w, 1));
     ls.slicePitch = ls.pitch * RowCount(fi, std::max<UINT>(h, 1));
-    ls.readOnly = (flags & D3DLOCK_READONLY) != 0;
     const size_t bytes = (size_t)ls.slicePitch * ls.d;
-    ls.staging = (uint8_t *)Arena_Malloc(std::max<size_t>(bytes, 16));
+    // the first fill of a level starts from zeros (texels the caller leaves alone are defined)
+    ls.staging = (uint8_t *)Arena_Calloc(std::max<size_t>(bytes, 16));
     if (!ls.staging)
         return E_OUTOFMEMORY;
-    if (ls.readOnly && w && h)
+    if (ls.readOnly && w && h && filled[idx])
     {
         if (GpuMayUse(lastUse))
             rhi::WaitForSerial(lastUse);
         if (type == D3DRTYPE_VOLUMETEXTURE)
-            memset(ls.staging, 0, bytes);
+        {
+            std::vector<uint8_t> level3d((size_t)imagePitch * ld);
+            ReadLevel(face, level, level3d.data(), lastUse);
+            const UINT rows = RowCount(fi, std::max<UINT>(h, 1));
+            const UINT rowBytes = RowPitch(fi, std::max<UINT>(w, 1));
+            for (UINT s = 0; s < ls.d; ++s)
+                for (UINT r = 0; r < rows; ++r)
+                    memcpy(ls.staging + (size_t)s * ls.slicePitch + (size_t)r * ls.pitch,
+                           level3d.data() + (size_t)(z + s) * imagePitch + (size_t)(by + r) * rowPitch + (size_t)bx * fi->bytes,
+                           rowBytes);
+        }
         else
             Read(face, level, x, y, w, h, ls.staging, ls.pitch);
     }
@@ -226,18 +316,36 @@ HRESULT TexStorage::Lock(UINT face, UINT level, const D3DBOX *box, DWORD flags, 
     return D3D_OK;
 }
 
-HRESULT TexStorage::Unlock(UINT face, UINT level, uint64_t lastUse)
+HRESULT TexStorage::Unlock(UINT face, UINT level, uint64_t &lastUse)
 {
     if (level >= levels || face >= faces)
         return D3DERR_INVALIDCALL;
     if (!sysmem.empty())
         return D3D_OK;
-    LockState &ls = locks[face * levels + level];
+    const size_t idx = (size_t)face * levels + level;
+    LockState &ls = locks[idx];
     if (!ls.active)
         return D3DERR_INVALIDCALL;
     if (!ls.readOnly && ls.w && ls.h)
-        Upload(face, level, ls.x, ls.y, ls.z, ls.w, ls.h, ls.d, ls.staging, ls.pitch, ls.slicePitch, GpuMayUse(lastUse));
-    Arena_Free(ls.staging);
+    {
+        // an upload recorded in the current command buffer (the GPU may still read the texture) orders itself
+        // after that use; the texture is then in use by the current command buffer itself
+        const bool ordered = GpuMayUse(lastUse);
+        if (ls.inShadow)
+        {
+            const UINT bx = fi->compressed ? ls.x / 4 : ls.x, by = fi->compressed ? ls.y / 4 : ls.y;
+            Upload(face, level, ls.x, ls.y, ls.z, ls.w, ls.h, ls.d,
+                   shadow[idx] + (size_t)ls.z * ls.slicePitch + (size_t)by * ls.pitch + (size_t)bx * fi->bytes, ls.pitch,
+                   ls.slicePitch, ordered);
+        }
+        else
+            Upload(face, level, ls.x, ls.y, ls.z, ls.w, ls.h, ls.d, ls.staging, ls.pitch, ls.slicePitch, ordered);
+        if (ordered)
+            lastUse = rhi::CurrentSerial();
+        filled[idx] = 1;
+    }
+    if (ls.staging)
+        Arena_Free(ls.staging);
     ls = LockState{};
     return D3D_OK;
 }
@@ -333,7 +441,11 @@ void GenerateMips(BaseTextureCommon *t)
 {
     DeviceLock lock;
     if (t->m_st.tex && t->m_st.levels > 1)
+    {
         rhi::GenerateMipmaps(t->m_st.tex);
+        t->m_st.GpuWroteAll();
+        t->m_res.lastUse = rhi::CurrentSerial();
+    }
 }
 } // namespace
 

@@ -427,6 +427,11 @@ static bool Sys_HeadlessWalkInit()
 
 static void Sys_HeadlessDumpThreads(int pass)
 {
+#if !defined(_WIN32)
+    // reads other threads' x86 stacks against the PE image: Windows-only evidence for headless hangs
+    Sys_HeadlessThreadLog("BO1_HEADLESS THREADDUMP %d: not available on this platform\n", pass);
+    return;
+#endif
     HMODULE module = GetModuleHandleA(NULL);
     const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const char *)module + ((const IMAGE_DOS_HEADER *)module)->e_lfanew);
     unsigned int base = (unsigned int)BO1_P2I(module);

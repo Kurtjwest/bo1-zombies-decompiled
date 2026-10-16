@@ -1008,15 +1008,22 @@ HRESULT Device::UpdateSurface(IDirect3DSurface9 *pSourceSurface, const RECT *pSo
         const UINT pitch = RowPitch(ss.fi, src->Width());
         const UINT bx = ss.fi->compressed ? (UINT)r.left / 4 : (UINT)r.left;
         const UINT by = ss.fi->compressed ? (UINT)r.top / 4 : (UINT)r.top;
+        const bool ordered = dst->Res().lastUse > rhi::CompletedSerial();
         ds.Upload(dst->m_face, dst->m_level, (UINT)p.x, (UINT)p.y, 0, w, h, 1,
-                  sbits + (size_t)by * pitch + (size_t)bx * ss.fi->bytes, pitch, 0,
-                  dst->Res().lastUse > rhi::CompletedSerial());
+                  sbits + (size_t)by * pitch + (size_t)bx * ss.fi->bytes, pitch, 0, ordered);
+        ds.GpuWrote(dst->m_face, dst->m_level);
+        if (ordered)
+            dst->Res().lastUse = rhi::CurrentSerial();
         return D3D_OK;
     }
     if (ss.tex && ds.tex)
     {
         rhi::CopyTexture(ss.tex, src->m_face, src->m_level, (uint32_t)r.left, (uint32_t)r.top, w, h, ds.tex, dst->m_face,
                          dst->m_level, (uint32_t)p.x, (uint32_t)p.y);
+        ds.GpuWrote(dst->m_face, dst->m_level);
+        const uint64_t serial = rhi::CurrentSerial();
+        src->Res().lastUse = serial;
+        dst->Res().lastUse = serial;
         return D3D_OK;
     }
     return D3DERR_INVALIDCALL;
@@ -1051,9 +1058,14 @@ HRESULT Device::UpdateTexture(IDirect3DBaseTexture9 *pSourceTexture, IDirect3DBa
             else if (ss.tex)
             {
                 rhi::CopyTexture(ss.tex, f, srcLevel + l, 0, 0, ds.LevelWidth(l), ds.LevelHeight(l), ds.tex, f, l, 0, 0);
+                src->m_res.lastUse = rhi::CurrentSerial();
+                dst->m_res.lastUse = rhi::CurrentSerial();
             }
         }
     }
+    ds.GpuWroteAll();
+    if (ordered)
+        dst->m_res.lastUse = rhi::CurrentSerial();
     return D3D_OK;
 }
 
@@ -1226,6 +1238,7 @@ HRESULT Device::StretchRect(IDirect3DSurface9 *pSourceSurface, const RECT *pSour
     const uint64_t serial = rhi::CurrentSerial();
     src->Res().lastUse = serial;
     dst->Res().lastUse = serial;
+    ds.GpuWrote(dst->m_face, dst->m_level);
     return D3D_OK;
 }
 
@@ -1242,6 +1255,7 @@ HRESULT Device::ColorFill(IDirect3DSurface9 *pSurface, const RECT *pRect, D3DCOL
     {
         rhi::FillTexture(s->m_st->tex, s->m_face, s->m_level, r.left, r.top, r.right, r.bottom, c);
         s->Res().lastUse = rhi::CurrentSerial();
+        s->m_st->GpuWrote(s->m_face, s->m_level);
         return D3D_OK;
     }
     uint8_t *bits = s->m_st->Sysmem(s->m_face, s->m_level);
@@ -1479,7 +1493,11 @@ HRESULT Device::Clear(DWORD Count, const D3DRECT *pRects, DWORD Flags, D3DCOLOR 
     const uint64_t serial = rhi::CurrentSerial();
     for (int i = 0; i < 4; ++i)
         if (m_rt[i])
+        {
             m_rt[i]->Res().lastUse = serial;
+            if (m_rt[i]->m_st)
+                m_rt[i]->m_st->GpuWrote(m_rt[i]->m_face, m_rt[i]->m_level);
+        }
     if (m_ds)
         m_ds->Res().lastUse = serial;
     return D3D_OK;
@@ -2677,7 +2695,11 @@ void Device::AfterDraw()
     touch(m_ps->m_info, 0);
     for (int i = 0; i < 4; ++i)
         if (m_rt[i])
+        {
             m_rt[i]->Res().lastUse = serial;
+            if (m_rt[i]->m_st)
+                m_rt[i]->m_st->GpuWrote(m_rt[i]->m_face, m_rt[i]->m_level); // drawn into: CPU copies are stale
+        }
     if (m_ds)
         m_ds->Res().lastUse = serial;
     if (m_decl)
