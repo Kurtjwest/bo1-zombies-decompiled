@@ -273,7 +273,7 @@ int __cdecl LiveCounter_CounterStringToID(const char *counterType)
     }
     if ( !counterType )
         return -1;
-    StringTable_GetAsset("mp/globalcounters.csv", (XAssetHeader *)&table);
+    StringTable_GetAsset("mp/globalcounters.csv", &table);
     if ( table )
     {
         counterID = StringTable_Lookup(table, 1, counterType, 0);
@@ -303,7 +303,7 @@ void __cdecl LiveCounter_SetupCounters()
     const StringTable *table; // [esp+Ch] [ebp-8h] BYREF
     int rowCount; // [esp+10h] [ebp-4h]
 
-    StringTable_GetAsset("mp/globalcounters.csv", (XAssetHeader *)&table);
+    StringTable_GetAsset("mp/globalcounters.csv", &table);
     if ( !table )
     {
         Com_PrintError(

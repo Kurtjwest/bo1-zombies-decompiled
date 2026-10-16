@@ -4111,9 +4111,9 @@ void __cdecl Con_Restricted_InitLists()
     Con_Restricted_ShutDown();
     LicenseType = SV_GetLicenseType();
     if ( SV_IsServerRanked(LicenseType) )
-        StringTable_GetAsset("mp/devconsole_restrict_access_dedicated_ranked_mp.csv", (XAssetHeader *)&table);
+        StringTable_GetAsset("mp/devconsole_restrict_access_dedicated_ranked_mp.csv", &table);
     else
-        StringTable_GetAsset("mp/devconsole_restrict_access_dedicated_mp.csv", (XAssetHeader *)&table);
+        StringTable_GetAsset("mp/devconsole_restrict_access_dedicated_mp.csv", &table);
     if ( table )
     {
         Con_Restricted_LoadTable(table);

@@ -969,6 +969,19 @@ void __cdecl LiveStats_SetItemStat(
 }
 
 int __cdecl LiveStats_GetMilestoneRowNum(
+                const StringTable **statsMilestonestable,
+                int currentMilestone,
+                const char *statType,
+                const char *statName)
+{
+    XAssetHeader header;
+    header.stringTable = (StringTable *)*statsMilestonestable;
+    const int row = LiveStats_GetMilestoneRowNum(&header, currentMilestone, statType, statName);
+    *statsMilestonestable = header.stringTable;
+    return row;
+}
+
+int __cdecl LiveStats_GetMilestoneRowNum(
                 XAssetHeader *statsMilestonestable,
                 int currentMilestone,
                 const char *statType,
@@ -1518,7 +1531,7 @@ void __cdecl LiveStats_PublishNews(int controllerIndex)
             localized_weaponname_string = BG_UnlockablesGetItemName(s_statsMilestonesCompleted[controllerIndex][j].index);
             weaponType = BG_UnlockablesGetItemGroup(s_statsMilestonesCompleted[controllerIndex][j].index);
             v5 = va("%d", s_statsMilestonesCompleted[controllerIndex][j].milestone - 1);
-            rowNum = CL_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, 1, v5, 3, weaponType, -1, 0);
+            rowNum = CL_GetMilestoneRowNum(&statsMilestonestable, 1, v5, 3, weaponType, -1, 0);
             if ( statsMilestonestable )
             {
                 if ( rowNum != -1 )
@@ -1526,11 +1539,8 @@ void __cdecl LiveStats_PublishNews(int controllerIndex)
                     targetValue = StringTable_GetColumnValueForRow(statsMilestonestable, rowNum, 2);
                     name = s_statsMilestonesCompleted[controllerIndex][j].name;
                     v17 = (unsigned int)BO1_P2I(&name[strlen(name) + 1]);
-                    v14 = (char *)&newRank + 3;
-                    while ( *++v14 )
-                        ;
-                    v15 = s_statsMilestonesCompleted[controllerIndex][j].name;
-                    memcpy(v14, v15, v17 - (unsigned int)BO1_P2I(v15));
+                    // (decompiled as an inline strcat into the x86 stack slot after newRank)
+                    strcat(statsName, s_statsMilestonesCompleted[controllerIndex][j].name);
                     v11 = va(
                                     "userPublishNews TICKER_STATSMILESTONEUPDATE %s %s %s\n",
                                     localized_weaponname_string,
@@ -2412,7 +2422,7 @@ void __cdecl LiveStats_SortPersonalBests(int controllerIndex)
     {
         __debugbreak();
     }
-    StringTable_GetAsset("mp/personalbests.csv", (XAssetHeader *)&statsTable);
+    StringTable_GetAsset("mp/personalbests.csv", &statsTable);
     if ( !statsTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_stats.cpp", 2545, 0, "%s", "statsTable") )
     {
@@ -2812,7 +2822,7 @@ char __cdecl LiveStats_AddItemChallenge(
         return 0;
     if ( !name || !group || !*name || !*group )
         return 0;
-    rowNum = LiveStats_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, currentMilestone, group, name);
+    rowNum = LiveStats_GetMilestoneRowNum(&statsMilestonestable, currentMilestone, group, name);
     if ( statsMilestonestable )
     {
         if ( rowNum != -1 )
@@ -2917,7 +2927,7 @@ void __cdecl LiveStats_AddChallengeForRow(
                     v19 = name;
                     v18 = statTypeName;
                     v15 = va("%d", currentMilestone - 1);
-                    rowNum = CL_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, 1, v15, 3, v18, 4, v19);
+                    rowNum = CL_GetMilestoneRowNum(&statsMilestonestable, 1, v15, 3, v18, 4, v19);
                     if ( rowNum != -1 )
                     {
                         v16 = StringTable_GetColumnValueForRow(statsMilestonestable, rowNum, 2);
@@ -3142,7 +3152,7 @@ char __cdecl LiveStats_AddGroupChallenge(char *liveStatsBuffer, ddlState_t *sear
                 }
                 else
                 {
-                    rowNum = LiveStats_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, currentMilestone, "group", name);
+                    rowNum = LiveStats_GetMilestoneRowNum(&statsMilestonestable, currentMilestone, "group", name);
                     if ( statsMilestonestable )
                     {
                         if ( rowNum != -1 )
@@ -3401,7 +3411,7 @@ char __cdecl LiveStats_AddGlobalChallenge(
     }
     currentMilestone = DDL_GetInt(searchStateStats, liveStatsBuffer);
     statsMilestonestable = 0;
-    rowNum = LiveStats_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, currentMilestone, "global", name);
+    rowNum = LiveStats_GetMilestoneRowNum(&statsMilestonestable, currentMilestone, "global", name);
     if ( !statsMilestonestable || rowNum == -1 )
         return 0;
     currentValue = LiveStats_GetPlayerStat("ChallengeValue", name, liveStatsBuffer);
@@ -3472,7 +3482,7 @@ char __cdecl LiveStats_AddGlobalLifetimeChallenge(
     currentMilestone = DDL_GetInt(searchStateStats, liveStatsBuffer);
     statsMilestonestable = 0;
     v3 = va("%s%s", "lifetime_", name);
-    rowNum = LiveStats_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, currentMilestone, "global", v3);
+    rowNum = LiveStats_GetMilestoneRowNum(&statsMilestonestable, currentMilestone, "global", v3);
     if ( !statsMilestonestable || rowNum == -1 )
         return 0;
     currentValue = LiveStats_GetPlayerStat("PlayerStatsList", name, liveStatsBuffer);
@@ -3540,7 +3550,7 @@ char __cdecl LiveStats_AddGamemodeChallenge(
                     (name = searchGameModeStateStats->ddl->enumList[searchGameModeStateStats->member->enumIndex].members[searchGameModeStateStats->arrayIndex]) != 0)
             && *name )
         {
-            rowNum = LiveStats_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, currentMilestone, "gamemode", name);
+            rowNum = LiveStats_GetMilestoneRowNum(&statsMilestonestable, currentMilestone, "gamemode", name);
             if ( statsMilestonestable )
             {
                 if ( rowNum != -1 )
@@ -3714,7 +3724,7 @@ char __cdecl LiveStats_AddUnderBarrelAttachmentChallenge(
             && *name
             && *group )
         {
-            rowNum = LiveStats_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, currentMilestone, group, name);
+            rowNum = LiveStats_GetMilestoneRowNum(&statsMilestonestable, currentMilestone, group, name);
             if ( statsMilestonestable && rowNum != -1 )
             {
                 challenge = &s_sortedAttachmentsList[s_numSortedAttachments];
@@ -3854,7 +3864,7 @@ char __cdecl LiveStats_AddAttachmentsChallenge(
             && attachmentName
             && *attachmentName )
         {
-            rowNum = LiveStats_GetMilestoneRowNum((XAssetHeader *)&statsMilestonestable, currentMilestone, "attachment", name);
+            rowNum = LiveStats_GetMilestoneRowNum(&statsMilestonestable, currentMilestone, "attachment", name);
             if ( statsMilestonestable && rowNum != -1 )
             {
                 challenge = &s_sortedAttachmentsList[s_numSortedAttachments];

@@ -41,6 +41,16 @@ int __cdecl CL_GetMilestoneRowNum(
                 const char *value2,
                 int comparisonColumn3,
                 const char *value3);
+// Callers that keep the table in a native pointer: the decompiled code passed the address of that pointer as an
+// XAssetHeader *, but the header is a 32-bit handle in this build (only half the pointer would be written).
+int __cdecl CL_GetMilestoneRowNum(
+                const StringTable **stringTable,
+                int comparisonColumn1,
+                const char *value1,
+                int comparisonColumn2,
+                const char *value2,
+                int comparisonColumn3,
+                const char *value3);
 const char *__cdecl CL_GetMilestoneData(const char *indexName, milestoneTableColumns_t column);
 void __cdecl CL_GetFrontEndMilestoneLocalizedName(
                 char *outputString,

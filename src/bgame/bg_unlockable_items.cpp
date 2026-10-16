@@ -399,7 +399,7 @@ const char *__cdecl BG_UnlockablesGetClanTagFeature(unsigned int index, clanTagF
         return "";
     if ( !useFastFile->current.enabled )
         return "";
-    StringTable_GetAsset("mp/clantagfeatures.csv", (XAssetHeader *)&clanTagFeatures);
+    StringTable_GetAsset("mp/clantagfeatures.csv", &clanTagFeatures);
     if ( !clanTagFeatures
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -773,7 +773,7 @@ char __cdecl BG_UnlockablesBuildItemInfo(int itemIndex, itemInfo_t *itemInfo)
     }
     if ( itemInfo->isValid )
         return 0;
-    StringTable_GetAsset("mp/statstable.csv", (XAssetHeader *)&statsTable);
+    StringTable_GetAsset("mp/statstable.csv", &statsTable);
     if ( !statsTable
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
@@ -1083,7 +1083,7 @@ void __cdecl BG_UnlockablesParsePerkProChallenges(itemInfo_t *itemInfo)
         for ( milestone = 0; milestone < 1000; ++milestone )
         {
             v1 = va("%d", milestone);
-            row = CL_GetMilestoneRowNum((XAssetHeader *)&statsMilestoneTable, 0, v1, -1, 0, -1, 0);
+            row = CL_GetMilestoneRowNum(&statsMilestoneTable, 0, v1, -1, 0, -1, 0);
             if ( statsMilestoneTable )
             {
                 if ( row != -1 )
@@ -1228,7 +1228,7 @@ void BG_UnlockablesBuildClanTagFeatureRows()
 
     if ( useFastFile->current.enabled )
     {
-        StringTable_GetAsset("mp/clantagfeatures.csv", (XAssetHeader *)&clanTagFeatures);
+        StringTable_GetAsset("mp/clantagfeatures.csv", &clanTagFeatures);
         if ( !clanTagFeatures
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",

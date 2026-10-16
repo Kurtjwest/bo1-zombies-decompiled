@@ -1519,71 +1519,44 @@ void __cdecl Path_DrawDebugNode(const float *cameraPos, const pathnode_t *node)
     sprintf(temp, "%s", nodeStringTable[node->constant.type]);
     if (!IsNodeEnabled(node))
     {
-        v20 = (char *)&boxsizeMin[2] + 3;
-        while (*++v20)
-            ;
-        strcpy(v20, ": DL");
+        strcat(temp, ": DL"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
     }
     if ((node->constant.spawnflags & 4) != 0)
     {
-        v18 = (char *)&boxsizeMin[2] + 3;
-        while (*++v18)
-            ;
-        strcpy(v18, ":DS");
+        strcat(temp, ":DS"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
     }
     if ((node->constant.spawnflags & 8) != 0)
     {
-        v16 = (char *)&boxsizeMin[2] + 3;
-        while (*++v16)
-            ;
-        strcpy(v16, ":DC");
+        strcat(temp, ":DC"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
     }
     if ((node->constant.spawnflags & 0x10) != 0)
     {
-        v14 = (char *)&boxsizeMin[2] + 3;
-        while (*++v14)
-            ;
-        strcpy(v14, ":DP");
+        strcat(temp, ":DP"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
     }
     if ((node->constant.spawnflags & 0x800) != 0)
     {
         if (node->constant.type == NODE_COVER_PILLAR)
         {
-            v12 = (char *)&boxsizeMin[2] + 3;
-            while (*++v12)
-                ;
-            strcpy(v12, ":DR");
+            strcat(temp, ":DR"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
         }
         else if (node->constant.type == NODE_NEGOTIATION_BEGIN || node->constant.type == NODE_NEGOTIATION_END)
         {
-            v10 = (char *)&boxsizeMin[2] + 3;
-            while (*++v10)
-                ;
-            strcpy(v10, ":STRICT");
+            strcat(temp, ":STRICT"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
         }
         else
         {
-            v8 = (char *)&boxsizeMin[2] + 3;
-            while (*++v8)
-                ;
-            strcpy(v8, ":BYNR");
+            strcat(temp, ":BYNR"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
         }
     }
     if ((node->constant.spawnflags & 0x400) != 0)
     {
         if (node->constant.type == NODE_COVER_PILLAR)
         {
-            v6 = (char *)&boxsizeMin[2] + 3;
-            while (*++v6)
-                ;
-            strcpy(v6, ":DL");
+            strcat(temp, ":DL"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
         }
         else
         {
-            v4 = (char *)&boxsizeMin[2] + 3;
-            while (*++v4)
-                ;
-            strcpy(v4, ":BY");
+            strcat(temp, ":BY"); // (decompiled as an inline strcat into the x86 stack slot after boxsizeMin[2])
         }
     }
     G_AddDebugString(org, colorYellow, scale, temp, 0);

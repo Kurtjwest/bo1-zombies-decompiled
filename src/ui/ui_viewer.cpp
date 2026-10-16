@@ -1055,10 +1055,7 @@ const WeaponVariantDef *__thiscall UIViewer::GetWeaponVariantDef(const UIViewer:
     while ( v11 );
     if ( isDualWield )
     {
-        v10 = (char *)&attachRefs[3] + 3;
-        while ( *++v10 )
-            ;
-        strcpy(v10, "dw");
+        strcat(weaponDefName, "dw"); // (decompiled as an inline strcat into the x86 stack slot after attachRefs[3])
     }
     for ( i = 0; i < 4; ++i )
     {
@@ -1066,16 +1063,10 @@ const WeaponVariantDef *__thiscall UIViewer::GetWeaponVariantDef(const UIViewer:
         {
             v7 = va("_%s", attachRefs[i]);
             v8 = (unsigned int)BO1_P2I(&v7[strlen(v7) + 1]);
-            v6 = (char *)&attachRefs[3] + 3;
-            while ( *++v6 )
-                ;
-            memcpy(v6, v7, v8 - (unsigned int)BO1_P2I(v7));
+            strcat(weaponDefName, v7); // (decompiled as an inline strcat into the x86 stack slot after attachRefs[3])
         }
     }
-    v4 = (char *)&attachRefs[3] + 3;
-    while ( *++v4 )
-        ;
-    strcpy(v4, "_mp");
+    strcat(weaponDefName, "_mp"); // (decompiled as an inline strcat into the x86 stack slot after attachRefs[3])
     weaponDefIndex = BG_GetWeaponIndexForName(weaponDefName, 0);
     return BG_GetWeaponVariantDef(weaponDefIndex);
 }

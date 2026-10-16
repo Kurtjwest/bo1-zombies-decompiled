@@ -761,7 +761,7 @@ void __cdecl UI_DrawServerRefreshDate(
     const char *v8; // eax
     char *v9; // eax
     const char *VariantString; // eax
-    long double v11; // [esp+1Ch] [ebp-48Ch] OVERLAPPED BYREF
+    char refreshTime[64]; // (decompiled as 'long double v11' OVERLAPPED with this buffer at +4)
     int offset; // [esp+64h] [ebp-444h]
     char hackString[1028]; // [esp+68h] [ebp-440h] BYREF
     int replaceCounts[2]; // [esp+470h] [ebp-38h] BYREF
@@ -780,12 +780,9 @@ void __cdecl UI_DrawServerRefreshDate(
         lowLight[3] = 0.80000001 * color[3];
         uiInfo = UI_UIContext_GetInfo(contextIndex);
 
-        //*(float *)&v11 = (float)(uiInfo->uiDC.realTime / 75);
-        //v7 = *(float *)&v11;
-        //__libm_sse2_sin(v11);
-        //*(float *)&v7 = v7;
         v7 = sin((uiInfo->uiDC.realTime / 75));
-        LerpColor(color, lowLight, newColor, (float)(*(float *)&v7 * 0.5) + 0.5);
+        // (the decompiled form read the low half of the double as a float; sin's result is used as a float)
+        LerpColor(color, lowLight, newColor, (float)((float)v7 * 0.5) + 0.5);
         if (LAN_WaitServerResponse())
         {
             if (Dvar_GetBool("dw_loggedin"))
@@ -830,9 +827,9 @@ void __cdecl UI_DrawServerRefreshDate(
     {
         v9 = va("ui_lastServerRefresh_%i", ui_netSource->current.integer);
         VariantString = Dvar_GetVariantString(v9);
-        I_strncpyz((char *)&v11 + 4, VariantString, 64);
+        I_strncpyz(refreshTime, VariantString, 64);
         string = UI_SafeTranslateString("EXE_REFRESHTIME");
-        string = UI_ReplaceConversionString((char *)string, (const char *)&v11 + 4);
+        string = UI_ReplaceConversionString((char *)string, refreshTime);
         UI_DrawText(
             &scrPlaceView[contextIndex],
             (char *)string,

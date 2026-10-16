@@ -375,3 +375,16 @@ void __cdecl StringTable_GetAsset(const char *filename, XAssetHeader *tablePtr)
         StringTable_GetAsset_LoadObj(filename, (Ptr32<StringTable> *)tablePtr);
 }
 
+void __cdecl StringTable_GetAsset(const char *filename, const StringTable **tablePtr)
+{
+    XAssetHeader header;
+    header.stringTable = (StringTable *)*tablePtr;
+    StringTable_GetAsset(filename, &header);
+    *tablePtr = header.stringTable;
+}
+
+void __cdecl StringTable_GetAsset(const char *filename, StringTable **tablePtr)
+{
+    StringTable_GetAsset(filename, (const StringTable **)tablePtr);
+}
+

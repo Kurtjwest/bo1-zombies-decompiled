@@ -1053,7 +1053,7 @@ void __cdecl UI_Gametype_SetupCustomModeNameAndDesc()
     const char *gameType; // [esp+8h] [ebp-4h]
 
     Dvar_SetString((dvar_s *)ui_customModeName, "");
-    StringTable_GetAsset("mp/gametypesTable.csv", (XAssetHeader *)&gameTypeTable);
+    StringTable_GetAsset("mp/gametypesTable.csv", &gameTypeTable);
     if ( !gameTypeTable
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp",
@@ -1766,7 +1766,7 @@ void __cdecl UI_Gametype_Custom_UploadToFileShareSuccess(int controllerIndex, un
     Live_FileShare_AddTag(4u, v3, &numTags, tags, 40);
     Live_FileShare_AddTag(3u, 4u, &numTags, tags, 40);
     baseGameType = 0;
-    StringTable_GetAsset("mp/gametypesTable.csv", (XAssetHeader *)&gameTypesTable);
+    StringTable_GetAsset("mp/gametypesTable.csv", &gameTypesTable);
     if ( !gameTypesTable
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gametype_custom_mp.cpp",

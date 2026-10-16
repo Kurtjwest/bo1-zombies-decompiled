@@ -530,7 +530,7 @@ char *__cdecl Live_FileShare_GetLocalizedUserTagFromIndex(int index)
     const char *result; // [esp+0h] [ebp-8h]
     const StringTable *fileShareTable; // [esp+4h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+    StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
     if ( index > 0
         && index <= fileShareTable->rowCount
         && (v1 = va("%d", index), (result = StringTable_Lookup(fileShareTable, 0, v1, 1)) != 0)
@@ -550,7 +550,7 @@ const char *__cdecl Live_FileShare_GetGameTypeFromIndex(int index)
     const char *result; // [esp+0h] [ebp-8h]
     const StringTable *gameTypesTable; // [esp+4h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/gametypesTable.csv", (XAssetHeader *)&gameTypesTable);
+    StringTable_GetAsset("mp/gametypesTable.csv", &gameTypesTable);
     if ( !gameTypesTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp", 677, 0, "%s", "gameTypesTable") )
     {
@@ -573,7 +573,7 @@ const char *__cdecl Live_FileShare_GetGameTypeImageFromIndex(int index)
     const char *result; // [esp+0h] [ebp-8h]
     const StringTable *gameTypesTable; // [esp+4h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/gametypesTable.csv", (XAssetHeader *)&gameTypesTable);
+    StringTable_GetAsset("mp/gametypesTable.csv", &gameTypesTable);
     if ( !gameTypesTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp", 697, 0, "%s", "gameTypesTable") )
     {
@@ -596,7 +596,7 @@ char *__cdecl Live_FileShare_GetLocalizedGameTypeFromIndex(int index, bool upper
     const char *result; // [esp+0h] [ebp-8h]
     const StringTable *gameTypesTable; // [esp+4h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/gametypesTable.csv", (XAssetHeader *)&gameTypesTable);
+    StringTable_GetAsset("mp/gametypesTable.csv", &gameTypesTable);
     if ( !gameTypesTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp", 717, 0, "%s", "gameTypesTable") )
     {
@@ -629,7 +629,7 @@ int __cdecl Live_FileShare_GetGameTypeCount()
     const char *v0; // eax
     const StringTable *gameTypesTable; // [esp+0h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/gameTypesTable.csv", (XAssetHeader *)&gameTypesTable);
+    StringTable_GetAsset("mp/gameTypesTable.csv", &gameTypesTable);
     v0 = StringTable_Lookup(gameTypesTable, 0, "total_filesharegametype", 1);
     return atoi(v0);
 }
@@ -639,7 +639,7 @@ int __cdecl Live_FileShare_GetIndexFromGameType(const char *gameType)
     const char *v1; // eax
     const StringTable *gameTypesTable; // [esp+0h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/gametypesTable.csv", (XAssetHeader *)&gameTypesTable);
+    StringTable_GetAsset("mp/gametypesTable.csv", &gameTypesTable);
     if ( !gameTypesTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp", 763, 0, "%s", "gameTypesTable") )
     {
@@ -1701,7 +1701,7 @@ char __cdecl Live_FileShare_GetUserTag(
 
     if ( Live_FileShare_GetTag(descriptors, index, 5u, &userTag) )
     {
-        StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+        StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
         if ( (int)userTag > 0 && (int)userTag <= fileShareTable->rowCount )
         {
             v5 = va("%llu", userTag);
@@ -1734,7 +1734,7 @@ char __cdecl Live_FileShare_GetUserTagIndex(
 
     if ( Live_FileShare_GetTag(descriptors, index, 5u, &userTag) )
     {
-        StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+        StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
         if ( (int)userTag > 0 && (int)userTag <= fileShareTable->rowCount )
         {
             *floatResult = (float)userTag;
@@ -2122,7 +2122,7 @@ const char *__cdecl Live_FileShare_GetPooledTeamIcon(int mapID, int team)
     const char *v3; // eax
     const StringTable *mapTable; // [esp+0h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/mapsTable.csv", (XAssetHeader *)&mapTable);
+    StringTable_GetAsset("mp/mapsTable.csv", &mapTable);
     if ( !mapTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp", 2182, 0, "%s", "mapTable") )
     {
@@ -2143,7 +2143,7 @@ char *__cdecl Live_FileShare_GetPooledTeamName(int mapID, int team)
     const char *v4; // eax
     const StringTable *mapTable; // [esp+0h] [ebp-4h] BYREF
 
-    StringTable_GetAsset("mp/mapsTable.csv", (XAssetHeader *)&mapTable);
+    StringTable_GetAsset("mp/mapsTable.csv", &mapTable);
     if ( !mapTable
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp", 2234, 0, "%s", "mapTable") )
     {
@@ -3090,7 +3090,7 @@ void __cdecl Live_FileShare_ClearSearchState()
                         (dvar_s *)s_fsSearchRowTextDvars[4]);
                     break;
                 case 5:
-                    StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+                    StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
                     Dvar_SetInt((dvar_s *)s_fsSearchRowValueDvars[5], 0);
                     Live_FileShare_SetSpinnerDvars(
                         0,
@@ -4043,7 +4043,7 @@ void __cdecl Live_FileShare_SetSearchRowOffset(int row, int offset)
             }
             break;
         case 5:
-            StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+            StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
             value = Live_FileShare_SetSpinnerDvars(
                                 offset,
                                 fileShareTable->rowCount,
@@ -4531,7 +4531,7 @@ void __cdecl Live_FileShare_ReadUserTag_f()
     const StringTable *fileShareTable; // [esp+4h] [ebp-8h] BYREF
     const char *value; // [esp+8h] [ebp-4h]
 
-    StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+    StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
     for ( i = 0; i < fileShareTable->rowCount; ++i )
         value = StringTable_Lookup(fileShareTable, 0, "1", 1);
 }
@@ -4541,7 +4541,7 @@ void Live_FileShare_UserTagLeft_f(const StringTable *table)
     const StringTable *fileShareTable; // [esp+0h] [ebp-4h] BYREF
 
     fileShareTable = table;
-    StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+    StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
     if ( fsSelectedFileTagIndex->current.integer )
         Dvar_SetInt((dvar_s *)fsSelectedFileTagIndex, fsSelectedFileTagIndex->current.integer - 1);
     else
@@ -4560,7 +4560,7 @@ void Live_FileShare_UserTagRight_f(const StringTable *table)
     }
     else
     {
-        StringTable_GetAsset("mp/fileShareTags.csv", (XAssetHeader *)&fileShareTable);
+        StringTable_GetAsset("mp/fileShareTags.csv", &fileShareTable);
         Dvar_SetInt((dvar_s *)fsSelectedFileTagIndex, fsSelectedFileTagIndex->current.integer + 1);
         if ( fsSelectedFileTagIndex->current.integer > fileShareTable->rowCount )
             Dvar_SetInt((dvar_s *)fsSelectedFileTagIndex, 0);

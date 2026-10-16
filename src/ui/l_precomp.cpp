@@ -642,15 +642,8 @@ int __cdecl PC_Directive_include(source_s *source)
                 *v9++ = *includepath++;
             }
             while ( v8 );
-            v7 = &token.string[strlen(token.string) + 1];
-            v6 = (token_s *)((char *)&includepath + 3);
-            do
-            {
-                v5 = v6->string[1];
-                v6 = (token_s *)((char *)v6 + 1);
-            }
-            while ( v5 );
-            memcpy(v6, &token, v7 - (char *)&token);
+            // (decompiled as an inline strcat into the x86 stack slot after includepath)
+            strcat(path, token.string);
             script = LoadScriptFile(path);
         }
         goto LABEL_30;

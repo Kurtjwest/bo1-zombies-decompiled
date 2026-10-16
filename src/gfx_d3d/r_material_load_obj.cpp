@@ -6807,25 +6807,16 @@ MaterialTechniqueSet *__cdecl Material_RegisterLayeredTechniqueSet(const Materia
                         v2 = strstr(lyrTechSetName->nameChunk, "n0");
                         if ( v2 )
                         {
-                            v17 = (char *)&techSet + 3;
-                            while ( *++v17 )
-                                ;
-                            strcpy(v17, "n1_");
+                            strcat(newTechSetName, "n1_"); // (an inline strcat into the x86 stack slot after techSet)
                             ++normalMapCount;
                         }
                         v3 = strstr(lyrTechSetName->nameChunk, "d0");
                         if ( v3 )
                         {
-                            v15 = (char *)&techSet + 3;
-                            while ( *++v15 )
-                                ;
-                            strcpy(v15, "d1_");
+                            strcat(newTechSetName, "d1_");
                         }
                         v13 = &base_techset_name[strlen(base_techset_name + 4) + 5];
-                        v12 = (char *)&techSet + 3;
-                        while ( *++v12 )
-                            ;
-                        memcpy(v12, base_techset_name + 4, v13 - (base_techset_name + 4));
+                        strcat(newTechSetName, base_techset_name + 4);
                         found = 1;
                     }
                 }

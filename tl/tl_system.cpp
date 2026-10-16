@@ -314,10 +314,7 @@ bool __cdecl tlReadFile(const char *FileName, tlFileBuf *File, unsigned int Alig
     while ( v6 );
   }
   v7 = strlen(FileName) + 1;
-  v8 = (char *)&bytesRead + 3;
-  while ( *++v8 )
-    ;
-  memcpy(v8, FileName, v7);
+  strcat(Work, FileName); // (decompiled as an inline strcat into the x86 stack slot after bytesRead)
   for ( i = Work; *i; ++i )
   {
     if ( *i == 47 )

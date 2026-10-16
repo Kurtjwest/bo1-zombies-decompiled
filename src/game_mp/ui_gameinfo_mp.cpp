@@ -446,7 +446,7 @@ void __cdecl UI_LoadCustomMatchGameTypes()
     char index[4]; // [esp+24h] [ebp-4h] BYREF
 
     I_strncpyz(tableName, "mp/gametypesTable.csv", 23);
-    StringTable_GetAsset(tableName, (XAssetHeader *)&table);
+    StringTable_GetAsset(tableName, &table);
     if ( !table
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui_mp\\ui_gameinfo_mp.cpp", 486, 0, "%s", "table") )
     {

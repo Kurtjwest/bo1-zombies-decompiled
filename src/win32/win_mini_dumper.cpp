@@ -189,16 +189,8 @@ int miniDumper::writeMiniDump(_EXCEPTION_POINTERS *pExceptionInfo)
             *v13++ = *m_szAppPath++;
         }
         while ( v12 );
-        v11 = (void **)((char *)&phToken + 3);
-        do
-        {
-            v10 = *((_BYTE *)v11 + 1);
-            v11 = (unsigned int *)((char *)v11 + 1);
-        }
-        while ( v10 );
-        *v11 = *(unsigned int *)::LibFileName;
-        v11[1] = 777014341;
-        v11[2] = (char *)&loc_4C4C40 + 4;
+        // (decompiled as an inline strcat of the "dbghelp.dll" literal into the x86 stack slot after phToken)
+        strcat(LibFileName, ::LibFileName);
         hModule = LoadLibraryA(LibFileName);
     }
     if ( !hModule )

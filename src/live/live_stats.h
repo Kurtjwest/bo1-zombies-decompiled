@@ -220,6 +220,13 @@ int __cdecl LiveStats_GetMilestoneRowNum(
                 int currentMilestone,
                 const char *statType,
                 const char *statName);
+// Callers that keep the table in a native pointer: the decompiled code passed the address of that pointer as an
+// XAssetHeader *, but the header is a 32-bit handle in this build (only half the pointer would be written).
+int __cdecl LiveStats_GetMilestoneRowNum(
+                const StringTable **statsMilestonestable,
+                int currentMilestone,
+                const char *statType,
+                const char *statName);
 void __cdecl LiveStats_CheckCurrentValue(
                 const StringTable *statsMilestonestable,
                 int rowNum,

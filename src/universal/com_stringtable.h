@@ -56,3 +56,7 @@ int __cdecl StringTable_ColumnCount(const StringTable *table);
 int __cdecl StringTable_Checksum(const StringTable *table, unsigned int initialCrc);
 void __cdecl StringTable_GetAsset_FastFile(const char *filename, XAssetHeader *tablePtr);
 void __cdecl StringTable_GetAsset(const char *filename, XAssetHeader *tablePtr);
+// Callers that keep the table in a native pointer: the decompiled code passed the address of that pointer as an
+// XAssetHeader *, but the header is a 32-bit handle in this build (only half the pointer would be written).
+void __cdecl StringTable_GetAsset(const char *filename, const StringTable **tablePtr);
+void __cdecl StringTable_GetAsset(const char *filename, StringTable **tablePtr);
