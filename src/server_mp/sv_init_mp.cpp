@@ -832,7 +832,8 @@ static const int kMatchStateSize = 128;
 static const int kCachedSnapshotFrames = 512;
 static const int kArchivedSnapshotFrames = 1200;
 unsigned __int8 *sv_ikBuf;
-char *__cdecl SV_AllocateClientMemory_SizeRequired(int maxLocalClients, int maxClients)
+// (a byte count: the decompiled form returned it as a char *)
+int __cdecl SV_AllocateClientMemory_SizeRequired(int maxLocalClients, int maxClients)
 {
     int v3; // [esp+0h] [ebp-Ch]
     int v4; // [esp+4h] [ebp-8h]
@@ -848,7 +849,7 @@ char *__cdecl SV_AllocateClientMemory_SizeRequired(int maxLocalClients, int maxC
 
     // the same sums as the exe (0x118D00 * maxClients = clients + snapshot match states + snapshot entities, ...),
     // spelled with the structure sizes, plus room for each allocation's alignment
-    return (char *)(sizeof(client_t) * maxClients
+    return (int)(sizeof(client_t) * maxClients
         + (size_t)kMatchStateSize * 32 * maxClients
         + sizeof(entityState_s) * 2688 * maxClients
         + sizeof(clientState_s) * 32 * maxClients * maxClients

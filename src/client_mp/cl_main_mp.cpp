@@ -2697,7 +2697,7 @@ void __cdecl AllocatePerLocalClientMemory(int maxLocalClients, int maxClients, u
     // parseEntities ring of mod L43), plus room for the allocations' alignment
     mem_needed = (int)((sizeof(clientActive_t) + sizeof(clientConnection_t)) * maxLocalClients + 2 * 128);
     if ( (flags & 1) == 0 )
-        mem_needed += (int)BO1_P2I(SV_AllocateClientMemory_SizeRequired(maxLocalClients, maxClients));
+        mem_needed += SV_AllocateClientMemory_SizeRequired(maxLocalClients, maxClients);
     mem_neededa = mem_needed + CG_AllocateClientMemory_SizeRequired(maxLocalClients);
     mem_neededb = mem_neededa + FX_AllocateClientMemory_SizeRequired(maxLocalClients);
     PMem_BeginAlloc(PerLocalClientMemoryName, 1u, TRACK_CLIENT);

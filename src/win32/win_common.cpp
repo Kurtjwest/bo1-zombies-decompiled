@@ -61,7 +61,7 @@ HunkUser **__cdecl Sys_ListFiles(char *directory, char *extension, char *filter,
     _finddata64i32_t pfd; // [esp+0h] [ebp-10248h] BYREF
     int v8; // [esp+12Ch] [ebp-1011Ch]
     HunkUser **v9; // [esp+130h] [ebp-10118h]
-    int hFile; // [esp+134h] [ebp-10114h]
+    intptr_t hFile; // [esp+134h] [ebp-10114h] (a native find handle)
     char *list[16384]; // [esp+138h] [ebp-10110h] BYREF
     int numfilesa; // [esp+10138h] [ebp-110h] BYREF
     HunkUser *user; // [esp+1013Ch] [ebp-10Ch]
@@ -162,7 +162,7 @@ void __cdecl Sys_ListFilteredFiles(
 {
     char filename[256]; // [esp+10h] [ebp-338h] BYREF
     _finddata64i32_t findinfo; // [esp+110h] [ebp-238h] BYREF
-    int findhandle; // [esp+23Ch] [ebp-10Ch]
+    intptr_t findhandle; // [esp+23Ch] [ebp-10Ch] (a native find handle)
     char search[260]; // [esp+240h] [ebp-108h] BYREF
 
     if ( *numfiles < 0x3FFF )
@@ -206,7 +206,7 @@ bool __cdecl HasFileExtension(const char *name, const char *extension)
 int __cdecl Sys_DirectoryHasContents(const char *directory)
 {
     _finddata64i32_t findinfo; // [esp+0h] [ebp-238h] BYREF
-    int findhandle; // [esp+12Ch] [ebp-10Ch]
+    intptr_t findhandle; // [esp+12Ch] [ebp-10Ch] (a native find handle)
     char search[260]; // [esp+130h] [ebp-108h] BYREF
 
     Com_sprintf(search, 0x100u, "%s\\*", directory);
