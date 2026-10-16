@@ -877,8 +877,10 @@ static int parse_source_token(Context *ctx, SourceArgInfo *info)
         // !!! FIXME:  destination token first.
         // !!! FIXME: Microsoft's shader validation explicitly checks temp
         // !!! FIXME:  registers for this...do they check other writable ones?
-        if ((info->regtype == REG_TYPE_TEMP) && (reg) && (!reg->written))
-            failf(ctx, "Temp register r%d used uninitialized", info->regnum);
+        // BO1: not an error here. Subroutines follow the main program in the token stream, so main reads
+        // registers that a called subroutine writes before this pass has seen the write; a read of a never-written
+        // register just reads an unspecified value, as on Direct3D 9 hardware.
+        (void) reg;
     } // if
 
     return retval;
@@ -900,6 +902,25 @@ static int parse_predicated_token(Context *ctx)
 
     return 1;
 } // parse_predicated_token
+
+
+// BO1: a predicated instruction's predicate token comes right after its destination token (and before its source
+// tokens), as fxc writes it and as Wine and SwiftShader read it; MojoShader read it after the source tokens, so
+// any predicated instruction from a real shader failed to translate. Instructions without a destination have it
+// first.
+static int parse_predicate_if_pending(Context *ctx)
+{
+    if (!ctx->predicated || ctx->predicate_parsed)
+        return 0;
+    ctx->predicate_parsed = 1;
+    return parse_predicated_token(ctx);
+} // parse_predicate_if_pending
+
+static int parse_destination_then_predicate(Context *ctx, DestArgInfo *info)
+{
+    const int retval = parse_destination_token(ctx, info);
+    return retval + parse_predicate_if_pending(ctx);
+} // parse_destination_then_predicate
 
 
 static int parse_args_NULL(Context *ctx)
@@ -1131,7 +1152,7 @@ static int parse_args_DCL(Context *ctx)
             const uint32 ttype = ((token >> 27) & 0xF);
             if (!valid_texture_type(ttype))
                 fail(ctx, "Unknown sampler texture type");
-            reserved_mask = 0x0FFFFFFF;
+            reserved_mask = 0x07FFFFFF;  // BO1: bits 27-30 are the texture type (0x0FFFFFFF refused cube samplers)
             ctx->dwords[0] = ttype;
         } // else if
         else
@@ -1174,7 +1195,7 @@ static int parse_args_DCL(Context *ctx)
 static int parse_args_D(Context *ctx)
 {
     int retval = 1;
-    retval += parse_destination_token(ctx, &ctx->dest_arg);
+    retval += parse_destination_then_predicate(ctx, &ctx->dest_arg);
     return retval;
 } // parse_args_D
 
@@ -1182,6 +1203,7 @@ static int parse_args_D(Context *ctx)
 static int parse_args_S(Context *ctx)
 {
     int retval = 1;
+    retval += parse_predicate_if_pending(ctx);  // BO1
     retval += parse_source_token(ctx, &ctx->source_args[0]);
     return retval;
 } // parse_args_S
@@ -1190,6 +1212,7 @@ static int parse_args_S(Context *ctx)
 static int parse_args_SS(Context *ctx)
 {
     int retval = 1;
+    retval += parse_predicate_if_pending(ctx);  // BO1
     retval += parse_source_token(ctx, &ctx->source_args[0]);
     retval += parse_source_token(ctx, &ctx->source_args[1]);
     return retval;
@@ -1199,7 +1222,7 @@ static int parse_args_SS(Context *ctx)
 static int parse_args_DS(Context *ctx)
 {
     int retval = 1;
-    retval += parse_destination_token(ctx, &ctx->dest_arg);
+    retval += parse_destination_then_predicate(ctx, &ctx->dest_arg);
     retval += parse_source_token(ctx, &ctx->source_args[0]);
     return retval;
 } // parse_args_DS
@@ -1208,7 +1231,7 @@ static int parse_args_DS(Context *ctx)
 static int parse_args_DSS(Context *ctx)
 {
     int retval = 1;
-    retval += parse_destination_token(ctx, &ctx->dest_arg);
+    retval += parse_destination_then_predicate(ctx, &ctx->dest_arg);
     retval += parse_source_token(ctx, &ctx->source_args[0]);
     retval += parse_source_token(ctx, &ctx->source_args[1]);
     return retval;
@@ -1218,7 +1241,7 @@ static int parse_args_DSS(Context *ctx)
 static int parse_args_DSSS(Context *ctx)
 {
     int retval = 1;
-    retval += parse_destination_token(ctx, &ctx->dest_arg);
+    retval += parse_destination_then_predicate(ctx, &ctx->dest_arg);
     retval += parse_source_token(ctx, &ctx->source_args[0]);
     retval += parse_source_token(ctx, &ctx->source_args[1]);
     retval += parse_source_token(ctx, &ctx->source_args[2]);
@@ -1229,7 +1252,7 @@ static int parse_args_DSSS(Context *ctx)
 static int parse_args_DSSSS(Context *ctx)
 {
     int retval = 1;
-    retval += parse_destination_token(ctx, &ctx->dest_arg);
+    retval += parse_destination_then_predicate(ctx, &ctx->dest_arg);
     retval += parse_source_token(ctx, &ctx->source_args[0]);
     retval += parse_source_token(ctx, &ctx->source_args[1]);
     retval += parse_source_token(ctx, &ctx->source_args[2]);
@@ -1245,6 +1268,16 @@ static int parse_args_SINCOS(Context *ctx)
         return parse_args_DSSS(ctx);
     return parse_args_DS(ctx);
 } // parse_args_SINCOS
+
+
+// BO1: like SINCOS, SGN lost its two scratch registers in Shader Model 3 (fxc writes "sgn dst, src" for vs_3_0, and
+// Wine and SwiftShader read it so); MojoShader read three sources for every version and failed such shaders.
+static int parse_args_SGN(Context *ctx)
+{
+    if (!shader_version_atleast(ctx, 3, 0))
+        return parse_args_DSSS(ctx);
+    return parse_args_DS(ctx);
+} // parse_args_SGN
 
 
 static int parse_args_TEXCRD(Context *ctx)
@@ -2123,13 +2156,14 @@ static int parse_instruction_token(Context *ctx)
     memset(ctx->dwords, '\0', sizeof (ctx->dwords));
     ctx->instruction_controls = controls;
     ctx->predicated = predicated;
+    ctx->predicate_parsed = 0;  // BO1: see parse_predicate_if_pending
 
     // Update the context with instruction's arguments.
     adjust_token_position(ctx, 1);
     retval = instruction->parse_args(ctx);
 
     if (predicated)
-        retval += parse_predicated_token(ctx);
+        retval += parse_predicate_if_pending(ctx);  // BO1: unless parse_args() already read it
 
     // parse_args() moves these forward for convenience...reset them.
     ctx->tokens = start_tokens;

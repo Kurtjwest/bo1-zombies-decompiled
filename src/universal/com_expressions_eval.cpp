@@ -5454,7 +5454,7 @@ void __cdecl EmblemIconName(int localClientNum, itemDef_s *item, OperandStack *d
     result.dataType = VAL_STRING;
     result.internals.string = "";
     controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
-    floatVal = (unsigned __int16)GetOperandValueInt(&source).floatVal;
+    floatVal = (unsigned __int16)GetOperandValueInt(&source).intVal;
     IconDesc = BG_EmblemsGetIconDesc(controllerIndex, floatVal);
     result.internals.intVal = (int)BO1_P2I(CopyTempString(IconDesc));
     AddOperandToStack(dataStack, &result);
@@ -5472,7 +5472,7 @@ void __cdecl EmblemIconUnlockDesc(int localClientNum, itemDef_s *item, OperandSt
     result.dataType = VAL_STRING;
     result.internals.string = "";
     controllerIndex = Com_LocalClient_GetControllerIndex(localClientNum);
-    floatVal = (unsigned __int16)GetOperandValueInt(&source).floatVal;
+    floatVal = (unsigned __int16)GetOperandValueInt(&source).intVal;
     IconUnlockDesc = BG_EmblemsGetIconUnlockDesc(controllerIndex, floatVal);
     result.internals.intVal = (int)BO1_P2I(CopyTempString(IconUnlockDesc));
     AddOperandToStack(dataStack, &result);
@@ -5487,7 +5487,7 @@ void __cdecl EmblemIconCost(int localClientNum, itemDef_s *item, OperandStack *d
     GetOperand(dataStack, &source);
     result.dataType = VAL_INT;
     result.internals.intVal = 0;
-    floatVal = (unsigned __int16)GetOperandValueInt(&source).floatVal;
+    floatVal = (unsigned __int16)GetOperandValueInt(&source).intVal;
     result.internals.intVal = BG_EmblemsGetIconCost(floatVal);
     AddOperandToStack(dataStack, &result);
 }

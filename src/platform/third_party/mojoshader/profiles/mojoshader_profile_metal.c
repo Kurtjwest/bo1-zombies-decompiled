@@ -63,7 +63,7 @@ const char *get_METAL_varname_in_buf(Context *ctx, RegisterType rt,
 
 const char *get_METAL_varname(Context *ctx, RegisterType rt, int regnum)
 {
-    char buf[64];
+    char buf[512];
     get_METAL_varname_in_buf(ctx, rt, regnum, buf, sizeof (buf));
     return StrDup(ctx, buf);
 } // get_METAL_varname
@@ -79,7 +79,7 @@ static inline const char *get_METAL_const_array_varname_in_buf(Context *ctx,
 
 const char *get_METAL_const_array_varname(Context *ctx, int base, int size)
 {
-    char buf[64];
+    char buf[512];
     get_METAL_const_array_varname_in_buf(ctx, base, size, buf, sizeof (buf));
     return StrDup(ctx, buf);
 } // get_METAL_const_array_varname
@@ -166,7 +166,7 @@ const char *make_METAL_destarg_assign(Context *ctx, char *buf,
     assert((arg->result_mod & MOD_CENTROID) == 0);
 
     // BO1: predicated instructions write only the components whose predicate component is true (see the end)
-    char predicate[64] = { '\0' };
+    char predicate[512] = { '\0' };
     int predicate_not = 0;
     if (ctx->predicated)
     {
@@ -179,7 +179,7 @@ const char *make_METAL_destarg_assign(Context *ctx, char *buf,
         predicate_not = (parg->src_mod == SRCMOD_NOT);
     } // if
 
-    char operation[256];
+    char operation[4096];
     va_list ap;
     va_start(ap, fmt);
     const int len = vsnprintf(operation, sizeof (operation), fmt, ap);
@@ -229,30 +229,37 @@ const char *make_METAL_destarg_assign(Context *ctx, char *buf,
         // BO1: (p0.swz) op dst.mask, ... -> per-component select on the predicate
         if (vecsize_from_writemask(arg->writemask) == 1)
         {
-            snprintf(buf, buflen, "if (%s%s) { %s%s%s = %s%s%s%s%s%s; }",
+            const int written = snprintf(buf, buflen, "if (%s%s) { %s%s%s = %s%s%s%s%s%s; }",
                      predicate_not ? "!" : "", predicate,
                      regtype_str, regnum_str, writemask_str,
                      clampleft, leftparen, operation, rightparen, result_shift_str,
                      clampright);
+            if ((written < 0) || ((size_t) written >= buflen))
+                fail(ctx, "BUG: Metal expression too long for its buffer");
         } // if
         else
         {
-            char newval[512];
+            char newval[4096];
             snprintf(newval, sizeof (newval), "%s%s%s%s%s%s", clampleft, leftparen, operation, rightparen,
                      result_shift_str, clampright);
-            char oldval[64];
+            char oldval[512];
             snprintf(oldval, sizeof (oldval), "%s%s%s", regtype_str, regnum_str, writemask_str);
-            snprintf(buf, buflen, "%s = select(%s, %s, %s);", oldval,
+            const int written = snprintf(buf, buflen, "%s = select(%s, %s, %s);", oldval,
                      predicate_not ? newval : oldval, predicate_not ? oldval : newval, predicate);
+            if ((written < 0) || ((size_t) written >= buflen))
+                fail(ctx, "BUG: Metal expression too long for its buffer");
         } // else
         return buf;
     } // if
 
-    snprintf(buf, buflen, "%s%s%s = %s%s%s%s%s%s;",
+    const int written = snprintf(buf, buflen, "%s%s%s = %s%s%s%s%s%s;",
              regtype_str, regnum_str, writemask_str,
              clampleft, leftparen, operation, rightparen, result_shift_str,
              clampright);
-    // !!! FIXME: make sure the scratch buffer was large enough.
+    // BO1: a truncated line is broken Metal; say so instead of emitting it (relative-addressed constants are long:
+    // "uniforms.uniforms_float4[(ARRAYBASE_0 + 120) + aL]", and the buffers above used to be 64/128 bytes)
+    if ((written < 0) || ((size_t) written >= buflen))
+        fail(ctx, "BUG: Metal expression too long for its buffer");
     return buf;
 } // make_METAL_destarg_assign
 
@@ -449,11 +456,12 @@ const char *make_METAL_srcarg_string(Context *ctx, const size_t idx,
         return buf;
     } // if
 
-    snprintf(buf, buflen, "%s%s%s%s%s%s%s%s%s",
+    const int written = snprintf(buf, buflen, "%s%s%s%s%s%s%s%s%s",
              premod_str, regtype_str, rel_lbracket, rel_offset,
              rel_regtype_str, rel_swizzle, rel_rbracket, swiz_str,
              postmod_str);
-    // !!! FIXME: make sure the scratch buffer was large enough.
+    if ((written < 0) || ((size_t) written >= buflen))  // BO1: see make_METAL_destarg_assign
+        fail(ctx, "BUG: Metal source argument too long for its buffer");
     return buf;
 } // make_METAL_srcarg_string
 
@@ -810,7 +818,7 @@ static const char *bo1_varying_name(const MOJOSHADER_usage usage, const int inde
 
 void emit_METAL_global(Context *ctx, RegisterType regtype, int regnum)
 {
-    char varname[64];
+    char varname[512];
     get_METAL_varname_in_buf(ctx, regtype, regnum, varname, sizeof (varname));
 
     // These aren't actually global in metal, set them up at top of mainline.
@@ -870,7 +878,7 @@ void emit_METAL_array(Context *ctx, VariableList *var)
 void emit_METAL_const_array(Context *ctx, const ConstantsList *clist,
                             int base, int size)
 {
-    char varname[64];
+    char varname[512];
     get_METAL_const_array_varname_in_buf(ctx,base,size,varname,sizeof(varname));
 
     const char *cstr = NULL;
@@ -916,8 +924,8 @@ void emit_METAL_uniform(Context *ctx, RegisterType regtype, int regnum,
     //  prevent uploading unused data.
 
     const char *utype = get_METAL_uniform_type(ctx, regtype);
-    char varname[64];
-    char name[64];
+    char varname[512];
+    char name[512];
     int index = 0;
 
     get_METAL_varname_in_buf(ctx, regtype, regnum, varname, sizeof (varname));
@@ -978,7 +986,7 @@ void emit_METAL_uniform(Context *ctx, RegisterType regtype, int regnum,
 
 void emit_METAL_sampler(Context *ctx,int stage,TextureType ttype,int tb)
 {
-    char var[64];
+    char var[512];
     const char *texsuffix = NULL;
     switch (ttype)
     {
@@ -1015,7 +1023,7 @@ void emit_METAL_sampler(Context *ctx,int stage,TextureType ttype,int tb)
     {
         push_output(ctx, &ctx->mainline_top);
         ctx->indent++;
-        char name[64];
+        char name[512];
         const int index = ctx->uniform_float4_count;
         ctx->uniform_float4_count += 2;
         get_METAL_uniform_array_varname(ctx, REG_TYPE_CONST, name, sizeof (name));
@@ -1032,7 +1040,7 @@ void emit_METAL_attribute(Context *ctx, RegisterType regtype, int regnum,
     // !!! FIXME: this function doesn't deal with write masks at all yet!
     const char *usage_str = NULL;
     char index_str[16] = { '\0' };
-    char var[64];
+    char var[512];
 
     get_METAL_varname_in_buf(ctx, regtype, regnum, var, sizeof (var));
 
@@ -1287,45 +1295,45 @@ void emit_METAL_NOP(Context *ctx)
 
 void emit_METAL_MOV(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     make_METAL_destarg_assign(ctx, code, sizeof (code), "%s", src0);
     output_line(ctx, "%s", code);
 } // emit_METAL_MOV
 
 void emit_METAL_ADD(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
     make_METAL_destarg_assign(ctx, code, sizeof (code), "%s + %s", src0, src1);
     output_line(ctx, "%s", code);
 } // emit_METAL_ADD
 
 void emit_METAL_SUB(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
     make_METAL_destarg_assign(ctx, code, sizeof (code), "%s - %s", src0, src1);
     output_line(ctx, "%s", code);
 } // emit_METAL_SUB
 
 void emit_METAL_MAD(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char src2[64]; make_METAL_srcarg_string_masked(ctx, 2, src2, sizeof (src2));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char src2[512]; make_METAL_srcarg_string_masked(ctx, 2, src2, sizeof (src2));
+    char code[4096];
     make_METAL_destarg_assign(ctx, code, sizeof (code), "(%s * %s) + %s", src0, src1, src2);
     output_line(ctx, "%s", code);
 } // emit_METAL_MAD
 
 void emit_METAL_MUL(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
     make_METAL_destarg_assign(ctx, code, sizeof (code), "%s * %s", src0, src1);
     output_line(ctx, "%s", code);
 } // emit_METAL_MUL
@@ -1336,8 +1344,8 @@ void emit_METAL_RCP(Context *ctx)
     char cast[16] = { '\0' };
     if (vecsize != 1)
         snprintf(cast, sizeof (cast), "float%d", vecsize);
-    char src0[64]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "%s((%s == 0.0) ? FLT_MAX : 1.0 / %s)", cast, src0, src0);
     output_line(ctx, "%s", code);
@@ -1349,8 +1357,8 @@ void emit_METAL_RSQ(Context *ctx)
     char cast[16] = { '\0' };
     if (vecsize != 1)
         snprintf(cast, sizeof (cast), "float%d", vecsize);
-    char src0[64]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "%s((%s == 0.0) ? FLT_MAX : rsqrt(abs(%s)))", cast, src0, src0);
     output_line(ctx, "%s", code);
@@ -1368,7 +1376,7 @@ void emit_METAL_dotprod(Context *ctx, const char *src0, const char *src1,
         castright = ")";
     } // if
 
-    char code[128];
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "%sdot(%s, %s)%s%s",
                              castleft, src0, src1, extra, castright);
@@ -1377,23 +1385,23 @@ void emit_METAL_dotprod(Context *ctx, const char *src0, const char *src1,
 
 void emit_METAL_DP3(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_vec3(ctx, 1, src1, sizeof (src1));
+    char src0[512]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_vec3(ctx, 1, src1, sizeof (src1));
     emit_METAL_dotprod(ctx, src0, src1, "");
 } // emit_METAL_DP3
 
 void emit_METAL_DP4(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_full(ctx, 1, src1, sizeof (src1));
+    char src0[512]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_full(ctx, 1, src1, sizeof (src1));
     emit_METAL_dotprod(ctx, src0, src1, "");
 } // emit_METAL_DP4
 
 void emit_METAL_MIN(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "min(%s, %s)", src0, src1);
     output_line(ctx, "%s", code);
@@ -1401,9 +1409,9 @@ void emit_METAL_MIN(Context *ctx)
 
 void emit_METAL_MAX(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "max(%s, %s)", src0, src1);
     output_line(ctx, "%s", code);
@@ -1412,9 +1420,9 @@ void emit_METAL_MAX(Context *ctx)
 void emit_METAL_SLT(Context *ctx)
 {
     const int vecsize = vecsize_from_writemask(ctx->dest_arg.writemask);
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
 
     // float(bool) or vec(bvec) results in 0.0 or 1.0, like SLT wants.
     if (vecsize == 1)
@@ -1430,9 +1438,9 @@ void emit_METAL_SLT(Context *ctx)
 void emit_METAL_SGE(Context *ctx)
 {
     const int vecsize = vecsize_from_writemask(ctx->dest_arg.writemask);
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
 
     // float(bool) or vec(bvec) results in 0.0 or 1.0, like SGE wants.
     if (vecsize == 1)
@@ -1450,8 +1458,8 @@ void emit_METAL_SGE(Context *ctx)
 
 void emit_METAL_EXP(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "exp2(%s)", src0);
     output_line(ctx, "%s", code);
@@ -1459,10 +1467,11 @@ void emit_METAL_EXP(Context *ctx)
 
 void emit_METAL_LOG(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_math = 1;
-    make_METAL_destarg_assign(ctx, code, sizeof (code), "log2(%s)", src0);
+    // BO1: Direct3D 9's log is of the absolute value (as rsq is)
+    make_METAL_destarg_assign(ctx, code, sizeof (code), "log2(abs(%s))", src0);
     output_line(ctx, "%s", code);
 } // emit_METAL_LOG
 
@@ -1496,8 +1505,8 @@ void emit_METAL_LIT_helper(Context *ctx)
 
 void emit_METAL_LIT(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     emit_METAL_LIT_helper(ctx);
     make_METAL_destarg_assign(ctx, code, sizeof (code), "LIT(%s)", src0);
     output_line(ctx, "%s", code);
@@ -1506,12 +1515,12 @@ void emit_METAL_LIT(Context *ctx)
 void emit_METAL_DST(Context *ctx)
 {
     // !!! FIXME: needs to take ctx->dst_arg.writemask into account.
-    char src0_y[64]; make_METAL_srcarg_string_y(ctx, 0, src0_y, sizeof (src0_y));
-    char src1_y[64]; make_METAL_srcarg_string_y(ctx, 1, src1_y, sizeof (src1_y));
-    char src0_z[64]; make_METAL_srcarg_string_z(ctx, 0, src0_z, sizeof (src0_z));
-    char src1_w[64]; make_METAL_srcarg_string_w(ctx, 1, src1_w, sizeof (src1_w));
+    char src0_y[512]; make_METAL_srcarg_string_y(ctx, 0, src0_y, sizeof (src0_y));
+    char src1_y[512]; make_METAL_srcarg_string_y(ctx, 1, src1_y, sizeof (src1_y));
+    char src0_z[512]; make_METAL_srcarg_string_z(ctx, 0, src0_z, sizeof (src0_z));
+    char src1_w[512]; make_METAL_srcarg_string_w(ctx, 1, src1_w, sizeof (src1_w));
 
-    char code[128];
+    char code[4096];
     make_METAL_destarg_assign(ctx, code, sizeof (code),
                              "float4(1.0, %s * %s, %s, %s)",
                              src0_y, src1_y, src0_z, src1_w);
@@ -1520,10 +1529,10 @@ void emit_METAL_DST(Context *ctx)
 
 void emit_METAL_LRP(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char src2[64]; make_METAL_srcarg_string_masked(ctx, 2, src2, sizeof (src2));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char src2[512]; make_METAL_srcarg_string_masked(ctx, 2, src2, sizeof (src2));
+    char code[4096];
     ctx->metal_need_header_common = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "mix(%s, %s, %s)",
                              src2, src1, src0);
@@ -1532,8 +1541,8 @@ void emit_METAL_LRP(Context *ctx)
 
 void emit_METAL_FRC(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "fract(%s)", src0);
     output_line(ctx, "%s", code);
@@ -1541,12 +1550,12 @@ void emit_METAL_FRC(Context *ctx)
 
 void emit_METAL_M4X4(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
-    char row0[64]; make_METAL_srcarg_string_full(ctx, 1, row0, sizeof (row0));
-    char row1[64]; make_METAL_srcarg_string_full(ctx, 2, row1, sizeof (row1));
-    char row2[64]; make_METAL_srcarg_string_full(ctx, 3, row2, sizeof (row2));
-    char row3[64]; make_METAL_srcarg_string_full(ctx, 4, row3, sizeof (row3));
-    char code[256];
+    char src0[512]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
+    char row0[512]; make_METAL_srcarg_string_full(ctx, 1, row0, sizeof (row0));
+    char row1[512]; make_METAL_srcarg_string_full(ctx, 2, row1, sizeof (row1));
+    char row2[512]; make_METAL_srcarg_string_full(ctx, 3, row2, sizeof (row2));
+    char row3[512]; make_METAL_srcarg_string_full(ctx, 4, row3, sizeof (row3));
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code),
                     "float4(dot(%s, %s), dot(%s, %s), dot(%s, %s), dot(%s, %s))",
@@ -1556,11 +1565,11 @@ void emit_METAL_M4X4(Context *ctx)
 
 void emit_METAL_M4X3(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
-    char row0[64]; make_METAL_srcarg_string_full(ctx, 1, row0, sizeof (row0));
-    char row1[64]; make_METAL_srcarg_string_full(ctx, 2, row1, sizeof (row1));
-    char row2[64]; make_METAL_srcarg_string_full(ctx, 3, row2, sizeof (row2));
-    char code[256];
+    char src0[512]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
+    char row0[512]; make_METAL_srcarg_string_full(ctx, 1, row0, sizeof (row0));
+    char row1[512]; make_METAL_srcarg_string_full(ctx, 2, row1, sizeof (row1));
+    char row2[512]; make_METAL_srcarg_string_full(ctx, 3, row2, sizeof (row2));
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code),
                                 "float3(dot(%s, %s), dot(%s, %s), dot(%s, %s))",
@@ -1570,12 +1579,12 @@ void emit_METAL_M4X3(Context *ctx)
 
 void emit_METAL_M3X4(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
-    char row0[64]; make_METAL_srcarg_string_vec3(ctx, 1, row0, sizeof (row0));
-    char row1[64]; make_METAL_srcarg_string_vec3(ctx, 2, row1, sizeof (row1));
-    char row2[64]; make_METAL_srcarg_string_vec3(ctx, 3, row2, sizeof (row2));
-    char row3[64]; make_METAL_srcarg_string_vec3(ctx, 4, row3, sizeof (row3));
-    char code[256];
+    char src0[512]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
+    char row0[512]; make_METAL_srcarg_string_vec3(ctx, 1, row0, sizeof (row0));
+    char row1[512]; make_METAL_srcarg_string_vec3(ctx, 2, row1, sizeof (row1));
+    char row2[512]; make_METAL_srcarg_string_vec3(ctx, 3, row2, sizeof (row2));
+    char row3[512]; make_METAL_srcarg_string_vec3(ctx, 4, row3, sizeof (row3));
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code),
                                 "float4(dot(%s, %s), dot(%s, %s), "
@@ -1587,11 +1596,11 @@ void emit_METAL_M3X4(Context *ctx)
 
 void emit_METAL_M3X3(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
-    char row0[64]; make_METAL_srcarg_string_vec3(ctx, 1, row0, sizeof (row0));
-    char row1[64]; make_METAL_srcarg_string_vec3(ctx, 2, row1, sizeof (row1));
-    char row2[64]; make_METAL_srcarg_string_vec3(ctx, 3, row2, sizeof (row2));
-    char code[256];
+    char src0[512]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
+    char row0[512]; make_METAL_srcarg_string_vec3(ctx, 1, row0, sizeof (row0));
+    char row1[512]; make_METAL_srcarg_string_vec3(ctx, 2, row1, sizeof (row1));
+    char row2[512]; make_METAL_srcarg_string_vec3(ctx, 3, row2, sizeof (row2));
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code),
                                 "float3(dot(%s, %s), dot(%s, %s), dot(%s, %s))",
@@ -1601,10 +1610,10 @@ void emit_METAL_M3X3(Context *ctx)
 
 void emit_METAL_M3X2(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
-    char row0[64]; make_METAL_srcarg_string_vec3(ctx, 1, row0, sizeof (row0));
-    char row1[64]; make_METAL_srcarg_string_vec3(ctx, 2, row1, sizeof (row1));
-    char code[256];
+    char src0[512]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
+    char row0[512]; make_METAL_srcarg_string_vec3(ctx, 1, row0, sizeof (row0));
+    char row1[512]; make_METAL_srcarg_string_vec3(ctx, 2, row1, sizeof (row1));
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code),
                                 "float2(dot(%s, %s), dot(%s, %s))",
@@ -1630,7 +1639,9 @@ void emit_METAL_CALL(Context *ctx)
 
 void emit_METAL_CALLNZ(Context *ctx)
 {
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    // BO1: the condition is one component (b#, or p0 with a replicate swizzle): the masked form used the previous
+    // instruction's write mask and gave "if (p0.yy)", which is not a condition in Metal
+    char src1[512]; make_METAL_srcarg_string_scalar(ctx, 1, src1, sizeof (src1));
     output_line(ctx, "if (%s) {", src1);
     ctx->indent++;
     metal_emit_call_marker(ctx, ctx->source_args[0].regnum);
@@ -1641,7 +1652,7 @@ void emit_METAL_CALLNZ(Context *ctx)
 void emit_METAL_LOOP(Context *ctx)
 {
     // !!! FIXME: swizzle?
-    char var[64]; get_METAL_srcarg_varname(ctx, 1, var, sizeof (var));
+    char var[512]; get_METAL_srcarg_varname(ctx, 1, var, sizeof (var));
     assert(ctx->source_args[0].regnum == 0);  // in case they add aL1 someday.
     output_line(ctx, "{");
     ctx->indent++;
@@ -1708,21 +1719,27 @@ void emit_METAL_DCL(Context *ctx)
 
 void emit_METAL_POW(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    // BO1: pow is a scalar operation (replicate swizzles) whose result is 1 for a zero exponent, also for a zero
+    // base (Metal's fast pow gives NaN for 0^0; Direct3D 9 hardware and Wine give 1)
+    const int vecsize = vecsize_from_writemask(ctx->dest_arg.writemask);
+    char cast[16] = { '\0' };
+    if (vecsize != 1)
+        snprintf(cast, sizeof (cast), "float%d", vecsize);
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_scalar(ctx, 1, src1, sizeof (src1));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code),
-                             "pow(abs(%s), %s)", src0, src1);
+                             "%s((%s == 0.0) ? 1.0 : pow(abs(%s), %s))", cast, src1, src0, src1);
     output_line(ctx, "%s", code);
 } // emit_METAL_POW
 
 void emit_METAL_CRS(Context *ctx)
 {
     // !!! FIXME: needs to take ctx->dst_arg.writemask into account.
-    char src0[64]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_vec3(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_vec3(ctx, 1, src1, sizeof (src1));
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code),
                              "cross(%s, %s)", src0, src1);
@@ -1732,8 +1749,8 @@ void emit_METAL_CRS(Context *ctx)
 void emit_METAL_SGN(Context *ctx)
 {
     // (we don't need the temporary registers specified for the D3D opcode.)
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_common = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "sign(%s)", src0);
     output_line(ctx, "%s", code);
@@ -1741,8 +1758,8 @@ void emit_METAL_SGN(Context *ctx)
 
 void emit_METAL_ABS(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_math = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "abs(%s)", src0);
     output_line(ctx, "%s", code);
@@ -1750,10 +1767,14 @@ void emit_METAL_ABS(Context *ctx)
 
 void emit_METAL_NRM(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    // BO1: Direct3D 9 divides every written component by the length of src.xyz (w does not count, even with an
+    // .xyzw mask), and a zero vector stays zero instead of becoming NaN (as on the hardware; Wine does the same)
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src3[512]; make_METAL_srcarg_string_vec3(ctx, 0, src3, sizeof (src3));
+    char code[4096];
     ctx->metal_need_header_geometric = 1;
-    make_METAL_destarg_assign(ctx, code, sizeof (code), "normalize(%s)", src0);
+    make_METAL_destarg_assign(ctx, code, sizeof (code), "((dot(%s, %s) == 0.0) ? %s : (%s * rsqrt(dot(%s, %s))))",
+                              src3, src3, src0, src0, src3, src3);
     output_line(ctx, "%s", code);
 } // emit_METAL_NRM
 
@@ -1764,8 +1785,8 @@ void emit_METAL_SINCOS(Context *ctx)
     //  but we just leave those all untouched with Metal write masks (which
     //  would fulfill the "undefined" requirement, too).
     const int mask = ctx->dest_arg.writemask;
-    char src0[64]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
-    char code[128] = { '\0' };
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char code[4096] = { '\0' };
 
     ctx->metal_need_header_math = 1;
     if (writemask_x(mask))
@@ -1789,7 +1810,7 @@ void emit_METAL_REP(Context *ctx)
     //  at parse time, but if they are pulling a value from a uniform, do
     //  we clamp here?
     // !!! FIXME: swizzle is legal here, right?
-    char src0[64]; make_METAL_srcarg_string_x(ctx, 0, src0, sizeof (src0));
+    char src0[512]; make_METAL_srcarg_string_x(ctx, 0, src0, sizeof (src0));
     const uint rep = (uint) ctx->reps;
     output_line(ctx, "for (int rep%u = 0; rep%u < %s; rep%u++) {",
                 rep, rep, src0, rep);
@@ -1804,7 +1825,7 @@ void emit_METAL_ENDREP(Context *ctx)
 
 void emit_METAL_IF(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
     output_line(ctx, "if (%s) {", src0);
     ctx->indent++;
 } // emit_METAL_IF
@@ -1812,8 +1833,8 @@ void emit_METAL_IF(Context *ctx)
 void emit_METAL_IFC(Context *ctx)
 {
     const char *comp = get_METAL_comparison_string_scalar(ctx);
-    char src0[64]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_scalar(ctx, 1, src1, sizeof (src1));
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_scalar(ctx, 1, src1, sizeof (src1));
     output_line(ctx, "if (%s %s %s) {", src0, comp, src1);
     ctx->indent++;
 } // emit_METAL_IFC
@@ -1839,16 +1860,16 @@ void emit_METAL_BREAK(Context *ctx)
 void emit_METAL_BREAKC(Context *ctx)
 {
     const char *comp = get_METAL_comparison_string_scalar(ctx);
-    char src0[64]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_scalar(ctx, 1, src1, sizeof (src1));
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_scalar(ctx, 1, src1, sizeof (src1));
     output_line(ctx, "if (%s %s %s) { break; }", src0, comp, src1);
 } // emit_METAL_BREAKC
 
 void emit_METAL_MOVA(Context *ctx)
 {
     const int vecsize = vecsize_from_writemask(ctx->dest_arg.writemask);
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
 
     ctx->metal_need_header_math = 1;
     ctx->metal_need_header_common = 1;
@@ -1872,7 +1893,7 @@ void emit_METAL_MOVA(Context *ctx)
 
 void emit_METAL_DEFB(Context *ctx)
 {
-    char varname[64]; get_METAL_destarg_varname(ctx, varname, sizeof (varname));
+    char varname[512]; get_METAL_destarg_varname(ctx, varname, sizeof (varname));
     push_output(ctx, &ctx->mainline_top);
     ctx->indent++;
     output_line(ctx, "const bool %s = %s;",
@@ -1882,7 +1903,7 @@ void emit_METAL_DEFB(Context *ctx)
 
 void emit_METAL_DEFI(Context *ctx)
 {
-    char varname[64]; get_METAL_destarg_varname(ctx, varname, sizeof (varname));
+    char varname[512]; get_METAL_destarg_varname(ctx, varname, sizeof (varname));
     const int32 *x = (const int32 *) ctx->dwords;
     push_output(ctx, &ctx->mainline_top);
     ctx->indent++;
@@ -1895,7 +1916,12 @@ EMIT_METAL_OPCODE_UNIMPLEMENTED_FUNC(TEXCRD)
 
 void emit_METAL_TEXKILL(Context *ctx)
 {
-    char dst[64]; get_METAL_destarg_varname(ctx, dst, sizeof (dst));
+    char dst[512]; get_METAL_destarg_varname(ctx, dst, sizeof (dst));
+    // BO1: Shader Model 2 and later test all four components (as Direct3D 9 hardware does, see Wine's texkill);
+    // only ps_1_x looks at xyz
+    const char *test = shader_version_atleast(ctx, 2, 0) ? "any(%s < float4(0.0))" : "any(%s.xyz < float3(0.0))";
+    char cond[512];
+    snprintf(cond, sizeof (cond), test, dst);
     ctx->metal_need_header_relational = 1;
     ctx->metal_need_header_graphics = 1;
     if (ctx->predicated)
@@ -1904,12 +1930,12 @@ void emit_METAL_TEXKILL(Context *ctx)
         const SourceArgInfo *parg = &ctx->predicate_arg;
         char pregnum[16];
         const char *pregtype = get_METAL_register_string(ctx, parg->regtype, parg->regnum, pregnum, sizeof (pregnum));
-        output_line(ctx, "if (%s%s%s.%c && any(%s.xyz < float3(0.0))) discard_fragment();",
+        output_line(ctx, "if (%s%s%s.%c && %s) discard_fragment();",
                     (parg->src_mod == SRCMOD_NOT) ? "!" : "", pregtype, pregnum,
-                    swizzle_channels[parg->swizzle & 0x3], dst);
+                    swizzle_channels[parg->swizzle & 0x3], cond);
         return;
     } // if
-    output_line(ctx, "if (any(%s.xyz < float3(0.0))) discard_fragment();", dst);
+    output_line(ctx, "if (%s) discard_fragment();", cond);
 } // emit_METAL_TEXKILL
 
 static void metal_texld(Context *ctx, const int texldd, const int texldl)
@@ -1918,9 +1944,9 @@ static void metal_texld(Context *ctx, const int texldd, const int texldl)
     if (!shader_version_atleast(ctx, 1, 4))
     {
         DestArgInfo *info = &ctx->dest_arg;
-        char dst[64];
-        char sampler[64];
-        char code[128] = {0};
+        char dst[512];
+        char sampler[512];
+        char code[4096] = {0};
 
         assert(!texldd);
 
@@ -1958,7 +1984,7 @@ static void metal_texld(Context *ctx, const int texldd, const int texldl)
         RegisterList *sreg = reglist_find(&ctx->samplers, REG_TYPE_SAMPLER,
                                           samp_arg->regnum);
         char src0[128] = { '\0' };
-        char src1[64]; get_METAL_srcarg_varname(ctx, 1, src1, sizeof (src1)); // !!! FIXME: SRC_MOD?
+        char src1[512]; get_METAL_srcarg_varname(ctx, 1, src1, sizeof (src1)); // !!! FIXME: SRC_MOD?
         char src2[128] = { '\0' };
         char src3[128] = { '\0' };
 
@@ -2007,7 +2033,7 @@ static void metal_texld(Context *ctx, const int texldd, const int texldl)
         make_METAL_swizzle_string(swiz_str, sizeof (swiz_str),
                                  samp_arg->swizzle, ctx->dest_arg.writemask);
 
-        char code[512];
+        char code[4096];
         if (vs)
         {
             // vertex shaders: texldl only (vs_3_0)
@@ -2043,10 +2069,10 @@ void emit_METAL_TEXLD(Context *ctx)
 void emit_METAL_TEXBEM(Context *ctx)
 {
     DestArgInfo *info = &ctx->dest_arg;
-    char dst[64]; get_METAL_destarg_varname(ctx, dst, sizeof (dst));
-    char src[64]; get_METAL_srcarg_varname(ctx, 0, src, sizeof (src));
-    char sampler[64];
-    char code[512];
+    char dst[512]; get_METAL_destarg_varname(ctx, dst, sizeof (dst));
+    char src[512]; get_METAL_srcarg_varname(ctx, 0, src, sizeof (src));
+    char sampler[512];
+    char code[4096];
 
     ctx->metal_need_header_texture = 1;
 
@@ -2069,10 +2095,10 @@ void emit_METAL_TEXBEML(Context *ctx)
 {
     // !!! FIXME: this code counts on the register not having swizzles, etc.
     DestArgInfo *info = &ctx->dest_arg;
-    char dst[64]; get_METAL_destarg_varname(ctx, dst, sizeof (dst));
-    char src[64]; get_METAL_srcarg_varname(ctx, 0, src, sizeof (src));
-    char sampler[64];
-    char code[512];
+    char dst[512]; get_METAL_destarg_varname(ctx, dst, sizeof (dst));
+    char src[512]; get_METAL_srcarg_varname(ctx, 0, src, sizeof (src));
+    char sampler[512];
+    char code[4096];
 
     ctx->metal_need_header_texture = 1;
 
@@ -2106,12 +2132,12 @@ void emit_METAL_TEXM3X2TEX(Context *ctx)
         return;
 
     DestArgInfo *info = &ctx->dest_arg;
-    char dst[64];
-    char src0[64];
-    char src1[64];
-    char src2[64];
-    char sampler[64];
-    char code[512];
+    char dst[512];
+    char src0[512];
+    char src1[512];
+    char src2[512];
+    char sampler[512];
+    char code[4096];
 
     ctx->metal_need_header_texture = 1;
     ctx->metal_need_header_geometric = 1;
@@ -2145,14 +2171,14 @@ void emit_METAL_TEXM3X3TEX(Context *ctx)
         return;
 
     DestArgInfo *info = &ctx->dest_arg;
-    char dst[64];
-    char src0[64];
-    char src1[64];
-    char src2[64];
-    char src3[64];
-    char src4[64];
-    char sampler[64];
-    char code[512];
+    char dst[512];
+    char src0[512];
+    char src1[512];
+    char src2[512];
+    char src3[512];
+    char src4[512];
+    char sampler[512];
+    char code[4096];
 
     ctx->metal_need_header_texture = 1;
     ctx->metal_need_header_geometric = 1;
@@ -2210,15 +2236,15 @@ void emit_METAL_TEXM3X3SPEC(Context *ctx)
         return;
 
     DestArgInfo *info = &ctx->dest_arg;
-    char dst[64];
-    char src0[64];
-    char src1[64];
-    char src2[64];
-    char src3[64];
-    char src4[64];
-    char src5[64];
-    char sampler[64];
-    char code[512];
+    char dst[512];
+    char src0[512];
+    char src1[512];
+    char src2[512];
+    char src3[512];
+    char src4[512];
+    char src5[512];
+    char sampler[512];
+    char code[4096];
 
     ctx->metal_need_header_texture = 1;
     ctx->metal_need_header_geometric = 1;
@@ -2270,14 +2296,14 @@ void emit_METAL_TEXM3X3VSPEC(Context *ctx)
         return;
 
     DestArgInfo *info = &ctx->dest_arg;
-    char dst[64];
-    char src0[64];
-    char src1[64];
-    char src2[64];
-    char src3[64];
-    char src4[64];
-    char sampler[64];
-    char code[512];
+    char dst[512];
+    char src0[512];
+    char src1[512];
+    char src2[512];
+    char src3[512];
+    char src4[512];
+    char sampler[512];
+    char code[4096];
 
     ctx->metal_need_header_texture = 1;
     ctx->metal_need_header_geometric = 1;
@@ -2369,16 +2395,16 @@ void emit_METAL_comparison_operations(Context *ctx, const char *cmp)
 
         //return make_METAL_srcarg_string(ctx, idx, (1 << 0));
 
-        char src0[64];
-        char src1[64];
-        char src2[64];
+        char src0[512];
+        char src1[512];
+        char src2[512];
         make_METAL_srcarg_string(ctx, 0, (1 << i), src0, sizeof (src0));
         make_METAL_srcarg_string(ctx, 1, mask, src1, sizeof (src1));
         make_METAL_srcarg_string(ctx, 2, mask, src2, sizeof (src2));
 
         set_dstarg_writemask(dst, mask);
 
-        char code[128];
+        char code[4096];
         make_METAL_destarg_assign(ctx, code, sizeof (code),
                                  "((%s %s) ? %s : %s)",
                                  src0, cmp, src1, src2);
@@ -2396,7 +2422,7 @@ void emit_METAL_CND(Context *ctx)
 void emit_METAL_DEF(Context *ctx)
 {
     const float *val = (const float *) ctx->dwords; // !!! FIXME: could be int?
-    char varname[64]; get_METAL_destarg_varname(ctx, varname, sizeof (varname));
+    char varname[512]; get_METAL_destarg_varname(ctx, varname, sizeof (varname));
     char val0[32]; floatstr(ctx, val0, sizeof (val0), val[0], 1);
     char val1[32]; floatstr(ctx, val1, sizeof (val1), val[1], 1);
     char val2[32]; floatstr(ctx, val2, sizeof (val2), val[2], 1);
@@ -2420,13 +2446,13 @@ void emit_METAL_TEXM3X3(Context *ctx)
     if (ctx->texm3x3pad_src1 == -1)
         return;
 
-    char dst[64];
-    char src0[64];
-    char src1[64];
-    char src2[64];
-    char src3[64];
-    char src4[64];
-    char code[512];
+    char dst[512];
+    char src0[512];
+    char src1[512];
+    char src2[512];
+    char src3[512];
+    char src4[512];
+    char code[4096];
 
     ctx->metal_need_header_geometric = 1;
 
@@ -2461,17 +2487,17 @@ EMIT_METAL_OPCODE_UNIMPLEMENTED_FUNC(BEM) // !!! FIXME
 
 void emit_METAL_DP2ADD(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_vec2(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_vec2(ctx, 1, src1, sizeof (src1));
-    char src2[64]; make_METAL_srcarg_string_scalar(ctx, 2, src2, sizeof (src2));
-    char extra[64]; snprintf(extra, sizeof (extra), " + %s", src2);
+    char src0[512]; make_METAL_srcarg_string_vec2(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_vec2(ctx, 1, src1, sizeof (src1));
+    char src2[512]; make_METAL_srcarg_string_scalar(ctx, 2, src2, sizeof (src2));
+    char extra[512]; snprintf(extra, sizeof (extra), " + %s", src2);
     emit_METAL_dotprod(ctx, src0, src1, extra);
 } // emit_METAL_DP2ADD
 
 void emit_METAL_DSX(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_graphics = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "dfdx(%s)", src0);
     output_line(ctx, "%s", code);
@@ -2479,8 +2505,8 @@ void emit_METAL_DSX(Context *ctx)
 
 void emit_METAL_DSY(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char code[4096];
     ctx->metal_need_header_graphics = 1;
     make_METAL_destarg_assign(ctx, code, sizeof (code), "dfdy(%s)", src0);
     output_line(ctx, "%s", code);
@@ -2494,9 +2520,9 @@ void emit_METAL_TEXLDD(Context *ctx)
 void emit_METAL_SETP(Context *ctx)
 {
     const int vecsize = vecsize_from_writemask(ctx->dest_arg.writemask);
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-    char code[128];
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char code[4096];
 
     // destination is always predicate register (which is type bvec4).
     const char *comp = (vecsize == 1) ?
@@ -2516,7 +2542,7 @@ void emit_METAL_TEXLDL(Context *ctx)
 
 void emit_METAL_BREAKP(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
+    char src0[512]; make_METAL_srcarg_string_scalar(ctx, 0, src0, sizeof (src0));
     output_line(ctx, "if (%s) { break; }", src0);
 } // emit_METAL_BREAKP
 

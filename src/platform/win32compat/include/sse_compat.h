@@ -7,6 +7,11 @@
 #ifndef __int64
 #define __int64 long long
 #endif
+// x86 semantics for _mm_min/_mm_max (_ps/_ss): the second operand when either is NaN (or both are zeros), which
+// the engine's clamps rely on to turn a NaN into the bound; NEON's fmin/fmax would propagate the NaN.
+#ifndef SSE2NEON_PRECISE_MINMAX
+#define SSE2NEON_PRECISE_MINMAX (1)
+#endif
 #include "../../third_party/sse2neon/sse2neon.h"
 #pragma pop_macro("__int64")
 // MMX helpers sse2neon leaves out

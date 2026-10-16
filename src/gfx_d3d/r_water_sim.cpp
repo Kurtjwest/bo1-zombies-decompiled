@@ -2903,11 +2903,12 @@ void    R_WaterSimulationSkinMesh(const WaterSimulationCmd *cmd)
                     worldUV.u[3] = v + maxBox.u[1];
                     worldUV.u[2] = worldU + *(unsigned int *)BO1_I2P((tilev + 8));
                     worldUV.u[1] = v + *(unsigned int *)BO1_I2P((tilev + 12));
+                    // Float4LoadFloats takes the raw bits of its floats (see its definition)
                     Float4LoadFloats(
-                        ((float)(int)worldUV.u[2]),
-                        ((float)(int)worldUV.u[1]),
-                        (0.0),
-                        (0.0),
+                        COERCE_UNSIGNED_INT((float)(int)worldUV.u[2]),
+                        COERCE_UNSIGNED_INT((float)(int)worldUV.u[1]),
+                        0,
+                        0,
                         (float4 *)&tileUV.unitVec[1]);
                     v162 = (unsigned int)v;
                     *(float *)&y = (float)(unsigned int)v;
@@ -3101,10 +3102,10 @@ void    R_WaterSimulationSkinMesh(const WaterSimulationCmd *cmd)
                     Vec3NormalizeTo(&zOffset.v[1], &zOffset.v[1]);
                     binormal.u[0] = 0;
                     Float4LoadFloats(
-                        (0.0),
-                        (0.0),
-                        ((float)((float)*(__int16 *)&avgpos[8] / config.gridScale) - (float)*(int *)BO1_I2P((tilev + 16))),
-                        (0.0),
+                        0,
+                        0,
+                        COERCE_UNSIGNED_INT((float)((float)*(__int16 *)&avgpos[8] / config.gridScale) - (float)*(int *)BO1_I2P((tilev + 16))),
+                        0,
                         (float4 *)&finalPos.unitVec[1]);
                     v93 = (float)((float)(zoffset.v[1] + finalPos.v[1]) * posOffset.v[1]) + normalScale.v[1];
                     v94 = (float)((float)(zoffset.v[2] + finalPos.v[2]) * posOffset.v[2]) + normalScale.v[2];

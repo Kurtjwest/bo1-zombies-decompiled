@@ -2223,15 +2223,15 @@ void __cdecl CG_ClampPrimaryLightDir(GfxLight *light, const ComPrimaryLight *ref
                              + (float)(light->dir[2] * refLight->dir[2]);
     if ( cosTurnAngle < refLight->rotationLimit )
     {
-        perpendicular_4 = (float)(COERCE_FLOAT(-(cosTurnAngle)) * refLight->dir[1]) + light->dir[1];
-        perpendicular_8 = (float)(COERCE_FLOAT(-(cosTurnAngle)) * refLight->dir[2]) + light->dir[2];
+        perpendicular_4 = (float)((-cosTurnAngle) * refLight->dir[1]) + light->dir[1];
+        perpendicular_8 = (float)((-cosTurnAngle) * refLight->dir[2]) + light->dir[2];
         perpScale = sqrtf(
                                     (float)(1.0 - (float)(refLight->rotationLimit * refLight->rotationLimit))
                                 / (float)(1.0 - (float)(cosTurnAngle * cosTurnAngle)));
         rotationLimit = refLight->rotationLimit;
         light->dir[0] = (float)(rotationLimit * refLight->dir[0])
                                     + (float)(perpScale
-                                                    * (float)((float)(COERCE_FLOAT(-(cosTurnAngle)) * refLight->dir[0]) + light->dir[0]));
+                                                    * (float)((float)((-cosTurnAngle) * refLight->dir[0]) + light->dir[0]));
         light->dir[1] = (float)(rotationLimit * refLight->dir[1]) + (float)(perpScale * perpendicular_4);
         light->dir[2] = (float)(rotationLimit * refLight->dir[2]) + (float)(perpScale * perpendicular_8);
         if ( !Vec3IsNormalized(light->dir) )

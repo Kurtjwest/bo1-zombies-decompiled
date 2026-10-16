@@ -163,6 +163,7 @@ typedef struct Context
     int have_multi_color_outputs;
     int determined_constants_arrays;
     int predicated;
+    int predicate_parsed;  // BO1: the predicate token was read after the destination token
     int uses_pointsize;
     int uses_fog;
     int need_max_float;

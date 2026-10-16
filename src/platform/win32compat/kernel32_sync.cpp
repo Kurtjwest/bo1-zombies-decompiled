@@ -673,9 +673,12 @@ HANDLE CreateThread(LPSECURITY_ATTRIBUTES, SIZE_T stackSize, LPTHREAD_START_ROUT
     ReapDeadThreads();
     pthread_attr_t attr;
     pthread_attr_init(&attr);
-    size_t ss = stackSize ? stackSize : (1u << 20);
+    // The engine's threads keep large structures on the stack, and 64-bit frames are bigger than the 32-bit ones
+    // the Windows sizes were chosen for (pointers, spills, alignment): the default (0, the executable's reserve on
+    // Windows) gets 8 MB and explicit sizes at least 1 MB. Only touched pages of the reservation use memory.
+    size_t ss = stackSize ? stackSize : (8u << 20);
     if (ss < (1u << 20))
-        ss = 1u << 20; // the engine's threads keep large structures on the stack
+        ss = 1u << 20;
     // The stack lives in the arena, so addresses of locals have 32-bit handles too (see arena.cpp).
     size_t usable = 0;
     t->stack = Arena_AllocStack(ss, &usable);

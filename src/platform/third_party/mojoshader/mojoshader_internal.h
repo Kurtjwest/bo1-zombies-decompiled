@@ -587,7 +587,9 @@ static inline int scalar_register(const MOJOSHADER_shaderType shader_type,
             return 0;
 
         case REG_TYPE_PREDICATE:
-            return (shader_type == MOJOSHADER_TYPE_PIXEL) ? 1 : 0;
+            // BO1: p0 has four components in pixel shaders too (setp_comp - ps compares per component under the
+            // write mask, and predicated instructions select per component), not one.
+            return 0;
 
         default: break;
     } // switch
@@ -708,7 +710,7 @@ INSTRUCTION_STATE(LABEL, "LABEL", 0, S, MOJOSHADER_TYPE_ANY, 0xF)
 INSTRUCTION_STATE(DCL, "DCL", 0, DCL, MOJOSHADER_TYPE_ANY, 0xF)
 INSTRUCTION_STATE(POW, "POW", 3, DSS, MOJOSHADER_TYPE_ANY, 0xF)
 INSTRUCTION(CRS, "CRS", 2, DSS, MOJOSHADER_TYPE_ANY, 0xF)
-INSTRUCTION(SGN, "SGN", 3, DSSS, MOJOSHADER_TYPE_ANY, 0xF)
+INSTRUCTION(SGN, "SGN", 3, SGN, MOJOSHADER_TYPE_ANY, 0xF)
 INSTRUCTION(ABS, "ABS", 1, DS, MOJOSHADER_TYPE_ANY, 0xF)
 INSTRUCTION(NRM, "NRM", 3, DS, MOJOSHADER_TYPE_ANY, 0xF)
 INSTRUCTION_STATE(SINCOS, "SINCOS", 8, SINCOS, MOJOSHADER_TYPE_ANY, 0xF)

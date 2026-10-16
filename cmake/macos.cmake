@@ -95,6 +95,14 @@ set(BO1_MAC_COMMON_FLAGS
     -fno-delete-null-pointer-checks
     # ... and newer Clang releases turn the warning about those paths into an error by default
     -Wno-return-type
+    # The engine was written for MSVC on x86, where a volatile read is an acquire and a volatile write a release
+    # (/volatile:ms, and x86 stores and loads are ordered anyway). Its cross-thread flags and counters (render
+    # command counts, worker states, the dvar read/write counts, ...) depend on that; arm64 reorders plain
+    # accesses, so volatile accesses get the same acquire/release semantics here (ldapr/stlr).
+    -fms-volatile
+    # SSE arithmetic never fuses a multiply and an add; keep the same rounding (Clang would contract a * b + c
+    # into an FMA on arm64), so physics, collision and prediction compute what the x86 game computes.
+    -ffp-contract=off
     # Every engine translation unit sees the MSVC CRT names, as MSVC's headers provide them (C/C++ only: the
     # Objective-C++ Cocoa/Metal files must not see the Windows names, Cocoa's BOOL is not Win32's BOOL).
     "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:-include ${PLATFORM_DIR}/win32compat/include/bo1_platform_prefix.h>"

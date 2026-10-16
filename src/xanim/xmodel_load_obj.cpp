@@ -1256,8 +1256,8 @@ void __cdecl XModelGenerateHighMipVolume(XModel *model)
                         }
                         ++triangleIndex;
                     }
-                    uvmax = sqrtf(cumulativeCoverage);
-                    width = sqrtf(cumulativeArea);
+                    uvmax = COERCE_UNSIGNED_INT(sqrtf(cumulativeCoverage)); // float bits, as the fakeTexCoord stores expect
+                    width = COERCE_UNSIGNED_INT(sqrtf(cumulativeArea));
                     memset(fakePos, 0, 12);
                     *(_QWORD *)&fakePos[1][0] = __PAIR64__(width, 0);
                     fakePos[1][2] = 0.0f;
