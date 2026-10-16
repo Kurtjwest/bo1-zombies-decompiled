@@ -256,6 +256,10 @@ static bool DemuxOne(MediaBink *b)
     if (err < 0)
     {
         b->eof = true;
+        // drain what the sound decoders still hold
+        for (int i = 0; i < b->trackCount; ++i)
+            if (b->tracks[i].decode)
+                DecodeAudioPacket(b, b->tracks[i], nullptr);
         return false;
     }
     if (b->pkt->stream_index == b->videoStream)
@@ -508,6 +512,27 @@ extern "C" int MediaBink_ReadAudio(MediaBink *b, int track, float *dst, int maxF
     std::copy(t.queue.begin(), t.queue.begin() + (ptrdiff_t)n, dst);
     t.queue.erase(t.queue.begin(), t.queue.begin() + (ptrdiff_t)n);
     return frames;
+}
+
+extern "C" int MediaBink_SetTrackDecode(MediaBink *b, int track, int on)
+{
+    if (!b || track < 0 || track >= b->trackCount)
+        return 0;
+    MediaBinkTrack &t = b->tracks[track];
+    t.decode = on && t.ctx && t.channels > 0;
+    if (!t.decode)
+        t.queue.clear();
+    return t.decode ? 1 : 0;
+}
+
+extern "C" int MediaBink_AudioEnded(MediaBink *b)
+{
+    if (!b || !b->eof)
+        return 0;
+    for (int i = 0; i < b->trackCount; ++i)
+        if (b->tracks[i].decode && b->tracks[i].queue.size() >= (size_t)b->tracks[i].channels)
+            return 0;
+    return 1;
 }
 
 extern "C" int MediaBink_Rewind(MediaBink *b)

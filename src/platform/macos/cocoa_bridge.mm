@@ -259,6 +259,9 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 - (void)scrollWheel:(NSEvent *)e
 {
     double d = e.scrollingDeltaY;
+    // natural scrolling (the macOS default) inverts the deltas; Windows reports the wheel's physical direction
+    if (e.isDirectionInvertedFromDevice)
+        d = -d;
     if (e.hasPreciseScrollingDeltas)
     {
         // trackpads: accumulate pixel deltas into wheel notches
@@ -362,23 +365,43 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 {
     uint16_t code = e.keyCode;
     NSEventModifierFlags f = e.modifierFlags;
-    bool down;
+    // Each side of a modifier pair has its own device-dependent flag (IOLLEvent.h NX_DEVICE*KEYMASK), so the state of
+    // the key that changed is read directly; deriving it from our own key table instead inverted it for good once a
+    // press or release went to another app (Cmd-Tab, Cmd-H). Without device flags (some remote or synthetic
+    // events), the device-independent flag stands in.
+    NSEventModifierFlags mine = 0, other = 0, indep = 0;
     switch (code)
     {
-    case kVK_Shift:
-    case kVK_RightShift: down = (f & NSEventModifierFlagShift) != 0; break;
-    case kVK_Control:
-    case kVK_RightControl: down = (f & NSEventModifierFlagControl) != 0; break;
-    case kVK_Option:
-    case kVK_RightOption: down = (f & NSEventModifierFlagOption) != 0; break;
-    case kVK_Command:
-    case kVK_RightCommand: down = (f & NSEventModifierFlagCommand) != 0; break;
-    case kVK_CapsLock: down = (f & NSEventModifierFlagCapsLock) != 0; break;
+    case kVK_Shift: mine = 0x2, other = 0x4, indep = NSEventModifierFlagShift; break;
+    case kVK_RightShift: mine = 0x4, other = 0x2, indep = NSEventModifierFlagShift; break;
+    case kVK_Control: mine = 0x1, other = 0x2000, indep = NSEventModifierFlagControl; break;
+    case kVK_RightControl: mine = 0x2000, other = 0x1, indep = NSEventModifierFlagControl; break;
+    case kVK_Option: mine = 0x20, other = 0x40, indep = NSEventModifierFlagOption; break;
+    case kVK_RightOption: mine = 0x40, other = 0x20, indep = NSEventModifierFlagOption; break;
+    case kVK_Command: mine = 0x8, other = 0x10, indep = NSEventModifierFlagCommand; break;
+    case kVK_RightCommand: mine = 0x10, other = 0x8, indep = NSEventModifierFlagCommand; break;
+    case kVK_CapsLock:
+    {
+        // Windows sends a press and a release for each Caps Lock key press, whichever way the lock goes
+        for (int i = 0; i < 2; ++i)
+        {
+            BridgeEvent ev = {};
+            ev.type = i == 0 ? BRIDGE_EV_KEY_DOWN : BRIDGE_EV_KEY_UP;
+            ev.window = self.owner;
+            ev.userData = self.owner ? self.owner->userData : nullptr;
+            ev.macKeyCode = code;
+            ev.modifiers = ModsFromFlags(f);
+            ev.time = e.timestamp;
+            Emit(ev);
+        }
+        g_keyDown[code] = false;
+        return;
+    }
     default: return;
     }
-    // with both keys of a pair held, releasing one keeps the flag set: use our own state for the other key
-    if (code < 256 && g_keyDown[code] == down && code != kVK_CapsLock)
-        down = !down;
+    const bool down = (f & (mine | other)) ? (f & mine) != 0 : (f & indep) != 0;
+    if (code < 256 && g_keyDown[code] == down)
+        return; // no change for this key (the other key of the pair changed)
     BridgeEvent ev = {};
     ev.type = down ? BRIDGE_EV_KEY_DOWN : BRIDGE_EV_KEY_UP;
     ev.window = self.owner;
@@ -489,6 +512,17 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 @implementation BO1AppDelegate
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
 {
+    // a logout, restart or shutdown ends the process now (cancelling it would stop the user's logout); Cmd-Q and the
+    // Dock's Quit become a quit request that the engine handles on its own
+    NSAppleEventDescriptor *ae = [[NSAppleEventManager sharedAppleEventManager] currentAppleEvent];
+    NSAppleEventDescriptor *why = ae ? [ae attributeDescriptorForKeyword:'why?'] : nil;
+    if (why)
+    {
+        const OSType reason = why.typeCodeValue;
+        if (reason == 'logo' || reason == 'rlgo' || reason == 'rrst' || reason == 'rest' || reason == 'rsdn' ||
+            reason == 'shut')
+            return NSTerminateNow;
+    }
     BridgeEvent ev = {};
     ev.type = BRIDGE_EV_QUIT;
     Emit(ev);
@@ -505,6 +539,17 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 - (void)applicationDidResignActive:(NSNotification *)n
 {
     RefreshAllWindowState();
+    // keys held when the app loses focus never get their key-up here: release them (Windows does the same)
+    for (int code = 0; code < 256; ++code)
+    {
+        if (!g_keyDown[code])
+            continue;
+        g_keyDown[code] = false;
+        BridgeEvent up = {};
+        up.type = BRIDGE_EV_KEY_UP;
+        up.macKeyCode = (uint16_t)code;
+        Emit(up);
+    }
     BridgeEvent ev = {};
     ev.type = BRIDGE_EV_ACTIVATE;
     ev.value = 0;
@@ -577,6 +622,10 @@ void Bridge_PumpEvents(int waitMs)
                 break;
             until = [NSDate distantPast];
             [NSApp sendEvent:e];
+            // -[NSApplication sendEvent:] swallows key-ups while Command is held: the letter of a Cmd chord would
+            // stay down in the engine (W after Cmd-W keeps running)
+            if (e.type == NSEventTypeKeyUp && (e.modifierFlags & NSEventModifierFlagCommand) && NSApp.keyWindow)
+                [NSApp.keyWindow sendEvent:e];
         }
         [NSApp updateWindows];
         RefreshAllWindowState();
@@ -787,7 +836,23 @@ static void Main_SetMouseCaptured(int captured)
 {
     if ((bool)captured == g_mouseCaptured)
         return;
+    // a capture queued by the render thread can arrive after the app lost focus (which released it): ignore it,
+    // or the pointer would stay detached over the other app
+    if (captured && ![NSApp isActive])
+        return;
     g_mouseCaptured = captured != 0;
+    if (captured)
+    {
+        // clicks go to whatever is under the (hidden, frozen) cursor: put it in the middle of the game window first
+        NSWindow *win = NSApp.keyWindow ? NSApp.keyWindow : (g_bridgeWindows.empty() ? nil : g_bridgeWindows.front()->window);
+        NSArray<NSScreen *> *screens = [NSScreen screens];
+        if (win && screens.count)
+        {
+            const NSRect content = [win contentRectForFrameRect:win.frame];
+            const CGFloat primaryHeight = screens[0].frame.size.height;
+            CGWarpMouseCursorPosition(CGPointMake(NSMidX(content), primaryHeight - NSMidY(content)));
+        }
+    }
     CGAssociateMouseAndMouseCursorPosition(captured ? false : true);
 }
 

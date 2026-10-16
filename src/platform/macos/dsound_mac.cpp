@@ -12,6 +12,9 @@
 
 #include <AudioToolbox/AudioToolbox.h>
 
+// xaudio2_coreaudio.cpp: the CoreAudio UID behind one of the engine's sound device GUIDs ("" for the system default)
+extern "C" int XAudio2Mac_DeviceUIDForGUID(const GUID *guid, char *uid, int size);
+
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -256,6 +259,10 @@ void MixRender(void *, float *out, int frames, int channels)
 
 struct DSDevice final : ComObject<IDirectSound8>
 {
+    // the output this object was created for (the device picked in the sound options); the cinematics play on it
+    // (bink_mac.cpp). Empty: the system default. The secondary buffers below always mix into the default output.
+    char deviceUID[256] = "";
+
     HRESULT STDMETHODCALLTYPE CreateSoundBuffer(LPCDSBUFFERDESC desc, IDirectSoundBuffer **out, LPUNKNOWN) override
     {
         if (!desc || !out)
@@ -503,14 +510,25 @@ struct DSCapture final : ComObject<IDirectSoundCapture>
 
 extern "C" {
 
-HRESULT DirectSoundCreate8(LPCGUID, LPDIRECTSOUND8 *out, LPUNKNOWN outer)
+HRESULT DirectSoundCreate8(LPCGUID guid, LPDIRECTSOUND8 *out, LPUNKNOWN outer)
 {
     if (!out)
         return DSERR_INVALIDPARAM;
     if (outer)
         return DSERR_NOAGGREGATION;
-    *out = new DSDevice();
+    DSDevice *d = new DSDevice();
+    // the engine passes the GUID of its XAudio2 device; one that names no current device means the default
+    if (guid && !XAudio2Mac_DeviceUIDForGUID(guid, d->deviceUID, (int)sizeof(d->deviceUID)))
+        d->deviceUID[0] = 0;
+    *out = d;
     return DS_OK;
+}
+
+const char *DSoundMac_DeviceUID(const void *directSound)
+{
+    if (!directSound)
+        return "";
+    return static_cast<const DSDevice *>(static_cast<const IDirectSound8 *>(directSound))->deviceUID;
 }
 
 HRESULT DirectSoundCreate(LPCGUID guid, LPDIRECTSOUND *out, LPUNKNOWN outer)

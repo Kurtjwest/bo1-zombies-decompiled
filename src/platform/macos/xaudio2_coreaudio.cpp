@@ -1216,16 +1216,29 @@ void Engine::EnumerateDevices(bool force)
 {
     if (deviceCount >= 0 && !force)
         return;
-    deviceCount = AudioOut_EnumerateDevices(devices, (int)kMaxDevices);
-    if (deviceCount <= 0)
+    // Index 0 is the system default itself, not the device that is the default right now: it has no UID, so its
+    // output follows the default as the user switches (AirPods connecting, a display's speakers), and its GUID,
+    // which the sound options save (sd_xa2_device_guid), stays the same. The devices follow, default first, for
+    // picking one explicitly.
+    AudioOutDeviceInfo found[kMaxDevices - 1];
+    const int n = AudioOut_EnumerateDevices(found, (int)kMaxDevices - 1);
+    memset(&devices[0], 0, sizeof(devices[0]));
+    strcpy(devices[0].name, "System Default");
+    devices[0].channels = 2;
+    devices[0].sampleRate = kDefaultRate;
+    devices[0].isDefault = 1;
+    deviceCount = 1;
+    for (int i = 0; i < n; ++i)
     {
-        // no device information (or none yet): one default stereo device
-        deviceCount = 1;
-        memset(&devices[0], 0, sizeof(devices[0]));
-        strcpy(devices[0].name, "Default Output");
-        devices[0].channels = 2;
-        devices[0].sampleRate = kDefaultRate;
-        devices[0].isDefault = 1;
+        if (found[i].isDefault)
+        {
+            // what the default plays through now: its speaker layout
+            devices[0].channels = found[i].channels;
+            devices[0].sampleRate = found[i].sampleRate;
+        }
+        devices[deviceCount] = found[i];
+        devices[deviceCount].isDefault = 0;
+        ++deviceCount;
     }
 }
 
@@ -1255,6 +1268,30 @@ static GUID GuidFromString(const char *s)
         g.Data4[i] = (uint8_t)(h2 >> (i * 8));
     g.Data4[0] = (uint8_t)((g.Data4[0] & 0x3F) | 0x80);
     return g;
+}
+
+// The CoreAudio UID behind a device GUID from GetDeviceDetails ("" for the system default entry). DirectSound
+// (dsound_mac.cpp) gets these GUIDs from the engine and sends the cinematics' sound to the same device.
+extern "C" int XAudio2Mac_DeviceUIDForGUID(const GUID *guid, char *uid, int size)
+{
+    if (!guid || !uid || size <= 0)
+        return 0;
+    uid[0] = 0;
+    const GUID def = GuidFromString("default");
+    if (!memcmp(&def, guid, sizeof(GUID)))
+        return 1;
+    AudioOutDeviceInfo found[kMaxDevices];
+    const int n = AudioOut_EnumerateDevices(found, (int)kMaxDevices);
+    for (int i = 0; i < n; ++i)
+    {
+        const GUID g = GuidFromString(found[i].uid);
+        if (!memcmp(&g, guid, sizeof(GUID)))
+        {
+            snprintf(uid, (size_t)size, "%s", found[i].uid);
+            return 1;
+        }
+    }
+    return 0;
 }
 
 HRESULT STDMETHODCALLTYPE Engine::GetDeviceDetails(UINT32 index, XAUDIO2_DEVICE_DETAILS *d)

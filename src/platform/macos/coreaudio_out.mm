@@ -6,6 +6,7 @@
 
 #include "coreaudio_out.h"
 
+#include <algorithm>
 #include <atomic>
 #include <dispatch/dispatch.h>
 #include <pthread.h>
@@ -142,10 +143,12 @@ struct AudioOut
 
     // single-producer (mixer thread) / single-consumer (CoreAudio thread) ring of interleaved frames
     std::vector<float> ring;
-    uint32_t capacity = 0; // frames
-    uint32_t target = 0;   // frames the mixer keeps queued
+    uint32_t capacity = 0;     // frames
+    uint32_t target = 0;       // frames the mixer keeps queued (at least)
+    uint32_t bufferFrames = 0; // the device's IO buffer, in our frames
     std::atomic<uint64_t> writePos{0};
     std::atomic<uint64_t> readPos{0};
+    std::atomic<uint32_t> lastPull{0}; // frames the device asked for in its last callback
 
     std::atomic<bool> rendering{true};
     std::atomic<bool> quit{false};
@@ -183,6 +186,7 @@ static OSStatus RenderProc(void *ref, AudioUnitRenderActionFlags *flags, const A
             *flags |= kAudioUnitRenderAction_OutputIsSilence;
     }
     o->readPos.store(r + n, std::memory_order_release);
+    o->lastPull.store(frames, std::memory_order_relaxed);
     dispatch_semaphore_signal(o->wake);
     return noErr;
 }
@@ -196,12 +200,17 @@ static void *MixerThread(void *arg)
     int stalls = 0;
     while (!o->quit.load())
     {
+        // Keep enough queued for the device's next pull: the pull size changes when another application changes
+        // the device's buffer size, and with a rate conversion it isn't the IO buffer size to begin with.
+        const uint32_t pull = o->lastPull.load(std::memory_order_relaxed);
+        uint32_t target = std::max(o->target, pull + 2u * (uint32_t)o->quantum);
+        target = std::min(target, o->capacity - (uint32_t)o->quantum);
         for (;;)
         {
             uint64_t w = o->writePos.load(std::memory_order_relaxed);
             uint64_t r = o->readPos.load(std::memory_order_acquire);
             uint32_t queued = (uint32_t)(w - r);
-            if (queued + (uint32_t)o->quantum > o->target || o->quit.load())
+            if (queued + (uint32_t)o->quantum > target || o->quit.load())
                 break;
             if (o->rendering.load())
                 o->render(o->user, o->scratch.data(), o->quantum, o->channels);
@@ -227,16 +236,20 @@ static void *MixerThread(void *arg)
             stalls = 0;
             continue;
         }
-        // device stalled (unplugged, asleep): keep processing in real time so voices advance and buffer
-        // callbacks keep firing, as they would with a working device
-        if (++stalls >= 2)
+        // The device stalled (unplugged, asleep) once it has been quiet for three of its periods, and at least
+        // 200 ms (Bluetooth outputs pull 100 ms or more at a time): from then on keep processing in real time, so
+        // voices advance and buffer callbacks keep firing as they would with a working device.
+        const uint64_t period = std::max(o->bufferFrames, o->lastPull.load(std::memory_order_relaxed));
+        const int stallAfter = std::max(10, (int)(period * 3 * 50 / (uint64_t)o->sampleRate) + 1); // 20 ms waits
+        if (++stalls >= stallAfter)
         {
             uint64_t w = o->writePos.load(std::memory_order_relaxed);
             uint64_t r = o->readPos.load(std::memory_order_acquire);
             uint64_t drop = (uint64_t)o->sampleRate / 50; // 20 ms
             if (drop > w - r)
                 drop = w - r;
-            o->readPos.store(r + drop, std::memory_order_release);
+            // only if the device hasn't read in the meantime (it owns readPos once it is back)
+            o->readPos.compare_exchange_strong(r, r + drop, std::memory_order_acq_rel);
         }
     }
     return nullptr;
@@ -292,9 +305,10 @@ AudioOut *AudioOut_Open(const char *deviceUID, int channels, int sampleRate, int
     o->render = render;
     o->user = user;
 
+    // a device named by UID stays that device (the user picked it); no UID, or one that is gone, follows the default
     AudioObjectID dev = DeviceForUID(deviceUID);
     AudioObjectID def = DefaultOutputDevice();
-    o->followsDefault = dev == kAudioObjectUnknown || dev == def;
+    o->followsDefault = dev == kAudioObjectUnknown;
     o->device = o->followsDefault ? def : dev;
 
     AudioComponentDescription desc = {};
@@ -354,10 +368,11 @@ AudioOut *AudioOut_Open(const char *deviceUID, int channels, int sampleRate, int
         if (AudioObjectGetPropertyData(o->device, &addr, 0, nullptr, &vs, &v) == noErr && v)
             bufferFrames = (uint32_t)(v * (o->sampleRate / devRate)) + 2;
     }
+    o->bufferFrames = bufferFrames;
     o->target = bufferFrames + 2 * (uint32_t)o->quantum;
     if (o->target < 3u * (uint32_t)o->quantum)
         o->target = 3u * (uint32_t)o->quantum;
-    o->capacity = o->target + pull + 4u * (uint32_t)o->quantum;
+    o->capacity = std::max(o->target, pull) + pull + 4u * (uint32_t)o->quantum;
     o->ring.assign((size_t)o->capacity * o->channels, 0.0f);
     o->wake = dispatch_semaphore_create(0);
 

@@ -813,7 +813,8 @@ bool ToRGBA8(const Pixels &px, std::vector<uint8_t> *rgba)
 // ======================================================================================================================
 bool WriteFile(const char *path, const std::vector<uint8_t> &bytes)
 {
-    FILE *f = fopen(path, "wb");
+    // engine paths (screenshots) use backslashes: the compatibility layer's fopen translates them
+    FILE *f = bo1_fopen(path, "wb");
     if (!f)
         return false;
     const bool ok = fwrite(bytes.data(), 1, bytes.size(), f) == bytes.size();

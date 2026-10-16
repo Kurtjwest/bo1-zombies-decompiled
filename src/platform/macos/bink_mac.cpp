@@ -12,6 +12,7 @@
 #include "ffmpeg_media.h"
 
 #include <mach/mach_time.h>
+#include <algorithm>
 #include <atomic>
 #include <cmath>
 #include <cstdarg>
@@ -19,7 +20,11 @@
 #include <cstdlib>
 #include <cstring>
 #include <mutex>
+#include <string>
 #include <vector>
+
+// dsound_mac.cpp: the output device a DirectSound object was created for ("" is the system default)
+extern "C" const char *DSoundMac_DeviceUID(const void *directSound);
 
 namespace
 {
@@ -39,6 +44,7 @@ void SetError(const char *fmt, ...)
 U32 g_ioSize = 1u << 20;
 bool g_tracksSet = false;
 std::vector<int> g_soundTracks;
+std::string g_deviceUID; // BinkSetSoundSystem: the device the engine's sound plays on (empty: the system default)
 
 double Now()
 {
@@ -140,16 +146,32 @@ void RenderAudio(void *user, float *out, int frames, int channels)
     b->mixScratch.resize((size_t)frames * channels);
     for (int ti : b->playTracks)
     {
-        if (b->info.trackChannels[ti] != channels)
-            continue;
         const int n = MediaBink_ReadAudio(b->media, ti, b->mixScratch.data(), frames);
-        const float v = b->volume[ti];
-        for (int i = 0; i < n * channels; ++i)
-            out[i] += b->mixScratch[i] * v;
+        // with the sound switched off the tracks are still consumed, so the clock keeps running
+        const float v = b->pub.soundon ? b->volume[ti] : 0.0f;
+        if (b->info.trackChannels[ti] == channels)
+        {
+            for (int i = 0; i < n * channels; ++i)
+                out[i] += b->mixScratch[i] * v;
+        }
+        else
+        {
+            // a mono track plays on both sides, as a centred DirectSound buffer does
+            for (int f = 0; f < n; ++f)
+            {
+                const float x = b->mixScratch[f] * v;
+                out[(size_t)f * channels] += x;
+                out[(size_t)f * channels + 1] += x;
+            }
+        }
         if (n > produced)
             produced = n;
     }
-    // the clock only advances by what was actually played (an underrun holds the video back with the sound)
+    // The clock only advances by what was actually played (an underrun holds the video back with the sound). Once
+    // the file has been read to the end and the sound has run out, the silence counts too: a sound track a little
+    // shorter than the pictures must not stop the clock before the last frames are due.
+    if (produced < frames && MediaBink_AudioEnded(b->media))
+        produced = frames;
     b->audioFrames.fetch_add(produced, std::memory_order_release);
 }
 
@@ -164,24 +186,39 @@ void StartSound(BinkMac *b)
             for (int id : g_soundTracks)
                 if (id == b->info.trackId[i])
                     wanted = true;
-        if (!wanted || b->info.trackChannels[i] <= 0 || b->info.trackRate[i] <= 0)
+        const int ch = b->info.trackChannels[i];
+        bool play = wanted && ch > 0 && b->info.trackRate[i] > 0;
+        if (play && first >= 0)
+        {
+            // tracks are mixed at the first track's rate, in its layout (at least stereo; a mono track goes to both
+            // sides)
+            play = b->info.trackRate[i] == b->info.trackRate[first] && (ch == 1 || ch == std::max(b->info.trackChannels[first], 2));
+        }
+        // a track that isn't mixed isn't decoded either: nothing would read its queue
+        play = MediaBink_SetTrackDecode(b->media, i, play ? 1 : 0) != 0;
+        if (!play)
             continue;
         if (first < 0)
             first = i;
-        // tracks are mixed in the first track's format
-        if (b->info.trackRate[i] == b->info.trackRate[first] && b->info.trackChannels[i] == b->info.trackChannels[first])
-            b->playTracks.push_back(i);
+        b->playTracks.push_back(i);
         b->volume[i] = 1.0f;
     }
     if (first < 0)
         return;
     b->outRate = b->info.trackRate[first];
-    b->outChannels = b->info.trackChannels[first];
-    b->out = AudioOut_Open(nullptr, b->outChannels, b->outRate, kAudioQuantum, RenderAudio, b);
+    b->outChannels = std::max(b->info.trackChannels[first], 2);
+    b->out = AudioOut_Open(g_deviceUID.empty() ? nullptr : g_deviceUID.c_str(), b->outChannels, b->outRate, kAudioQuantum, RenderAudio, b);
     if (b->out)
     {
         b->audioClock = true;
         AudioOut_SetRendering(b->out, 1);
+    }
+    else
+    {
+        // no sound output: the wall clock paces the movie and the tracks aren't decoded
+        for (int ti : b->playTracks)
+            MediaBink_SetTrackDecode(b->media, ti, 0);
+        b->playTracks.clear();
     }
 }
 
@@ -275,9 +312,12 @@ void BinkSetSoundTrack(U32 total_tracks, U32 *tracks)
         g_soundTracks.push_back((int)tracks[i]);
 }
 
-S32 BinkSetSoundSystem(BINKSNDSYSOPEN, UINTa)
+S32 BinkSetSoundSystem(BINKSNDSYSOPEN, UINTa param)
 {
-    // sound always goes to CoreAudio
+    // Sound always goes to CoreAudio. The parameter is the engine's DirectSound object, created for the device
+    // picked in the sound options (R_CinematicInitSound): movies play on that device too.
+    const char *uid = param ? DSoundMac_DeviceUID((const void *)param) : nullptr;
+    g_deviceUID = uid ? uid : "";
     return 1;
 }
 
@@ -306,8 +346,9 @@ HBINK BinkOpen(const char *name, U32 flags)
     }
     else
     {
-        // engine paths use backslashes; fopen goes through the compatibility layer's path translation
-        b->file = fopen(name, "rb");
+        // engine paths use backslashes: the compatibility layer's fopen translates them (this file is built as part
+        // of that layer, so plain fopen is the C library's)
+        b->file = bo1_fopen(name, "rb");
         if (!b->file)
         {
             SetError("BinkOpen: can't open '%s'", name ? name : "(null)");
@@ -524,9 +565,9 @@ void BinkSetPan(HBINK, U32, S32) {}
 S32 BinkSetSoundOnOff(HBINK bink, S32 onoff)
 {
     BinkMac *b = (BinkMac *)bink;
+    // the output keeps running (silent) so its position still paces the movie
+    std::lock_guard<std::mutex> g(b->lock);
     b->pub.soundon = onoff ? 1 : 0;
-    if (b->out)
-        AudioOut_SetRendering(b->out, onoff && !b->paused);
     return onoff;
 }
 

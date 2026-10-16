@@ -45,7 +45,40 @@ struct Win32Wnd
 };
 
 std::map<std::string, WNDCLASSEXA> g_classes;
-std::vector<Win32Wnd *> g_windows;
+// Windows are only ever added (a destroyed one stays, flagged destroyed): an append-only list the main thread's pump
+// can walk while the render thread creates a window (a std::vector reallocating under the reader was a
+// use-after-free). The element is published before the count.
+struct WindowList
+{
+    static constexpr size_t kMax = 4096;
+    std::atomic<Win32Wnd *> items[kMax] = {};
+    std::atomic<size_t> count{0};
+    std::mutex addLock;
+    void push_back(Win32Wnd *w)
+    {
+        std::lock_guard<std::mutex> g(addLock);
+        const size_t n = count.load(std::memory_order_relaxed);
+        if (n >= kMax)
+            return; // never expected: windows are created at startup and on vid_restart
+        items[n].store(w, std::memory_order_relaxed);
+        count.store(n + 1, std::memory_order_release);
+    }
+    struct It
+    {
+        const WindowList *l;
+        size_t i;
+        Win32Wnd *operator*() const { return l->items[i].load(std::memory_order_relaxed); }
+        It &operator++()
+        {
+            ++i;
+            return *this;
+        }
+        bool operator!=(const It &o) const { return i != o.i; }
+    };
+    It begin() const { return {this, 0}; }
+    It end() const { return {this, count.load(std::memory_order_acquire)}; }
+};
+WindowList g_windows;
 std::recursive_mutex g_queueLock;
 std::deque<MSG> g_queue;
 DWORD g_mainThreadId;
@@ -343,13 +376,12 @@ void UpdateCapture()
     g_captured = want;
 }
 
-void ApplyFrame(Win32Wnd *w, int x, int y, int cx, int cy)
+// A borderless window covering its whole screen is the engine's fullscreen/borderless mode: the menu bar and the
+// Dock are hidden while it is up.
+void UpdateCoversScreen(Win32Wnd *w, int x, int y, int cx, int cy)
 {
     if (!w->bw)
         return;
-    int tb = TitleBarUnits(w->style);
-    Bridge_SetClientRect(w->bw, x, y + tb, cx, cy - tb > 1 ? cy - tb : 1);
-    // A borderless window covering its whole screen is the engine's fullscreen/borderless mode.
     BridgeRect full;
     int screen = Bridge_ScreenForPoint(x + cx / 2, y + cy / 2);
     if (Bridge_GetScreenRect(screen, &full, nullptr, nullptr))
@@ -357,6 +389,15 @@ void ApplyFrame(Win32Wnd *w, int x, int y, int cx, int cy)
         bool covers = IsBorderless(w->style) && x <= full.left && y <= full.top && x + cx >= full.right && y + cy >= full.bottom;
         Bridge_SetCoversScreen(w->bw, covers);
     }
+}
+
+void ApplyFrame(Win32Wnd *w, int x, int y, int cx, int cy)
+{
+    if (!w->bw)
+        return;
+    int tb = TitleBarUnits(w->style);
+    Bridge_SetClientRect(w->bw, x, y + tb, cx, cy - tb > 1 ? cy - tb : 1);
+    UpdateCoversScreen(w, x, y, cx, cy);
 }
 
 void OnBridgeEvent(const BridgeEvent *ev)
@@ -747,6 +788,23 @@ BOOL ShowWindow(HWND h, int cmd)
         Bridge_ShowWindow(w->bw, 1);
         w->style |= WS_VISIBLE;
         g_focus = h;
+        if (!wasVisible)
+        {
+            // the window created at its screen's size (the default borderless launch, a vid_restart) gets the
+            // menu bar and Dock hidden here: the engine only moves or sizes it again when the mode changes
+            RECT r;
+            if (GetWindowRect(h, &r))
+                UpdateCoversScreen(w, r.left, r.top, r.right - r.left, r.bottom - r.top);
+            // Windows activates a top-level window when it is shown: WM_ACTIVATEAPP, WM_ACTIVATE, WM_SETFOCUS.
+            // The app's own activation (Bridge_Init, before WinMain) came while no window existed to receive it,
+            // and without it the engine never marks itself active (no mouse input, cursor never released).
+            if (g_appActive)
+            {
+                Post(h, WM_ACTIVATEAPP, 1, 0);
+                Post(h, WM_ACTIVATE, MAKEWPARAM(WA_ACTIVE, 0), 0);
+                Post(h, WM_SETFOCUS, 0, 0);
+            }
+        }
         break;
     }
     return wasVisible;
@@ -1035,7 +1093,9 @@ BOOL EndPaint(HWND, const PAINTSTRUCT *) { return TRUE; }
 BOOL FlashWindow(HWND, BOOL) { return TRUE; }
 BOOL EnumWindows(WNDENUMPROC fn, LPARAM lp)
 {
-    std::vector<Win32Wnd *> copy = g_windows;
+    std::vector<Win32Wnd *> copy;
+    for (Win32Wnd *w : g_windows)
+        copy.push_back(w);
     for (Win32Wnd *w : copy)
         if (!w->destroyed && !fn((HWND)w, lp))
             break;

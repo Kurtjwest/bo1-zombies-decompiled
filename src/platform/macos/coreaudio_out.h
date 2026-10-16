@@ -26,7 +26,8 @@ typedef struct AudioOutDeviceInfo
 // Output devices, default device first.
 int AudioOut_EnumerateDevices(AudioOutDeviceInfo *out, int maxDevices);
 
-// Opens 'deviceUID' (NULL or unknown: the system default output, following it when the user switches devices).
+// Opens 'deviceUID' and stays on it (NULL, or a device that is gone: the system default output, following it when
+// the user switches devices).
 // 'sampleRate' is the rate the render callback produces; CoreAudio converts to the device rate.
 AudioOut *AudioOut_Open(const char *deviceUID, int channels, int sampleRate, int quantumFrames, AudioOutRender render, void *user);
 void AudioOut_Close(AudioOut *out);

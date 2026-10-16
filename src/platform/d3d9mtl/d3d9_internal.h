@@ -11,11 +11,13 @@
 
 #include "mtl_rhi.h"
 #include "../win32compat/arena.h"
+#include "../win32compat/main_thread.h"
 
 #include <atomic>
 #include <cstdint>
 #include <cstring>
 #include <mutex>
+#include <thread>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -31,7 +33,21 @@ std::recursive_mutex &DeviceMutex();
 
 struct DeviceLock
 {
-    DeviceLock() { DeviceMutex().lock(); }
+    // The render thread can hold the lock while it waits for the main thread (window and layer queries go through
+    // the Cocoa bridge), so the main thread keeps running queued main-thread calls while it waits for the lock.
+    DeviceLock()
+    {
+        if (!w32::IsMainThread())
+        {
+            DeviceMutex().lock();
+            return;
+        }
+        while (!DeviceMutex().try_lock())
+        {
+            w32::ServiceMainThreadCalls();
+            std::this_thread::yield();
+        }
+    }
     ~DeviceLock() { DeviceMutex().unlock(); }
     DeviceLock(const DeviceLock &) = delete;
     DeviceLock &operator=(const DeviceLock &) = delete;

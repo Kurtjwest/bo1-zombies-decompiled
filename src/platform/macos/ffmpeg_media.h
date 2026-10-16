@@ -62,6 +62,11 @@ void MediaBink_PumpAudio(MediaBink *b, double seconds);
 // Queued audio of track index 'track' (0-based among the file's tracks), interleaved float.
 int MediaBink_AudioQueued(MediaBink *b, int track);
 int MediaBink_ReadAudio(MediaBink *b, int track, float *dst, int maxFrames);
+// Turns decoding of track index 'track' on or off (a track nobody reads would queue the whole movie's sound).
+// Only the tracks asked for at MediaBink_Open have a decoder. Returns whether the track is now decoded.
+int MediaBink_SetTrackDecode(MediaBink *b, int track, int on);
+// True once the file has been read to the end and no decoded track has audio left in its queue.
+int MediaBink_AudioEnded(MediaBink *b);
 // Back to frame 1 (decoders and queues flushed).
 int MediaBink_Rewind(MediaBink *b);
 
