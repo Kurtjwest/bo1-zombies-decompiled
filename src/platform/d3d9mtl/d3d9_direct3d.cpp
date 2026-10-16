@@ -180,8 +180,9 @@ HRESULT Direct3D::GetAdapterLUID(UINT, LUID *pLUID)
 
 HMONITOR Direct3D::GetAdapterMonitor(UINT)
 {
-    static int primaryMonitorTag;
-    return (HMONITOR)&primaryMonitorTag;
+    // the one adapter is the primary display: user32's handle for it (screen index + 1, user32_compat.cpp), so the
+    // engine's comparisons with MonitorFromWindow/MonitorFromPoint and its GetMonitorInfo calls work
+    return (HMONITOR)(intptr_t)1;
 }
 
 // ======================================================================================================================

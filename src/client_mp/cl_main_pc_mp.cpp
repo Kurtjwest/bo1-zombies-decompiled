@@ -1282,11 +1282,11 @@ void __cdecl CL_WWWDownload()
         {
             cls.download = 0;
             FS_BuildOSPath((char *)BO1_I2P(fs_homepath->current.integer), 0, cls.originalDownloadName, to_ospath);
-            remove(to_ospath);
+            FS_OSRemove(to_ospath);
             if ( rename(cls.downloadTempName, to_ospath) )
             {
                 FS_CopyFile(cls.downloadTempName, to_ospath);
-                remove(cls.downloadTempName);
+                FS_OSRemove(cls.downloadTempName);
             }
             cls.downloadName[0] = 0;
             cls.downloadTempName[0] = 0;

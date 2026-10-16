@@ -142,6 +142,14 @@ FILE *__cdecl FS_FileForHandle(int f);
 int __cdecl FS_filelength(int f);
 void __cdecl FS_ReplaceSeparators(char *path);
 void __cdecl FS_BuildOSPath(char *base, char *game, char *qpath, char *ospath);
+// remove() of a path built by FS_BuildOSPath (backslash separators): on macOS through the compatibility layer, which
+// translates engine paths for fopen/stat/rename the same way (a remove() macro there would also rename the physics
+// containers' remove members)
+#if defined(BO1_MACOS)
+#define FS_OSRemove(path) bo1_remove(path) // declared by the forced platform prefix (win32compat/msvc_crt.h)
+#else
+#define FS_OSRemove(path) remove(path)
+#endif
 void __cdecl FS_BuildOSPathForThread(char *base, char *game, char *qpath, char *ospath, FsThread thread);
 int __cdecl FS_CreatePath(char *OSPath);
 int __cdecl FS_FileExists(char *file);

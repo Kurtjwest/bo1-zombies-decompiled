@@ -225,6 +225,18 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
         MainThreadIdle();
     auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms == INFINITE ? 0 : ms);
     std::unique_lock<std::mutex> lk(g_waitLock);
+    // PulseEvent releases the threads waiting when it is called, even though the event is reset again before they
+    // run: an event whose pulse count moves during this wait counts as signaled for it
+    uint64_t pulsesAtStart[MAXIMUM_WAIT_OBJECTS];
+    for (DWORD i = 0; i < n; ++i)
+        pulsesAtStart[i] = objs[i] && objs[i]->type == KType::Event ? static_cast<KEvent *>(objs[i])->pulses : 0;
+    auto ready = [&](DWORD i) {
+        if (!objs[i])
+            return false;
+        if (IsSignaled(objs[i], self))
+            return true;
+        return objs[i]->type == KType::Event && static_cast<KEvent *>(objs[i])->pulses != pulsesAtStart[i];
+    };
     for (;;)
     {
         if (mainThread && MainThreadIdleDue())
@@ -244,7 +256,7 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
         {
             bool all = n > 0;
             for (DWORD i = 0; i < n; ++i)
-                if (!objs[i] || !IsSignaled(objs[i], self))
+                if (!ready(i))
                     all = false;
             if (all)
             {
@@ -257,7 +269,7 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
         {
             for (DWORD i = 0; i < n; ++i)
             {
-                if (objs[i] && IsSignaled(objs[i], self))
+                if (ready(i))
                 {
                     Consume(objs[i], self);
                     return WAIT_OBJECT_0 + i;
@@ -277,7 +289,7 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
                 continue;
             for (DWORD i = 0; i < n; ++i)
             {
-                if (!waitAll && objs[i] && IsSignaled(objs[i], self))
+                if (!waitAll && ready(i))
                 {
                     Consume(objs[i], self);
                     return WAIT_OBJECT_0 + i;
@@ -292,7 +304,7 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
             // final check after the timeout
             for (DWORD i = 0; i < n; ++i)
             {
-                if (!waitAll && objs[i] && IsSignaled(objs[i], self))
+                if (!waitAll && ready(i))
                 {
                     Consume(objs[i], self);
                     return WAIT_OBJECT_0 + i;
@@ -441,9 +453,19 @@ BOOL ResetEvent(HANDLE h)
 }
 BOOL PulseEvent(HANDLE h)
 {
-    SetEvent(h);
-    sched_yield();
-    return ResetEvent(h);
+    // releases the threads waiting now (WaitImpl watches the pulse count) and leaves the event reset; for an
+    // auto-reset event Windows releases one of them, here they all wake and the event stays reset
+    KObject *o = Resolve(h);
+    if (!o || o->type != KType::Event)
+        return FALSE;
+    {
+        std::lock_guard<std::mutex> g(g_waitLock);
+        KEvent *e = static_cast<KEvent *>(o);
+        e->signaled = false;
+        ++e->pulses;
+    }
+    g_waitCv.notify_all();
+    return TRUE;
 }
 
 // -------- mutexes --------

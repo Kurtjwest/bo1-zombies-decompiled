@@ -522,7 +522,7 @@ void __cdecl FS_CopyFile(char *fromOSPath, char *toOSPath)
 
 void __cdecl FS_Remove(const char *osPath)
 {
-    remove(osPath);
+    FS_OSRemove(osPath);
 }
 
 void __cdecl FS_FCloseFile(int h)
@@ -1150,7 +1150,7 @@ bool __cdecl FS_Delete(char *filename)
         return 0;
     basepath = fs_homepath->current.string;
     FS_BuildOSPath((char *)basepath, fs_gamedir, filename, ospath);
-    return remove(ospath) != -1;
+    return FS_OSRemove(ospath) != -1;
 }
 
 unsigned int __cdecl FS_Read(unsigned __int8 *buffer, unsigned int len, int h)

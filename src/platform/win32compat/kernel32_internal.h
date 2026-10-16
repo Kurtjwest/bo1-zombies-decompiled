@@ -47,6 +47,7 @@ struct KEvent : KObject
 {
     bool manualReset = false;
     bool signaled = false;
+    uint64_t pulses = 0; // PulseEvent count: a wait in progress when it changes is released (WaitImpl)
     KEvent() : KObject(KType::Event) {}
 };
 
