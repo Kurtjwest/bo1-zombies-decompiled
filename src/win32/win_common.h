@@ -85,8 +85,8 @@ enum CriticalSection : __int32
 
 struct FastCriticalSection // sizeof=0x8
 {                                                                             // XREF: .data:g_dvarCritSect/r
-        volatile long readCount;
-        volatile long writeCount;                        // XREF: Dvar_FindMalleableVar_0:loc_7BD2E2/r
+        volatile int readCount; // (Win32 LONG: 32 bits, as the 0xFFFFFFFF decrements expect)
+        volatile int writeCount;                        // XREF: Dvar_FindMalleableVar_0:loc_7BD2E2/r
 };
 
 void __cdecl Sys_Mkdir(const char *path);

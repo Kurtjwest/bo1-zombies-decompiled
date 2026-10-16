@@ -221,7 +221,7 @@ void __cdecl ClientScr_ReadOnly(gclient_s *pSelf, const client_fields_s *pField)
     {
         __debugbreak();
     }
-    v2 = va("player field %s is read-only", pField->name);
+    v2 = va("player field %s is read-only", BO1_VA(pField->name));
     Scr_Error(v2, 0);
 }
 

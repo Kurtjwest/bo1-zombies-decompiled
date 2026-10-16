@@ -137,7 +137,7 @@ XModel *__cdecl DynEnt_XModelPrecache(char *modelName);
 unsigned __int8 *__cdecl DynEnt_AllocXModel(int size);
 unsigned __int8 *__cdecl DynEnt_AllocXModelColl(int size);
 PhysPreset *__cdecl DynEnt_AutoCreatePhysPreset(const DynEntityDef *dynEntDef, const DynEntityCreateParams *params);
-void __cdecl DynEnt_Strcpy(char **memberString, const char *keyValue);
+void __cdecl DynEnt_Strcpy(Ptr32<char> *memberString, const char *keyValue);
 int __cdecl DynEnt_CompareEntities(unsigned int *arg0, unsigned int *arg1);
 unsigned __int8 *__cdecl DynEnt_Alloc(int count, int size);
 void __cdecl GetAttachPointsInWorldSpace(PhysConstraint *constraint, float *p0, float *p1);

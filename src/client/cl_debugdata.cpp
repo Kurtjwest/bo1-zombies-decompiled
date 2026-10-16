@@ -97,13 +97,13 @@ bool __cdecl CreateDebugStringsIfNeeded()
         cls.debug.clStrings.max = 1024;
         cls.debug.svStrings.max = 1024;
         cls.debug.svStringsBuffer.max = 1024;
-        R_DebugAlloc((void **)&cls.debug.clStrings.strings, 0x20000, "Client Debug Strings");
-        R_DebugAlloc((void **)&cls.debug.clStrings.durations, 4 * cls.debug.clStrings.max, "Client Debug Strings");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.clStrings.strings, 0x20000, "Client Debug Strings");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.clStrings.durations, 4 * cls.debug.clStrings.max, "Client Debug Strings");
         cls.debug.clStrings.num = 0;
-        R_DebugAlloc((void **)&cls.debug.svStrings.strings, cls.debug.svStrings.max << 7, "Client Debug Strings");
-        R_DebugAlloc((void **)&cls.debug.svStrings.durations, 4 * cls.debug.svStrings.max, "Client Debug Strings");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svStrings.strings, cls.debug.svStrings.max << 7, "Client Debug Strings");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svStrings.durations, 4 * cls.debug.svStrings.max, "Client Debug Strings");
         cls.debug.svStrings.num = 0;
-        R_DebugAlloc((void **)&cls.debug.svStringsBuffer.strings, cls.debug.svStrings.max << 7, "Client Debug Strings");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svStringsBuffer.strings, cls.debug.svStrings.max << 7, "Client Debug Strings");
         cls.debug.svStringsBuffer.num = 0;
         return cls.debug.clStrings.strings
                 && cls.debug.clStrings.durations
@@ -199,13 +199,13 @@ bool __cdecl CreateDebugSpheresIfNeeded()
         cls.debug.clSpheres.max = 128;
         cls.debug.svSpheres.max = 128;
         cls.debug.svSpheresBuffer.max = 128;
-        R_DebugAlloc((void **)&cls.debug.clSpheres.spheres, 5120, "Client Debug Spheres");
-        R_DebugAlloc((void **)&cls.debug.clSpheres.durations, 512, "Client Debug Spheres");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.clSpheres.spheres, 5120, "Client Debug Spheres");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.clSpheres.durations, 512, "Client Debug Spheres");
         cls.debug.clSpheres.num = 0;
-        R_DebugAlloc((void **)&cls.debug.svSpheres.spheres, 5120, "Server Debug Spheres");
-        R_DebugAlloc((void **)&cls.debug.svSpheres.durations, 512, "Server Debug Spheres");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svSpheres.spheres, 5120, "Server Debug Spheres");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svSpheres.durations, 512, "Server Debug Spheres");
         cls.debug.svSpheres.num = 0;
-        R_DebugAlloc((void **)&cls.debug.svSpheresBuffer.spheres, 5120, "Server buffer Debug Spheres");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svSpheresBuffer.spheres, 5120, "Server buffer Debug Spheres");
         cls.debug.svSpheresBuffer.num = 0;
         return cls.debug.clSpheres.spheres
                 && cls.debug.clSpheres.durations
@@ -294,13 +294,13 @@ bool __cdecl CreateDebugLinesIfNeeded()
         cls.debug.clLines.max = 2048;
         cls.debug.svLines.max = 4096;
         cls.debug.svLinesBuffer.max = 4096;
-        R_DebugAlloc((void **)&cls.debug.clLines.lines, 90112, "Client Debug Lines");
-        R_DebugAlloc((void **)&cls.debug.clLines.durations, 0x2000, "Client Debug Lines");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.clLines.lines, 90112, "Client Debug Lines");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.clLines.durations, 0x2000, "Client Debug Lines");
         cls.debug.clLines.num = 0;
-        R_DebugAlloc((void **)&cls.debug.svLines.lines, 180224, "Client Debug Lines");
-        R_DebugAlloc((void **)&cls.debug.svLines.durations, 0x4000, "Client Debug Lines");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svLines.lines, 180224, "Client Debug Lines");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svLines.durations, 0x4000, "Client Debug Lines");
         cls.debug.svLines.num = 0;
-        R_DebugAlloc((void **)&cls.debug.svLinesBuffer.lines, 180224, "Client Debug Lines");
+        R_DebugAlloc((Ptr32<void> *)&cls.debug.svLinesBuffer.lines, 180224, "Client Debug Lines");
         cls.debug.svLinesBuffer.num = 0;
         return cls.debug.clLines.lines
                 && cls.debug.clLines.durations
@@ -638,24 +638,24 @@ void __cdecl CL_UpdateDebugServerData()
 
 void __cdecl CL_ShutdownDebugData()
 {
-    R_DebugFree((void **)&cls.debug.clSpheres.spheres);
-    R_DebugFree((void **)&cls.debug.clSpheres.durations);
-    R_DebugFree((void **)&cls.debug.svSpheres.spheres);
-    R_DebugFree((void **)&cls.debug.svSpheres.durations);
-    R_DebugFree((void **)&cls.debug.svSpheresBuffer.spheres);
-    R_DebugFree((void **)&cls.debug.svSpheresBuffer.durations);
-    R_DebugFree((void **)&cls.debug.clLines.lines);
-    R_DebugFree((void **)&cls.debug.clLines.durations);
-    R_DebugFree((void **)&cls.debug.svLines.lines);
-    R_DebugFree((void **)&cls.debug.svLines.durations);
-    R_DebugFree((void **)&cls.debug.svLinesBuffer.lines);
-    R_DebugFree((void **)&cls.debug.svLinesBuffer.durations);
-    R_DebugFree((void **)&cls.debug.clStrings.strings);
-    R_DebugFree((void **)&cls.debug.clStrings.durations);
-    R_DebugFree((void **)&cls.debug.svStrings.strings);
-    R_DebugFree((void **)&cls.debug.svStrings.durations);
-    R_DebugFree((void **)&cls.debug.svStringsBuffer.strings);
-    R_DebugFree((void **)&cls.debug.svStringsBuffer.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.clSpheres.spheres);
+    R_DebugFree((Ptr32<void> *)&cls.debug.clSpheres.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svSpheres.spheres);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svSpheres.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svSpheresBuffer.spheres);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svSpheresBuffer.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.clLines.lines);
+    R_DebugFree((Ptr32<void> *)&cls.debug.clLines.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svLines.lines);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svLines.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svLinesBuffer.lines);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svLinesBuffer.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.clStrings.strings);
+    R_DebugFree((Ptr32<void> *)&cls.debug.clStrings.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svStrings.strings);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svStrings.durations);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svStringsBuffer.strings);
+    R_DebugFree((Ptr32<void> *)&cls.debug.svStringsBuffer.durations);
     memset((unsigned __int8 *)&cls.debug, 0, sizeof(cls.debug));
     R_ShutdownDebug();
     //BLOPS_NULLSUB();

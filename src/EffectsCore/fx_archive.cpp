@@ -12,7 +12,7 @@ FxEffectContainer *__cdecl FX_EffectFromHandle(FxSystem *system, unsigned __int1
     }
     if ( handle >= 0xD000u || handle % 0x34u )
     {
-        v2 = va("%p %i", system->effects, handle);
+        v2 = va("%p %i", BO1_VA(system->effects), handle);
         if ( !Assert_MyHandler(
                         "c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",
                         400,

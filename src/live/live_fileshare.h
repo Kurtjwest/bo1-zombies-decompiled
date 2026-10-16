@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 
 #include "live_storage.h"
 #include <universal/com_stringtable.h>
@@ -181,8 +182,22 @@ char __cdecl Live_FileShare_Theater_SetFile(unsigned __int64 fileID, bool isUser
 char __cdecl Live_FileShare_Theater_GetSize(int *size);
 char __cdecl Live_FileShare_Theater_GetType(int *type);
 char __cdecl Live_FileShare_Theater_GetName(char **name);
+#if BO1_PTR32_IS_CLASS
+inline char Live_FileShare_Theater_GetName(Ptr32<char> *name)
+{
+    char *bo1_name = name ? (char *)*name : nullptr; char bo1_r = Live_FileShare_Theater_GetName(name ? &bo1_name : nullptr); if (name) *name = bo1_name; return bo1_r;
+}
+#endif
+
 char __cdecl Live_FileShare_Theater_GetLength(int *length);
 char __cdecl Live_FileShare_Theater_GetDescription(char **description);
+#if BO1_PTR32_IS_CLASS
+inline char Live_FileShare_Theater_GetDescription(Ptr32<char> *description)
+{
+    char *bo1_description = description ? (char *)*description : nullptr; char bo1_r = Live_FileShare_Theater_GetDescription(description ? &bo1_description : nullptr); if (description) *description = bo1_description; return bo1_r;
+}
+#endif
+
 char __cdecl Live_FileShare_Theater_GetMap(char **mapName);
 char __cdecl Live_FileShare_Theater_GetGameType(char **gameTypeName);
 int __cdecl Live_FileShare_GetSearchResultsCount();

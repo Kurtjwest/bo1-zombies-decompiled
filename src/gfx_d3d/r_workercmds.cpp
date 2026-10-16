@@ -273,7 +273,7 @@ int __cdecl r_dpvs_dynmodelCallback(jqBatch *batch)
 {
     PROF_SCOPED("r_dpvs_dynmodel");
 
-    const DpvsPlane **data = (const DpvsPlane **)jqLockData(batch);
+    Ptr32<const DpvsPlane> *data = (Ptr32<const DpvsPlane> *)jqLockData(batch); // DpvsDynamicCellCmd
     R_AddCellDynModelSurfacesInFrustumCmd(data);
     jqUnlockData(batch);
     return 0;
@@ -293,7 +293,7 @@ int __cdecl r_dpvs_sceneentCallback(jqBatch *batch)
 int __cdecl r_dpvs_dynbrushCallback(jqBatch *batch)
 {
     PROF_SCOPED("r_dpvs_dynbrush");
-    DpvsPlane **data = (DpvsPlane **)jqLockData(batch);
+    Ptr32<DpvsPlane> *data = (Ptr32<DpvsPlane> *)jqLockData(batch); // DpvsDynamicCellCmd
     R_AddCellDynBrushSurfacesInFrustumCmd(data);
     jqUnlockData(batch);
     return 0;
@@ -301,7 +301,7 @@ int __cdecl r_dpvs_dynbrushCallback(jqBatch *batch)
 
 int __cdecl r_waterCallback(jqBatch *batch)
 {
-    water_t **data = (water_t **)jqLockData(batch);
+    Ptr32<water_t> *data = (Ptr32<water_t> *)jqLockData(batch);
     if ( R_UploadWaterPending() )
         return 1;
 
@@ -435,7 +435,7 @@ int __cdecl fx_drawCallback(jqBatch *batch)
 int __cdecl dobj_skelCallback(jqBatch *batch)
 {
     PROF_SCOPED("dobj_skel"); 
-    GfxSceneEntity **data = (GfxSceneEntity **)jqLockData(batch);
+    Ptr32<GfxSceneEntity> *data = (Ptr32<GfxSceneEntity> *)jqLockData(batch);
     R_UpdateGfxEntityBoundsCmd(data);
     jqUnlockData(batch);
     return 0;
@@ -444,7 +444,7 @@ int __cdecl dobj_skelCallback(jqBatch *batch)
 int __cdecl dobj_skinCallback(jqBatch *batch)
 {
     PROF_SCOPED("dobj_skin");
-    GfxSceneEntity **data = (GfxSceneEntity **)jqLockData(batch);
+    Ptr32<GfxSceneEntity> *data = (Ptr32<GfxSceneEntity> *)jqLockData(batch);
     R_SkinGfxEntityCmd(data);
     jqUnlockData(batch);
     return 0;
@@ -463,7 +463,7 @@ int __cdecl r_model_lightingCallback(jqBatch *batch)
 
 int __cdecl r_add_sceneentCallback(jqBatch *batch)
 {
-    const GfxViewInfo **data = (const GfxViewInfo **)jqLockData(batch);
+    Ptr32<const GfxViewInfo> *data = (Ptr32<const GfxViewInfo> *)jqLockData(batch); // SceneEntCmd
 
     PROF_SCOPED("r_add_sceneent");
     R_AddAllSceneEntSurfacesCamera(*data);

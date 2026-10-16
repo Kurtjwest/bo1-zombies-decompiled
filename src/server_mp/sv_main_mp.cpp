@@ -128,7 +128,7 @@ void __cdecl SV_AddServerCommand(client_t *client, svscmd_type type, char *cmd)
                         "cmd %5d: %8d: %s\n",
                         i,
                         client->reliableCommandInfo[i & 0x7F].time,
-                        client->reliableCommandInfo[i & 0x7F].cmd);
+                        BO1_VA(client->reliableCommandInfo[i & 0x7F].cmd));
                 Com_Printf(15, "cmd %5d: %8d: %s\n", i, svs.time, cmd);
                 NET_OutOfBandPrint(NS_SERVER, client->header.netchan.remoteAddress, "disconnect");
                 SV_DelayDropClient(client, "EXE_SERVERCOMMANDOVERFLOW");

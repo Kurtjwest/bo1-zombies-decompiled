@@ -304,7 +304,7 @@ unsigned __int8 *__cdecl _PMem_AllocNamed(
                 16,
                 "Need %i more bytes of '%s' physical ram for alloc to succeed\n",
                 g_overAllocatedSize,
-                g_mem.name);
+                BO1_VA(g_mem.name));
             Sys_OutOfMemErrorInternal("C:\\projects_pc\\cod\\codsrc\\src\\universal\\physicalmemory.cpp", 1056);
         }
         allocedSize = highPos - g_mem.prim[allocType].pos;
@@ -326,7 +326,7 @@ unsigned __int8 *__cdecl _PMem_Alloc(
 {
     char allocIdBuf[260]; // [esp+0h] [ebp-108h] BYREF
 
-    sprintf(allocIdBuf, "%s::%s %d", g_mem.prim[allocType].allocName, file, lineNum);
+    sprintf(allocIdBuf, "%s::%s %d", BO1_VA(g_mem.prim[allocType].allocName), file, lineNum);
     return _PMem_AllocNamed(size, alignment, type, allocType, allocIdBuf, memTrack);
 }
 

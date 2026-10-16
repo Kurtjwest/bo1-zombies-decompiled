@@ -1064,7 +1064,7 @@ int __cdecl UI_GetClientNumForPlayerListNum(int playerListIndex)
     return sharedUiInfo.playerClientNums[playerListIndex - 1];
 }
 
-void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args)
+void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, const char **args, const char *actualScript)
 {
     int ControllerIndex; // eax
     char *v5; // eax
@@ -1107,7 +1107,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
     UiContext *dc; // [esp+193Ch] [ebp-40Ch]
     char out[1028]; // [esp+1940h] [ebp-408h] BYREF
 
-    if (String_Parse((const char **)args, out, 1024))
+    if (String_Parse(args, out, 1024))
     {
         dc = (UiContext *)UI_UIContext_GetInfo(contextIndex);
         if (!I_stricmp(out, "Quit"))
@@ -1122,7 +1122,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
         // CodeCallback_MenuMessage (SP 0x0054BBB0, KB ClientCommand). The SP front end's startlevel path.
         if (!I_stricmp(out, "sendMenuNotify"))
         {
-            if (ui_menuLvlNotify->current.enabled && String_Parse((const char **)args, buf, 1024))
+            if (ui_menuLvlNotify->current.enabled && String_Parse(args, buf, 1024))
                 Cbuf_AddText(localClientNum, va("cmd mlvl %s\n", buf));
             return;
         }
@@ -1231,8 +1231,8 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                                                                                                                                     localClientNum,
                                                                                                                                                                     contextIndex,
                                                                                                                                                                     out,
-                                                                                                                                                                    (const char **)args,
-                                                                                                                                                                    (const char *)BO1_I2P(HIDWORD(args)));
+                                                                                                                                                                    args,
+                                                                                                                                                                    actualScript);
                                                                                                                                                             else
                                                                                                                                                                 LB_OnSelect(localClientNum);
                                                                                                                                                         }
@@ -1252,7 +1252,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                                                                                                                 }
                                                                                                                                             }
                                                                                                                                             else if (UI_GetOpenOrCloseMenuOnDvarArgs(
-                                                                                                                                                (const char **)args,
+                                                                                                                                                args,
                                                                                                                                                 out,
                                                                                                                                                 v28,
                                                                                                                                                 128,
@@ -1271,7 +1271,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                                                                                                             }
                                                                                                                                         }
                                                                                                                                         else if (UI_GetOpenOrCloseMenuOnDvarArgs(
-                                                                                                                                            (const char **)args,
+                                                                                                                                            args,
                                                                                                                                             out,
                                                                                                                                             v31,
                                                                                                                                             128,
@@ -1323,12 +1323,12 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                                                                                         Cbuf_AddText(localClientNum, "startSingleplayer\n");
                                                                                                                     }
                                                                                                                 }
-                                                                                                                else if (Int_Parse((const char **)args, &status))
+                                                                                                                else if (Int_Parse(args, &status))
                                                                                                                 {
                                                                                                                     CLUI_SetPbClStatus(status);
                                                                                                                 }
                                                                                                             }
-                                                                                                            else if (String_Parse((const char **)args, name, 1024))
+                                                                                                            else if (String_Parse(args, name, 1024))
                                                                                                             {
                                                                                                                 UI_Update(name);
                                                                                                             }
@@ -1383,7 +1383,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                                                             Menus_CloseAll(localClientNum, dc);
                                                                                         }
                                                                                     }
-                                                                                    else if (Int_Parse((const char **)args, &column))
+                                                                                    else if (Int_Parse(args, &column))
                                                                                     {
                                                                                         if (column == sharedUiInfo.serverStatus.sortKey)
                                                                                             sharedUiInfo.serverStatus.sortDir = sharedUiInfo.serverStatus.sortDir == 0;
@@ -1470,7 +1470,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                             Menus_OpenByName(localClientNum, dc, "main");
                                                         }
                                                     }
-                                                    else if (Int_Parse((const char **)args, &i))
+                                                    else if (Int_Parse(args, &i))
                                                     {
                                                         UI_NetSource_UpdateDisplayList(i);
                                                     }
@@ -1495,7 +1495,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                             0x104u,
                                                             "%s/%s",
                                                             "mods",
-                                                            sharedUiInfo.modList[sharedUiInfo.modIndex].modName);
+                                                            BO1_VA(sharedUiInfo.modList[sharedUiInfo.modIndex].modName));
                                                         if (useFastFile->current.enabled)
                                                             DB_SyncXAssets();
                                                         Dvar_SetStringByName("fs_game", dest);
@@ -1540,8 +1540,8 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                     Cbuf_AddText(localClientNum, v8);
                                 }
                             }
-                            else if (String_Parse((const char **)args, v40, 1024)
-                                && String_Parse((const char **)args, dvarName, 1024))
+                            else if (String_Parse(args, v40, 1024)
+                                && String_Parse(args, dvarName, 1024))
                             {
                                 feederID_4 = Dvar_GetString(dvarName);
                                 String = Dvar_GetString(v40);
@@ -1580,7 +1580,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                 //BG_EvalVehicleName();
             }
         }
-        else if (String_Parse((const char **)args, v41, 1024))
+        else if (String_Parse(args, v41, 1024))
         {
             Com_PrintError(13, "Fixme krassi: openurl\n ");
         }
@@ -2182,7 +2182,7 @@ int __cdecl UI_OwnerDrawWidth(int ownerDraw, Font_s *font, float scale)
     const char **ServerFilter; // eax
     char *v7; // eax
     char *v8; // eax
-    int filter; // [esp+8h] [ebp-Ch] BYREF
+    const char *filter[2]; // serverFilter_s returned by value: { description, basedir }
     const char *s; // [esp+10h] [ebp-4h]
 
     s = 0;
@@ -2201,7 +2201,7 @@ int __cdecl UI_OwnerDrawWidth(int ownerDraw, Font_s *font, float scale)
     case 222:
         if ((unsigned int)ui_serverFilterType >= 2)
             ui_serverFilterType = 0;
-        ServerFilter = UI_GetServerFilter((const char **)&filter, ui_serverFilterType);
+        ServerFilter = UI_GetServerFilter(filter, ui_serverFilterType);
         v7 = va("EXE_SERVERFILTER %s", *ServerFilter);
         s = SEH_LocalizeTextMessage(v7, "server filter", LOCMSG_SAFE);
         break;
@@ -3933,7 +3933,7 @@ static void UI_ModFov_PatchMenus(UiContext *dc)
                                                   || other->window.rect.y < item->window.rect.y - 2.0f)) )
                     continue;
                 Com_Printf(13, "bo1_mod_fov: menu %s item %d %s type %d y %g dvar %s visibleExp %s\n",
-                    menu->window.name, j, other->window.name ? other->window.name : "-", other->type,
+                    BO1_VA(menu->window.name), j, other->window.name ? other->window.name : "-", other->type,
                     other->window.rect.y, other->dvar ? other->dvar : "-", other->visibleExp.filename ? "cleared" : "none");
                 other->visibleExp.filename = 0;
             }

@@ -1720,7 +1720,7 @@ void __cdecl Key_WriteBindingsToTempBuf(int localClientNum)
         if (dvar)
         {
             v3 = Dvar_DisplayableValue(dvar);
-            lenb = Com_sprintf(&myTempBuff[bytesUsed], 4092 - bytesUsed, "set %s \"%s\"\n", dvar->name, v3);
+            lenb = Com_sprintf(&myTempBuff[bytesUsed], 4092 - bytesUsed, "set %s \"%s\"\n", BO1_VA(dvar->name), v3);
             if (lenb < 0)
                 break;
             bytesUsed += lenb;

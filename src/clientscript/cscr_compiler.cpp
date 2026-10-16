@@ -1124,7 +1124,7 @@ char __cdecl EvalPrimitiveExpressionList(
     }
     expr_count = GetExpressionCount(exprlist);
     if ( expr_count == 1 )
-        return EvalExpression(inst, ***(sval_u ***)BO1_I2P(exprlist.stringValue), constValue);
+        return EvalExpression(inst, ***(Ptr32<Ptr32<sval_u>> *)BO1_I2P(exprlist.stringValue), constValue);
     if ( expr_count != 3 )
         return 0;
     i = 0;
@@ -1186,7 +1186,7 @@ char __cdecl EvalBinaryOperatorExpression(
     Scr_EvalBinaryOperator(inst, opcode.intValue, &constValue1.value, &constValue2.value);
     if (gScrVarPub[inst].error_message)
     {
-        CompileError(inst, sourcePos.stringValue, "%s", gScrVarPub[inst].error_message);
+        CompileError(inst, sourcePos.stringValue, "%s", BO1_VA(gScrVarPub[inst].error_message));
         return 0;
     }
     else
@@ -3340,7 +3340,7 @@ bool __cdecl EmitOrEvalPrimitiveExpressionList(
     }
     expr_count = GetExpressionCount(exprlist);
     if ( expr_count == 1 )
-        return EmitOrEvalExpression(inst, ***(sval_u ***)BO1_I2P(exprlist.stringValue), constValue, block);
+        return EmitOrEvalExpression(inst, ***(Ptr32<Ptr32<sval_u>> *)BO1_I2P(exprlist.stringValue), constValue, block);
     if ( expr_count == 3 )
     {
         success = 1;
@@ -3597,7 +3597,7 @@ char __cdecl EmitOrEvalBinaryOperatorExpression(
     Scr_EvalBinaryOperator(inst, opcode.intValue, &constValue1.value, &constValue2.value);
     if (gScrVarPub[inst].error_message)
     {
-        CompileError(inst, sourcePos.stringValue, "%s", gScrVarPub[inst].error_message);
+        CompileError(inst, sourcePos.stringValue, "%s", BO1_VA(gScrVarPub[inst].error_message));
         return 0;
     }
     else

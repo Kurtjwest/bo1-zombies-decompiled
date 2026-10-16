@@ -106,7 +106,7 @@ void Sample()
     std::string line;
     char buf[512];
     const dvar_s *map = Dvar_FindVar("mapname");
-    sprintf_s(buf, "{\"k\":\"s\",\"t\":%d,\"map\":\"%s\",\"p\":[", level.time, map ? map->current.string : "");
+    sprintf_s(buf, "{\"k\":\"s\",\"t\":%d,\"map\":\"%s\",\"p\":[", level.time, BO1_VA(map ? map->current.string : ""));
     line = buf;
     int actorsAlive = 0;
     for (int a = 0; level.actors && a < MAX_ACTORS; ++a)
@@ -125,7 +125,7 @@ void Sample()
             firstPlayer ? "" : ",", i, pl->r.currentOrigin[0], pl->r.currentOrigin[1], pl->r.currentOrigin[2],
             ps->viewangles[1], pl->health, pl->client->sess.maxHealth, Stance(ps),
             (int)pl->client->sess.sessionState, ps->pm_type, ps->eFlags,
-            variant ? variant->szInternalName : "none", ps->weapon ? BG_GetAmmoInClip(ps, ps->weapon) : 0,
+            BO1_VA(variant ? variant->szInternalName : "none"), ps->weapon ? BG_GetAmmoInClip(ps, ps->weapon) : 0,
             ps->weapon ? BG_GetAmmoNotInClip(ps, ps->weapon) : 0, pl->client->sess.cs.score.score);
         line += buf;
         firstPlayer = false;

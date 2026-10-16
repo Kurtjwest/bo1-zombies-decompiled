@@ -521,7 +521,7 @@ char __cdecl Image_LoadToBuffer(GfxImage *image, bool loadHighmip, unsigned __in
     }
     *imageBuffer = 0;
     *bufferSize = 0;
-    if ( Com_sprintf(filepath, 0x40u, "%s%s%s", "images/", image->name, ".iwi") < 0 )
+    if ( Com_sprintf(filepath, 0x40u, "%s%s%s", "images/", BO1_VA(image->name), ".iwi") < 0 )
     {
         Com_PrintError(8, "ERROR: filename '%s' too long\n", filepath);
         return 0;
@@ -721,7 +721,7 @@ char __cdecl _Image_LoadFromFileWithReader(
     {
         __debugbreak();
     }
-    if ( Com_sprintf(filepath, 0x40u, "%s%s%s", "images/", image->name, ".iwi") >= 0 )
+    if ( Com_sprintf(filepath, 0x40u, "%s%s%s", "images/", BO1_VA(image->name), ".iwi") >= 0 )
     {
         fileSize = OpenFileRead(filepath, &fileHandle);
         if ( fileSize >= 0 )

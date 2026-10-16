@@ -1764,7 +1764,7 @@ void CM_Mapkit_Load(const char *mapName)
         return;
 
     char path[128];
-    Com_sprintf(path, sizeof(path), "layouts/%s.json", layout->current.string);
+    Com_sprintf(path, sizeof(path), "layouts/%s.json", BO1_VA(layout->current.string));
     void *buf = 0;
     int len = FS_ReadFile(path, &buf);
     if (len <= 0 || !buf)

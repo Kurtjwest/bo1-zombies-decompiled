@@ -1248,7 +1248,7 @@ void __cdecl ConnectScriptToAnim(
         anim.tree = treeIndex;
         for ( codePos = (char *)BO1_I2P(value->next); codePos; codePos = (char *)nextCodePos )
         {
-            nextCodePos = *(const char **)codePos;
+            nextCodePos = *(Ptr32<const char> *)codePos;
             *(scr_anim_s *)codePos = anim;
         }
         value->next = 0;
@@ -1890,7 +1890,7 @@ ParseValue __cdecl BuildExpr(ExpressionParseTypes eCurrType, ParseValue *params,
         v4 = va(
                      "Function %i, \"%s\" was given %i parameters, when it takes %i.",
                      eCurrType,
-                     currData->strValue,
+                     BO1_VA(currData->strValue),
                      iNumParams,
                      currData->iArity);
         AnimTreeCompileError(inst, v4);
@@ -1898,7 +1898,7 @@ ParseValue __cdecl BuildExpr(ExpressionParseTypes eCurrType, ParseValue *params,
     ret.exprType = currData->FuncTypeTesting(params, iNumParams, inst);
     if ( ret.exprType == MAX_MATH_TYPES )
     {
-        v5 = va("Function %i, \"%s\" had a type mismatch between its operands.", eCurrType, currData->strValue);
+        v5 = va("Function %i, \"%s\" had a type mismatch between its operands.", eCurrType, BO1_VA(currData->strValue));
         AnimTreeCompileError(inst, v5);
     }
     ret.scriptExprData = Scr_AllocArray(inst);

@@ -166,7 +166,7 @@ void __cdecl Scr_DumpScriptThreads(scriptInstance_t inst)
                     Com_Printf(
                         24,
                         "ent type '%s'... count: %d, var usage: %d\n",
-                        gScrClassMap[inst][classnum].name,
+                        BO1_VA(gScrClassMap[inst][classnum].name),
                         count,
                         (int)info.varUsage);
                 }

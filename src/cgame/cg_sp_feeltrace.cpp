@@ -51,7 +51,7 @@ static void CG_SP_FeelAsset(int weapon)
     const dvar_s *toggleStyle = Dvar_FindVar("cg_adsZoomToggleStyle");
     Com_Printf(16, "bo1_feel_asset: w=%d name=%s ads=%d reticle=%d zoom=%.3f,%.3f,%.3f frac=%.3f,%.3f"
         " sway=%.3f,%.3f,%.3f,%.3f,%.3f,%.3f adssway=%.3f,%.3f,%.3f,%.3f,%.3f,%.3f ss=%.3f cgfov=%.3f,%.3f,%.3f toggle=%d\n",
-        weapon, variant->szInternalName, def->aimDownSight ? 1 : 0, (int)def->overlayReticle,
+        weapon, BO1_VA(variant->szInternalName), def->aimDownSight ? 1 : 0, (int)def->overlayReticle,
         variant->fAdsZoomFov1, variant->fAdsZoomFov2, variant->fAdsZoomFov3, variant->fAdsZoomInFrac, variant->fAdsZoomOutFrac,
         def->swayMaxAngle, def->swayLerpSpeed, def->swayPitchScale, def->swayYawScale, def->swayHorizScale, def->swayVertScale,
         def->adsSwayMaxAngle, def->adsSwayLerpSpeed, def->adsSwayPitchScale, def->adsSwayYawScale,
@@ -237,7 +237,7 @@ void CG_SP_FeelTraceKick(int localClientNum, int stage)
         const WeaponVariantDef *variant = BG_GetWeaponVariantDef(weapon);
         Com_Printf(16, "bo1_kick_asset: w=%d name=%s type=%d dual=%d hip=%.9g,%.9g,%.9g,%.9g ads=%.9g,%.9g,%.9g,%.9g"
             " center=%.9g,%.9g reduce=%.9g,%.9g\n",
-            weapon, variant->szInternalName, (int)def->weapType, def->bDualWield ? 1 : 0,
+            weapon, BO1_VA(variant->szInternalName), (int)def->weapType, def->bDualWield ? 1 : 0,
             def->fHipViewKickPitchMin, def->fHipViewKickPitchMax, def->fHipViewKickYawMin, def->fHipViewKickYawMax,
             def->fAdsViewKickPitchMin, def->fAdsViewKickPitchMax, def->fAdsViewKickYawMin, def->fAdsViewKickYawMax,
             variant->fHipViewKickCenterSpeed, variant->fAdsViewKickCenterSpeed,

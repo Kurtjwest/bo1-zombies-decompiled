@@ -8,6 +8,7 @@
 
 #include <windows.h>
 #include "kernel32_internal.h"
+#include "w32_platform.h"
 #include "../macos/cocoa_bridge.h"
 
 #include "mac_keycodes.h"
@@ -540,6 +541,23 @@ void User32Init()
     g_mainThreadId = GetCurrentThreadId();
     EnsureBridge();
     Bridge_GetCursorPos((int *)&g_vcurX, (int *)&g_vcurY);
+}
+
+void *GetMetalLayer(HWND hwnd)
+{
+    Win32Wnd *w = W(hwnd);
+    if (!w)
+    {
+        for (Win32Wnd *x : g_windows)
+        {
+            if (!x->destroyed && x->bw)
+            {
+                w = x;
+                break;
+            }
+        }
+    }
+    return (w && w->bw) ? Bridge_GetMetalLayer(w->bw) : nullptr;
 }
 } // namespace w32
 

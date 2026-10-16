@@ -126,12 +126,12 @@ void phys_contact_manifold::xform_and_translate_mesh_points(
                 const phys_vec3 *translation)
 {
     phys_contact_manifold *v4; // esi
-    const phys_vec3 **m_list_sorted_mesh_point; // eax
-    const phys_vec3 **v6; // ecx
+    Ptr32<const phys_vec3> *m_list_sorted_mesh_point; // eax
+    Ptr32<const phys_vec3> *v6; // ecx
     phys_vec3 *v7; // esi
     const phys_vec3 *v8; // eax
     double v9; // st7
-    const phys_vec3 **v10; // eax
+    Ptr32<const phys_vec3> *v10; // eax
     const phys_vec3 *v11; // eax
     phys_vec3 v12; // [esp-40h] [ebp-4Ch] BYREF
     float v13; // [esp-30h] [ebp-3Ch]
@@ -141,8 +141,8 @@ void phys_contact_manifold::xform_and_translate_mesh_points(
     float v17; // [esp-1Ch] [ebp-28h]
     float v18; // [esp-18h] [ebp-24h]
     phys_contact_manifold *v19; // [esp-Ch] [ebp-18h]
-    const phys_vec3 **v20; // [esp-8h] [ebp-14h]
-    const phys_vec3 **v21; // [esp-4h] [ebp-10h]
+    Ptr32<const phys_vec3> *v20; // [esp-8h] [ebp-14h]
+    Ptr32<const phys_vec3> *v21; // [esp-4h] [ebp-10h]
     int v22; // [esp+0h] [ebp-Ch]
     //contact_manifold_mesh_point **last_mp_i; // [esp+4h] [ebp-8h]
     //contact_manifold_mesh_point **retaddr; // [esp+Ch] [ebp+0h]
@@ -150,7 +150,7 @@ void phys_contact_manifold::xform_and_translate_mesh_points(
     //v22 = a2;
     //last_mp_i = retaddr;
     v4 = this;
-    m_list_sorted_mesh_point = (const phys_vec3 **)this->m_list_sorted_mesh_point;
+    m_list_sorted_mesh_point = (Ptr32<const phys_vec3> *)this->m_list_sorted_mesh_point;
     v6 = &m_list_sorted_mesh_point[this->m_list_mesh_point_count];
     v19 = v4;
     v20 = v6;
@@ -1582,7 +1582,7 @@ broad_phase_info *__cdecl allocate_bpi_env()
     } while ((broad_phase_info *)BO1_I2P(_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&G_BPM->m_list_bpi_env,
         v1,
-        (signed __int32)first)) != first);
+        (signed __int32)BO1_P2I(first))) != first);
     return (broad_phase_info *)BO1_I2P(v1);
 }
 

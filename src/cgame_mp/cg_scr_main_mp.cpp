@@ -410,7 +410,7 @@ void CScr_PlayFXOnTag()
     if (CG_SP_VisualsEnabled())
     {
         Com_Printf(14, "BO1_VISUAL bolted_fx time=%d client=%d ent=%d fx=%s tag=%s handle=%u\n",
-            CG_GetLocalClientGlobals(localClientNum)->time, localClientNum, entref.entnum, fxDef->name, name, effectHandle);
+            CG_GetLocalClientGlobals(localClientNum)->time, localClientNum, entref.entnum, BO1_VA(fxDef->name), name, effectHandle);
         CG_SP_VisualShot(localClientNum, fxDef->name);
     }
     Scr_AddInt(effectHandle, SCRIPTINSTANCE_CLIENT);

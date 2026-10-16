@@ -245,7 +245,7 @@ void __thiscall UIViewer::LoadMap()
     {
         LoadWorld((char *)comWorld.name);
         R_SortWorldSurfaces();
-        v1 = va("%s", comWorld.name);
+        v1 = va("%s", BO1_VA(comWorld.name));
         CG_InitExposure(0, v1);
         Material_Sort();
         R_ClearSkyboxModel();
@@ -1144,7 +1144,7 @@ void __thiscall UIViewer::HideWeaponTags(
         {
             if ( !DObjGetModelBoneIndex(
                             dobj,
-                            **(const char ***)weapon->weapDef->worldModel,
+                            **(Ptr32<Ptr32<const char>> *)weapon->weapDef->worldModel,
                             weapon->hideTags[tagIndex],
                             &boneIndex) )
                 continue;

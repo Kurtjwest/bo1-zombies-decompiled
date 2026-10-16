@@ -31,7 +31,7 @@ int __cdecl G_GetPlayerCorpseIndex(gentity_s *ent, const char *error_msg)
             "Corpse %i entnum %i %i\n",
             ia,
             g_scr_data.playerCorpseInfo[i].entnum,
-            g_scr_data.playerCorpseInfo[i].tree);
+            BO1_VA(g_scr_data.playerCorpseInfo[i].tree));
 
     EntityTypeName = G_GetEntityTypeName(ent);
     v4 = va(
@@ -79,7 +79,7 @@ int __cdecl G_GetFreePlayerCorpseIndex()
         "Freeing Corpse Entity %i entnum %i %i %i\n",
         bestIndex,
         g_scr_data.playerCorpseInfo[i].entnum,
-        g_scr_data.playerCorpseInfo[i].tree,
+        BO1_VA(g_scr_data.playerCorpseInfo[i].tree),
         level.time);
 
     ent = &level.gentities[g_scr_data.playerCorpseInfo[bestIndex].entnum];
@@ -104,7 +104,7 @@ void __cdecl PlayerCorpse_Free(gentity_s *ent)
         "Freeing Corpse %i entnum %i %i %i\n",
         playerCorpseIndex,
         g_scr_data.playerCorpseInfo[playerCorpseIndex].entnum,
-        g_scr_data.playerCorpseInfo[playerCorpseIndex].tree,
+        BO1_VA(g_scr_data.playerCorpseInfo[playerCorpseIndex].tree),
         level.time);
 
     g_scr_data.playerCorpseInfo[playerCorpseIndex].entnum = -1;

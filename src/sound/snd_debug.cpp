@@ -170,7 +170,7 @@ void __cdecl DebugDrawWorldSound3D(
         return;
     case 3:
         fontsize = fontsize * 0.85000002;
-        text = va("Details: %s %d", voice->alias->name, entNum);
+        text = va("Details: %s %d", BO1_VA(voice->alias->name), entNum);
         if (offsets[entNum])
             CL_AddDebugStarWithText(org, starColor, colorWhiteFaded, 0, fontsize, 1);
         else
@@ -317,7 +317,7 @@ int __cdecl SND_GetSoundOverlay(snd_overlay_info *info, int start, int count)
                 __debugbreak();
             }
             SND_AliasGetFileName(voice->alias, info[i].pszSampleName, 128);
-            Com_sprintf(info[i].name, 0x40u, "%s", voice->alias->name);
+            Com_sprintf(info[i].name, 0x40u, "%s", BO1_VA(voice->alias->name));
             info[i].channel |= (voice->alias->flags & 0xC000) >> 14 << 30;
             info[i].fPitch = SND_GetPitch(voice);
             info[i].fDry = SND_LinearToDbSpl(voice->dryLevel);

@@ -520,21 +520,21 @@ char __cdecl WorldPosToScreenPos(int localClientNum, const float *worldPos, floa
         //*(unsigned int *)outScreenPos = LODWORD(projections[1]) ^ _mask__NegFloat_;
         outScreenPos[0] = -projections[1];
         //*((unsigned int *)outScreenPos + 1) = LODWORD(projections[2]) ^ _mask__NegFloat_;
-        outScreenPos[1] = -projections[1];
-        if ( fabsf(*(unsigned int *)outScreenPos) >= 0.001
-            || fabsf((unsigned int)outScreenPos[1]) >= 0.001 )
+        outScreenPos[1] = -projections[2];
+        if ( fabsf(outScreenPos[0]) >= 0.001
+            || fabsf(outScreenPos[1]) >= 0.001 )
         {
-            if (fabsf(*(unsigned int *)outScreenPos) < 0.001 )
+            if (fabsf(outScreenPos[0]) < 0.001 )
                 *outScreenPos = 0.001f;
-            if (fabsf((unsigned int)outScreenPos[1]) < 0.001 )
+            if (fabsf(outScreenPos[1]) < 0.001 )
                 outScreenPos[1] = 0.001f;
-            while ( scrPlace->realViewportSize[0] > fabsf(*(unsigned int *)outScreenPos) )
+            while ( scrPlace->realViewportSize[0] > fabsf(outScreenPos[0]) )
             {
                 v5 = scrPlace->realViewportSize[0];
                 *outScreenPos = v5 * *outScreenPos;
                 outScreenPos[1] = v5 * outScreenPos[1];
             }
-            while ( scrPlace->realViewportSize[1] > fabsf((unsigned int)outScreenPos[1]) )
+            while ( scrPlace->realViewportSize[1] > fabsf(outScreenPos[1]) )
             {
                 v4 = scrPlace->realViewportSize[1];
                 *outScreenPos = v4 * *outScreenPos;
@@ -606,20 +606,20 @@ char __cdecl WorldPosToExtraCamScreenPos(int localClientNum, const float *worldP
         outScreenPos[0] = -projections[1];
         //*((unsigned int *)outScreenPos + 1) = LODWORD(projections[2]) ^ _mask__NegFloat_;
         outScreenPos[1] = -projections[2];
-        if ( fabsf(*(unsigned int *)outScreenPos) >= 0.001
-            || fabsf((unsigned int)outScreenPos[1]) >= 0.001 )
+        if ( fabsf(outScreenPos[0]) >= 0.001
+            || fabsf(outScreenPos[1]) >= 0.001 )
         {
-            if (fabsf(*(unsigned int *)outScreenPos) < 0.001 )
+            if (fabsf(outScreenPos[0]) < 0.001 )
                 *outScreenPos = 0.001f;
-            if (fabsf((unsigned int)outScreenPos[1]) < 0.001 )
+            if (fabsf(outScreenPos[1]) < 0.001 )
                 outScreenPos[1] = 0.001f;
-            while ( scrPlace->realViewportSize[0] > fabsf(*(unsigned int *)outScreenPos) )
+            while ( scrPlace->realViewportSize[0] > fabsf(outScreenPos[0]) )
             {
                 v5 = scrPlace->realViewportSize[0];
                 *outScreenPos = v5 * *outScreenPos;
                 outScreenPos[1] = v5 * outScreenPos[1];
             }
-            while ( scrPlace->realViewportSize[1] > fabsf((unsigned int)outScreenPos[1]) )
+            while ( scrPlace->realViewportSize[1] > fabsf(outScreenPos[1]) )
             {
                 v4 = scrPlace->realViewportSize[1];
                 *outScreenPos = v4 * *outScreenPos;
@@ -848,7 +848,7 @@ int __cdecl GetSortedHudElems(int localClientNum, hudelem_s **elems)
     elemCount = 0;
     CopyInUseHudElems(elems, &elemCount, ps->hud.current, 31);
     CopyInUseHudElems(elems, &elemCount, ps->hud.archival, 31);
-    qsort(elems, elemCount, 4u, compare_hudelems);
+    qsort(elems, elemCount, sizeof(*elems), compare_hudelems);
     return elemCount;
 }
 
@@ -864,7 +864,7 @@ int __cdecl compare_hudelems(const void *pe0, const void *pe1)
 {
     float delta; // [esp+0h] [ebp-Ch]
 
-    delta = *(float *)BO1_I2P((*(unsigned int *)pe0 + 56)) - *(float *)BO1_I2P((*(unsigned int *)pe1 + 56));
+    delta = (*(const hudelem_s *const *)pe0)->sort - (*(const hudelem_s *const *)pe1)->sort;
     if ( delta >= 0.0 )
         return delta > 0.0;
     else
@@ -877,7 +877,7 @@ int __cdecl GetSortedDebugHudElems(hudelem_s **elems)
 
     elemCount = 0;
     CopyInUseDebugHudElems(elems, &elemCount, g_hudelems, 1024);
-    qsort(elems, elemCount, 4u, compare_hudelems);
+    qsort(elems, elemCount, sizeof(*elems), compare_hudelems);
     return elemCount;
 }
 

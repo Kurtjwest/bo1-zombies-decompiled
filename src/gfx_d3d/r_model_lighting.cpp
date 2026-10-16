@@ -461,7 +461,7 @@ unsigned int __cdecl R_AllocModelLighting_Box(
 unsigned int __cdecl R_GetPrimaryLightForBoxCallback(const void *userData)
 {
     return R_GetNonSunPrimaryLightForBox(
-                     *(const GfxViewInfo **)userData,
+                     *(const Ptr32<const GfxViewInfo> *)userData,
                      (const float *)userData + 1,
                      (const float *)userData + 4);
 }
@@ -496,7 +496,7 @@ unsigned int __cdecl R_AllocModelLighting_Sphere(
 unsigned int __cdecl R_GetPrimaryLightForSphereCallback(const void *userData)
 {
     return R_GetNonSunPrimaryLightForSphere(
-                     *(const GfxViewInfo **)userData,
+                     *(const Ptr32<const GfxViewInfo> *)userData,
                      (const float *)userData + 1,
                      *((float *)userData + 4));
 }

@@ -331,13 +331,13 @@ void CG_SP_DumpVisionSets(int localClientNum, int requestedTime)
         const float *f = (const float *)field;
         switch (visionDefFields[fieldNum].fieldType)
         {
-        case 0: Com_Printf(14, "BO1_VISFIELD %s\t0\t%d\n", visionDefFields[fieldNum].name, *(const bool *)field); break;
+        case 0: Com_Printf(14, "BO1_VISFIELD %s\t0\t%d\n", BO1_VA(visionDefFields[fieldNum].name), *(const bool *)field); break;
         case 1:
-        case 4: Com_Printf(14, "BO1_VISFIELD %s\t%d\t%.6g\n", visionDefFields[fieldNum].name, visionDefFields[fieldNum].fieldType, f[0]); break;
-        case 2: Com_Printf(14, "BO1_VISFIELD %s\t2\t%.6g %.6g %.6g\n", visionDefFields[fieldNum].name, f[0], f[1], f[2]); break;
-        case 3: Com_Printf(14, "BO1_VISFIELD %s\t3\t%.6g %.6g %.6g %.6g\n", visionDefFields[fieldNum].name, f[0], f[1], f[2], f[3]); break;
-        case 5: Com_Printf(14, "BO1_VISFIELD %s\t5\t%d\n", visionDefFields[fieldNum].name, *(const int *)field); break;
-        default: Com_Printf(14, "BO1_VISFIELD %s\t%d\t-\n", visionDefFields[fieldNum].name, visionDefFields[fieldNum].fieldType); break;
+        case 4: Com_Printf(14, "BO1_VISFIELD %s\t%d\t%.6g\n", BO1_VA(visionDefFields[fieldNum].name), visionDefFields[fieldNum].fieldType, f[0]); break;
+        case 2: Com_Printf(14, "BO1_VISFIELD %s\t2\t%.6g %.6g %.6g\n", BO1_VA(visionDefFields[fieldNum].name), f[0], f[1], f[2]); break;
+        case 3: Com_Printf(14, "BO1_VISFIELD %s\t3\t%.6g %.6g %.6g %.6g\n", BO1_VA(visionDefFields[fieldNum].name), f[0], f[1], f[2], f[3]); break;
+        case 5: Com_Printf(14, "BO1_VISFIELD %s\t5\t%d\n", BO1_VA(visionDefFields[fieldNum].name), *(const int *)field); break;
+        default: Com_Printf(14, "BO1_VISFIELD %s\t%d\t-\n", BO1_VA(visionDefFields[fieldNum].name), visionDefFields[fieldNum].fieldType); break;
         }
     }
 }
@@ -776,7 +776,7 @@ bool __cdecl ApplyTokenToField(unsigned int fieldNum, char *token, visionSetVars
     float tempVec4[4]; // [esp+14h] [ebp-38h] BYREF
     float *vec3Field; // [esp+24h] [ebp-28h]
     void *voidField; // [esp+28h] [ebp-24h]
-    Material **matField; // [esp+2Ch] [ebp-20h]
+    Ptr32<Material> *matField; // [esp+2Ch] [ebp-20h]
     int scanResult; // [esp+30h] [ebp-1Ch]
     int *intField; // [esp+34h] [ebp-18h]
     float tempFloat; // [esp+38h] [ebp-14h] BYREF
@@ -848,7 +848,7 @@ bool __cdecl ApplyTokenToField(unsigned int fieldNum, char *token, visionSetVars
             result = 0;
             break;
         case 6:
-            matField = (Material **)voidField;
+            matField = (Ptr32<Material> *)voidField;
             *(unsigned int *)voidField = (unsigned int)BO1_P2I(Material_Register(token, 6));
             if ( *matField )
                 goto LABEL_32;

@@ -929,7 +929,7 @@ void __cdecl Snd_StreamReleaseWindow(unsigned int index, char *data)
     {
         if ( !_InterlockedCompareExchange(
                         (volatile unsigned __int32 *)&g_snd_streams[index].window_return[i],
-                        (signed __int32)data,
+                        (signed __int32)BO1_P2I(data),
                         0) )
         {
             Sys_WakeStream();

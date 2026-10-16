@@ -13,7 +13,7 @@ struct GfxWorldDpvsDynamic // sizeof=0x30
                                         // XREF: R_LoadWorldRuntime+102/w
 };
 
-void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(const struct DpvsPlane **data);
+void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(Ptr32<const struct DpvsPlane> *data);
 void __cdecl R_CullDynModelInCell(
                 const unsigned int *dynEntCellBits,
                 unsigned int dynEntClientWordCount,

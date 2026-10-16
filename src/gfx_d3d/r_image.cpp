@@ -90,7 +90,7 @@ void __cdecl R_GetImageList(ImageList *imageList)
 
 void __cdecl R_AddImageToList(XAssetHeader header, XAssetHeader *data)
 {
-    if ( Ptr32_Raw(data->xmodelPieces) >= sizeof(((ImageList *)0)->image) / sizeof(GfxImage *)
+    if ( Ptr32_Raw(data->xmodelPieces) >= sizeof(((ImageList *)0)->image) / sizeof(((ImageList *)0)->image[0])
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
                     225,
@@ -435,7 +435,7 @@ void __cdecl Image_Create2DTexture_PC(
                  usage,
                  imageFormat,
                  memPool,
-                 (IDirect3DTexture9 **)image,
+                 (Ptr32<IDirect3DTexture9> *)image,
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)width * height >> 10));
@@ -526,7 +526,7 @@ void __cdecl Image_Create3DTexture_PC(
                  volumeUsage,
                  imageFormat,
                  volumePool,
-                 (IDirect3DVolumeTexture9 **)image,
+                 (Ptr32<IDirect3DVolumeTexture9> *)image,
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)width * height * depth >> 10));
@@ -594,7 +594,7 @@ void __cdecl Image_CreateCubeTexture_PC(
                  cubeUsage,
                  imageFormat,
                  cubePool,
-                 (IDirect3DCubeTexture9 **)image,
+                 (Ptr32<IDirect3DCubeTexture9> *)image,
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)edgeLen * edgeLen * 6 >> 10));
@@ -871,7 +871,7 @@ void __cdecl Load_Texture(GfxTexture *remoteLoadDef, GfxImage *image)
                             "%s\n\t(image->name) = %s",
                             "(static_cast< uint >( image->cardMemory.platform[PICMIP_PLATFORM_USED] ) == Image_GetCardMemoryAmount( loa"
                             "dDef->flags, static_cast< GfxPixelFormat >( loadDef->format ), image->width, image->height, image->depth ))",
-                            image->name) )
+                            BO1_VA(image->name)) )
             {
                 __debugbreak();
             }
@@ -882,7 +882,7 @@ void __cdecl Load_Texture(GfxTexture *remoteLoadDef, GfxImage *image)
                             1,
                             "%s\n\t(image->name) = %s",
                             "(image->texture.basemap == 0)",
-                            image->name) )
+                            BO1_VA(image->name)) )
             {
                 __debugbreak();
             }
@@ -893,7 +893,7 @@ void __cdecl Load_Texture(GfxTexture *remoteLoadDef, GfxImage *image)
                 image->cardMemory.platform[0] = 0;
                 image->cardMemory.platform[1] = 0;
                 if ( !Image_LoadFromFile(image, 0) )
-                    Com_Error(ERR_DROP, "Couldn't load image '%s'\n", image->name);
+                    Com_Error(ERR_DROP, "Couldn't load image '%s'\n", BO1_VA(image->name));
                 DB_LoadedExternalData(externalDataSize);
             }
         }
@@ -1124,7 +1124,7 @@ void __cdecl Image_Reload(GfxImage *image)
         __debugbreak();
     Image_Release(image);
     if ( !Image_LoadFromFile(image, image->skippedMipLevels == 0) )
-        Com_Error(ERR_DROP, "failed to load image '%s'", image->name);
+        Com_Error(ERR_DROP, "failed to load image '%s'", BO1_VA(image->name));
 }
 
 void __cdecl R_EnumImages(void (__cdecl *func)(GfxImage *, void *), void *data)
@@ -1565,7 +1565,7 @@ LABEL_30:
             }
             v5[i] += v3;
         }
-        Com_Printf(8, "    %s\t\t%x\n", image->name, image);
+        Com_Printf(8, "    %s\t\t%x\n", BO1_VA(image->name), image);
     }
     Com_Printf(8, " ---------\n");
     Com_Printf(8, " %i total images\n", imageList.count);

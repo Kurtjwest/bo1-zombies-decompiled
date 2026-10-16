@@ -37,14 +37,14 @@ GfxLightDef *__cdecl R_LoadLightDef(const char *name)
         readPos = file;
         readPos = R_LoadLightImage(file, (GfxLightImage *)(def + 4));
         v4 = name;
-        v3 = *(char **)def;
+        v3 = *(Ptr32<char> *)def;
         do
         {
             v2 = *v4;
             *v3++ = *v4++;
         }
         while ( v2 );
-        I_strlwr(*(char **)def);
+        I_strlwr(*(Ptr32<char> *)def);
         FS_FreeFile(file);
         *((unsigned int *)def + 3) = 0;
         return (GfxLightDef *)def;

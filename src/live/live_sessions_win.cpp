@@ -495,7 +495,7 @@ void __cdecl Session_EveryoneLeaveSessionAsync(int localControllerIndex, Session
                     16,
                     "Calling XSessionLeaveRemote for slot %i in session '%s'\n",
                     registeredUserSlot,
-                    session->sessionName);
+                    BO1_VA(session->sessionName));
                 session->registeredUsers[registeredUserSlot].active = 0;
             }
         }
@@ -525,12 +525,12 @@ LABEL_2:
     switch ( overlappedTasks_2[tasknum].type )
     {
         case 1:
-            if ( *((SessionData_s **)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 6) != session )
+            if ( *((Ptr32<SessionData_s> *)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 6) != session )
                 goto LABEL_2;
             result = 1;
             break;
         case 2:
-            if ( *((SessionData_s **)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 1) != session )
+            if ( *((Ptr32<SessionData_s> *)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 1) != session )
                 goto LABEL_2;
             result = 1;
             break;
@@ -649,7 +649,7 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *session)
             switch ( overlappedTasks_2[tasknum].type )
             {
                 case 1:
-                    if ( *((SessionData_s **)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 6) == session )
+                    if ( *((Ptr32<SessionData_s> *)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 6) == session )
                     {
                         while ( overlappedTasks_2[tasknum].active )
                         {
@@ -659,7 +659,7 @@ void __cdecl Session_EndOngoingSessionTasks(SessionData_s *session)
                     }
                     break;
                 case 2:
-                    if ( *((SessionData_s **)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 1) == session )
+                    if ( *((Ptr32<SessionData_s> *)TaskManager_GetTaskData(&overlappedTasks_2[tasknum]) + 1) == session )
                     {
                         done = 0;
                         while ( !done && overlappedTasks_2[tasknum].active )

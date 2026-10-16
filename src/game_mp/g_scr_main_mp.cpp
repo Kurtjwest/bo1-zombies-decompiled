@@ -188,7 +188,7 @@ void __cdecl GScr_LoadGameTypeScript()
 {
     char filename[68]; // [esp+0h] [ebp-48h] BYREF
 
-    Com_sprintf(filename, 0x40u, "maps/mp/gametypes/%s", g_gametype->current.string);
+    Com_sprintf(filename, 0x40u, "maps/mp/gametypes/%s", BO1_VA(g_gametype->current.string));
     g_scr_data.gametype.main = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER, filename, "main", 1);
     g_scr_data.gametype.startupgametype = GScr_LoadScriptAndLabel(
                                                                                     SCRIPTINSTANCE_SERVER,
@@ -446,7 +446,7 @@ int GScr_LoadLevelScript()
     const dvar_s *mapname; // [esp+44h] [ebp-4h]
 
     mapname = _Dvar_RegisterString("mapname", (char *)"", 0x44u, "The current map name");
-    Com_sprintf(filename, 0x40u, "maps/mp/%s", mapname->current.string);
+    Com_sprintf(filename, 0x40u, "maps/mp/%s", BO1_VA(mapname->current.string));
     result = GScr_LoadScriptAndLabel(SCRIPTINSTANCE_SERVER, filename, "main", 0);
     g_scr_data.levelscript = result;
     return result;

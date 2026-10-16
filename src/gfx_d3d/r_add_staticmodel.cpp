@@ -1027,7 +1027,7 @@ void __cdecl R_StaticModelWriteInfo(int fileHandle, const GfxStaticModelDrawInst
             0x1000u,
             "%d,%s,%.1f,%d,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f,%.1f\n",
             g_dumpStaticModelCount,
-            model->name,
+            BO1_VA(model->name),
             model->radius,
             model->numLods,
             v9,
@@ -1322,7 +1322,7 @@ void __cdecl R_SkinStaticModelsShadowForLod(
             if ( !Material_GetTechnique(material, shadowmapBuildTechType) )
             {
                 v7 = RB_LogTechniqueType(shadowmapBuildTechType);
-                Com_Error(ERR_DROP, "material \"%s\" lacks shadow tech %d %s", material->info.name, shadowmapBuildTechType, v7);
+                Com_Error(ERR_DROP, "material \"%s\" lacks shadow tech %d %s", BO1_VA(material->info.name), shadowmapBuildTechType, v7);
             }
             //drawSurf.fields = (GfxDrawSurfFields)material->info.drawSurf;
             drawSurf.packed = material->info.drawSurf.packed;

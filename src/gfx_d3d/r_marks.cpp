@@ -1279,7 +1279,7 @@ bool __cdecl R_MarkFragments_BrushSurface(
                 R_WARN_MARKS_ERR_LMAP_MISMATCH,
                 markInfo->markHasLightmap,
                 surface->lightmapIndex,
-                markInfo->material->info.name,
+                BO1_VA(markInfo->material->info.name),
                 surface->material->info.name);
         }
         return true;
@@ -1297,7 +1297,7 @@ bool __cdecl R_MarkFragments_BrushSurface(
                 R_WARN_MARKS_ERR_PROBE_MISMATCH,
                 markInfo->markHasReflection,
                 surface->reflectionProbeIndex,
-                markInfo->material->info.name,
+                BO1_VA(markInfo->material->info.name),
                 surface->material->info.name);
         }
         return true;

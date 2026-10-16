@@ -154,7 +154,7 @@ void tlAtomicMutex::Unlock()
   if ( this->LockCount-- == 1 )
   {
       volatile int barrier = 0;
-      InterlockedExchange((volatile long *)&barrier, 0);
+      InterlockedExchange((volatile LONG *)&barrier, 0);
 
       ThreadId = 0;
   }
@@ -195,7 +195,7 @@ void tlSharedAtomicMutex::Unlock()
     tlSharedAtomicMutex *m = ThisPtr;
     const uint32_t tid = GetCurrentThreadId();
 
-    int newCount = InterlockedDecrement((volatile long *)&m->LockCount);
+    int newCount = InterlockedDecrement((volatile LONG *)&m->LockCount);
 
     if (newCount == 0)
     {
@@ -266,7 +266,7 @@ void tlSharedAtomicMutex::Lock()
 
     // weird compiler artifact from original code
     volatile int target = 0;
-    InterlockedExchange((volatile long *)&target, 0);
+    InterlockedExchange((volatile LONG *)&target, 0);
 
     m->LockCount = 1;
 #endif
@@ -745,7 +745,7 @@ void __cdecl jqAttachQueueToWorkers(jqQueue *Queue, unsigned int ProcessorMask)
             }
         } while (_InterlockedCompareExchange(
             reinterpret_cast<volatile LONG *>(&worker->Queues[queueSlot]),
-            reinterpret_cast<LONG>(Queue),
+            (LONG)BO1_P2I(Queue),
             0) != 0);
         if (queueSlot >= 8)
             continue;

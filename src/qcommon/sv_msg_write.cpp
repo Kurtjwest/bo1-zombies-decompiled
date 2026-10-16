@@ -184,7 +184,7 @@ void __cdecl MSG_LoopThroughFields(const NetFieldList *fieldToCheck)
                 Com_Printf(
                     15,
                     " Overlapping netfields - EntityField %s : NetField ID#%d - %s (%d:%d)    overlaps to NetField ID#%d - %s (%d:%d)\n",
-                    fieldToCheck->fieldArrayName,
+                    BO1_VA(fieldToCheck->fieldArrayName),
                     j,
                     fieldToCheck->array[j].name,
                     jstart,
@@ -1724,7 +1724,7 @@ char __cdecl MSG_WriteDeltaField(
             Com_PrintError(
                 15,
                 "Field %s changed for %s eType %s when we thought it never would\n",
-                field->name,
+                BO1_VA(field->name),
                 v14,
                 EntityTypeString);
         }
@@ -1879,7 +1879,7 @@ void __cdecl MSG_WriteDeltaFields(
                 }
                 else
                 {
-                    v11 = va("An ALWAYS_CHANGES field (%s) didn't have its delta written?", fielda->name);
+                    v11 = va("An ALWAYS_CHANGES field (%s) didn't have its delta written?", BO1_VA(fielda->name));
                     if ( !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp", 2355, 0, v11) )
                         __debugbreak();
                 }
@@ -2377,7 +2377,7 @@ LABEL_17:
                                 4,
                                 1) )
                 {
-                    v6 = va("field %s changed but wasn't sent to the client\n", fielda->name);
+                    v6 = va("field %s changed but wasn't sent to the client\n", BO1_VA(fielda->name));
                     if ( !Assert_MyHandler(
                                     "C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write.cpp",
                                     2797,

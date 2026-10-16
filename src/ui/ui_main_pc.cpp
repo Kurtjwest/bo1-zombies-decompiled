@@ -686,9 +686,9 @@ void __cdecl UI_BuildFindPlayerList()
                 {
                     if ( *(unsigned int *)&info.text[32 * j - 4064] )
                     {
-                        if ( **(_BYTE **)&info.text[32 * j - 4064] )
+                        if ( *(_BYTE *)BO1_I2P(*(unsigned int *)&info.text[32 * j - 4064]) )
                         {
-                            I_strncpyz(dest, *(const char **)&info.text[32 * j - 4084], 34);
+                            I_strncpyz(dest, (const char *)BO1_I2P(*(unsigned int *)&info.text[32 * j - 4084]), 34);
                             I_CleanStr(dest);
                             if ( stristr(dest, uiInfo->findPlayerName) )
                             {
@@ -1215,12 +1215,12 @@ void __cdecl UI_DrawNetFilter(
 {
     const char **ServerFilter; // eax
     const char *v7; // eax
-    int filter; // [esp+1Ch] [ebp-Ch] BYREF
+    const char *filter[2]; // serverFilter_s returned by value: { description, basedir }
     const char *pszTeanslation; // [esp+24h] [ebp-4h]
 
     if ( ui_serverFilterType < 0 || ui_serverFilterType > numServerFilters )
         ui_serverFilterType = 0;
-    ServerFilter = UI_GetServerFilter((const char **)&filter, ui_serverFilterType);
+    ServerFilter = UI_GetServerFilter(filter, ui_serverFilterType);
     v7 = va("EXE_SERVERFILTER %s", *ServerFilter);
     pszTeanslation = SEH_LocalizeTextMessage(v7, "server filter", LOCMSG_SAFE);
     UI_DrawText(

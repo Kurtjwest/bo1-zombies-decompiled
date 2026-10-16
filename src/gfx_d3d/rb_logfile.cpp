@@ -411,7 +411,7 @@ void __cdecl RB_LogFromTable(
     {
         if ( table[tableIndex].stateBits == stateBitsa )
         {
-            v7 = va("---------- (%c)%-14s: %s\n", (bitMask & changedBits) != 0 ? 42 : 32, keyName, table[tableIndex].name);
+            v7 = va("---------- (%c)%-14s: %s\n", (bitMask & changedBits) != 0 ? 42 : 32, keyName, BO1_VA(table[tableIndex].name));
             RB_LogPrint(v7);
             return;
         }
@@ -541,21 +541,21 @@ void __cdecl RB_LogStencilState(int stateBits1, int changedBits1, const StencilL
     stencilOpNames[7].stateBits = 7;
     stencilOpNames[7].name = "Decr";
     enableMask = desc->enableMask;
-    v3 = va("Stencil %s", desc->description);
+    v3 = va("Stencil %s", BO1_VA(desc->description));
     RB_LogBool(v3, stateBits1, changedBits1, enableMask, "Enabled", "Disabled");
     if ( (desc->enableMask & stateBits1) != 0 )
     {
         funcShift = desc->funcShift;
-        v4 = va("%s Func", desc->description);
+        v4 = va("%s Func", BO1_VA(desc->description));
         RB_LogFromTable(v4, stateBits1, changedBits1, 7 << funcShift, funcShift, stencilFuncNames, 8);
         passShift = desc->passShift;
-        v5 = va("%s Pass", desc->description);
+        v5 = va("%s Pass", BO1_VA(desc->description));
         RB_LogFromTable(v5, stateBits1, changedBits1, 7 << passShift, passShift, stencilOpNames, 8);
         failShift = desc->failShift;
-        v6 = va("%s Fail", desc->description);
+        v6 = va("%s Fail", BO1_VA(desc->description));
         RB_LogFromTable(v6, stateBits1, changedBits1, 7 << failShift, failShift, stencilOpNames, 8);
         zfailShift = desc->zfailShift;
-        v7 = va("%s ZFail", desc->description);
+        v7 = va("%s ZFail", BO1_VA(desc->description));
         RB_LogFromTable(v7, stateBits1, changedBits1, 7 << zfailShift, zfailShift, stencilOpNames, 8);
     }
 }

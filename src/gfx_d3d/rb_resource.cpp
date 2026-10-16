@@ -317,7 +317,7 @@ void RB_Resource_Update_Internal()
                 }
                 goto LABEL_2;
             case ACTION_RELEASE:
-                (*(void (__thiscall **)(void *, void *))BO1_I2P((*(unsigned int *)action->resource + 8)))(action->resource, action->resource);
+                ((IUnknown *)(void *)action->resource)->Release(); // (IUnknown::Release through the vtable)
                 goto LABEL_2;
             case ACTION_LOADTEXTURE:
                 Image_LoadFromData(

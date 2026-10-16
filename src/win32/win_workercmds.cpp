@@ -33,7 +33,7 @@ int __cdecl nuge_physicsCallback(jqBatch *batch)
     jqBatch *realbatch; // [esp+18h] [ebp-4h]
 
     realbatch = (jqBatch *)jqLockData(batch);
-    Name = va("nuge_physics: %s", realbatch->Module->Name);
+    Name = va("nuge_physics: %s", BO1_VA(realbatch->Module->Name));
     PROF_SCOPED_RUNTIME_NAME(Name);
     realbatch->Module->Code(realbatch);
     jqUnlockData(batch);

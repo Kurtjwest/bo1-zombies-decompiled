@@ -790,15 +790,15 @@ void __cdecl FX_ImpactMark_Generate_Callback(
         *(unsigned int *)context,
         triCount,
         pointCount,
-        *((Material **)context + 1),
+        *((Ptr32<Material> *)context + 1),
         tris,
         points,
         markOrigin,
         markHitNormal,
         *((float *)context + 2),
         markTexCoordAxis,
-        *((const unsigned __int8 **)context + 3),
-        *((const FxMarkAlphaFade **)context + 4),
+        *((Ptr32<const unsigned __int8> *)context + 3),
+        *((Ptr32<const FxMarkAlphaFade> *)context + 4),
         isSeeThruDecal);
 }
 

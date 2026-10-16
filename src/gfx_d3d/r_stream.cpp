@@ -1077,28 +1077,28 @@ void __cdecl R_Stream_AddImagePartImportance(int imagePartIndex, float importanc
     }
 }
 
-void __cdecl importance_swap_func(void **a, void **b)
+// The sorted list holds image part indices (s_streamImages.sorted is an int array); the decompile typed the elements
+// as pointers, which only matched their width in the 32-bit build.
+void __cdecl importance_swap_func(int *a, int *b)
 {
-    void *temp; // [esp+0h] [ebp-4h]
-
-    temp = *a;
+    int t = *a;
     *a = *b;
-    *b = temp;
+    *b = t;
 }
 
-bool __cdecl importance_compare_func(void *a, void *b)
+bool __cdecl importance_compare_func(int a, int b)
 {
-    return *(const int *)&s_streamImages.importance[(unsigned int)BO1_P2I(a)] > *(const int *)&s_streamImages.importance[(unsigned int)BO1_P2I(b)];
+    return *(const int *)&s_streamImages.importance[(unsigned int)a] > *(const int *)&s_streamImages.importance[(unsigned int)b];
 }
 
-void *aux_buffer[2113];
-void __cdecl importance_merge_sort(void **list, int list_count)
+int aux_buffer[2113];
+void __cdecl importance_merge_sort(int *list, int list_count)
 {
-    void **t; // [esp+0h] [ebp-14h]
-    void **b; // [esp+8h] [ebp-Ch]
-    void **ba; // [esp+8h] [ebp-Ch]
-    void **a; // [esp+10h] [ebp-4h]
-    void **aa; // [esp+10h] [ebp-4h]
+    int *t; // [esp+0h] [ebp-14h]
+    int *b; // [esp+8h] [ebp-Ch]
+    int *ba; // [esp+8h] [ebp-Ch]
+    int *a; // [esp+10h] [ebp-4h]
+    int *aa; // [esp+10h] [ebp-4h]
 
     if ( list_count >= 3 )
     {
@@ -1288,7 +1288,7 @@ char __cdecl R_StreamRequestImageAllocation(
         v6 = va(
             "-STREAM-allocation complete. bytes=%d,image=%s,imagePart=%d,importance=%f\n",
             request->bufferSize,
-            image->name,
+            BO1_VA(image->name),
             imagePart,
             importance);
         Com_PrintMessage(16, v6, 0);
@@ -1977,10 +1977,10 @@ void __cdecl R_StreamUpdateDynamicModels(
                 viewPos,
                 frame,
                 *(unsigned __int16 *)&scene.glassBrushVisData[40 * entIndexd - 40924],
-                *(const GfxBrushModel **)&scene.glassBrushVisData[40 * entIndexd - 40932],
+                *(Ptr32<const GfxBrushModel> *)&scene.glassBrushVisData[40 * entIndexd - 40932],
                 (const float *)&scene.glassBrushVisData[40 * entIndexd - 40944],
                 maxDistSq,
-                *(Material **)&scene.glassBrushVisData[40 * entIndexd - 40928],
+                *(Ptr32<Material> *)&scene.glassBrushVisData[40 * entIndexd - 40928],
                 1,
                 distanceScale);
     }
@@ -2386,7 +2386,7 @@ void __cdecl R_StreamUpdate_EndQuerySort(bool diskOrder)
     }
     else
     {
-        importance_merge_sort((void **)s_streamImages.sorted, streamFrontendGlob.totalBytesWanted);
+        importance_merge_sort(s_streamImages.sorted, streamFrontendGlob.totalBytesWanted);
     }
 }
 

@@ -53,8 +53,8 @@ void __cdecl R_AddDebugPolygonInternal(
                 {
                     __debugbreak();
                 }
-                R_DebugAlloc((void **)&polySet->polys, 48 * polySet->polyLimit, "(debugGlobalsEntry->polys)");
-                R_DebugAlloc((void **)&polySet->verts, 12 * polySet->vertLimit, "(debugGlobalsEntry->verts)");
+                R_DebugAlloc((Ptr32<void> *)&polySet->polys, 48 * polySet->polyLimit, "(debugGlobalsEntry->polys)");
+                R_DebugAlloc((Ptr32<void> *)&polySet->verts, 12 * polySet->vertLimit, "(debugGlobalsEntry->verts)");
             }
             if ( polySet->polys && polySet->verts )
             {
@@ -155,7 +155,7 @@ void __cdecl R_AddDebugLine(
     if ( debugGlobalsEntry->lineCount + 1 <= debugGlobalsEntry->lineLimit )
     {
         if ( debugGlobalsEntry->lines
-            || (R_DebugAlloc((void **)&debugGlobalsEntry->lines, 44 * debugGlobalsEntry->lineLimit, "R_AddDebugLine"),
+            || (R_DebugAlloc((Ptr32<void> *)&debugGlobalsEntry->lines, 44 * debugGlobalsEntry->lineLimit, "R_AddDebugLine"),
                     debugGlobalsEntry->lines) )
         {
             pDebugLine = &debugGlobalsEntry->lines[debugGlobalsEntry->lineCount];
@@ -224,7 +224,7 @@ void __cdecl R_AddDebugString(
     Sys_EnterCriticalSection(CRITSECT_DEBUG_LINE);
     if ( debugGlobalsEntry->stringCount + 1 <= debugGlobalsEntry->stringLimit
         && (debugGlobalsEntry->strings
-         || (R_DebugAlloc((void **)&debugGlobalsEntry->strings, debugGlobalsEntry->stringLimit << 7, "R_AddDebugString"),
+         || (R_DebugAlloc((Ptr32<void> *)&debugGlobalsEntry->strings, debugGlobalsEntry->stringLimit << 7, "R_AddDebugString"),
                  debugGlobalsEntry->strings)) )
     {
         pDebugString = &debugGlobalsEntry->strings[debugGlobalsEntry->stringCount];
@@ -290,15 +290,15 @@ void __cdecl R_InitDebug()
 
 void __cdecl R_ShutdownDebugEntry(DebugGlobals *debugGlobalsEntry)
 {
-    R_DebugFree((void **)&debugGlobalsEntry->polySet.polys);
-    R_DebugFree((void **)&debugGlobalsEntry->polySet.verts);
-    R_DebugFree((void **)&debugGlobalsEntry->strings);
-    R_DebugFree((void **)&debugGlobalsEntry->externStrings);
-    R_DebugFree((void **)&debugGlobalsEntry->spheres);
-    R_DebugFree((void **)&debugGlobalsEntry->externSpheres);
-    R_DebugFree((void **)&debugGlobalsEntry->lines);
-    R_DebugFree((void **)&debugGlobalsEntry->externLines);
-    R_DebugFree((void **)&debugGlobalsEntry->plumes);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->polySet.polys);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->polySet.verts);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->strings);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->externStrings);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->spheres);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->externSpheres);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->lines);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->externLines);
+    R_DebugFree((Ptr32<void> *)&debugGlobalsEntry->plumes);
     free_chull_lists();
 }
 
@@ -323,7 +323,7 @@ void __cdecl R_TransferDebugGlobals(DebugGlobals *debugGlobalsEntry)
     {
         if ( !debugGlobalsEntry->plumes )
         {
-            R_DebugAlloc((void **)&debugGlobalsEntry->plumes, 40 * debugGlobals.plumeLimit, "(debugGlobalsEntry->plumes)");
+            R_DebugAlloc((Ptr32<void> *)&debugGlobalsEntry->plumes, 40 * debugGlobals.plumeLimit, "(debugGlobalsEntry->plumes)");
             if ( !debugGlobalsEntry->plumes )
                 return;
         }
@@ -355,8 +355,8 @@ void __cdecl R_UpdatePersistentDebugPolys(DebugGlobals *debugGlobalsEntry)
 void __cdecl R_ShutdownDebug()
 {
     R_ShutdownDebugEntry(&debugGlobals);
-    R_DebugFree((void **)&persistentPolySet.polys);
-    R_DebugFree((void **)&persistentPolySet.verts);
+    R_DebugFree((Ptr32<void> *)&persistentPolySet.polys);
+    R_DebugFree((Ptr32<void> *)&persistentPolySet.verts);
 }
 
 void __cdecl R_CopyDebugStrings(
@@ -373,7 +373,7 @@ void __cdecl R_CopyDebugStrings(
     frontEndDataOut->debugGlobals.externStringCount = 0;
     if ( !clStrings && !svStrings
         || dg->externStrings
-        || (R_DebugAlloc((void **)&dg->externStrings, maxStringCount << 7, "R_CopyDebugStrings"), dg->externStrings) )
+        || (R_DebugAlloc((Ptr32<void> *)&dg->externStrings, maxStringCount << 7, "R_CopyDebugStrings"), dg->externStrings) )
     {
         dest = (unsigned __int8 *)dg->externStrings;
         if ( clStrings )
@@ -400,7 +400,7 @@ void __cdecl R_CopyDebugLines(
     dg = &frontEndDataOut->debugGlobals;
     if ( !clLines && !svLines
         || frontEndDataOut->debugGlobals.externLines
-        || (R_DebugAlloc((void **)&frontEndDataOut->debugGlobals.externLines, 44 * maxLineCount, "R_CopyDebugLines"),
+        || (R_DebugAlloc((Ptr32<void> *)&frontEndDataOut->debugGlobals.externLines, 44 * maxLineCount, "R_CopyDebugLines"),
                 dg->externLines) )
     {
         dest = (unsigned __int8 *)dg->externLines;
@@ -428,7 +428,7 @@ void __cdecl R_CopyDebugSpheres(
     dg = &frontEndDataOut->debugGlobals;
     if ( !clSpheres && !svSpheres
         || frontEndDataOut->debugGlobals.externSpheres
-        || (R_DebugAlloc((void **)&frontEndDataOut->debugGlobals.externSpheres, 40 * maxSphereCount, "R_CopyDebugSpheres"),
+        || (R_DebugAlloc((Ptr32<void> *)&frontEndDataOut->debugGlobals.externSpheres, 40 * maxSphereCount, "R_CopyDebugSpheres"),
                 dg->externSpheres) )
     {
         dest = (unsigned __int8 *)dg->externSpheres;

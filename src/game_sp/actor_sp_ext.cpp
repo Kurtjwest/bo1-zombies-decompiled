@@ -200,7 +200,7 @@ static int Actor_SP_ExtFieldOfs(const actor_fields_s *pField)
         if ( !strcmp(g_actorSpExtFields[i].name, pField->name) )
             return g_actorSpExtFields[i].ofs;
     }
-    Com_Error(ERR_DROP, "actor field %s has no side-table storage", pField->name);
+    Com_Error(ERR_DROP, "actor field %s has no side-table storage", BO1_VA(pField->name));
     return 0;
 }
 

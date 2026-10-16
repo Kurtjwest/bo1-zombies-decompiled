@@ -142,58 +142,42 @@ LABEL_12:
 
 void __cdecl merge_sort(rigid_body_constraint_contact **list, int list_count)
 {
-    rigid_body_constraint_contact *v2; // ecx
-    rigid_body_constraint_contact **v3; // esi
+    // sorts both halves, then merges them by insertion (stable, ascending m_solver_priority)
     rigid_body_constraint_contact **v4; // edi
-    unsigned int i; // eax
+    rigid_body_constraint_contact **i; // eax
+    rigid_body_constraint_contact **j;
     rigid_body_constraint_contact *v6; // ecx
-    unsigned int v7; // ecx
-    int v8; // esi
     rigid_body_constraint_contact **last; // [esp+4h] [ebp-4h]
 
     if ( list_count >= 3 )
     {
-        v3 = list;
         merge_sort(list, list_count / 2);
         merge_sort(&list[list_count / 2], list_count - list_count / 2);
         v4 = &list[list_count / 2];
         last = &list[list_count];
-        for ( i = (unsigned int)BO1_P2I((v4 - 1)); v4 < last; ++v4 )
+        for ( i = v4 - 1; v4 < last; ++v4 )
         {
-            v6 = *(Ptr32<rigid_body_constraint_contact> *)BO1_I2P(i);
-            if ( (*v4)->m_solver_priority >= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 20)) )
+            v6 = *i;
+            if ( (*v4)->m_solver_priority >= v6->m_solver_priority )
                 break;
-            *(unsigned int *)BO1_I2P(i) = (unsigned int)BO1_P2I(*v4);
+            *i = *v4;
             *v4 = v6;
-            v7 = i - 4;
-            if ( i > (unsigned int)BO1_P2I(v3) )
+            for ( j = i; j > list && j[0]->m_solver_priority < j[-1]->m_solver_priority; --j )
             {
-                while ( 1 )
-                {
-                    v8 = *(unsigned int *)BO1_I2P(v7);
-                    if ( *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 20)) >= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(v7) + 20)) )
-                        break;
-                    *(unsigned int *)BO1_I2P(v7) = *(unsigned int *)BO1_I2P(i);
-                    *(unsigned int *)BO1_I2P(i) = v8;
-                    v3 = list;
-                    i = v7;
-                    v7 -= 4;
-                    if ( i <= (unsigned int)BO1_P2I(list) )
-                        goto LABEL_12;
-                }
-                v3 = list;
+                v6 = j[-1];
+                j[-1] = j[0];
+                j[0] = v6;
             }
-LABEL_12:
-            i = (unsigned int)BO1_P2I(v4);
+            i = v4;
         }
     }
     else if ( list_count == 2 )
     {
-        v2 = *list;
+        v6 = *list;
         if ( list[1]->m_solver_priority < (*list)->m_solver_priority )
         {
             *list = list[1];
-            list[1] = v2;
+            list[1] = v6;
         }
     }
 }
@@ -2201,7 +2185,7 @@ void physics_system::solver_priority_sort(phys_transient_allocator *transient_bu
         //                                                                                 4,
         //                                                                                 0,
         //                                                                                 "phys_transient_allocator out of memory.");
-        v3 = (rigid_body_constraint_contact **)transient_buffer->allocate(4 * this->m_list_rbc_contact.m_list_count, 4, 0, "phs_Transient_allocator out of memory.");
+        v3 = (rigid_body_constraint_contact **)transient_buffer->allocate(sizeof(*v3) * this->m_list_rbc_contact.m_list_count, sizeof(*v3), 0, "phs_Transient_allocator out of memory.");
         //phys_free_list<rigid_body_constraint_contact>::ptr_array_read(
         //    &this->m_list_rbc_contact,
         //    v3,

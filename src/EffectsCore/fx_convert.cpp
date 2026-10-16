@@ -77,7 +77,7 @@ const FxEffectDef *__cdecl FX_Convert(const FxEditorEffectDef *editorEffect, voi
                         Com_PrintError(
                             20,
                             "ERROR: no physics preset specified for the FX model [%s]\n",
-                            *(const char **)elemVisual->anonymous);
+                            *(Ptr32<const char> *)elemVisual->anonymous);
                     }
                 }
             }
@@ -2390,7 +2390,7 @@ char __cdecl FX_ValidateAtlasSettings(const FxEditorEffectDef *editorEffect, con
                 "effect '%s' segment '%s':\nmaterial %s. atlas range of %i exceeds %i\n",
                 editorEffect->name,
                 edElemDef->name,
-                mtlInfoRef.name,
+                BO1_VA(mtlInfoRef.name),
                 edElemDef->atlas.indexRange,
                 127);
             return 0;
@@ -2403,7 +2403,7 @@ char __cdecl FX_ValidateAtlasSettings(const FxEditorEffectDef *editorEffect, con
                 "effect '%s' segment '%s':\nmaterial %s is a %i x %i atlas, which is not a power of 2 on both axes\n",
                 editorEffect->name,
                 edElemDef->name,
-                mtlInfoRef.name,
+                BO1_VA(mtlInfoRef.name),
                 mtlInfoRef.textureAtlasColumnCount,
                 mtlInfoRef.textureAtlasRowCount);
             return 0;
@@ -2421,7 +2421,7 @@ char __cdecl FX_ValidateAtlasSettings(const FxEditorEffectDef *editorEffect, con
                         "effect '%s' segment '%s':\nmaterial %s is a %i x %i atlas, but material %s is a %i x %i atlas\n",
                         editorEffect->name,
                         edElemDef->name,
-                        mtlInfoRef.name,
+                        BO1_VA(mtlInfoRef.name),
                         mtlInfoRef.textureAtlasColumnCount,
                         mtlInfoRef.textureAtlasRowCount,
                         mtlInfo.name,
@@ -2440,7 +2440,7 @@ char __cdecl FX_ValidateAtlasSettings(const FxEditorEffectDef *editorEffect, con
             "effect '%s' segment '%s':\nmaterial %s is a %i x %i atlas, which exceeds 256 max frames per atlas\n",
             editorEffect->name,
             edElemDef->name,
-            mtlInfoRef.name,
+            BO1_VA(mtlInfoRef.name),
             mtlInfoRef.textureAtlasColumnCount,
             mtlInfoRef.textureAtlasRowCount);
         return 0;

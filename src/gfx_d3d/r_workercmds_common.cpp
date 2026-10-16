@@ -88,11 +88,13 @@ void __cdecl R_UpdateRemainingEffects(FxCmd *cmd)
 
 void __cdecl R_UpdateXModelBoundsDelayed(GfxSceneEntity *sceneEnt)
 {
-    Sys_AddWorkerCmdInternal(&dobj_skelWorkerCmd, (unsigned __int8 *)&sceneEnt, 0);
+    Ptr32<GfxSceneEntity> payload = sceneEnt; // the command's data is one 32-bit pointer
+    Sys_AddWorkerCmdInternal(&dobj_skelWorkerCmd, (unsigned __int8 *)&payload, 0);
 }
 
 void __cdecl R_SkinGfxEntityDelayed(GfxSceneEntity *sceneEnt)
 {
-    Sys_AddWorkerCmdInternal(&dobj_skinWorkerCmd, (unsigned __int8 *)&sceneEnt, 0);
+    Ptr32<GfxSceneEntity> payload = sceneEnt; // the command's data is one 32-bit pointer
+    Sys_AddWorkerCmdInternal(&dobj_skinWorkerCmd, (unsigned __int8 *)&payload, 0);
 }
 

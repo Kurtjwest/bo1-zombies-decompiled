@@ -879,7 +879,7 @@ void __cdecl Scr_CompileTextInternal(scriptInstance_t inst, const char *text, Sc
         if (gScrVarPub[inst].error_message)
         {
             if (*text)
-                Com_PrintError(24, "%s\n", gScrVarPub[inst].error_message);
+                Com_PrintError(24, "%s\n", BO1_VA(gScrVarPub[inst].error_message));
             Scr_ClearErrorMessage(inst);
             scriptExpr->parseData = debugger_node0(inst, ENUM_bad_expression);
             SL_ShutdownSystem(inst, 2u);
@@ -926,7 +926,7 @@ void __cdecl Scr_CompileTextInternal(scriptInstance_t inst, const char *text, Sc
                 Scr_CompileStatement(inst, scriptExpr->parseData);
                 if (gScrVarPub[inst].error_message)
                 {
-                    Com_PrintError(24, "%s\n", gScrVarPub[inst].error_message);
+                    Com_PrintError(24, "%s\n", BO1_VA(gScrVarPub[inst].error_message));
                     Scr_ClearErrorMessage(inst);
                     scriptExpr->parseData = debugger_node0(inst, ENUM_bad_statement);
                     SL_ShutdownSystem(inst, 2u);

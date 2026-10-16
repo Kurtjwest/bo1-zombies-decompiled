@@ -294,10 +294,13 @@ bool __cdecl LiveStorage_DecompressBuffer(
     int err; // [esp+0h] [ebp-38h]
     z_stream_s stream; // [esp+4h] [ebp-34h] BYREF
 
-    memset(&stream.zalloc, 0, 12);
+    // (zalloc, zfree, opaque: 12 bytes in the 32-bit layout; the stream size is the native one)
+    stream.zalloc = 0;
+    stream.zfree = 0;
+    stream.opaque = 0;
     stream.avail_in = compressedSize;
     stream.next_in = compressedBuffer;
-    inflateInit2_(&stream, 15, "1.2.3", 52);
+    inflateInit2_(&stream, 15, ZLIB_VERSION, (int)sizeof(stream));
     stream.avail_out = uncompressedSize;
     stream.next_out = uncompressedBuffer;
     err = inflate(&stream, 0);

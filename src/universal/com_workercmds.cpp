@@ -49,7 +49,8 @@ void __cdecl jqSafeFlush(jqBatchGroup *group, unsigned __int64 batchCount)
 
 jqWorkerCmd *jqGetWorkercmdParam(jqBatch *batch)
 {
-    return *reinterpret_cast<jqWorkerCmd **> (batch->ParamData);
+    // ParamData[0] holds the command as a 32-bit handle (Sys_AddWorkerCmdInternal), ParamData[1] the fence
+    return (jqWorkerCmd *)BO1_I2P(batch->ParamData[0]);
 }
 
 void *__cdecl jqLockData(jqBatch *batch)

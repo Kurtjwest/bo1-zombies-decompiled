@@ -555,7 +555,7 @@ void __cdecl BG_LoadAttachmentRow(const StringTable *attachmentTable, int row, A
         Com_PrintWarning(
             17,
             "Unrecognized attachpoint name '%s' in %s row %i.\n",
-            entry->values.pointName,
+            BO1_VA(entry->values.pointName),
             "mp/attachmenttable.csv",
             row);
     ++*count;
@@ -697,7 +697,7 @@ void __cdecl BG_LoadWeaponOptionRow(
         Com_PrintWarning(
             17,
             "Unrecognized weaponoption name '%s' in %s row %i.\n",
-            entry->values.pointName,
+            BO1_VA(entry->values.pointName),
             "mp/attachmenttable.csv",
             row);
     else

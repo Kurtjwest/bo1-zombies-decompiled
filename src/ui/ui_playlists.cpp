@@ -221,7 +221,7 @@ void __cdecl Playlist_ParsePlaylists(const char *buffer)
                                                                 16,
                                                                 "Error adding '%s' to gametype %s rules\n",
                                                                 token,
-                                                                gametypes[numGametypes].internalName);
+                                                                BO1_VA(gametypes[numGametypes].internalName));
                                                         break;
                                                     case 2:
                                                         if ( !Playlist_AppendRules(playlists[playlistNum].rules, token) )
@@ -233,7 +233,7 @@ void __cdecl Playlist_ParsePlaylists(const char *buffer)
                                                                 16,
                                                                 "Error adding '%s' to category %s rules\n",
                                                                 token,
-                                                                categories[categoryCount].internalName);
+                                                                BO1_VA(categories[categoryCount].internalName));
                                                         break;
                                                     case 4:
                                                         goto LABEL_127;
@@ -1751,7 +1751,7 @@ const char *__cdecl Playlist_GetPlaylistDescription(int controllerIndex, unsigne
             v3 = UI_SafeTranslateString("MENU_POINTS");
             v6 = UI_ReplaceConversionInt(v3, wagerBet);
             v4 = UI_SafeTranslateString("MPUI_WAGERMATCH_BUY_IN");
-            return va("%s\n%s %s", playlists[playlistId].description, v4, v6);
+            return va("%s\n%s %s", BO1_VA(playlists[playlistId].description), v4, v6);
         }
         else
         {
@@ -2102,7 +2102,7 @@ int __cdecl Playlist_ChooseEntry(int localControllerIndex, int lastSelection)
     playlistId = Playlist_GetPlaylistIdForNum(localControllerIndex, playlist->current.integer);
     if ( !Playlist_GetNumEntries(playlistId) )
     {
-        Com_Error(ERR_DROP, "Playlist %s has no entries\n", playlists[playlistId].name);
+        Com_Error(ERR_DROP, "Playlist %s has no entries\n", BO1_VA(playlists[playlistId].name));
         return -1;
     }
     totalWeight = Playlist_CalcTotalWeights(playlistId, lastSelection);
@@ -2266,7 +2266,7 @@ void __cdecl Playlist_RunRules(int localControllerIndex, int entryNum)
             Com_DPrintf(
                 16,
                 "Setting up gametype %s (running script %s)\n",
-                gametypeEntry->localizedName,
+                BO1_VA(gametypeEntry->localizedName),
                 gametypeEntry->scriptName);
             Dvar_SetStringByName("ui_gametype", (char *)gametypeEntry->scriptName);
         }
@@ -2277,11 +2277,11 @@ void __cdecl Playlist_RunRules(int localControllerIndex, int entryNum)
         v6 = va("exec %s", "default_xboxlive.cfg");
         LocalClientNum = Com_ControllerIndex_GetLocalClientNum(localControllerIndex);
         Cmd_ExecuteSingleCommand(LocalClientNum, localControllerIndex, v6);
-        Com_DPrintf(14, "Setting up rules for the '%s' category\n", categories[categoryId].localizedName);
+        Com_DPrintf(14, "Setting up rules for the '%s' category\n", BO1_VA(categories[categoryId].localizedName));
         rules = (char *)categories[categoryId].rules;
         v3 = Com_ControllerIndex_GetLocalClientNum(localControllerIndex);
         Cmd_ExecuteSingleCommand(v3, localControllerIndex, rules);
-        Com_DPrintf(14, "Setting up rules for the '%s' playlist\n", playlists[playlistId].name);
+        Com_DPrintf(14, "Setting up rules for the '%s' playlist\n", BO1_VA(playlists[playlistId].name));
         v8 = (char *)playlists[playlistId].rules;
         v4 = Com_ControllerIndex_GetLocalClientNum(localControllerIndex);
         Cbuf_ExecuteBuffer(v4, localControllerIndex, v8);
@@ -2290,7 +2290,7 @@ void __cdecl Playlist_RunRules(int localControllerIndex, int entryNum)
             Com_DPrintf(
                 16,
                 "Running custom game rules for gametype %s: %s\n",
-                gametypeEntry->localizedName,
+                BO1_VA(gametypeEntry->localizedName),
                 gametypeEntry->rules);
             if ( gametypeEntry->rules && *gametypeEntry->rules )
             {
@@ -2656,7 +2656,7 @@ void __cdecl Playlist_SetSVMapRotation()
                             v2 = (char *)Dvar_GetString("playlist_excludeMap"),
                             v3 = strstr(v2, mapname),
                             v3)
-                    || (v9 = (char *)va("%s %s", gametypeEntry->scriptName, entry->mapname),
+                    || (v9 = (char *)va("%s %s", BO1_VA(gametypeEntry->scriptName), entry->mapname),
                             v4 = (char *)Dvar_GetString("playlist_excludeGametypeMap"),
                             v5 = strstr(v4, v9),
                             v5) )
@@ -2666,7 +2666,7 @@ void __cdecl Playlist_SetSVMapRotation()
                         "Playlist %d entry %d excluded: %s %s.\n",
                         playlist->current.integer,
                         i,
-                        gametypeEntry->scriptName,
+                        BO1_VA(gametypeEntry->scriptName),
                         entry->mapname);
                     entry->ignore = 1;
                 }

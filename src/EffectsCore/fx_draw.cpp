@@ -182,7 +182,7 @@ static void FX_BO1ColorTrace(const FxElemPreVisualState *preVisState, float valu
         Com_Printf(
             14,
             "BO1_FXCOLOR fx=%s elem=%d f=(%.4f %.4f %.4f %.4f) trunc=(%d %d %d %d) round=(%d %d %d %d)\n",
-            preVisState->effect->def->name,
+            BO1_VA(preVisState->effect->def->name),
             (int)(preVisState->elemDef - preVisState->effect->def->elemDefsEA),
             f[0], f[1], f[2], f[3], tr[0], tr[1], tr[2], tr[3], rd[0], rd[1], rd[2], rd[3]);
     }

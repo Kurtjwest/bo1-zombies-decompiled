@@ -724,7 +724,7 @@ void __cdecl SND_SetVoiceStartFlux(snd_voice_t *voice, float *player)
             move_type = (snd_flux_type_t)(rand() % 3 + 1);
         if ( !((alias->flags & 2) >> 1) )
         {
-            Com_PrintError(9, "Alias %s has move_type but is not 3d\n", alias->name);
+            Com_PrintError(9, "Alias %s has move_type but is not 3d\n", BO1_VA(alias->name));
             return;
         }
         if ( (float)((float)((float)(voice->direction[0] * voice->direction[0])
@@ -759,7 +759,7 @@ void __cdecl SND_SetVoiceStartFlux(snd_voice_t *voice, float *player)
                                                  + (float)(voice->direction[1] * voice->direction[1]))
                                  + (float)(voice->direction[2] * voice->direction[2])) < 0.0000152879 )
             {
-                Com_PrintError(9, "Alias %s has move_type of shot but has no direction\n", alias->name);
+                Com_PrintError(9, "Alias %s has move_type of shot but has no direction\n", BO1_VA(alias->name));
                 return;
             }
             *(_QWORD *)&moveBasis[0][0] = *(_QWORD *)voice->direction;
@@ -1939,7 +1939,7 @@ unsigned int __cdecl SND_PlaySoundAlias(
         return -1;
     if ( alias->dryCurve == -1 )
     {
-        Com_PrintError(9, "Error: '%s' had bad volume curve\n", alias->name);
+        Com_PrintError(9, "Error: '%s' had bad volume curve\n", BO1_VA(alias->name));
         return -1;
     }
     // zombies (L16): probability byte * 0.003921569f (SP 0x005BBBC2), not / 255.0
@@ -2090,7 +2090,7 @@ char __cdecl SND_CheckValidSecondary(const snd_alias_t *alias, const snd_alias_t
                     Com_PrintError(
                         9,
                         "Error: Infinite recursion in secondary aliases sequenced together.\nAlias sequence start: '%s'->'%s'\n",
-                        alias->name,
+                        BO1_VA(alias->name),
                         alias->secondaryname);
                     return 0;
                 }
@@ -2103,7 +2103,7 @@ char __cdecl SND_CheckValidSecondary(const snd_alias_t *alias, const snd_alias_t
             Com_PrintError(
                 9,
                 "ERROR: a looping alias cannot have a non-looping secondary alias.\nERROR: Alias sequence: '%s'->'%s'\n",
-                alias->name,
+                BO1_VA(alias->name),
                 alias->secondaryname);
             return 0;
         }
@@ -2113,7 +2113,7 @@ char __cdecl SND_CheckValidSecondary(const snd_alias_t *alias, const snd_alias_t
         Com_PrintError(
             9,
             "ERROR: a non-looping alias cannot have a looping secondary alias.\nERROR: Alias sequence: '%s'->'%s'\n",
-            alias->name,
+            BO1_VA(alias->name),
             alias->secondaryname);
         return 0;
     }
@@ -2362,7 +2362,7 @@ static void SND_BO1PauseTrace(const char *when)
         if (voice->paused)
             ++held;
         SND_BO1TraceText("snd_pause %s voice=%d alias=%s pausable=%d paused=%d stream=%d looptime=%d elapsed=%d samples=%lld sndtime=%d",
-            when, i, voice->alias->name, SND_IsAliasPausable(voice->alias) ? 1 : 0, voice->paused ? 1 : 0,
+            when, i, BO1_VA(voice->alias->name), SND_IsAliasPausable(voice->alias) ? 1 : 0, voice->paused ? 1 : 0,
             SND_IsStream(i) ? 1 : 0, voice->looptime, now - voice->startTime, SD_BO1SamplesPlayed(i),
             g_snd.time);
     }
@@ -3711,7 +3711,7 @@ static void SND_BO1TraceVoice(const snd_voice_t *voice, bool is3d)
         "BO1_SNDVOICE t=%d v=%d id=%d alias=%s ent=%d 3d=%d pos=%.9g,%.9g,%.9g lis=%.9g,%.9g,%.9g fwd=%.9g,%.9g,%.9g "
         "dist=%.9g dmin=%.9g dmax=%.9g drmax=%.9g curves=%d,%d,%d,%d rsend=%u csend=%u env=%d datt=%.9g ratt=%.9g omni=%.9g "
         "occ=%.9g dry=%.9g wet=%.9g goal=%.9g,%.9g pan=%.9g,%.9g ch=%d futz=%d\n",
-        g_snd.time, vi, id, alias->name ? alias->name : "?", voice->sndEnt.field.entIndex, is3d ? 1 : 0,
+        g_snd.time, vi, id, BO1_VA(alias->name) ? alias->name : "?", voice->sndEnt.field.entIndex, is3d ? 1 : 0,
         voice->position[0], voice->position[1], voice->position[2],
         lis->orient.origin[0], lis->orient.origin[1], lis->orient.origin[2],
         lis->orient.axis[0][0], lis->orient.axis[0][1], lis->orient.axis[0][2],
@@ -4100,7 +4100,7 @@ void __cdecl SND_UpdateVoice(snd_voice_t *voice, float dt)
                         fard = (float)alias->distMin;
                         if ( neard >= fard )
                         {
-                            Com_PrintError(9, "Alias %s had invalid dist min %f. needs to be > than %f\n", alias->name, fard, neard);
+                            Com_PrintError(9, "Alias %s had invalid dist min %f. needs to be > than %f\n", BO1_VA(alias->name), fard, neard);
                             fard = neard + 1.0;
                         }
                         g_4b = SND_GetDistance(voice);
@@ -4248,7 +4248,7 @@ void __cdecl SND_UpdateVoice(snd_voice_t *voice, float dt)
                 else
                 {
                     if ( (alias->flags & 0x40) >> 6 )
-                        Com_PrintError(9, "ERROR: alias %s has mono asset but is marked as futz\n", alias->name);
+                        Com_PrintError(9, "ERROR: alias %s has mono asset but is marked as futz\n", BO1_VA(alias->name));
                     ga = (float)voice->alias->centerSend * 1.5259022e-05f;
                     t_4a = SND_GetPanByIndex(voice->alias->pan);
                     v3 = Snd_GetMixChannelCount(snd_speakerConfiguration->current.unsignedInt);

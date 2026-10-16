@@ -564,7 +564,7 @@ unsigned int __cdecl DestructibleUpdate(gentity_s *ent, DObjModel_s *dobjModels,
     }
     else
     {
-        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, ddef->name);
+        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, BO1_VA(ddef->name));
     }
     if ( !ent->destructible->ddef
         && !Assert_MyHandler(
@@ -613,7 +613,7 @@ unsigned int __cdecl DestructibleUpdate(gentity_s *ent, DObjModel_s *dobjModels,
     {
         if ( !ddef->pieces[i].stages[0].showBone )
         {
-            v4 = va("Destructible %s Piece %d first stage can't find bone", ddef->name, i);
+            v4 = va("Destructible %s Piece %d first stage can't find bone", BO1_VA(ddef->name), i);
             if ( !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\physics\\destructible.cpp",
                             817,
@@ -905,7 +905,7 @@ bool __cdecl DamagePiece(
     ddef = destructible->ddef;
     if ( recursiveDepth > 20 )
     {
-        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", ddef->name);
+        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", BO1_VA(ddef->name));
         return 0;
     }
     if ( index >= ddef->numPieces
@@ -1625,7 +1625,7 @@ unsigned int __cdecl CG_DestructibleUpdate(
     }
     else
     {
-        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, ddef->name);
+        Com_Error(ERR_DROP, "Hit max destructible count [%d] when creating %s", 64, BO1_VA(ddef->name));
     }
     if ( numModels != 1
         && !Assert_MyHandler(
@@ -1998,7 +1998,7 @@ void __cdecl CG_DestructibleBreakPiece(
                     Com_PrintWarning(
                         21,
                         "Spawn model %s for destructible %s doesn't have physPreset.",
-                        model->name,
+                        BO1_VA(model->name),
                         self->destructible->ddef->name);
                 }
             }
@@ -2513,13 +2513,13 @@ void Destructible_DumpEventInfo()
                     Com_PrintWarning(20, "\tEnt Num: %d\n", cent->destructible->entNum);
                     Com_PrintWarning(20, "\tName: ");
                     if ( cent->destructible->ddef->name )
-                        Com_PrintWarning(20, "%s\n", cent->destructible->ddef->name);
+                        Com_PrintWarning(20, "%s\n", BO1_VA(cent->destructible->ddef->name));
                     else
                         Com_PrintWarning(20, "[Blank]\n");
                     if ( cent->destructible->ddef->model && cent->destructible->ddef->model->name )
-                        Com_PrintWarning(20, "\tModel Name: %s\n", cent->destructible->ddef->model->name);
+                        Com_PrintWarning(20, "\tModel Name: %s\n", BO1_VA(cent->destructible->ddef->model->name));
                     if ( cent->destructible->ddef->pristineModel && cent->destructible->ddef->pristineModel->name )
-                        Com_PrintWarning(20, "\tModel Name: %s\n", cent->destructible->ddef->pristineModel->name);
+                        Com_PrintWarning(20, "\tModel Name: %s\n", BO1_VA(cent->destructible->ddef->pristineModel->name));
                     Com_PrintWarning(20, "\tNum Pieces: %d\n", cent->destructible->ddef->numPieces);
                     Com_PrintWarning(20, "\tClient Only: ");
                     if ( cent->destructible->ddef->clientOnly )
@@ -2571,7 +2571,7 @@ char __cdecl CG_DamagePiece(
     ddef = destructible->ddef;
     if ( recursiveDepth > 20 )
     {
-        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", ddef->name);
+        Com_Printf(20, "Warning: Destructible (%s): The recusrion in DamagePiece is too deep.", BO1_VA(ddef->name));
         return 0;
     }
     if ( index >= ddef->numPieces
@@ -3742,7 +3742,7 @@ void __cdecl Destructible_DebugRender()
                     ddef = g_DebugRenderDestructible->ddef;
                     ent = &g_entities[g_DebugRenderDestructible->entNum];
                     smallDevFont = cgMedia.smallDevFont;
-                    v0 = va("%s Health %d Entnum %d", ddef->name, ent->health, g_DebugRenderDestructible->entNum);
+                    v0 = va("%s Health %d Entnum %d", BO1_VA(ddef->name), ent->health, g_DebugRenderDestructible->entNum);
                     y = (float)CG_DrawDevString(scrPlaceView, 8.0, 10.0, fontScale, fontScale, v0, colorWhite, 5, smallDevFont)
                         + 10.0;
                     for ( i = 0; i < ddef->numPieces; ++i )

@@ -677,7 +677,7 @@ void __cdecl CScr_ReadOnly(centity_s *cent, const cent_field_s *pField)
         __debugbreak();
     if ( !pField && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_scr_main.cpp", 334, 0, "%s", "pField") )
         __debugbreak();
-    error = va("centity field %s is read-only", pField->name);
+    error = va("centity field %s is read-only", BO1_VA(pField->name));
     Scr_Error(SCRIPTINSTANCE_CLIENT, error, 0);
 }
 
@@ -810,7 +810,7 @@ void __cdecl VehicleCScr_GetVehicleInfoField(centity_s *cent, const cent_field_s
         __debugbreak();
     if ( cent->nextState.eType != 14 && cent->nextState.eType != 16 && cent->nextState.eType != 12 )
     {
-        error = va(".%s can only be used on vehicles.", pField->name);
+        error = va(".%s can only be used on vehicles.", BO1_VA(pField->name));
         Scr_Error(SCRIPTINSTANCE_CLIENT, error, 0);
     }
     info = CG_GetVehicleInfo(cent->nextState.vehicleState.vehicleInfoIndex);
@@ -5170,7 +5170,7 @@ unsigned int __cdecl CScr_PlayFXInternal(int localClientNum, int fxId, float *an
     if (CG_SP_VisualsEnabled())
     {
         Com_Printf(14, "BO1_VISUAL play_fx time=%d client=%d fx=%s origin=%.3f,%.3f,%.3f handle=%u\n",
-            time, localClientNum, fxDef->name, pos[0], pos[1], pos[2], v6);
+            time, localClientNum, BO1_VA(fxDef->name), pos[0], pos[1], pos[2], v6);
         CG_SP_VisualShot(localClientNum, fxDef->name);
     }
     return v6;

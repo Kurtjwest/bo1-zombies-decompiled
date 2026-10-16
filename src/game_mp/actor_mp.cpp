@@ -2865,7 +2865,7 @@ void __cdecl Actor_EntInfo(gentity_s *self, float *source)
                                         actor->stateLevel,
                                         actor->eState[actor->stateLevel],
                                         actor->eSubState[actor->stateLevel],
-                                        actor->pszDebugInfo);
+                                        BO1_VA(actor->pszDebugInfo));
                         G_AddDebugString(xyz, colorWhite, infoScale * 0.60000002, v10, 0);
                     }
                     if ( (textMode & 0x12) != 0 )

@@ -148,7 +148,7 @@ static void GScr_SP_LoadConsts(scriptInstance_t inst)
     ui_gametype = Dvar_FindVar("ui_gametype");
     if ( ui_gametype && *ui_gametype->current.string )
     {
-        Com_sprintf(filename, sizeof(filename), "maps/gametypes/%s", ui_gametype->current.string);
+        Com_sprintf(filename, sizeof(filename), "maps/gametypes/%s", BO1_VA(ui_gametype->current.string));
         g_scr_data_sp.gametypeMain = GScr_SP_LoadCallback(inst, filename, "init", 0);
     }
 

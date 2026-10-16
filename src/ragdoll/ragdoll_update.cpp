@@ -1700,7 +1700,7 @@ void __cdecl Ragdoll_UpdateDObjWait(RagdollBody *body, int __formal)
         if ( body->obj )
             Com_PrintWarning(20, "Ragdoll activation timed out waiting for dobj 0x%x\n", body->dobj);
         else
-            Com_PrintWarning(20, "Ragdoll activation timed out waiting for dobj 0x%x\n", body->obj);
+            Com_PrintWarning(20, "Ragdoll activation timed out waiting for dobj 0x%x\n", BO1_VA(body->obj));
         Ragdoll_BodyNewState(body, BS_DEAD);
     }
 }

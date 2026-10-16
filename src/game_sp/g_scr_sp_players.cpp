@@ -65,7 +65,7 @@ static void G_f_missionfailed()
         SV_GameSendServerCommand(-1, SV_CMD_RELIABLE, "4 0 0");
         SV_GameSendServerCommand(-1, SV_CMD_RELIABLE, "0 0");
         if (quote)
-            SV_GameSendServerCommand(-1, SV_CMD_RELIABLE, va("Y 1 %s ", quote->current.string));
+            SV_GameSendServerCommand(-1, SV_CMD_RELIABLE, va("Y 1 %s ", BO1_VA(quote->current.string)));
     }
     // SP 0x007FBD3A: after G_MissionFailed, whether or not it was already reloading.
     g_spLevelExit.loadGameContinue = 1;

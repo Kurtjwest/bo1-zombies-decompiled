@@ -1127,7 +1127,7 @@ void __cdecl SV_DirectConnect(netadr_t from)
 
             SV_UserinfoChanged(newcl);
             svs.challenges[i].firstPing = 0;
-            NET_OutOfBandPrint(NS_SERVER, from, va("connectResponse %s", fs_gameDirVar->current.string));
+            NET_OutOfBandPrint(NS_SERVER, from, va("connectResponse %s", BO1_VA(fs_gameDirVar->current.string)));
             newcl->gamestateMessageNum = -1;
             SV_BotNameUpdate(Info_ValueForKey(userinfo, "name"));
             SV_UpdateSplitscreenStateForAddr();
@@ -1535,7 +1535,7 @@ void __cdecl SV_SendClientGameState(client_t *client)
         && onlinegame->current.enabled
         && sv_writeConfigStrings->current.enabled )
     {
-        f = FS_SV_FOpenFileWrite(va("configStrings_pc_%s_%s.csv", sv_mapname->current.string, g_gametype->current.string), (char*)"devOutput");
+        f = FS_SV_FOpenFileWrite(va("configStrings_pc_%s_%s.csv", BO1_VA(sv_mapname->current.string), g_gametype->current.string), (char*)"devOutput");
     }
 
     if ( f )
@@ -2042,7 +2042,7 @@ void __cdecl SV_WWWRedirectClient(client_t *cl, msg_t *msg)
     {
         __debugbreak();
     }
-    v2 = va("%s/%s", sv_wwwBaseURL->current.string, cl->downloadName);
+    v2 = va("%s/%s", BO1_VA(sv_wwwBaseURL->current.string), cl->downloadName);
     I_strncpyz(cl->downloadURL, v2, 256);
     Com_Printf(15, "Redirecting client '%s' to %s\n", cl->name, cl->downloadURL);
     cl->downloadingWWW = 1;
@@ -2875,7 +2875,7 @@ void __cdecl SV_UserMove(client_t *cl, msg_t *msg, int delta)
                         Com_Printf(
                             15,
                             "cl->reliableCommandInfo[cl->reliableAcknowledge&(MAX_RELIABLE_COMMANDS-1)].cmd: '%s'\n",
-                            cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7F].cmd);
+                            BO1_VA(cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7F].cmd));
                         v6 = Com_HashKey(cl->reliableCommandInfo[cl->reliableAcknowledge & 0x7F].cmd, 32);
                         Com_Printf(
                             15,

@@ -559,13 +559,13 @@ void __cdecl R_TransformSkelMat(const float *in1, const float4 *in2, float *out)
     out[2] = (float)((float)((float)(*in1 * in2->v[2]) + (float)(in1[1] * in2[1].v[2])) + (float)(in1[2] * in2[2].v[2])) + in2[3].v[2];
 }
 
-void __cdecl R_SkinGfxEntityCmd(GfxSceneEntity **data)
+void __cdecl R_SkinGfxEntityCmd(Ptr32<GfxSceneEntity> *data)
 {
     DObjAnimMat *boneMatrix; // [esp+0h] [ebp-14h]
     const DObj *obj; // [esp+4h] [ebp-10h] BYREF
     GfxSceneEntity *localSceneEnt; // [esp+8h] [ebp-Ch] BYREF
     GfxSceneEntity *sceneEnt; // [esp+Ch] [ebp-8h]
-    GfxSceneEntity **pSceneEnt; // [esp+10h] [ebp-4h]
+    Ptr32<GfxSceneEntity> *pSceneEnt; // [esp+10h] [ebp-4h]
     int savedregs; // [esp+14h] [ebp+0h] BYREF
 
     if ( !data && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dobj_skin.cpp", 1092, 0, "%s", "data") )

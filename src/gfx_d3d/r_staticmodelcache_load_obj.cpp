@@ -96,7 +96,7 @@ unsigned int __cdecl R_OptimalSModelResourceStats(GfxWorld *world, GfxSModelSurf
     }
     if ( !world->dpvs.smodelCount )
         return 0;
-    drawInstArray = (const GfxStaticModelDrawInst **)Hunk_AllocateTempMemory(4 * world->dpvs.smodelCount, "R_AssignSModelCacheResources");
+    drawInstArray = (const GfxStaticModelDrawInst **)Hunk_AllocateTempMemory(sizeof(*drawInstArray) * world->dpvs.smodelCount, "R_AssignSModelCacheResources");
     for ( smodelIter = 0; smodelIter != world->dpvs.smodelCount; ++smodelIter )
         drawInstArray[smodelIter] = &world->dpvs.smodelDrawInsts[smodelIter];
     //std::_Sort<Material * *,int,bool (__cdecl *)(Material const *,Material const *)>(

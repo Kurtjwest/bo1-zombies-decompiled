@@ -254,14 +254,14 @@ void __cdecl ActorScr_Clamp_0_1(actor_s *pSelf, const actor_fields_s *pField)
     {
         if ( fValue < 0.0 )
         {
-            v3 = va("actor field %s clamped from %g to 0\n", pField->name, fValue);
+            v3 = va("actor field %s clamped from %g to 0\n", BO1_VA(pField->name), fValue);
             Scr_Error(v3, 0);
             fValue = 0.0f;
         }
     }
     else
     {
-        v2 = va("actor field %s clamped from %g to 1\n", pField->name, fValue);
+        v2 = va("actor field %s clamped from %g to 1\n", BO1_VA(pField->name), fValue);
         Scr_Error(v2, 0);
         fValue = 1.0f;
     }
@@ -280,7 +280,7 @@ void __cdecl ActorScr_Clamp_0_Positive(actor_s *pSelf, const actor_fields_s *pFi
     value = Scr_GetFloat(0, SCRIPTINSTANCE_SERVER);
     if ( value < 0.0 )
     {
-        v2 = va("actor field %s clamped from %g to 0\n", pField->name, value);
+        v2 = va("actor field %s clamped from %g to 0\n", BO1_VA(pField->name), value);
         Scr_Error(v2, 0);
         value = 0.0f;
     }
@@ -295,7 +295,7 @@ void __cdecl ActorScr_ReadOnly(actor_s *pSelf, const actor_fields_s *pField)
         __debugbreak();
     if ( !pField && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp", 434, 0, "%s", "pField") )
         __debugbreak();
-    v2 = va("actor field %s is read-only", pField->name);
+    v2 = va("actor field %s is read-only", BO1_VA(pField->name));
     Scr_Error(v2, 0);
 }
 
@@ -340,7 +340,7 @@ void __cdecl ActorScr_SetTime(actor_s *pSelf, const actor_fields_s *pField)
         __debugbreak();
     }
     v2 = Scr_GetFloat(0, SCRIPTINSTANCE_SERVER) * 1000.0;
-    *(gentity_s **)((char *)&pSelf->ent + pField->ofs) = (gentity_s *)BO1_I2P((int)(v2 + 9.313225746154785e-10));
+    *(Ptr32<gentity_s> *)((char *)&pSelf->ent + pField->ofs) = (gentity_s *)BO1_I2P((int)(v2 + 9.313225746154785e-10));
 }
 
 void __cdecl ActorScr_GetTime(actor_s *pSelf, const actor_fields_s *pField)
@@ -387,7 +387,7 @@ void __cdecl ActorScr_SetWeapon(actor_s *pSelf, const actor_fields_s *pField)
         Scr_ParamError(0, v2, SCRIPTINSTANCE_SERVER);
     }
     String = Scr_GetString(0, SCRIPTINSTANCE_SERVER);
-    *(gentity_s **)((char *)&pSelf->ent + pField->ofs) = (gentity_s *)BO1_I2P(G_GetWeaponIndexForName(String));
+    *(Ptr32<gentity_s> *)((char *)&pSelf->ent + pField->ofs) = (gentity_s *)BO1_I2P(G_GetWeaponIndexForName(String));
 }
 
 void __cdecl ActorScr_GetWeapon(actor_s *pSelf, const actor_fields_s *pField)
@@ -734,43 +734,43 @@ void __cdecl PrintFieldUsage(const actor_fields_s *fields)
         switch ( fields[i].type )
         {
             case F_INT:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "int");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "int");
                 break;
             case F_SHORT:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "short");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "short");
                 break;
             case F_BYTE:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "byte");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "byte");
                 break;
             case F_FLOAT:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "float");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "float");
                 break;
             case F_STRING:
             case F_MODEL:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "string");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "string");
                 break;
             case F_VECTOR:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "vector");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "vector");
                 break;
             case F_ENTITY:
             case F_ENTHANDLE:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "entnum");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "entnum");
                 break;
             case F_ACTOR:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "actor");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "actor");
                 break;
             case F_SENTIENT:
             case F_SENTIENTHANDLE:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "sentient");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "sentient");
                 break;
             case F_CLIENT:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "clientnum");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "clientnum");
                 break;
             case F_PATHNODE:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "pathnode");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "pathnode");
                 break;
             case F_ACTORGROUP:
-                Com_Printf(0, "^5    %-20s: %s\n", fields[i].name, "actorgroup");
+                Com_Printf(0, "^5    %-20s: %s\n", BO1_VA(fields[i].name), "actorgroup");
                 break;
             default:
                 v1 = va("Cmd_AI_f: unhandled field type %i\n", fields[i].type);
@@ -977,7 +977,7 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
     entnum = pSelf->ent->s.number;
     if ( pField->ofs == AF_SP_EXT ) // zombies: side-table rows have no actor_s offset
     {
-        Com_Printf(0, "ent %i: %s is an SP side-table field; read it from script\n", entnum, pField->name);
+        Com_Printf(0, "ent %i: %s is an SP side-table field; read it from script\n", entnum, BO1_VA(pField->name));
         return;
     }
     if ( pField->getter == ActorScr_GetTime )
@@ -992,34 +992,34 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                             "pField->type == F_INT") )
                 __debugbreak();
         }
-        Com_Printf(0, "ent %i: %s = %g\n", entnum, pField->name, (float)((float)*(int *)&pBase[pField->ofs] * 0.001));
+        Com_Printf(0, "ent %i: %s = %g\n", entnum, BO1_VA(pField->name), (float)((float)*(int *)&pBase[pField->ofs] * 0.001));
     }
     else
     {
         switch ( pField->type )
         {
             case F_INT:
-                Com_Printf(0, "ent %i: %s = %i\n", entnum, pField->name, *(unsigned int *)&pBase[pField->ofs]);
+                Com_Printf(0, "ent %i: %s = %i\n", entnum, BO1_VA(pField->name), *(unsigned int *)&pBase[pField->ofs]);
                 break;
             case F_SHORT:
-                Com_Printf(0, "ent %i: %s = %i\n", entnum, pField->name, *(__int16 *)&pBase[pField->ofs]);
+                Com_Printf(0, "ent %i: %s = %i\n", entnum, BO1_VA(pField->name), *(__int16 *)&pBase[pField->ofs]);
                 break;
             case F_BYTE:
-                Com_Printf(0, "ent %i: %s = %i\n", entnum, pField->name, pBase[pField->ofs]);
+                Com_Printf(0, "ent %i: %s = %i\n", entnum, BO1_VA(pField->name), pBase[pField->ofs]);
                 break;
             case F_FLOAT:
-                Com_Printf(0, "ent %i: %s = %g\n", entnum, pField->name, *(float *)&pBase[pField->ofs]);
+                Com_Printf(0, "ent %i: %s = %g\n", entnum, BO1_VA(pField->name), *(float *)&pBase[pField->ofs]);
                 break;
             case F_STRING:
                 str = *(_WORD *)&pBase[pField->ofs];
                 if ( str )
                 {
                     v12 = SL_ConvertToString(str, SCRIPTINSTANCE_SERVER);
-                    Com_Printf(0, "ent %i: %s = %s\n", entnum, pField->name, v12);
+                    Com_Printf(0, "ent %i: %s = %s\n", entnum, BO1_VA(pField->name), v12);
                 }
                 else
                 {
-                    Com_Printf(0, "ent %i: %s = %s\n", entnum, pField->name, "<undefined>");
+                    Com_Printf(0, "ent %i: %s = %s\n", entnum, BO1_VA(pField->name), "<undefined>");
                 }
                 break;
             case F_VECTOR:
@@ -1027,7 +1027,7 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                     0,
                     "ent %i: %s = %g %g %g\n",
                     entnum,
-                    pField->name,
+                    BO1_VA(pField->name),
                     *(float *)&pBase[pField->ofs],
                     *(float *)&pBase[pField->ofs + 4],
                     *(float *)&pBase[pField->ofs + 8]);
@@ -1049,7 +1049,7 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                 if ( !level.gentities[i].targetname )
                     goto LABEL_46;
                 v11 = SL_ConvertToString(level.gentities[i].targetname, SCRIPTINSTANCE_SERVER);
-                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, v11);
+                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, BO1_VA(pField->name), i, v11);
                 break;
             case F_ENTHANDLE:
                 //if ( !EntHandle::isDefined((EntHandle *)&pBase[pField->ofs]) )
@@ -1070,25 +1070,25 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                 if ( !level.gentities[i].targetname )
                     goto LABEL_46;
                 v10 = SL_ConvertToString(level.gentities[i].targetname, SCRIPTINSTANCE_SERVER);
-                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, v10);
+                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, BO1_VA(pField->name), i, v10);
                 break;
             case F_ACTOR:
                 if ( !*(unsigned int *)&pBase[pField->ofs] )
                     goto LABEL_43;
-                i = ***(unsigned int ***)&pBase[pField->ofs];
+                i = ***(Ptr32<Ptr32<unsigned int>> *)&pBase[pField->ofs];
                 if ( !level.gentities[i].targetname )
                     goto LABEL_46;
                 v9 = SL_ConvertToString(level.gentities[i].targetname, SCRIPTINSTANCE_SERVER);
-                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, v9);
+                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, BO1_VA(pField->name), i, v9);
                 break;
             case F_SENTIENT:
                 if ( !*(unsigned int *)&pBase[pField->ofs] )
                     goto LABEL_43;
-                i = ***(unsigned int ***)&pBase[pField->ofs];
+                i = ***(Ptr32<Ptr32<unsigned int>> *)&pBase[pField->ofs];
                 if ( !level.gentities[i].targetname )
                     goto LABEL_46;
                 v8 = SL_ConvertToString(level.gentities[i].targetname, SCRIPTINSTANCE_SERVER);
-                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, v8);
+                Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, BO1_VA(pField->name), i, v8);
                 break;
             case F_SENTIENTHANDLE:
                 //if ( !SentientHandle::isDefined((SentientHandle *)&pBase[pField->ofs]) )
@@ -1099,12 +1099,12 @@ void __cdecl Cmd_AI_DisplayValue(actor_s *pSelf, unsigned __int8 *pBase, const a
                 if ( level.gentities[i].targetname )
                 {
                     v7 = SL_ConvertToString(level.gentities[i].targetname, SCRIPTINSTANCE_SERVER);
-                    Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, v7);
+                    Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, BO1_VA(pField->name), i, v7);
                 }
                 else
                 {
 LABEL_46:
-                    Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, pField->name, i, "<undefined>");
+                    Com_Printf(0, "ent %i: %s = %i (targetname %s)\n", entnum, BO1_VA(pField->name), i, "<undefined>");
                 }
                 break;
             case F_CLIENT:
@@ -1112,20 +1112,20 @@ LABEL_46:
                     0,
                     "ent %i: %s = client %i\n",
                     entnum,
-                    pField->name,
+                    BO1_VA(pField->name),
                     (signed int)(*(unsigned int *)&pBase[pField->ofs] - (unsigned int)BO1_P2I(level.clients)) / 10720);
                 break;
             case F_PATHNODE:
-                pNode = *(pathnode_t **)&pBase[pField->ofs];
+                pNode = *(Ptr32<pathnode_t> *)&pBase[pField->ofs];
                 if ( pNode )
                 {
                     v3 = Path_ConvertNodeToIndex(pNode);
-                    Com_Printf(0, "ent %i: %s = node %i\n", entnum, pField->name, v3);
+                    Com_Printf(0, "ent %i: %s = node %i\n", entnum, BO1_VA(pField->name), v3);
                 }
                 else
                 {
 LABEL_43:
-                    Com_Printf(0, "ent %i: %s = (null)\n", entnum, pField->name);
+                    Com_Printf(0, "ent %i: %s = (null)\n", entnum, BO1_VA(pField->name));
                 }
                 break;
             case F_ACTORGROUP:
@@ -1133,10 +1133,10 @@ LABEL_43:
             case F_MODEL:
                 v4 = G_ModelName(pBase[pField->ofs]);
                 v5 = SL_ConvertToString(v4, SCRIPTINSTANCE_SERVER);
-                Com_Printf(0, "ent %i: %s = %s\n", entnum, pField->name, v5);
+                Com_Printf(0, "ent %i: %s = %s\n", entnum, BO1_VA(pField->name), v5);
                 break;
             default:
-                v6 = va("Cmd_AI_f: unhandled field type %i for %s\n", pField->type, pField->name);
+                v6 = va("Cmd_AI_f: unhandled field type %i for %s\n", pField->type, BO1_VA(pField->name));
                 if ( !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\actor_fields.cpp", 973, 0, v6) )
                     __debugbreak();
                 break;
@@ -1159,12 +1159,12 @@ void __cdecl Cmd_AI_SetValue(actor_s *pSelf, int argc, unsigned __int8 *pBase, c
         __debugbreak();
     if ( pField->setter == ActorScr_ReadOnly )
     {
-        Com_PrintError(0, "%s is read-only\n", pField->name);
+        Com_PrintError(0, "%s is read-only\n", BO1_VA(pField->name));
         return;
     }
     if ( pField->ofs == AF_SP_EXT ) // zombies: side-table rows have no actor_s offset
     {
-        Com_PrintError(0, "%s is an SP side-table field; set it from script\n", pField->name);
+        Com_PrintError(0, "%s is an SP side-table field; set it from script\n", BO1_VA(pField->name));
         return;
     }
     if ( pField->setter == ActorScr_SetTime )

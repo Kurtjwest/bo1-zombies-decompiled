@@ -1052,7 +1052,7 @@ void __cdecl FX_UpdateEffectPartialForClass(
                 if ( elemHandle == 0xFFFF )
                 {
                     Com_Printf(0, "---- EFFECT ABOUT TO ASSERT ----\n");
-                    Com_Printf(0, "effect '%s' spawned at %i pass %i\n", effect->def->name, effect->msecBegin, passCount);
+                    Com_Printf(0, "effect '%s' spawned at %i pass %i\n", BO1_VA(effect->def->name), effect->msecBegin, passCount);
                     Com_Printf(
                         0,
                         "looping from %i to %i, first existing is %i\n",
@@ -1986,7 +1986,7 @@ int __cdecl FX_UpdateElementPosition_Local(FxUpdateElem *update)
     {
         v1 = va(
                      "effect %s def %i baseVel %g %g %g",
-                     update->effect->def->name,
+                     BO1_VA(update->effect->def->name),
                      update->elemIndex,
                      *update->elemBaseVel,
                      update->elemBaseVel[1],

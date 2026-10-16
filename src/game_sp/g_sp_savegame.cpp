@@ -417,7 +417,7 @@ static void Dvar_SaveDvars(MemoryFile *memFile, unsigned int dvarFlags)
             int length = (int)strlen(dvar->name);
             if (length >= 0x400)
             {
-                Com_PrintError(16, "ERROR: Truncating dvar name '%s' in save game\n", dvar->name);
+                Com_PrintError(16, "ERROR: Truncating dvar name '%s' in save game\n", BO1_VA(dvar->name));
                 length = 0x3FF;
             }
             MemFile_WriteInt(memFile, length);
@@ -426,7 +426,7 @@ static void Dvar_SaveDvars(MemoryFile *memFile, unsigned int dvarFlags)
             length = (int)strlen(value);
             if (length >= 0x400)
             {
-                Com_PrintError(16, "ERROR: Truncating dvar value '%s' for dvar '%s' in save game\n", value, dvar->name);
+                Com_PrintError(16, "ERROR: Truncating dvar value '%s' for dvar '%s' in save game\n", value, BO1_VA(dvar->name));
                 length = 0x3FF;
             }
             MemFile_WriteInt(memFile, length);

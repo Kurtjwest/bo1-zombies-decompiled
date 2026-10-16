@@ -59,7 +59,7 @@ void __cdecl DObjDumpInfo(const DObj *obj)
         for ( j = 0; j < numModels; ++j )
         {
             model = models[j];
-            Com_Printf(19, "%d: '%s'\n", boneIndex, model->name);
+            Com_Printf(19, "%d: '%s'\n", boneIndex, BO1_VA(model->name));
             boneIndex += XModelNumBones(model);
         }
         Com_Printf(19, "\nBones:\n");
@@ -333,7 +333,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
         {
             iassert(currNumModels);
             DObjDumpCreationInfo(dobjModels, numModels);
-            Com_Error(ERR_DROP, "dobj for xmodel ',27h,'%s',27h,' has more than %d bones (see console for details)", models[0]->name, 160);
+            Com_Error(ERR_DROP, "dobj for xmodel ',27h,'%s',27h,' has more than %d bones (see console for details)", BO1_VA(models[0]->name), 160);
         }
         models[currNumModels] = model;
         modelParents[currNumModels] = -1;
@@ -352,7 +352,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
                 }
 
                 iassert(currNumModels);
-                Com_PrintWarning(19, "WARNING: Part '%s' not found in model '%s' or any of its descendants\n", SL_ConvertToString(name, SCRIPTINSTANCE_SERVER), models[0]->name);
+                Com_PrintWarning(19, "WARNING: Part '%s' not found in model '%s' or any of its descendants\n", SL_ConvertToString(name, SCRIPTINSTANCE_SERVER), BO1_VA(models[0]->name));
                 iassert(modelParents[currNumModels] == NO_BONEINDEX);
             }
             else
@@ -394,7 +394,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
                         19,
                         "WARNING: Attempting to meld model, but root part '%s' of model '%s' not found in model '%s' or any of its descendants\n",
                         SL_ConvertToString(*boneNames, SCRIPTINSTANCE_SERVER),
-                        model->name,
+                        BO1_VA(model->name),
                         models[0]->name);
                 }
             }

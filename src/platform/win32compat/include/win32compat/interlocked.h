@@ -15,6 +15,15 @@
         return (LONG)(op64); \
     else \
         return (op32)
+// A 32-bit operand of an operation on a 64-bit 'long' keeps the value it has as a Win32 LONG: the engine's
+// "add 0xFFFFFFFF" decrements must subtract one there too.
+template <typename V> static inline LONGLONG W32_Operand64(V v)
+{
+    if constexpr (sizeof(V) <= 4)
+        return (LONGLONG)(LONG)v;
+    else
+        return (LONGLONG)v;
+}
 template <typename T> static inline LONG InterlockedIncrement(volatile T *p)
 {
     W32_IL32(T);
@@ -28,25 +37,25 @@ template <typename T> static inline LONG InterlockedDecrement(volatile T *p)
 template <typename T, typename V> static inline LONG InterlockedExchange(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_exchange_n((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_exchange_n((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_exchange_n((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_exchange_n((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedExchangeAdd(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_add((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_add((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_add((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_add((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedAdd(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_add_fetch((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_add_fetch((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_add_fetch((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_add_fetch((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V, typename C> static inline LONG InterlockedCompareExchange(volatile T *p, V exchange, C comparand)
 {
     W32_IL32(T);
     if constexpr (sizeof(T) == 8)
     {
-        LONGLONG c = (LONGLONG)comparand;
-        __atomic_compare_exchange_n((volatile LONGLONG *)p, &c, (LONGLONG)exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+        LONGLONG c = W32_Operand64(comparand);
+        __atomic_compare_exchange_n((volatile LONGLONG *)p, &c, W32_Operand64(exchange), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
         return (LONG)c;
     }
     else
@@ -59,17 +68,17 @@ template <typename T, typename V, typename C> static inline LONG InterlockedComp
 template <typename T, typename V> static inline LONG InterlockedOr(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_or((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_or((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_or((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_or((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedAnd(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_and((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_and((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_and((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_and((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedXor(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_xor((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_xor((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_xor((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_xor((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T> static inline LONGLONG InterlockedIncrement64(volatile T *p) { W32_IL64(T); return __atomic_add_fetch((volatile LONGLONG *)p, 1, __ATOMIC_SEQ_CST); }
 template <typename T> static inline LONGLONG InterlockedDecrement64(volatile T *p) { W32_IL64(T); return __atomic_sub_fetch((volatile LONGLONG *)p, 1, __ATOMIC_SEQ_CST); }

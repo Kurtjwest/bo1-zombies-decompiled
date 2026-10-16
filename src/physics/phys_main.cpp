@@ -2878,7 +2878,7 @@ void __cdecl print_smodel(cStaticModel_s *smodel, int refcount, const float *dim
     Com_Printf(
         20,
         "%-42s\t refs( %4d ) lods( %d ) ncol_tris( %4d )     avr dims( %5.0f, %5.0f, %5.0f )\n",
-        model->name,
+        BO1_VA(model->name),
         refcount,
         model->numLods,
         ntris,
@@ -3019,7 +3019,7 @@ int __cdecl buoyancy_worker()
         if ( (phys_free_list<PhysObjUserData>::T_internal_base *)BO1_I2P(_InterlockedCompareExchange(
                                                                                                                              (volatile unsigned __int32 *)&g_pop_iter,
                                                                                                                              (signed __int32)i->m_next_T_internal,
-                                                                                                                             (signed __int32)i)) == i )
+                                                                                                                             (signed __int32)BO1_P2I(i))) == i )
             Phys_BodyGrabSnapshotNitrous((PhysObjUserData *)&i[2], g_delta_t);
     }
     return 0;
@@ -3521,7 +3521,7 @@ int __cdecl wheel_collision_worker(jqBatch *__)
         if ((phys_free_list<PhysObjUserData>::T_internal_base *)BO1_I2P(_InterlockedCompareExchange(
             (volatile unsigned __int32 *)&g_wpop_iter,
             (signed __int32)i->m_next_T_internal,
-            (signed __int32)i)) == i)
+            (signed __int32)BO1_P2I(i))) == i)
             collide_vehicle_wheels((PhysObjUserData *)&i[2]);
     }
     return 0;

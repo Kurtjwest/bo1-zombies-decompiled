@@ -812,7 +812,7 @@ void __thiscall Scr_ScriptWindow::EnterCallInternal(scriptInstance_t inst)
             if ( Sys_IsRemoteDebugServer() )
                 Sys_EndWriteDebugSocket();
         }
-        v3 = *(const char **)++codePos;
+        v3 = *(Ptr32<const char> *)++codePos;
         codePos += 4;
         destCodePos = v3;
         Scr_GetSourcePosOfType(inst, v3 - 1, 4, &pos);
@@ -1185,7 +1185,7 @@ Scr_WatchElement_s *__thiscall Scr_ScriptWatch::CreateBreakpointElement(
     }
     pElement = ElementRef;
     lineNum = Scr_GetSourcePos(inst, bufferIndex, sourcePos, valueText, 0x101u) + 1;
-    Com_sprintf(refText, 0x81u, "%i %s", lineNum, gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf);
+    Com_sprintf(refText, 0x81u, "%i %s", lineNum, BO1_VA(gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf));
     newElement = Scr_ScriptWatch::CreateWatchElement(
                                  inst,
                                  refText,
@@ -2083,7 +2083,7 @@ void __cdecl Scr_SetNonFieldElementRefText(scriptInstance_t inst, Scr_WatchEleme
     switch ( element->fieldName )
     {
         case 0u:
-            Com_sprintf(refText, 0x80u, "%s.size", parentElement->refText);
+            Com_sprintf(refText, 0x80u, "%s.size", BO1_VA(parentElement->refText));
             ReplaceString(&element->refText, refText, "Scr_SetNonFieldElementRefText", 0, inst);
             break;
         case 1u:
@@ -2100,7 +2100,7 @@ void __cdecl Scr_SetNonFieldElementRefText(scriptInstance_t inst, Scr_WatchEleme
             }
             else
             {
-                Com_sprintf(refText, 0x80u, "%s.self", parentElement->refText);
+                Com_sprintf(refText, 0x80u, "%s.self", BO1_VA(parentElement->refText));
                 ReplaceString(&element->refText, refText, "Scr_SetNonFieldElementRefText", 0, inst);
             }
             break;
@@ -2239,11 +2239,11 @@ void __cdecl Scr_SetElementRefText(scriptInstance_t inst, Scr_WatchElement_s *el
         case 0x12u:
         case 0x13u:
 $LN4_182:
-            Com_sprintf(refText, 0x80u, "%s.%s", parentElement->refText, fieldText);
+            Com_sprintf(refText, 0x80u, "%s.%s", BO1_VA(parentElement->refText), fieldText);
             ReplaceString(&element->refText, refText, "Scr_SetElementRefText", 0, inst);
             break;
         case 0x14u:
-            Com_sprintf(refText, 0x80u, "%s[%s]", parentElement->refText, fieldText);
+            Com_sprintf(refText, 0x80u, "%s[%s]", BO1_VA(parentElement->refText), fieldText);
             ReplaceString(&element->refText, refText, "Scr_SetElementRefText", 0, inst);
             break;
         case 0x17u:
@@ -2391,7 +2391,7 @@ char __thiscall Scr_ScriptWatch::PostEvaluateWatchElement(
     Scr_RemoveValue(inst, element);
     if (gScrVarPub[inst].error_message)
     {
-        Com_sprintf(valueText, 0x101u, "<%s>", gScrVarPub[inst].error_message);
+        Com_sprintf(valueText, 0x101u, "<%s>", BO1_VA(gScrVarPub[inst].error_message));
         ReplaceString(&element->valueText, valueText, "PostEvaluateWatchElement", 0, inst);
         element->objectId = 0;
         Scr_ClearErrorMessage(inst);

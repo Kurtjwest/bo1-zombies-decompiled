@@ -576,7 +576,7 @@ void __thiscall GlassClient::SetBrushMaterial(GlassState::State state)
     }
     if (Dvar_GetBool("bo1_glass_trace"))
         Com_Printf(16, "bo1_glass: brush id %u model %u surfaces %u material %s\n",
-            this->glass->index, this->glass->brushModel, br->surfaceCount, crackedMaterial->info.name);
+            this->glass->index, this->glass->brushModel, br->surfaceCount, BO1_VA(crackedMaterial->info.name));
 }
 
 void __thiscall GlassClient::Shatter(const float *pos, const float *dir)

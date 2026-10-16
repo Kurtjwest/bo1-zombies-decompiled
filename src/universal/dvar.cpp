@@ -138,7 +138,7 @@ const char *__cdecl Dvar_EnumToString(const dvar_s *dvar)
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->type == DVAR_TYPE_ENUM)",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -149,7 +149,7 @@ const char *__cdecl Dvar_EnumToString(const dvar_s *dvar)
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->domain.enumeration.strings)",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -191,7 +191,7 @@ const char *__cdecl Dvar_IndexStringToEnumString(const dvar_s *dvar, const char 
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->type == DVAR_TYPE_ENUM)",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -202,7 +202,7 @@ const char *__cdecl Dvar_IndexStringToEnumString(const dvar_s *dvar, const char 
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->domain.enumeration.strings)",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -213,7 +213,7 @@ const char *__cdecl Dvar_IndexStringToEnumString(const dvar_s *dvar, const char 
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(indexString)",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -297,11 +297,11 @@ const char *__cdecl Dvar_ValueToString(const dvar_s *dvar, DvarValue value)
                             0,
                             "%s\n\t(dvar->name) = %s",
                             "(value.string)",
-                            dvar->name) )
+                            BO1_VA(dvar->name)) )
             {
                 __debugbreak();
             }
-            result = va("%s", value.string);
+            result = va("%s", BO1_VA(value.string));
             break;
         case DVAR_TYPE_COLOR:
             result = va(
@@ -527,7 +527,7 @@ char *__cdecl Dvar_DomainToString_Internal(
                                                         outBufferEnd - outBufferWalk,
                                                         "\n    %2i: %s",
                                                         stringIndex,
-                                                        *(Ptr32<const char> *)BO1_I2P((domain.integer.max + 4 * stringIndex)));
+                                                        BO1_VA(*(Ptr32<const char> *)BO1_I2P((domain.integer.max + 4 * stringIndex))));
                     if ( charsWrittena < 0 )
                         break;
                     if ( outLineCount )
@@ -786,13 +786,13 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, Ptr32<const char> *stringTable)
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(stringTable)",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
     if ( dvar->type != DVAR_TYPE_ENUM )
     {
-        v2 = va("dvar %s type %i", dvar->name, dvar->type);
+        v2 = va("dvar %s type %i", BO1_VA(dvar->name), dvar->type);
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",
                         1221,
@@ -806,7 +806,7 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, Ptr32<const char> *stringTable)
         ;
     if ( dvar->reset.integer < 0 || dvar->reset.integer >= stringCount && dvar->reset.integer )
     {
-        v3 = va("name %s reset %i count %i", dvar->name, dvar->reset.integer, stringCount);
+        v3 = va("name %s reset %i count %i", BO1_VA(dvar->name), dvar->reset.integer, stringCount);
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",
                         1226,
@@ -1473,7 +1473,7 @@ void __cdecl Dvar_ChangeResetValue(dvar_s *dvar, DvarValue value)
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->flags & (1 << 9))",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -1579,7 +1579,7 @@ void __cdecl Dvar_SetVariant(dvar_s *dvar, DvarValue value, DvarSetSource source
         if ( Com_LogFileOpen() && !Dvar_ValuesEqual(dvar->type, dvar->current, value) )
         {
             v3 = Dvar_ValueToString(dvar, value);
-            Com_sprintf(string, 0x400u, "            dvar set %s %s\n", dvar->name, v3);
+            Com_sprintf(string, 0x400u, "            dvar set %s %s\n", BO1_VA(dvar->name), v3);
             Com_PrintMessage(6, string, 0);
         }
         if ( !Dvar_ValueInDomain(dvar->type, value, dvar->domain) )
@@ -1597,7 +1597,7 @@ void __cdecl Dvar_SetVariant(dvar_s *dvar, DvarValue value, DvarSetSource source
                                 0,
                                 "%s\n\t(dvar->name) = %s",
                                 "(Dvar_ValueInDomain( dvar->type, dvar->reset, dvar->domain ))",
-                                dvar->name) )
+                                BO1_VA(dvar->name)) )
                 {
                     __debugbreak();
                 }
@@ -1613,7 +1613,7 @@ void __cdecl Dvar_SetVariant(dvar_s *dvar, DvarValue value, DvarSetSource source
             {
                 Dvar_SetLatchedValue(dvar, value);
                 if ( !Dvar_ValuesEqual(dvar->type, dvar->latched, dvar->current) )
-                    Com_Printf(16, "%s will be changed upon restarting.\n", dvar->name);
+                    Com_Printf(16, "%s will be changed upon restarting.\n", BO1_VA(dvar->name));
                 return;
             }
         }
@@ -1758,17 +1758,17 @@ char __cdecl Dvar_CanChangeValue(const dvar_s *dvar, DvarValue value, DvarSetSou
     reason = 0;
     if ( (dvar->flags & 0x40) != 0 )
     {
-        reason = va("%s is read only.\n", dvar->name);
+        reason = va("%s is read only.\n", BO1_VA(dvar->name));
     }
     else if ( (dvar->flags & 0x10) != 0 )
     {
-        reason = va("%s is write protected.\n", dvar->name);
+        reason = va("%s is write protected.\n", BO1_VA(dvar->name));
     }
     else if ( (dvar->flags & 0x80) != 0
                  && !dvar_cheats->current.enabled
                  && (source == DVAR_SOURCE_EXTERNAL || source == DVAR_SOURCE_SCRIPT) )
     {
-        reason = va("%s is cheat protected.\n", dvar->name);
+        reason = va("%s is cheat protected.\n", BO1_VA(dvar->name));
     }
     if ( !reason )
         return 1;
@@ -1861,7 +1861,7 @@ void __cdecl Dvar_Reregister(
     {
         if (dvar->type != DVAR_TYPE_STRING)
         {
-            v9 = va("dvar %s, type %i", dvar->name, dvar->type);
+            v9 = va("dvar %s, type %i", BO1_VA(dvar->name), dvar->type);
             if (!Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",
                 1826,
@@ -2280,7 +2280,7 @@ const dvar_s *__cdecl Dvar_RegisterNew(
                     ERR_FATAL,
                     "dvar name hash collision between '%s' and '%s' Please change one of these names to remove the hash collision\n",
                     dvarName,
-                    var->name);
+                    BO1_VA(var->name));
         }
     }
     dvar->hashNext = dvarHashTable[hash & 0x3FF];
@@ -2630,7 +2630,7 @@ void __cdecl Dvar_SetBoolFromSource(dvar_s *dvar, bool value, DvarSetSource sour
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->type == DVAR_TYPE_BOOL || (dvar->type == DVAR_TYPE_STRING && (dvar->flags & (1 << 14))))",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -2674,7 +2674,7 @@ void __cdecl Dvar_SetIntFromSource(dvar_s *dvar, int value, DvarSetSource source
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->type == DVAR_TYPE_INT || dvar->type == DVAR_TYPE_ENUM || (dvar->type == DVAR_TYPE_STRING && (dvar->flag"
                     "s & (1 << 14))))",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -2713,7 +2713,7 @@ void __cdecl Dvar_SetInt64FromSource(dvar_s *dvar, __int64 value, DvarSetSource 
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->type == DVAR_TYPE_INT64 || (dvar->type == DVAR_TYPE_STRING && (dvar->flags & (1 << 14))))",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -2752,7 +2752,7 @@ void __cdecl Dvar_SetFloatFromSource(dvar_s *dvar, float value, DvarSetSource so
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->type == DVAR_TYPE_FLOAT || (dvar->type == DVAR_TYPE_STRING && (dvar->flags & (1 << 14))))",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -2882,7 +2882,7 @@ void __cdecl Dvar_SetColorFromSource(dvar_s *dvar, float r, float g, float b, fl
             0,
             "%s\n\t(dvar->name) = %s",
             "(dvar->type == DVAR_TYPE_COLOR || (dvar->type == DVAR_TYPE_STRING && (dvar->flags & (1 << 14))))",
-            dvar->name))
+            BO1_VA(dvar->name)))
     {
         __debugbreak();
     }
@@ -2997,7 +2997,7 @@ void __cdecl Dvar_SetStringFromSource(dvar_s *dvar, const char *string, DvarSetS
                     0,
                     "%s\n\t(dvar->name) = %s",
                     "(dvar->type == DVAR_TYPE_STRING || dvar->type == DVAR_TYPE_ENUM)",
-                    dvar->name) )
+                    BO1_VA(dvar->name)) )
     {
         __debugbreak();
     }
@@ -3015,7 +3015,7 @@ void __cdecl Dvar_SetStringFromSource(dvar_s *dvar, const char *string, DvarSetS
             newValue.integer = Dvar_StringToEnum(&dvar->domain, string);
             if ( newValue.integer == -1337 )
             {
-                v3 = va("%s doesn't include %s", dvar->name, string);
+                v3 = va("%s doesn't include %s", BO1_VA(dvar->name), string);
                 if ( !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp",
                                 2335,
@@ -3054,7 +3054,7 @@ void __cdecl Dvar_SetFromStringFromSource(dvar_s *dvar, const char *string, Dvar
         newValue = v4;
         if ( dvar->type == DVAR_TYPE_ENUM && newValue.integer == -1337 )
         {
-            Com_Printf(16, "'%s' is not a valid value for dvar '%s'\n", buf, dvar->name);
+            Com_Printf(16, "'%s' is not a valid value for dvar '%s'\n", buf, BO1_VA(dvar->name));
             Dvar_PrintDomain(dvar->type, dvar->domain);
             newValue = dvar->reset;
         }
@@ -3419,7 +3419,7 @@ int __cdecl Com_SaveDvarsToBuffer(const char **dvarnames, unsigned int numDvars,
         if ( !dvar && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp", 3023, 0, "%s", "dvar") )
             __debugbreak();
         string = Dvar_DisplayableValue(dvar);
-        written = _snprintf(buffer, bufsize, "%s \"%s\"\n", dvar->name, string);
+        written = _snprintf(buffer, bufsize, "%s \"%s\"\n", BO1_VA(dvar->name), string);
         if ( written < 0 )
             return 0;
         buffer += written;

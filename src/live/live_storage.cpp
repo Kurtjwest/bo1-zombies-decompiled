@@ -697,7 +697,7 @@ void __cdecl LiveStorage_DeleteUserFileFailure(TaskRecord *task)
     {
         fileInfo = (dwFileOperationInfo *)task->payload;
         v1 = Sys_Milliseconds();
-        Com_Printf(16, "Failed to remove %s from dw. (%dms)\n", fileInfo->fileTask.m_filename, v1 - task->startMS);
+        Com_Printf(16, "Failed to remove %s from dw. (%dms)\n", BO1_VA(fileInfo->fileTask.m_filename), v1 - task->startMS);
         if ( fileInfo->fileOperationFailureFunction )
             fileInfo->fileOperationFailureFunction(task->controllerIndex, task->payload);
     }
@@ -724,7 +724,7 @@ void __cdecl LiveStorage_DeleteUserFileSuccess(TaskRecord *task)
         fileInfo->writeCompleted = 1;
         fileInfo->retryInfo.retryCount = 0;
         v1 = Sys_Milliseconds();
-        Com_Printf(16, "Successfully removed %s from dw. (%dms)\n", fileInfo->fileTask.m_filename, v1 - task->startMS);
+        Com_Printf(16, "Successfully removed %s from dw. (%dms)\n", BO1_VA(fileInfo->fileTask.m_filename), v1 - task->startMS);
         if ( fileInfo->fileOperationSucessFunction )
             fileInfo->fileOperationSucessFunction(task->controllerIndex, fileInfo);
     }
@@ -799,7 +799,7 @@ void __cdecl LiveStorage_WriteUserFileFailure(TaskRecord *task)
     {
         fileInfo = (dwFileOperationInfo *)task->payload;
         v1 = Sys_Milliseconds();
-        Com_PrintError(16, "Unable to write %s to dw. (%dms)\n", fileInfo->fileTask.m_filename, v1 - task->startMS);
+        Com_PrintError(16, "Unable to write %s to dw. (%dms)\n", BO1_VA(fileInfo->fileTask.m_filename), v1 - task->startMS);
         LocalClientNum = Com_ControllerIndex_GetLocalClientNum(task->controllerIndex);
         UI_CloseMenu(LocalClientNum, "popup_uploadingfile");
         if ( fileInfo->fileOperationFailureFunction )
@@ -828,7 +828,7 @@ void __cdecl LiveStorage_WriteUserFileSuccess(TaskRecord *task)
         fileInfo->writeCompleted = 1;
         fileInfo->retryInfo.retryCount = 0;
         v1 = Sys_Milliseconds();
-        Com_Printf(16, "Successfully wrote %s to dw. (%dms)\n", fileInfo->fileTask.m_filename, v1 - task->startMS);
+        Com_Printf(16, "Successfully wrote %s to dw. (%dms)\n", BO1_VA(fileInfo->fileTask.m_filename), v1 - task->startMS);
         if ( fileInfo->fileOperationSucessFunction )
             fileInfo->fileOperationSucessFunction(task->controllerIndex, fileInfo);
     }
@@ -3271,7 +3271,7 @@ void __cdecl LiveStorage_FileShare_ReadMetaDataByIDFailure(TaskRecord *task)
 void __cdecl LiveStorage_FileShare_ReadMetaDataByIDSuccess(TaskRecord *task)
 {
     Com_Printf(16, "Got last played game summary.\n");
-    LiveStorage_FileShare_PublicMetaToTags(*((bdFileMetaData **)task->payload + 4), *((unsigned int *)task->payload + 1));
+    LiveStorage_FileShare_PublicMetaToTags(*((Ptr32<bdFileMetaData> *)task->payload + 4), *((unsigned int *)task->payload + 1));
     Live_FileShare_PopulateLastPlayedGameDvars();
 }
 

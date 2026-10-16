@@ -669,7 +669,23 @@ void PC_SourceError(int handle, const char *format, ...)
     Com_PrintError(13, "Menu load error: %s, line %d: %s\n", filename, line, string_1);
 }
 
+static int PC_Int_Expression_Parse_Eval(int handle, int *i);
+
+// the Eval_* functions throw their error text; the exe reports it as a menu source error
 int    PC_Int_Expression_Parse(int handle, int *i)
+{
+    try
+    {
+        return PC_Int_Expression_Parse_Eval(handle, i);
+    }
+    catch ( const EvalException &e )
+    {
+        PC_SourceError(handle, (char *)"%s\n", e.message);
+        return 0;
+    }
+}
+
+static int PC_Int_Expression_Parse_Eval(int handle, int *i)
 {
     EvalValue result; // [esp+0h] [ebp-5468h] BYREF
     EvalValue v5; // [esp+10h] [ebp-5458h]
@@ -825,7 +841,22 @@ int    PC_Float_Parse(int handle, float *f)
     }
 }
 
+static int PC_Float_Expression_Parse_Eval(int handle, float *f);
+
 int    PC_Float_Expression_Parse(int handle, float *f)
+{
+    try
+    {
+        return PC_Float_Expression_Parse_Eval(handle, f);
+    }
+    catch ( const EvalException &e )
+    {
+        PC_SourceError(handle, (char *)"%s\n", e.message);
+        return 0;
+    }
+}
+
+static int PC_Float_Expression_Parse_Eval(int handle, float *f)
 {
     float d; // xmm0_4
     EvalValue result; // [esp+8h] [ebp-5468h] BYREF
@@ -1488,7 +1519,7 @@ int __cdecl MenuParse_itemDef(menuDef_t *menu, int handle)
 
     if ( menu->itemCount >= 512 )
     {
-        Com_Error(ERR_DROP, "too many itemDefs for menu %s. MAX is %i", menu->window.name, 512);
+        Com_Error(ERR_DROP, "too many itemDefs for menu %s. MAX is %i", BO1_VA(menu->window.name), 512);
     }
     else
     {
@@ -3563,7 +3594,7 @@ int __cdecl ItemParse_state(itemDef_s *item, int handle)
         item->animInfo->animStates = g_load_0.animStates;
         *item->animInfo->animStates = (animParamsDef_t *)UI_Alloc(0x6Cu, 4);
         Item_PropertiesToAnimState(item, *item->animInfo->animStates);
-        **(unsigned int **)item->animInfo->animStates = (unsigned int)BO1_P2I(String_Alloc("Default"));
+        **(Ptr32<unsigned int> *)item->animInfo->animStates = (unsigned int)BO1_P2I(String_Alloc("Default"));
         ++item->animInfo->animStateCount;
     }
     animParams = (animParamsDef_t *)UI_Alloc(0x6Cu, 4);

@@ -98,7 +98,7 @@ char __cdecl DynEntPieces_SpawnPhysicsModel(
     XModelGetBounds(model, mins, maxs);
     if ( mins[0] == maxs[0] || mins[1] == maxs[1] || mins[2] == maxs[2] )
     {
-        Com_PrintWarning(1, "Failed to spawn pieces model '%s'.    No bounds.\n", model->name);
+        Com_PrintWarning(1, "Failed to spawn pieces model '%s'.    No bounds.\n", BO1_VA(model->name));
         return 0;
     }
     else

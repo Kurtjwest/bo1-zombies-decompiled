@@ -1954,7 +1954,7 @@ LABEL_18:
                 v99 = p_genericFilter->sunPosition[1];
                 v100 = p_genericFilter->sunPosition[2];
               }
-              v97 = **(float **)&iPass[72];
+              v97 = **(Ptr32<float> *)&iPass[72];
               v96 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[72] + 16));
               v95 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[72] + 32));
               v94 = gfxCmdBufSourceState.input.consts[182];
@@ -2030,7 +2030,7 @@ LABEL_18:
               *((unsigned int *)v62 + 2) = v64;
               *((unsigned int *)v62 + 3) = v63;
               R_DirtyCodeConstant(&gfxCmdBufSourceState, CONST_SRC_CODE_DLIGHT_SPOT_MATRIX_3);
-              v61 = **(float **)&iPass[72];
+              v61 = **(Ptr32<float> *)&iPass[72];
               v60 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[72] + 4));
               v59 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[72] + 8));
               v58 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[72] + 12));
@@ -2070,7 +2070,7 @@ LABEL_18:
               *((unsigned int *)v42 + 2) = v44;
               *((unsigned int *)v42 + 3) = v43;
               R_DirtyCodeConstant(&gfxCmdBufSourceState, CONST_SRC_CODE_DLIGHT_SHADOW_LOOKUP_MATRIX_3);
-              v41 = **(float **)&iPass[68];
+              v41 = **(Ptr32<float> *)&iPass[68];
               v40 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[68] + 4));
               v39 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[68] + 8));
               v38 = *(unsigned int *)BO1_I2P((*(unsigned int *)&iPass[68] + 12));

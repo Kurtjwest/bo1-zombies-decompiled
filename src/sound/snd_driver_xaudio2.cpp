@@ -243,7 +243,7 @@ int __cdecl SND_StartAliasStream(SndStartAliasInfo *startAliasInfo, unsigned int
             1,
             "Tried to play streamed sound '%s' from alias '%s', but it was not found at load time.\n",
             filename2,
-            alias->name);
+            BO1_VA(alias->name));
         return SND_SetPlaybackIdNotPlayed(voiceIndex);
     }
 }
@@ -420,7 +420,7 @@ int __cdecl iSND_CreateVoice(int voiceIndex, const snd_asset *snd, int isLooping
         {
             if (format != SND_ASSET_FORMAT_WMA)
             {
-                Com_PrintError(9, "invalid asset for alias %s\n", g_snd.voice[voiceIndex].alias->name);
+                Com_PrintError(9, "invalid asset for alias %s\n", BO1_VA(g_snd.voice[voiceIndex].alias->name));
                 return 0;
             }
             iassert(!isStreaming);

@@ -7770,7 +7770,7 @@ void __cdecl VEH_CheckVerticalVelocityToGoal(scr_vehicle_s *veh, float verticalD
     float verticalSpeed; // [esp+28h] [ebp-4h]
 
     verticalSpeed = veh->phys.vel[2];
-    if ( fabs((unsigned int)accelVec[2]) >= 0.001
+    if ( fabs(accelVec[2]) >= 0.001
         && fabs(verticalSpeed) >= 0.001
         && (float)(verticalSpeed * accelVec[2]) < 0.0
         && (float)(verticalDist * verticalSpeed) > 0.0 )

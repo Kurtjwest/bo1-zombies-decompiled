@@ -20,7 +20,7 @@ jqModule r_waterModule =
 };
 jqWorkerCmd r_waterWorkerCmd = { &r_waterModule, 4u, 0, 0, &r_waterLimit, NULL, 0u };
 
-void __cdecl R_UploadWaterTextureInternal(water_t **data)
+void __cdecl R_UploadWaterTextureInternal(Ptr32<water_t> *data)
 {
     water_t *water; // [esp+4h] [ebp-8h]
 
@@ -347,7 +347,10 @@ void __cdecl R_UploadWaterTexture(water_t *water, float floatTime)
     {
         water->writable.floatTime = floatTime;
         if ( r_drawWater->current.enabled )
-            Sys_AddWorkerCmdInternal(&r_waterWorkerCmd, (unsigned __int8 *)&water, 0);
+        {
+            Ptr32<water_t> payload = water; // the command's data is one 32-bit pointer
+            Sys_AddWorkerCmdInternal(&r_waterWorkerCmd, (unsigned __int8 *)&payload, 0);
+        }
     }
 }
 

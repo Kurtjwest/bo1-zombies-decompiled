@@ -376,13 +376,13 @@ void __thiscall phys_slot_pool::extra_info_allocate(char *slot)
     if ((phys_slot_pool *)BO1_I2P(_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&ei->m_allocation_owner,
         0xFEDCBA98,
-        (signed __int32)this)) != this
+        (signed __int32)BO1_P2I(this))) != this
         && _tlAssert("source/phys_mem_new.cpp", 312, "retv", "internal error."))
     {
         __debugbreak();
     }
 
-    _InterlockedExchangeAdd((volatile long *)&this->m_allocated_slot_count, 1u);
+    _InterlockedExchangeAdd((volatile LONG *)&this->m_allocated_slot_count, 1u);
     if (this->m_allocated_slot_count > this->m_total_slot_count
         && _tlAssert(
             "source/phys_mem_new.cpp",
@@ -467,7 +467,7 @@ void __thiscall phys_slot_pool::extra_info_free(unsigned __int8 *slot)
 
     if ((phys_slot_pool *)BO1_I2P(_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&ei->m_allocation_owner,
-        (signed __int32)this,
+        (signed __int32)BO1_P2I(this),
         0xFEDCBA98)) != (phys_slot_pool *)BO1_I2P(0xFEDCBA98)
         && _tlAssert(
             "source/phys_mem_new.cpp",
@@ -478,7 +478,7 @@ void __thiscall phys_slot_pool::extra_info_free(unsigned __int8 *slot)
         __debugbreak();
     }
 
-    _InterlockedExchangeAdd((volatile long *)&this->m_allocated_slot_count, (unsigned long)-1);
+    _InterlockedExchangeAdd((volatile LONG *)&this->m_allocated_slot_count, -1);
 
     if (this->m_allocated_slot_count > this->m_total_slot_count
         && _tlAssert(
@@ -601,7 +601,7 @@ void phys_slot_pool::free_slot(unsigned __int8 *slot)
     {
         cur = *(volatile signed __int64 *)&this->m_first_free_slot;
         *(unsigned int *)slot = LODWORD(cur); // link slot->next = current head
-        next = __SPAIR64__(HIDWORD(cur) + 1, (unsigned int)slot);
+        next = __SPAIR64__(HIDWORD(cur) + 1, (unsigned int)BO1_P2I(slot));
         if (_InterlockedCompareExchange64(
             (volatile signed __int64 *)&this->m_first_free_slot,
             next,

@@ -1835,7 +1835,7 @@ animScriptCommand_t *__cdecl BG_AnimScriptEventGetCommand(playerState_s *ps, scr
     if (event != ANIM_ET_DEATH && ps->pm_type >= 9)
         return 0;
     if (G_IsServerGameSystem(ps->clientNum))
-        Com_Printf(19, "event: %s\n", animEventTypesStr[event].string);
+        Com_Printf(19, "event: %s\n", BO1_VA(animEventTypesStr[event].string));
     script = &bgs->animData->animScriptData.scriptEvents[event];
     if (!script->numItems)
         return 0;
@@ -1949,7 +1949,7 @@ void __cdecl BG_SetConditionValue(unsigned int client, unsigned int condition, u
         }
         ConditionBit = BG_GetConditionBit(&bgs->clientinfo[client], condition);
         ConditionString = BG_GetConditionString(condition, ConditionBit);
-        Com_Printf(19, "condition: %s: %s\n", animConditionsStr[condition].string, ConditionString);
+        Com_Printf(19, "condition: %s: %s\n", BO1_VA(animConditionsStr[condition].string), ConditionString);
     }
 }
 
@@ -2008,7 +2008,7 @@ void __cdecl BG_SetConditionBit(unsigned int client, int condition, int value)
         && G_IsServerGameSystem(client))
     {
         ConditionString = BG_GetConditionString(condition, value);
-        Com_Printf(19, "condition: %s: %s\n", animConditionsStr[condition].string, ConditionString);
+        Com_Printf(19, "condition: %s: %s\n", BO1_VA(animConditionsStr[condition].string), ConditionString);
     }
     if (client >= 0x20
         && !Assert_MyHandler(
@@ -3263,7 +3263,7 @@ void __cdecl BG_UpdatePlayerDObj(
         dobjModels[iNumModels].boneName = SL_FindString(ci->attachTagNames[i], SCRIPTINSTANCE_SERVER);
         dobjModels[iNumModels].ignoreCollision = (attachIgnoreCollision & (1 << i)) != 0;
         if ( es->lerp.u.player.stowedWeapon
-            && !I_strcmp(ci->attachModelNames[i], **(const char ***)weapDefStowed->worldModel) )
+            && !I_strcmp(ci->attachModelNames[i], **(Ptr32<Ptr32<const char>> *)weapDefStowed->worldModel) )
         {
             iStowedWeaponModelIndex = iNumModels;
         }
@@ -3320,7 +3320,7 @@ void __cdecl BG_UpdatePlayerDObj(
                     boneIndex = -2;
                     if (DObjGetModelBoneIndex(
                         dobj,
-                        **(const char ***)weapDefDW->worldModel,
+                        **(Ptr32<Ptr32<const char>> *)weapDefDW->worldModel,
                         weapVariantDefDW->hideTags[tagIndex],
                         &boneIndex))
                     {
@@ -3643,7 +3643,7 @@ void __cdecl BG_AnimParseAnimScript(
                                     if ( !vehTypeStr )
                                         BG_AnimParseError(
                                             "BG_AnimParseAnimScript: unknown vehicle type for %s",
-                                            animVehicleNameStr[parseVehicleNameIndex].string);
+                                            BO1_VA(animVehicleNameStr[parseVehicleNameIndex].string));
                                     if ( I_stricmp(vehTypeStr, token) )
                                     {
                                         while ( I_stricmp(token, "#END_IF") )

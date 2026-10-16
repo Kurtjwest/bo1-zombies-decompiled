@@ -49,7 +49,7 @@ void __cdecl UI_BuildServerDisplayList(int localClientNum, uiInfo_s *uiInfo, int
     char v21; // [esp+13h] [ebp-449h]
     char *motd; // [esp+18h] [ebp-444h]
     char *v23; // [esp+1Ch] [ebp-440h]
-    int filter; // [esp+30h] [ebp-42Ch] BYREF
+    const char *filter[2]; // serverFilter_s returned by value: { description, basedir }
     const char *mod; // [esp+38h] [ebp-424h]
     char info[1024]; // [esp+3Ch] [ebp-420h] BYREF
     int ping; // [esp+440h] [ebp-1Ch]
@@ -198,7 +198,7 @@ void __cdecl UI_BuildServerDisplayList(int localClientNum, uiInfo_s *uiInfo, int
                                     v17 = Info_ValueForKey(info, "gametype"),
                                     !I_stricmp(v17, v19->gameType)))
                             && (ui_serverFilterType <= 0
-                                || (v20 = UI_GetServerFilter((const char**)&filter, ui_serverFilterType)[1],
+                                || (v20 = UI_GetServerFilter(filter, ui_serverFilterType)[1],
                                     v18 = Info_ValueForKey(info, "game"),
                                     !I_stricmp(v18, v20))))
                         {
@@ -601,7 +601,9 @@ void __cdecl UI_StartServerRefresh(int localClientNum, int contextIndex, int ful
     Dvar_SetStringByName(dvarName, v6);
     if (full)
     {
-        *(_QWORD *)&sharedUiInfo.serverStatusInfo.lines[30][7] = 1;
+        // decompiler rendered this as a QWORD store through serverStatusInfo.lines[30][7]
+        sharedUiInfo.serverStatus.refreshActive = 1;
+        sharedUiInfo.serverStatus.currentServer = 0;
         sharedUiInfo.serverStatus.nextDisplayRefresh = uiInfo->uiDC.realTime + 1000;
         UI_ClearDisplayedServers();
         LAN_MarkServerDirty(ui_netSource->current.integer, -1, 1u);
@@ -644,9 +646,9 @@ void __cdecl UI_ServersSort(__int64 column)
     {
         sharedUiInfo.serverStatus.sortKey = column;
         qsort(
-            &sharedUiInfo.serverStatusInfo.lines[31][1],
+            sharedUiInfo.serverStatus.displayServers,
             sharedUiInfo.serverStatus.numDisplayServers,
-            4u,
+            sizeof(sharedUiInfo.serverStatus.displayServers[0]),
             (int(__cdecl *)(const void *, const void *))UI_ServersQsortCompare);
     }
 }

@@ -928,7 +928,7 @@ void __cdecl    G_InitGame(int levelTime, int randomSeed, int restart, int regis
         }
         else
         {
-            Com_PrintWarning(15, "WARNING: Couldn't open logfile: %s\n", g_log->current.string);
+            Com_PrintWarning(15, "WARNING: Couldn't open logfile: %s\n", BO1_VA(g_log->current.string));
         }
     }
     else
@@ -3901,7 +3901,7 @@ int G_PopulateMatchState()
     level.matchState.index = 0;
     level.matchState.unarchivedState.alliesScore = level.teamScores[2];
     level.matchState.unarchivedState.axisScore = level.teamScores[1];
-    v0 = va("scr_%s_scorelimit", g_gametype->current.string);
+    v0 = va("scr_%s_scorelimit", BO1_VA(g_gametype->current.string));
     result = Dvar_GetInt(v0);
     level.matchState.unarchivedState.scoreLimit = result;
     level.matchState.unarchivedState.mapCenter[0] = svs.mapCenter[0];

@@ -372,6 +372,6 @@ void __cdecl StringTable_GetAsset(const char *filename, XAssetHeader *tablePtr)
     if ( useFastFile->current.enabled )
         StringTable_GetAsset_FastFile(filename, tablePtr);
     else
-        StringTable_GetAsset_LoadObj(filename, (StringTable **)tablePtr);
+        StringTable_GetAsset_LoadObj(filename, (Ptr32<StringTable> *)tablePtr);
 }
 

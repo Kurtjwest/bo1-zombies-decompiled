@@ -159,6 +159,8 @@ find_library(CARBON_FRAMEWORK Carbon REQUIRED)
 find_library(COREVIDEO_FRAMEWORK CoreVideo REQUIRED)
 find_library(APPLICATIONSERVICES_FRAMEWORK ApplicationServices REQUIRED)
 find_library(COREHAPTICS_FRAMEWORK CoreHaptics REQUIRED)
+find_library(IMAGEIO_FRAMEWORK ImageIO REQUIRED)
+find_library(COREGRAPHICS_FRAMEWORK CoreGraphics REQUIRED)
 target_link_libraries(${BIN_NAME} PRIVATE
     ${COCOA_FRAMEWORK}
     ${METAL_FRAMEWORK}
@@ -171,8 +173,38 @@ target_link_libraries(${BIN_NAME} PRIVATE
     ${COREVIDEO_FRAMEWORK}
     ${APPLICATIONSERVICES_FRAMEWORK}
     ${COREHAPTICS_FRAMEWORK}
+    ${IMAGEIO_FRAMEWORK}
+    ${COREGRAPHICS_FRAMEWORK}
     pthread
 )
+
+# MojoShader: Direct3D 9 shader bytecode -> Metal Shading Language for the Direct3D 9 implementation
+# (src/platform/third_party/mojoshader; only the Metal profile is built, without effect/preshader support)
+set(MOJOSHADER_DIR "${PLATFORM_DIR}/third_party/mojoshader")
+add_library(bo1_mojoshader STATIC
+    "${MOJOSHADER_DIR}/mojoshader.c"
+    "${MOJOSHADER_DIR}/mojoshader_common.c"
+    "${MOJOSHADER_DIR}/profiles/mojoshader_profile_common.c"
+    "${MOJOSHADER_DIR}/profiles/mojoshader_profile_metal.c"
+)
+target_include_directories(bo1_mojoshader PUBLIC "${MOJOSHADER_DIR}")
+target_compile_definitions(bo1_mojoshader PRIVATE
+    SUPPORT_PROFILE_D3D=0
+    SUPPORT_PROFILE_BYTECODE=0
+    SUPPORT_PROFILE_HLSL=0
+    SUPPORT_PROFILE_GLSL=0
+    SUPPORT_PROFILE_GLSL120=0
+    SUPPORT_PROFILE_GLSLES=0
+    SUPPORT_PROFILE_GLSLES3=0
+    SUPPORT_PROFILE_ARB1=0
+    SUPPORT_PROFILE_ARB1_NV=0
+    SUPPORT_PROFILE_METAL=1
+    SUPPORT_PROFILE_SPIRV=0
+    SUPPORT_PROFILE_GLSPIRV=0
+)
+set_target_properties(bo1_mojoshader PROPERTIES C_STANDARD 99 C_EXTENSIONS ON)
+target_compile_options(bo1_mojoshader PRIVATE -w $<$<CONFIG:Debug>:-O0 -g> $<$<NOT:$<CONFIG:Debug>>:-O2>)
+target_link_libraries(${BIN_NAME} PRIVATE bo1_mojoshader)
 
 # FFmpeg: xWMA sound and Bink cinematics decoders (cmake/ffmpeg.cmake)
 include("${CMAKE_CURRENT_LIST_DIR}/ffmpeg.cmake")

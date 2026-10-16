@@ -1213,9 +1213,9 @@ LABEL_36:
                 {
                     __debugbreak();
                 }
-                Com_PrintWarning(13, "WARNING: No menu has focus after closing %s.\n Active menus: \n", menu->window.name);
+                Com_PrintWarning(13, "WARNING: No menu has focus after closing %s.\n Active menus: \n", BO1_VA(menu->window.name));
                 for ( menuNumb = 0; menuNumb < dc->openMenuCount; ++menuNumb )
-                    Com_PrintWarning(13, "    %d:    %s\n", menuNumb, dc->menuStack[menuNumb].menu->window.name);
+                    Com_PrintWarning(13, "    %d:    %s\n", menuNumb, BO1_VA(dc->menuStack[menuNumb].menu->window.name));
             }
         }
         goto LABEL_56;
@@ -2086,7 +2086,7 @@ void __cdecl Script_FocusFirstInMenu(int localClientNum, UiContext *dc, itemDef_
     }
     else if ( item->parent->window.name )
     {
-        Com_Printf(13, "focusFirst: no itemDefs in %s were selectable\n", item->parent->window.name);
+        Com_Printf(13, "focusFirst: no itemDefs in %s were selectable\n", BO1_VA(item->parent->window.name));
     }
     else
     {
@@ -3000,7 +3000,6 @@ static void Script_SP_SaveVisibility(int localClientNum, UiContext *dc, itemDef_
 
 void __cdecl Item_RunScript(int localClientNum, UiContext *dc, itemDef_s *item, const char *s)
 {
-    __int64 v4; // [esp-8h] [ebp-420h]
     int bRan; // [esp+0h] [ebp-418h]
     int controllerIndex; // [esp+4h] [ebp-414h]
     char command[1028]; // [esp+8h] [ebp-410h] BYREF
@@ -3035,9 +3034,7 @@ void __cdecl Item_RunScript(int localClientNum, UiContext *dc, itemDef_s *item, 
                 }
                 if ( !bRan )
                 {
-                    HIDWORD(v4) = (DWORD)BO1_P2I(s);
-                    LODWORD(v4) = (DWORD)BO1_P2I(&p);
-                    UI_RunMenuScript(localClientNum, dc->contextIndex, v4);
+                    UI_RunMenuScript(localClientNum, dc->contextIndex, &p, s);
                 }
             }
         }
@@ -4607,7 +4604,7 @@ void __cdecl Menus_PrintAllLoadedMenus(UiContext *dc)
 
     Com_Printf(16, "Currently loaded UI menus (CG menus not included):\n");
     for ( i = 0; i < dc->menuCount; ++i )
-        Com_Printf(16, "%i. %s\n", i, dc->Menus[i]->window.name);
+        Com_Printf(16, "%i. %s\n", i, BO1_VA(dc->Menus[i]->window.name));
     Com_Printf(16, "\n%i menus total\n", dc->menuCount);
 }
 
@@ -6233,16 +6230,18 @@ double __cdecl Item_ListBox_ThumbPosition(int localClientNum, int contextIndex, 
 
 void __cdecl Scroll_ListBox_AutoFunc(int localClientNum, UiContext *dc, void *p)
 {
-    if ( dc->realTime > *(unsigned int *)p )
+    scrollInfo_s *si = (scrollInfo_s *)p;
+
+    if ( dc->realTime > (unsigned int)si->nextScrollTime )
     {
-        Item_ListBox_HandleKey(0, dc, *((itemDef_s **)p + 6), *((unsigned int *)p + 3), 1, 0);
-        *(unsigned int *)p = *((unsigned int *)p + 2) + dc->realTime;
+        Item_ListBox_HandleKey(0, dc, si->item, si->scrollKey, 1, 0);
+        si->nextScrollTime = si->adjustValue + dc->realTime;
     }
-    if ( dc->realTime > *((unsigned int *)p + 1) )
+    if ( dc->realTime > (unsigned int)si->nextAdjustTime )
     {
-        *((unsigned int *)p + 1) = dc->realTime + 150;
-        if ( *((int *)p + 2) > 20 )
-            *((unsigned int *)p + 2) -= 40;
+        si->nextAdjustTime = dc->realTime + 150;
+        if ( si->adjustValue > 20 )
+            si->adjustValue -= 40;
     }
 }
 
@@ -7899,7 +7898,7 @@ LABEL_18:
     if ( uiscript_debug && uiscript_debug->current.integer )
     {
         if ( menu->window.name )
-            Com_Printf(13, "hiding the %s menu becuase the 'visible when' expression was false\n", menu->window.name);
+            Com_Printf(13, "hiding the %s menu becuase the 'visible when' expression was false\n", BO1_VA(menu->window.name));
         else
             Com_Printf(13, "hiding the %s menu becuase the 'visible when' expression was false\n", "unnamed");
     }
@@ -9446,7 +9445,7 @@ const char *__cdecl Item_DvarEnum_Setting(itemDef_s *item)
     enumIndex = Item_DvarEnum_EnumIndex(item);
     if ( enumIndex < 0 || enumIndex >= enumDvar->domain.enumeration.stringCount )
     {
-        v2 = va("%s %i:%i", enumDvarPtr->enumDvarName, enumDvar->domain.enumeration.stringCount, enumIndex);
+        v2 = va("%s %i:%i", BO1_VA(enumDvarPtr->enumDvarName), enumDvar->domain.enumeration.stringCount, enumIndex);
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared.cpp",
                         6346,
@@ -10772,7 +10771,7 @@ void __cdecl Menu_PaintAll(int localClientNum, UiContext *dc)
             if (!Menus_MenuIsInStack(dc, menu) && menu != toastPopupMenu)
             {
                 {
-                    v2 = va("Menu_Paint %s", menu->window.name);
+                    v2 = va("Menu_Paint %s", BO1_VA(menu->window.name));
                     PROF_SCOPED_RUNTIME_NAME(v2);
                     drew = Menu_Paint(
                         localClientNum,
@@ -10869,7 +10868,7 @@ void __cdecl Menu_PaintAll(int localClientNum, UiContext *dc)
             if (drewa && g_debugMode && menuIndexc == dc->openMenuCount - 1)
             {
                 font = UI_GetFontHandle(&scrPlaceView[dc->contextIndex], 0, 0.5);
-                v3 = va("menu: %s", menuc->window.name);
+                v3 = va("menu: %s", BO1_VA(menuc->window.name));
                 UI_DrawText(&scrPlaceView[dc->contextIndex], v3, 0x7FFFFFFF, font, 200.0, 45.0, 0, 0, 0.5, colorWhite, 0);
             }
         }

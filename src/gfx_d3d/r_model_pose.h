@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <xanim/dobj.h>
 #include "r_scene.h"
 
@@ -19,4 +20,4 @@ DObjAnimMat * R_UpdateSceneEntBounds(
                 int waitForCullState);
 DObjAnimMat *__cdecl R_DObjCalcPose(const GfxSceneEntity *sceneEnt, DObj *obj, int *partBits);
 void __cdecl R_SetNoDraw(GfxSceneEntity *sceneEnt);
-void __cdecl R_UpdateGfxEntityBoundsCmd(GfxSceneEntity **data);
+void __cdecl R_UpdateGfxEntityBoundsCmd(Ptr32<GfxSceneEntity> *data);

@@ -54,7 +54,7 @@ void __cdecl GetToastPopupTitle(int localClientNum, itemDef_s *item, OperandStac
     result.dataType = VAL_STRING;
     result.internals.string = uiInfo->toastPopupTitle;
     if (uiscript_debug && uiscript_debug->current.integer)
-        Expression_TraceInternal("GetToastPopupTitle() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetToastPopupTitle() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -1939,9 +1939,9 @@ void __cdecl GetDvarStringValue(int localClientNum, itemDef_s *item, OperandStac
     if ( uiscript_debug && uiscript_debug->current.integer )
     {
         if ( dvar )
-            Expression_TraceInternal("dvarstring( %s ) = %s\n", dvar->name, result.internals.string);
+            Expression_TraceInternal("dvarstring( %s ) = %s\n", BO1_VA(dvar->name), result.internals.string);
         else
-            Expression_TraceInternal("dvarstring( %s ) = %s\n", "NULL", result.internals.string);
+            Expression_TraceInternal("dvarstring( %s ) = %s\n", "NULL", BO1_VA(result.internals.string));
     }
     AddOperandToStack(dataStack, &result);
 }
@@ -2003,7 +2003,7 @@ void __cdecl GetDvarBoolValue(int localClientNum, itemDef_s *item, OperandStack 
     if ( uiscript_debug && uiscript_debug->current.integer )
     {
         if ( dvar )
-            Expression_TraceInternal("dvarbool( %s ) = %i\n", dvar->name, result.internals.intVal);
+            Expression_TraceInternal("dvarbool( %s ) = %i\n", BO1_VA(dvar->name), result.internals.intVal);
         else
             Expression_TraceInternal("dvarbool( %s ) = %i\n", "NULL", result.internals.intVal);
     }
@@ -2070,7 +2070,7 @@ void __cdecl GetDvarIntValue(int localClientNum, itemDef_s *item, OperandStack *
     if ( uiscript_debug && uiscript_debug->current.integer )
     {
         if ( dvar )
-            Expression_TraceInternal("dvarint( %s ) = %i\n", dvar->name, result.internals.intVal);
+            Expression_TraceInternal("dvarint( %s ) = %i\n", BO1_VA(dvar->name), result.internals.intVal);
         else
             Expression_TraceInternal("dvarint( %s ) = %i\n", "NULL", result.internals.intVal);
     }
@@ -2163,7 +2163,7 @@ void __cdecl GetLocalVarStringValue(int localClientNum, itemDef_s *item, Operand
         if ( uiscript_debug )
         {
             if ( uiscript_debug->current.integer )
-                Expression_TraceInternal("localVarString( %s ) = %s\n", source.internals.string, result.internals.string);
+                Expression_TraceInternal("localVarString( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
         }
         AddOperandToStack(dataStack, &result);
     }
@@ -2222,7 +2222,7 @@ void __cdecl GetLocalVarBoolValue(int localClientNum, itemDef_s *item, OperandSt
         if ( uiscript_debug )
         {
             if ( uiscript_debug->current.integer )
-                Expression_TraceInternal("localVarBool( %s ) = %i\n", source.internals.string, result.internals.intVal);
+                Expression_TraceInternal("localVarBool( %s ) = %i\n", BO1_VA(source.internals.string), result.internals.intVal);
         }
         AddOperandToStack(dataStack, &result);
     }
@@ -2249,7 +2249,7 @@ void __cdecl GetLocalVarIntValue(int localClientNum, itemDef_s *item, OperandSta
         if (uiscript_debug)
         {
             if (uiscript_debug->current.integer)
-                Expression_TraceInternal("localVarInt( %s ) = %i\n", source.internals.string, result.internals.intVal);
+                Expression_TraceInternal("localVarInt( %s ) = %i\n", BO1_VA(source.internals.string), result.internals.intVal);
         }
         AddOperandToStack(dataStack, &result);
     }
@@ -2276,7 +2276,7 @@ void __cdecl GetLocalVarFloatValue(int localClientNum, itemDef_s *item, OperandS
         if ( uiscript_debug )
         {
             if ( uiscript_debug->current.integer )
-                Expression_TraceInternal("localVarFloat( %s ) = %f\n", source.internals.string, result.internals.floatVal);
+                Expression_TraceInternal("localVarFloat( %s ) = %f\n", BO1_VA(source.internals.string), result.internals.floatVal);
         }
         AddOperandToStack(dataStack, &result);
     }
@@ -2409,7 +2409,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                             {
                                                                                 if ( I_stricmp(source.internals.string, "xuid") )
                                                                                 {
-                                                                                    Expression_Error("Unknown player field '%s'\n", source.internals.string);
+                                                                                    Expression_Error("Unknown player field '%s'\n", BO1_VA(source.internals.string));
                                                                                     result.dataType = VAL_INT;
                                                                                     result.internals.intVal = 0;
                                                                                 }
@@ -2440,7 +2440,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                                     if ( uiscript_debug && uiscript_debug->current.integer )
                                                                                         Expression_TraceInternal(
                                                                                             "player( %s ) = %s\n",
-                                                                                            source.internals.string,
+                                                                                            BO1_VA(source.internals.string),
                                                                                             result.internals.string);
                                                                                 }
                                                                             }
@@ -2454,7 +2454,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                                 if ( uiscript_debug && uiscript_debug->current.integer )
                                                                                     Expression_TraceInternal(
                                                                                         "player( %s ) = %s\n",
-                                                                                        source.internals.string,
+                                                                                        BO1_VA(source.internals.string),
                                                                                         result.internals.string);
                                                                             }
                                                                         }
@@ -2475,7 +2475,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                             if ( uiscript_debug && uiscript_debug->current.integer )
                                                                                 Expression_TraceInternal(
                                                                                     "player( %s ) = %s\n",
-                                                                                    source.internals.string,
+                                                                                    BO1_VA(source.internals.string),
                                                                                     result.internals.string);
                                                                         }
                                                                     }
@@ -2490,7 +2490,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                         if ( uiscript_debug && uiscript_debug->current.integer )
                                                                             Expression_TraceInternal(
                                                                                 "player( %s ) = %s\n",
-                                                                                source.internals.string,
+                                                                                BO1_VA(source.internals.string),
                                                                                 result.internals.string);
                                                                     }
                                                                 }
@@ -2509,7 +2509,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                     if ( uiscript_debug && uiscript_debug->current.integer )
                                                                         Expression_TraceInternal(
                                                                             "player( %s ) = %s\n",
-                                                                            source.internals.string,
+                                                                            BO1_VA(source.internals.string),
                                                                             result.internals.string);
                                                                 }
                                                             }
@@ -2526,7 +2526,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                 if ( uiscript_debug && uiscript_debug->current.integer )
                                                                     Expression_TraceInternal(
                                                                         "player( %s ) = %s\n",
-                                                                        source.internals.string,
+                                                                        BO1_VA(source.internals.string),
                                                                         result.internals.string);
                                                             }
                                                         }
@@ -2541,7 +2541,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                             if ( uiscript_debug && uiscript_debug->current.integer )
                                                                 Expression_TraceInternal(
                                                                     "player( %s ) = %i\n",
-                                                                    source.internals.string,
+                                                                    BO1_VA(source.internals.string),
                                                                     result.internals.intVal);
                                                         }
                                                     }
@@ -2568,7 +2568,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                         if ( uiscript_debug && uiscript_debug->current.integer )
                                                             Expression_TraceInternal(
                                                                 "player( %s ) = %i\n",
-                                                                source.internals.string,
+                                                                BO1_VA(source.internals.string),
                                                                 result.internals.intVal);
                                                     }
                                                 }
@@ -2586,7 +2586,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                     if ( uiscript_debug && uiscript_debug->current.integer )
                                                         Expression_TraceInternal(
                                                             "player( %s ) = %i\n",
-                                                            source.internals.string,
+                                                            BO1_VA(source.internals.string),
                                                             result.internals.intVal);
                                                 }
                                             }
@@ -2601,7 +2601,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                 if ( uiscript_debug && uiscript_debug->current.integer )
                                                     Expression_TraceInternal(
                                                         "player( %s ) = %i\n",
-                                                        source.internals.string,
+                                                        BO1_VA(source.internals.string),
                                                         result.internals.intVal);
                                             }
                                         }
@@ -2616,7 +2616,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                             if ( uiscript_debug && uiscript_debug->current.integer )
                                                 Expression_TraceInternal(
                                                     "player( %s ) = %i\n",
-                                                    source.internals.string,
+                                                    BO1_VA(source.internals.string),
                                                     result.internals.intVal);
                                         }
                                     }
@@ -2626,7 +2626,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                         result.dataType = VAL_INT;
                                         result.internals = (operandInternalDataUnion)v28->intVal;
                                         if ( uiscript_debug && uiscript_debug->current.integer )
-                                            Expression_TraceInternal("player( %s ) = %i\n", source.internals.string, result.internals.intVal);
+                                            Expression_TraceInternal("player( %s ) = %i\n", BO1_VA(source.internals.string), result.internals.intVal);
                                     }
                                 }
                                 else
@@ -2634,7 +2634,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                     result.dataType = VAL_INT;
                                     result.internals.intVal = (unsigned __int8)CG_LookingThroughNightVision(localClientNum);
                                     if ( uiscript_debug && uiscript_debug->current.integer )
-                                        Expression_TraceInternal("player( %s ) = %i\n", source.internals.string, result.internals.intVal);
+                                        Expression_TraceInternal("player( %s ) = %i\n", BO1_VA(source.internals.string), result.internals.intVal);
                                 }
                             }
                             else
@@ -2642,7 +2642,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                 result.dataType = VAL_INT;
                                 result.internals.intVal = CG_GetPlayerClipAmmoCount(localClientNum);
                                 if ( uiscript_debug && uiscript_debug->current.integer )
-                                    Expression_TraceInternal("player( %s ) = %s\n", source.internals.string, result.internals.string);
+                                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
                             }
                         }
                         else
@@ -2650,7 +2650,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                             result.dataType = VAL_INT;
                             result.internals.intVal = CG_IsPlayerDead(localClientNum);
                             if ( uiscript_debug && uiscript_debug->current.integer )
-                                Expression_TraceInternal("player( %s ) = %i\n", source.internals.string, result.internals.intVal);
+                                Expression_TraceInternal("player( %s ) = %i\n", BO1_VA(source.internals.string), result.internals.intVal);
                         }
                     }
                     else
@@ -2658,7 +2658,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                         result.dataType = VAL_STRING;
                         result.internals.intVal = (int)BO1_P2I(CG_GetPlayerOpposingTeamName(localClientNum));
                         if ( uiscript_debug && uiscript_debug->current.integer )
-                            Expression_TraceInternal("player( %s ) = %s\n", source.internals.string, result.internals.string);
+                            Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
                     }
                 }
                 else
@@ -2666,7 +2666,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                     result.dataType = VAL_STRING;
                     result.internals.intVal = (int)BO1_P2I(CG_GetPlayerTeamName(localClientNum));
                     if ( uiscript_debug && uiscript_debug->current.integer )
-                        Expression_TraceInternal("player( %s ) = %s\n", source.internals.string, result.internals.string);
+                        Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
                 }
             }
             else
@@ -2678,7 +2678,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                 result.dataType = VAL_STRING;
                 result.internals.intVal = (int)BO1_P2I(CopyTempString(buf));
                 if ( uiscript_debug && uiscript_debug->current.integer )
-                    Expression_TraceInternal("player( %s ) = %s\n", source.internals.string, result.internals.string);
+                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
             }
         }
         else
@@ -2692,7 +2692,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
             if ( uiscript_debug )
             {
                 if ( uiscript_debug->current.integer )
-                    Expression_TraceInternal("player( %s ) = %s\n", source.internals.string, result.internals.string);
+                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
             }
         }
         AddOperandToStack(dataStack, &result);
@@ -2757,7 +2757,7 @@ void __cdecl GetFieldForTeam(int localClientNum, team_t team, Operand *fieldName
             {
                 if ( I_stricmp(fieldName->internals.string, "ffaname") )
                 {
-                    Expression_Error("Unknown team field '%s'\n", fieldName->internals.string);
+                    Expression_Error("Unknown team field '%s'\n", BO1_VA(fieldName->internals.string));
                     result->dataType = VAL_INT;
                     result->internals.intVal = 0;
                 }
@@ -2769,7 +2769,7 @@ void __cdecl GetFieldForTeam(int localClientNum, team_t team, Operand *fieldName
                         Expression_TraceInternal(
                             "team(%i)( %s ) = %s\n",
                             team,
-                            fieldName->internals.string,
+                            BO1_VA(fieldName->internals.string),
                             result->internals.string);
                 }
             }
@@ -2778,7 +2778,7 @@ void __cdecl GetFieldForTeam(int localClientNum, team_t team, Operand *fieldName
                 result->dataType = VAL_STRING;
                 result->internals.intVal = (int)BO1_P2I(CG_GetTeamName(team));
                 if ( uiscript_debug && uiscript_debug->current.integer )
-                    Expression_TraceInternal("team(%i)( %s ) = %s\n", team, fieldName->internals.string, result->internals.string);
+                    Expression_TraceInternal("team(%i)( %s ) = %s\n", team, BO1_VA(fieldName->internals.string), result->internals.string);
             }
         }
         else
@@ -2788,7 +2788,7 @@ void __cdecl GetFieldForTeam(int localClientNum, team_t team, Operand *fieldName
             if ( uiscript_debug )
             {
                 if ( uiscript_debug->current.integer )
-                    Expression_TraceInternal("team(%i)( %s ) = %i\n", team, fieldName->internals.string, result->internals.intVal);
+                    Expression_TraceInternal("team(%i)( %s ) = %i\n", team, BO1_VA(fieldName->internals.string), result->internals.intVal);
             }
         }
     }
@@ -3373,7 +3373,7 @@ void __cdecl GetCurrentClanTagFeature(int localClientNum, itemDef_s *item, Opera
     }
     result.internals.intVal = index;
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCurrentClanTagFeature() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCurrentClanTagFeature() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3424,7 +3424,7 @@ void __cdecl GetClanTagFeatureName(int localClientNum, itemDef_s *item, OperandS
     index = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetClanTagFeature(index, CLANTAG_COL_NAME));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetClanTagFeatureName() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetClanTagFeatureName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3580,7 +3580,7 @@ void __cdecl GetAttachmentsFormatted(int localClientNum, itemDef_s *item, Operan
         result.dataType = VAL_STRING;
         result.internals.intVal = (int)BO1_P2I(fullWeaponName);
         if ( uiscript_debug && uiscript_debug->current.integer )
-            Expression_TraceInternal("GetWeaponFullName() = %s\n", result.internals.string);
+            Expression_TraceInternal("GetWeaponFullName() = %s\n", BO1_VA(result.internals.string));
         AddOperandToStack(dataStack, &result);
     }
     else
@@ -3604,7 +3604,7 @@ void __cdecl GetAttachmentName(int localClientNum, itemDef_s *item, OperandStack
     else
         result.internals.string = "";
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetAttachmentName() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetAttachmentName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3630,7 +3630,7 @@ void __cdecl GetAttachmentImage(int localClientNum, itemDef_s *item, OperandStac
     result.dataType = VAL_STRING;
     result.internals.intVal = (int)BO1_P2I(BG_GetAttachmentImage((eAttachment)attachmentNum));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetAttachmentImage() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetAttachmentImage() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3656,7 +3656,7 @@ void __cdecl GetAttachmentDesc(int localClientNum, itemDef_s *item, OperandStack
     result.dataType = VAL_STRING;
     result.internals.intVal = (int)BO1_P2I(BG_GetAttachmentDesc((eAttachment)attachmentNum));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetAttachmentName() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetAttachmentName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3730,7 +3730,7 @@ void __cdecl GetWeaponOptionImage(int localClientNum, itemDef_s *item, OperandSt
     weaponOption = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_GetWeaponOptionImage(weaponOption));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetWeaponOptionImage() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetWeaponOptionImage() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3745,7 +3745,7 @@ void __cdecl GetWeaponOptionName(int localClientNum, itemDef_s *item, OperandSta
     weaponOption = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_GetWeaponOptionDisplayName(weaponOption));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetWeaponOptionName() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetWeaponOptionName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3809,7 +3809,7 @@ void __cdecl GetDemoFileID(int localClientNum, itemDef_s *item, OperandStack *da
     result.dataType = VAL_STRING;
     result.internals.string = "";
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetDemoFileID() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetDemoFileID() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3891,7 +3891,7 @@ void __cdecl GetCounterTotal(int localClientNum, itemDef_s *item, OperandStack *
         Com_PrintError(16, "Invalid param count. usage: <string returned> getCounterTotal( <counter id> ).\n");
     }
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCounterTotal() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCounterTotal() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3913,7 +3913,7 @@ void __cdecl GetDownloadProgress(int localClientNum, itemDef_s *item, OperandSta
     if ( totalSize && totalSize >= bytes )
         result.internals.intVal = (int)((double)bytes / (double)totalSize * 100.0);
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetDownloadProgress() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetDownloadProgress() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -3981,7 +3981,7 @@ void __cdecl GetUploadTimeRemaining(int localClientNum, itemDef_s *item, Operand
     else
         result.internals.intVal = (int)BO1_P2I(GetLocalizedTimeRemaining(secondsRemaining));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetUploadProgress() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetUploadProgress() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4098,7 +4098,7 @@ void __cdecl HostMigrationWaitingForPlayers(int localClientNum, itemDef_s *item,
     result.dataType = VAL_INT;
     result.internals.intVal = 0;
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("HostMigrationWaitingForPlayers() = %s\n", result.internals.string);
+        Expression_TraceInternal("HostMigrationWaitingForPlayers() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4113,7 +4113,7 @@ void __cdecl GetCurrentItemOption(int localClientNum, itemDef_s *item, OperandSt
                                                             sharedUiInfo.sortedItemPivot,
                                                             OptionFromIndexAndGroupDvar);
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCurrentItemOption() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCurrentItemOption() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4183,7 +4183,7 @@ void __cdecl GetItemRef(int localClientNum, itemDef_s *item, OperandStack *dataS
     index = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemRef(index));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetItemRef() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetItemRef() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4198,7 +4198,7 @@ void __cdecl GetItemName(int localClientNum, itemDef_s *item, OperandStack *data
     v3.intVal = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemName(v3.intVal));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetItemName() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetItemName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4213,7 +4213,7 @@ void __cdecl GetItemImage(int localClientNum, itemDef_s *item, OperandStack *dat
     index = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemImage(index));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetItemImage() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetItemImage() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4318,7 +4318,7 @@ void __cdecl GetItemGroup(int localClientNum, itemDef_s *item, OperandStack *dat
     v3.intVal = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemGroup(v3.intVal));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetItemGroup() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetItemGroup() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4333,7 +4333,7 @@ void __cdecl GetItemDesc(int localClientNum, itemDef_s *item, OperandStack *data
     index = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemDesc(index));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetItemDesc() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetItemDesc() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4807,7 +4807,7 @@ void __cdecl IsMenuOpen(int localClientNum, itemDef_s *item, OperandStack *dataS
         if ( uiscript_debug )
         {
             if ( uiscript_debug->current.integer )
-                Expression_TraceInternal("ismenuopen( %s ) = %i\n", source.internals.string, result.internals.intVal);
+                Expression_TraceInternal("ismenuopen( %s ) = %i\n", BO1_VA(source.internals.string), result.internals.intVal);
         }
         AddOperandToStack(dataStack, &result);
     }
@@ -4894,7 +4894,7 @@ void __cdecl ToUpper(int localClientNum, itemDef_s *item, OperandStack *dataStac
     result.dataType = VAL_STRING;
     result.internals.intVal = (int)BO1_P2I(UI_ToUpper(origString));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("toUpper() = %s\n", result.internals.string);
+        Expression_TraceInternal("toUpper() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -4911,7 +4911,7 @@ void __cdecl GetPlaylistName(int localClientNum, itemDef_s *item, OperandStack *
     if ( !result.internals.intVal || !*(_BYTE *)BO1_I2P(result.internals.intVal) )
         result.internals.string = "";
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("getPlaylistName() = %s\n", result.internals.string);
+        Expression_TraceInternal("getPlaylistName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -6041,7 +6041,7 @@ void __cdecl GetDemoTitleName(int localClientNum, itemDef_s *item, OperandStack 
 
     result.dataType = VAL_STRING;
     result.internals.string = "";
-    if ( !Live_FileShare_Theater_GetName((char **)&result.internals) )
+    if ( !Live_FileShare_Theater_GetName((Ptr32<char> *)&result.internals) )
     {
         if ( Demo_IsPlaying() )
             result.internals.intVal = (int)BO1_P2I(Demo_GetTitleName());
@@ -6057,7 +6057,7 @@ void __cdecl GetDemoTitleDescription(int localClientNum, itemDef_s *item, Operan
 
     result.dataType = VAL_STRING;
     result.internals.string = "";
-    if ( !Live_FileShare_Theater_GetDescription((char **)&result.internals) )
+    if ( !Live_FileShare_Theater_GetDescription((Ptr32<char> *)&result.internals) )
     {
         if ( Demo_IsPlaying() )
             result.internals.intVal = (int)BO1_P2I(Demo_GetTitleDescription());
@@ -6186,7 +6186,7 @@ void __cdecl GetTheaterFilmNotSelectedMessage(int localClientNum, itemDef_s *ite
     result.dataType = VAL_STRING;
     result.internals.string = "";
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetTheaterFilmNotSelectedMessage() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetTheaterFilmNotSelectedMessage() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -6730,7 +6730,7 @@ void __cdecl GetCurrentItemName(int localClientNum, itemDef_s *item, OperandStac
     }
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemName(index));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCurrentItemName() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCurrentItemName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -6753,7 +6753,7 @@ void __cdecl GetCurrentItemIndex(int localClientNum, itemDef_s *item, OperandSta
     }
     result.internals.intVal = index;
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCurrentItemIndex() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCurrentItemIndex() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -6776,7 +6776,7 @@ void __cdecl GetCurrentItemAttachmentName(int localClientNum, itemDef_s *item, O
     }
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemAttachmentDisplayName(index, sharedUiInfo.attachmentNum));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCurrentItemAttachmentName() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCurrentItemAttachmentName() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -6799,7 +6799,7 @@ void __cdecl GetCurrentItemAttachmentDesc(int localClientNum, itemDef_s *item, O
     }
     result.internals.intVal = (int)BO1_P2I(BG_UnlockablesGetItemAttachmentDesc(index, sharedUiInfo.attachmentNum));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCurrentItemAttachmentDesc() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCurrentItemAttachmentDesc() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -6822,7 +6822,7 @@ void __cdecl GetCurrentItemAttachmentNum(int localClientNum, itemDef_s *item, Op
     }
     result.internals.intVal = attachmentNum;
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetCurrentItemAttachmentNum() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetCurrentItemAttachmentNum() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -7082,7 +7082,7 @@ void __cdecl GetUserTagFromIndex(int localClientNum, itemDef_s *item, OperandSta
     v3.intVal = GetSourceInt(&source).intVal;
     result.internals.intVal = (int)BO1_P2I(Live_FileShare_GetLocalizedUserTagFromIndex(v3.intVal));
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetUserTagFromIndex() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetUserTagFromIndex() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -7139,7 +7139,7 @@ void __cdecl GetFileShareFilterList(int localClientNum, itemDef_s *item, Operand
     result.dataType = VAL_STRING;
     result.internals.intVal = (int)BO1_P2I(Live_FileShare_GetFilterList());
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetFileShareFilterList() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetFileShareFilterList() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -8879,7 +8879,7 @@ void __cdecl GetToastPopupIcon(int localClientNum, itemDef_s *item, OperandStack
     result.dataType = VAL_STRING;
     result.internals.intVal = (int)BO1_P2I(uiInfo->toastPopupIconName);
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetToastPopupIcon() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetToastPopupIcon() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -8892,7 +8892,7 @@ void __cdecl GetToastPopupDescription(int localClientNum, itemDef_s *item, Opera
     result.dataType = VAL_STRING;
     result.internals.intVal = (int)BO1_P2I(uiInfo->toastPopupDesc);
     if ( uiscript_debug && uiscript_debug->current.integer )
-        Expression_TraceInternal("GetToastPopupDescription() = %s\n", result.internals.string);
+        Expression_TraceInternal("GetToastPopupDescription() = %s\n", BO1_VA(result.internals.string));
     AddOperandToStack(dataStack, &result);
 }
 
@@ -13246,7 +13246,7 @@ void __cdecl RPN_OP_NEGATE(int localClientNum, itemDef_s *item, OperandStack *da
     {
         if ( data1.dataType != VAL_FLOAT )
         {
-            Expression_Error(" trying to negate a string: %s\n", data1.internals.string);
+            Expression_Error(" trying to negate a string: %s\n", BO1_VA(data1.internals.string));
             return;
         }
         //data1.internals.intVal ^= _mask__NegFloat_;
@@ -14094,7 +14094,7 @@ char *__cdecl GetExpressionResultString(int localClientNum, itemDef_s *item, Exp
                     __debugbreak();
                 return (char *)"";
             }
-            len = Com_sprintf(resultString_2, 0x100u, "%s", result.internals.string);
+            len = Com_sprintf(resultString_2, 0x100u, "%s", BO1_VA(result.internals.string));
         }
     }
     else
@@ -14294,7 +14294,7 @@ void Expression_Error(const char *str, ...)
     va_start(va, str);
     if ( !Expression_Throttle() )
     {
-        _snprintf(buf, 0x400u, "^1Expression Error (%s:%d): ", s_currentStatement->filename, s_currentStatement->line);
+        _snprintf(buf, 0x400u, "^1Expression Error (%s:%d): ", BO1_VA(s_currentStatement->filename), s_currentStatement->line);
         offset = &buf[strlen(buf) + 1] - &buf[1];
         _vsnprintf(&buf[offset], 0x400u, str, va);
         buf[1023] = 0;
@@ -14312,7 +14312,7 @@ void Expression_Warn(const char *str, ...)
     va_start(va, str);
     if ( !Expression_Throttle() )
     {
-        _snprintf(buf, 0x400u, "^3Expression Warning (%s:%d): ", s_currentStatement->filename, s_currentStatement->line);
+        _snprintf(buf, 0x400u, "^3Expression Warning (%s:%d): ", BO1_VA(s_currentStatement->filename), s_currentStatement->line);
         offset = &buf[strlen(buf) + 1] - &buf[1];
         _vsnprintf(&buf[offset], 0x400u, str, va);
         buf[1023] = 0;

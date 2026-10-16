@@ -1278,7 +1278,7 @@ void __cdecl Flame_InitDevGui()
     {
         if (flameVars[ia].name)
         {
-            v1 = va("devgui_dvar \"FT/Edit Dvars:4/%s:%i\" %s", flameVars[ia].name, ia + 1, flameVars[ia].dvarName);
+            v1 = va("devgui_dvar \"FT/Edit Dvars:4/%s:%i\" %s", BO1_VA(flameVars[ia].name), ia + 1, flameVars[ia].dvarName);
             Cbuf_InsertText(0, v1);
         }
     }
@@ -1308,11 +1308,11 @@ void __cdecl Flame_CMD_PrintDVarsToConsol()
         "These are the float values for the flametable %s. BE CAREFUL NOT TO CLOBBER THE MATERIAL AND SOUND NAMES IN THE WEAP"
         "ONSETTINGS.GDT!\n"
         "\n",
-        flameVar_editingFlameTable->current.string);
+        BO1_VA(flameVar_editingFlameTable->current.string));
     for ( i = 0; i < bg_iNumFlameTableFields; ++i )
     {
         if ( flameVars[i].dvarName )
-            Com_Printf(0, "        \"%s\" \"%f\"\n", flameVars[i].dvarName, flameDvars[i]->current.value);
+            Com_Printf(0, "        \"%s\" \"%f\"\n", BO1_VA(flameVars[i].dvarName), flameDvars[i]->current.value);
     }
     Com_Printf(0, "[END]\n\nDone.\n------------------------------------------\n");
 }

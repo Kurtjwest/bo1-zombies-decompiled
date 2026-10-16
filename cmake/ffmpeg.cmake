@@ -77,9 +77,10 @@ else()
         GIT_TAG "${BO1_FFMPEG_TAG}"
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
-        SOURCE_DIR "${BO1_FFMPEG_PREFIX}/src"
+        # (not <prefix>/src: ExternalProject keeps its stamp directory there, and a clone empties the source dir)
+        SOURCE_DIR "${BO1_FFMPEG_PREFIX}/source"
     )
-    set(BO1_FFMPEG_CONFIGURE "${BO1_FFMPEG_PREFIX}/src/configure")
+    set(BO1_FFMPEG_CONFIGURE "${BO1_FFMPEG_PREFIX}/source/configure")
 endif()
 
 find_program(BO1_MAKE_PROGRAM NAMES gmake make REQUIRED)

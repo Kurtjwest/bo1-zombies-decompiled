@@ -250,7 +250,7 @@ void __cdecl Scr_BeginLoadScripts(scriptInstance_t inst, int user)
                     0,
                     "%s\n\t((int)gScrVarPub[inst].programBuffer) = %i",
                     "(!((int)gScrVarPub[inst].programBuffer & 31))",
-                    gScrVarPub[inst].programBuffer) )
+                    BO1_VA(gScrVarPub[inst].programBuffer)) )
     {
         __debugbreak();
     }

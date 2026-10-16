@@ -44,7 +44,13 @@ set(BO1_LIBVPX_ENV
     "CXXFLAGS=${BO1_LIBVPX_FLAGS}"
     "LDFLAGS=${BO1_LIBVPX_LDFLAGS}"
 )
-if(CMAKE_STRIP)
+if(CMAKE_CROSSCOMPILING)
+    # the host's GNU strip cannot process Mach-O members (it drops the archive's symbol index)
+    find_program(BO1_LLVM_STRIP NAMES llvm-strip llvm-strip-18)
+    if(BO1_LLVM_STRIP)
+        list(APPEND BO1_LIBVPX_ENV "STRIP=${BO1_LLVM_STRIP}")
+    endif()
+elseif(CMAKE_STRIP)
     list(APPEND BO1_LIBVPX_ENV "STRIP=${CMAKE_STRIP}")
 endif()
 
@@ -74,9 +80,10 @@ else()
         GIT_TAG "${BO1_LIBVPX_TAG}"
         GIT_SHALLOW TRUE
         GIT_PROGRESS TRUE
-        SOURCE_DIR "${BO1_LIBVPX_PREFIX}/src"
+        # (not <prefix>/src: ExternalProject keeps its stamp directory there, and a clone empties the source dir)
+        SOURCE_DIR "${BO1_LIBVPX_PREFIX}/source"
     )
-    set(BO1_LIBVPX_CONFIGURE "${BO1_LIBVPX_PREFIX}/src/configure")
+    set(BO1_LIBVPX_CONFIGURE "${BO1_LIBVPX_PREFIX}/source/configure")
 endif()
 
 find_program(BO1_MAKE_PROGRAM NAMES gmake make REQUIRED)
@@ -95,6 +102,8 @@ ExternalProject_Add(bo1_libvpx
     CONFIGURE_COMMAND ${CMAKE_COMMAND} -E env ${BO1_LIBVPX_ENV} "${BO1_LIBVPX_CONFIGURE}" ${BO1_LIBVPX_CONFIGURE_ARGS}
     BUILD_COMMAND ${CMAKE_COMMAND} -E env ${BO1_LIBVPX_ENV} "${BO1_MAKE_PROGRAM}" -j${BO1_NPROC}
     INSTALL_COMMAND ${CMAKE_COMMAND} -E env ${BO1_LIBVPX_ENV} "${BO1_MAKE_PROGRAM}" install
+        # (an archive index for the target's linker, whatever the strip step left)
+        COMMAND "${CMAKE_RANLIB}" "${BO1_LIBVPX_LIB}"
     BUILD_BYPRODUCTS "${BO1_LIBVPX_LIB}"
     LOG_CONFIGURE TRUE
     LOG_BUILD TRUE

@@ -94,7 +94,7 @@ void __cdecl R_PixStartNamedRenderTarget(unsigned __int8 renderTargetId)
     R_PixEndNamedRenderTarget();
     if (gfxRenderTargets[renderTargetId].image)
     {
-        v1 = va("Trgt: %s", gfxRenderTargets[renderTargetId].image->name);
+        v1 = va("Trgt: %s", BO1_VA(gfxRenderTargets[renderTargetId].image->name));
     }
     else
     {
@@ -675,7 +675,7 @@ void __cdecl R_TextureFromCodeError(const GfxCmdBufContext context, unsigned int
             ERR_DROP,
             "Code texture %u '%s' isn't valid. Material='%s', tech='%s', techType=%d\n",
             codeTexture,
-            rg.codeImageNames[codeTexture],
+            BO1_VA(rg.codeImageNames[codeTexture]),
             context.state->material->info.name,
             context.state->technique->name,
             context.state->techType);
@@ -685,7 +685,7 @@ void __cdecl R_TextureFromCodeError(const GfxCmdBufContext context, unsigned int
             "Code texture %u '%s' isn't valid. Material='%s', tech='%s', techType=%d\n",
             codeTexture,
             "noname",
-            context.state->material->info.name,
+            BO1_VA(context.state->material->info.name),
             context.state->technique->name,
             context.state->techType);
 }
@@ -700,7 +700,7 @@ const GfxImage *__cdecl R_OverrideGrayscaleImage(const dvar_s *dvar)
         return rgp.blackImage;
     if ( dvar->current.integer != 3 )
     {
-        v2 = va("%s = %i", dvar->name, dvar->current.integer);
+        v2 = va("%s = %i", BO1_VA(dvar->name), dvar->current.integer);
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_state.cpp",
                         1359,
@@ -908,7 +908,7 @@ int __cdecl R_BeginMaterial(GfxCmdBufState *state, const Material *material, uns
     if ( r_logFile->current.integer )
     {
         v4 = RB_LogTechniqueType(techType);
-        v5 = va("R_BeginMaterial( %s, %s, %s )\n", material->info.name, technique->name, v4);
+        v5 = va("R_BeginMaterial( %s, %s, %s )\n", BO1_VA(material->info.name), technique->name, v4);
         RB_LogPrint(v5);
     }
     state->material = material;
@@ -2222,7 +2222,7 @@ void __cdecl R_SetSampler(
         context.state->samplerTexture[samplerIndex] = &image->texture;
         if ( r_logFile->current.integer )
         {
-            v4 = va("---------- texture %i: %s\n", samplerIndex, image->name);
+            v4 = va("---------- texture %i: %s\n", samplerIndex, BO1_VA(image->name));
             RB_LogPrint(v4);
         }
         R_HW_SetSamplerTexture(context.state->prim.device, samplerIndex, &image->texture);

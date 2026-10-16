@@ -718,7 +718,7 @@ void __cdecl LiveStats_SetDInt64Stat(int controllerIndex, ddlState_t *searchStat
         if ( !v3 && searchState->member->permission == 2 )
             buffer = LiveStorage_GetStatsBuffer(0, STATS_LOCATION_GLOBAL, 1);
         if ( !DDL_SetInt64(searchState, value, (char *)buffer) )
-            DDL_PrintError("DDL: Could not set stat '%s'", searchState->member->name);
+            DDL_PrintError("DDL: Could not set stat '%s'", BO1_VA(searchState->member->name));
     }
 }
 
@@ -1329,7 +1329,7 @@ char *__cdecl LiveStats_GetPersonalBestName(int controllerIndex, unsigned int pe
 
     personalBest = LiveStats_GetPersonalBest(controllerIndex, personalBestNum);
     if ( personalBest && personalBest->name )
-        return va("%s", personalBest->name);
+        return va("%s", BO1_VA(personalBest->name));
     else
         return 0;
 }
@@ -1361,7 +1361,7 @@ char *__cdecl LiveStats_GetPersonalBestPrefix(int controllerIndex, unsigned int 
 
     personalBest = LiveStats_GetPersonalBest(controllerIndex, personalBestNum);
     if ( personalBest && personalBest->prefix )
-        return va("%s", personalBest->prefix);
+        return va("%s", BO1_VA(personalBest->prefix));
     else
         return 0;
 }
@@ -2097,7 +2097,7 @@ char __cdecl LiveStats_UpdatePersonalBest(
             "Negative delta, %u currentvalue, %u lastvalue, stat %s %i\n",
             currentValue,
             lastValue,
-            searchStateStats->member->name,
+            BO1_VA(searchStateStats->member->name),
             searchStateStats->member->offset);
         return 0;
     }
@@ -2424,7 +2424,7 @@ void __cdecl LiveStats_SortPersonalBests(int controllerIndex)
         {
             personalBestPtr = &s_personalBests[controllerIndex][personalBest];
             personalBestPtr->rating = 0;
-            v1 = va("%s%s", personalBestPtr->prefix, personalBestPtr->name);
+            v1 = va("%s%s", BO1_VA(personalBestPtr->prefix), personalBestPtr->name);
             personalBestRow = StringTable_LookupRowNumForValue(statsTable, 0, v1);
             if ( personalBestRow == -1 )
             {

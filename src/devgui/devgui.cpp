@@ -59,7 +59,7 @@ void __cdecl DevGui_AddDvar(const char *path, const dvar_s *dvar)
                 11,
                 "Path '%s' can't be used for dvar '%s' because it is already used for something else.\n",
                 path,
-                dvar->name);
+                BO1_VA(dvar->name));
         }
     }
 }
@@ -135,7 +135,7 @@ int __cdecl DevGui_CreateMenu(uint16_t parentHandle, const char *label, __int16 
     menu = devguiGlob.nextFreeMenu;
     if (!devguiGlob.nextFreeMenu)
         Com_Error(ERR_DROP, "Too many devgui entries (more than %i)", 2048);
-    devguiGlob.nextFreeMenu = *(DevMenuItem **)menu->label;
+    devguiGlob.nextFreeMenu = *(Ptr32<DevMenuItem> *)menu->label; // the free list links through 32-bit handles
     handle = DevGui_GetMenuHandle(menu);
     v6 = menu;
     do
@@ -2099,7 +2099,7 @@ void __cdecl DevGui_Accept(int localClientNum)
             devguiGlob.editingMenuItem = !devguiGlob.editingMenuItem;
             devguiGlob.selRow = 0;
             if ( menu->menus[0].child.command && *((unsigned int *)menu->menus[0].child.command + 4) )
-                (*((void (__cdecl **)(DevMenuChild, unsigned int, int))menu->menus[0].child.command + 4))(
+                (*((Ptr32<void __cdecl (DevMenuChild, unsigned int, int)> *)menu->menus[0].child.command + 4))(
                     menu->menus[0].child,
                     0,
                     localClientNum);

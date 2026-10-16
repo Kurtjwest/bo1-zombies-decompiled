@@ -576,7 +576,7 @@ void __cdecl    SV_SpawnServer(int controllerIndex, char *server, int mapIsPrelo
         {
             if ( client->header.state >= CS_CLIENTLOADING )
             {
-                Com_sprintf(filename, 64, "loadingnewmap\n%s\n%s", server, sv_gametype->current.string);
+                Com_sprintf(filename, 64, "loadingnewmap\n%s\n%s", server, BO1_VA(sv_gametype->current.string));
                 NET_OutOfBandPrint(NS_SERVER, client->header.netchan.remoteAddress, filename);
             }
             ++i;

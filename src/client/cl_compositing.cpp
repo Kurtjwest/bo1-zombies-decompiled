@@ -505,7 +505,8 @@ bool __cdecl R_HW_IsFencePending(const Ptr32<IDirect3DQuery9> *fence)
 //    return 1;
 //}
 
-// aislop 
+// Rebuilt from the decompiled body kept above: its frame was shifted by three dwords, so the four texture corners
+// showed up as outlineSize/image/layer/coords and the per-layer matrices as overlapping locals.
 char CL_CompositeDrawEmblemPhysical(
     float x,
     float y,
@@ -515,116 +516,84 @@ char CL_CompositeDrawEmblemPhysical(
     CompositeEmblemLayer *layers,
     int layerCount)
 {
-    int i;
-    float smooth;
-    float smoothMin = 0.1f;
-    float smoothMax = 0.48f;
-
+    const float smoothMin = 0.1f;
+    const float smoothMax = 0.48f;
+    const float widthMin = 64.0f;
+    const float widthMax = 314.0f;
     GfxQuadVertex verts[4];
-    float coords[4][2];
+    float smoothScaled;
+    float smooth;
+    int i;
 
     if (!CL_CompositeCheckStreaming(layers, layerCount))
         return 0;
 
-    Material *emblemMaterial = Material_Register((char*)"emblem_lut", 3);
+    Material *emblemMaterial = Material_Register((char *)"emblem_lut", 3);
 
     /* screen quad */
     verts[0].xy[0] = x;
     verts[0].xy[1] = y;
-
     verts[1].xy[0] = (x + w) - 1.0f;
     verts[1].xy[1] = y;
-
     verts[2].xy[0] = verts[1].xy[0];
     verts[2].xy[1] = (y + h) - 1.0f;
-
     verts[3].xy[0] = x;
     verts[3].xy[1] = verts[2].xy[1];
-
     for (i = 0; i < 4; ++i)
         R_ConvertColorToBytes(color, (unsigned __int8 *)&verts[i].color);
 
-    /* smooth width remap */
-    {
-        float t = (w - 314.0f) / (64.0f - 314.0f);
-        float s = (t * (smoothMax - smoothMin)) + smoothMin;
-
-        if (s > smoothMax)
-            s = smoothMax;
-        if (s < smoothMin)
-            s = smoothMin;
-
-        coords[3][0] = s;
-        coords[3][1] = s;
-        smooth = s;
-    }
+    /* edge smoothing shrinks as the emblem gets bigger */
+    smoothScaled = (w - widthMax) / (widthMin - widthMax) * (smoothMax - smoothMin) + smoothMin;
+    smooth = smoothScaled - smoothMax < 0.0f ? smoothScaled : smoothMax;
+    if (smoothMin - smoothScaled >= 0.0f)
+        smooth = smoothMin;
 
     /* draw layers back-to-front */
-    for (i = layerCount - 1; i >= 0; --i)
+    for (int layerIdx = layerCount - 1; layerIdx >= 0; --layerIdx)
     {
-        CompositeEmblemLayer *layer = &layers[i];
-        GfxImage *image;
-        float outlineSize = -0.5f;
+        const CompositeEmblemLayer *layer = &layers[layerIdx];
+        float st[4][2] = { { -0.5f, -0.5f }, { 0.5f, -0.5f }, { 0.5f, 0.5f }, { -0.5f, 0.5f } };
+        GfxImage *image = BG_EmblemsGetIconImage(layer->icon);
+        float outlineSize = layer->outline ? BG_EmblemsGetIconOutlineSize(layer->icon) : 0.0f;
 
-        coords[0][0] = 0.5f; coords[0][1] = -0.5f;
-        coords[1][0] = -0.5f; coords[1][1] = 0.5f;
-        coords[2][0] = 0.5f;
+        if (!image || !R_StreamTouchImageAndCheck(image, 0))
+            continue;
 
-        image = BG_EmblemsGetIconImage(layer->icon);
+        float matResult[3][3];
+        float matRotate[3][3];
+        float matScale[3][3];
+        float matTranslate[3][3];
 
-        if (layer->outline)
-            outlineSize = BG_EmblemsGetIconOutlineSize(layer->icon);
+        // quad corner (row vector) -> layer space: translate by -pos, rotate, scale by 2^-scale (mirrored when
+        // flipped), then recentre on the texture
+        MatrixIdentity33(matResult);
+        matResult[2][0] = 0.5f;
+        matResult[2][1] = 0.5f;
+        MatrixRotationZ(matRotate, layer->angle);
+        MatrixIdentity33(matScale);
+        matScale[0][0] = 1.0f / (float)pow(2.0, layer->scale[0]);
+        matScale[1][1] = 1.0f / (float)pow(2.0, layer->scale[1]);
+        if (layer->flip)
+            matScale[0][0] = -matScale[0][0];
+        MatrixIdentity33(matTranslate);
+        matTranslate[2][0] = -layer->pos[0];
+        matTranslate[2][1] = -layer->pos[1];
+        MatrixMultiplyEquals(matScale, matResult);
+        MatrixMultiplyEquals(matRotate, matResult);
+        MatrixMultiplyEquals(matTranslate, matResult);
 
-        if (image && R_StreamTouchImageAndCheck(image, 0))
+        for (int v = 0; v < 4; ++v)
         {
-            float matRotate[3][3];
-            float matScale[3][3];
-            float matTranslate[3][3];
-            float matTemp[3][3];
-
-            MatrixIdentity33(matRotate);
-
-            MatrixRotationZ(matScale, layer->angle);
-
-            MatrixIdentity33(matTranslate);
-            matTranslate[2][0] = -layer->pos[0];
-            matTranslate[2][1] = -layer->pos[1];
-
-            MatrixIdentity33(matTemp);
-
-            /* combine UV transforms */
-            MatrixMultiplyEquals(matTranslate, matRotate);
-            MatrixMultiplyEquals(matScale, matRotate);
-            MatrixMultiplyEquals(matTemp, matRotate);
-
-            if (layer->flip)
-                matRotate[2][0] = -matRotate[2][0];
-
-            UV_Transform(matRotate, &outlineSize);
-            UV_Transform(matRotate, (float *)&layer->pos);
-            UV_Transform(matRotate, &coords[0][1]);
-            UV_Transform(matRotate, &coords[1][1]);
-
-            for (int v = 0; v < 4; ++v)
-            {
-                verts[v].st[0] = (&outlineSize)[v * 2 + 0];
-                verts[v].st[1] = (&outlineSize)[v * 2 + 1];
-            }
-
-            {
-                float smoothOut = smooth - outlineSize;
-                if (smoothOut < smoothMin)
-                    smoothOut = smoothMin;
-
-                R_AddCmdDrawEmblemLayer(
-                    emblemMaterial,
-                    image,
-                    layer->colorIdx,
-                    outlineSize,
-                    smoothOut,
-                    verts);
-            }
+            UV_Transform(matResult, st[v]);
+            verts[v].st[0] = st[v][0];
+            verts[v].st[1] = st[v][1];
         }
+
+        float smoothOut = smooth - outlineSize;
+        if (smoothMin - smoothOut >= 0.0f)
+            smoothOut = smoothMin;
+
+        R_AddCmdDrawEmblemLayer(emblemMaterial, image, layer->colorIdx, outlineSize, smoothOut, verts);
     }
 
     return 1;

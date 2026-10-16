@@ -268,10 +268,10 @@ int __cdecl FS_HandleForFile(const char *name, FsThread thread)
         if (!fsh[i + first].handleFiles.file.o)
             return i + first;
     }
-    Com_PrintWarning(10, "FILE %2i: '%s' 0x%x\n", first, fsh[first].name, fsh[first].handleFiles.file.o);
+    Com_PrintWarning(10, "FILE %2i: '%s' 0x%x\n", first, fsh[first].name, BO1_VA(fsh[first].handleFiles.file.o));
     Com_PrintWarning(10, "FS_HandleForFile: none free (%d)\n", thread);
     for (ia = 1; ia < 70; ++ia)
-        Com_Printf(10, "FILE %2i: '%s' 0x%x\n", ia, fsh[ia].name, fsh[ia].handleFiles.file.o);
+        Com_Printf(10, "FILE %2i: '%s' 0x%x\n", ia, fsh[ia].name, BO1_VA(fsh[ia].handleFiles.file.o));
     if (!Assert_MyHandler(
         "C:\\projects_pc\\cod\\codsrc\\src\\universal\\com_files.cpp",
         1197,
@@ -1551,8 +1551,9 @@ const char **__cdecl FS_ListFilteredFiles(
     FS_ReturnPath(sanitizedPath, zpath, &pathDepth);
     if ( sanitizedPath[0] )
         ++pathDepth;
-    user = Hunk_UserCreate(0x20000, HU_SCHEME_DEFAULT, 0, 0, "FS_ListFilteredFiles", 3);
-    list = (const char **)Hunk_UserAlloc(user, 65540, 4, 0);
+    // list = [HunkUser *][16384 file name pointers]; sized from the native pointer width (65540 bytes on 32-bit)
+    user = Hunk_UserCreate(sizeof(void *) == 4 ? 0x20000 : 0x30000, HU_SCHEME_DEFAULT, 0, 0, "FS_ListFilteredFiles", 3);
+    list = (const char **)Hunk_UserAlloc(user, sizeof(const char *) * 16385, sizeof(const char *), 0);
     *list++ = (const char *)user;
     for ( search = searchPath; search; search = search->next )
     {
@@ -1894,21 +1895,21 @@ void __cdecl FS_SortFileList(const char **filelist, int numfiles)
     int k; // [esp+8h] [ebp-10h]
     int numsortedfiles; // [esp+Ch] [ebp-Ch]
     int i; // [esp+10h] [ebp-8h]
-    unsigned int *sortedlist; // [esp+14h] [ebp-4h]
+    const char **sortedlist; // [esp+14h] [ebp-4h]
 
-    sortedlist = Z_Malloc(4 * numfiles + 4, "FS_SortFileList", 3);
+    sortedlist = (const char **)Z_Malloc(sizeof(const char *) * (numfiles + 1), "FS_SortFileList", 3);
     *sortedlist = 0;
     numsortedfiles = 0;
     for ( i = 0; i < numfiles; ++i )
     {
-        for ( j = 0; j < numsortedfiles && FS_PathCmp(filelist[i], (const char *)BO1_I2P(sortedlist[j])) >= 0; ++j )
+        for ( j = 0; j < numsortedfiles && FS_PathCmp(filelist[i], sortedlist[j]) >= 0; ++j )
             ;
         for ( k = numsortedfiles; k > j; --k )
             sortedlist[k] = sortedlist[k - 1];
-        sortedlist[j] = (unsigned int)BO1_P2I(filelist[i]);
+        sortedlist[j] = filelist[i];
         ++numsortedfiles;
     }
-    Com_Memcpy(filelist, sortedlist, 4 * numfiles);
+    Com_Memcpy(filelist, sortedlist, sizeof(const char *) * numfiles);
     Z_Free((char *)sortedlist, 3);
 }
 
@@ -2045,7 +2046,7 @@ void __cdecl FS_AddIwdFilesForGameDirectory(char *path, char *pszGameFolder)
         if (!I_strncmp(s0[i], "localized_", 10))
             memcpy(s0[i], "          ", 10);
     }
-    qsort(s0, numfiles, 4u, (int(__cdecl *)(const void *, const void *))iwdsort);
+    qsort(s0, numfiles, sizeof(*s0), (int(__cdecl *)(const void *, const void *))iwdsort);
     for (i = 0; i < numfiles; ++i)
     {
         if (I_strncmp(s0[i], TEN_SPACE, 10))
@@ -2190,7 +2191,11 @@ iwd_t *__cdecl FS_LoadZipFile(char *zipfile, const char *basename)
         }
         while ( v3 );
         namePtr += &filename_inzip[strlen(filename_inzip) + 1] - &filename_inzip[1] + 1;
-        unzGetCurrentFileInfoPosition(uf, (unsigned long*)&buildBuffer[i].pos);
+        {
+            unsigned long filePos = 0;
+            unzGetCurrentFileInfoPosition(uf, &filePos);
+            buildBuffer[i].pos = filePos;
+        }
         buildBuffer[i].next = *(Ptr32<fileInIwd_s> *)BO1_I2P((iwd[199] + 4 * hash));
         *(unsigned int *)BO1_I2P((iwd[199] + 4 * hash)) = (unsigned int)BO1_P2I(&buildBuffer[i]);
         unzGoToNextFile(uf);
@@ -2305,16 +2310,19 @@ int __cdecl iwdsort(const char **a, char **b)
 
 void __cdecl FS_AddSearchPath(searchpath_s *search)
 {
-    searchpath_s **pSearch; // [esp+0h] [ebp-4h]
+    searchpath_s *prev; // [esp+0h] [ebp-4h]
 
-    pSearch = &fs_searchpaths;
-    if ( search->bLocalized )
+    // localized search paths go in front of the first localized entry, everything else at the head
+    if ( search->bLocalized && fs_searchpaths && !fs_searchpaths->bLocalized )
     {
-        while ( *pSearch && !(*pSearch)->bLocalized )
-            pSearch = (searchpath_s **)*pSearch;
+        for ( prev = fs_searchpaths; prev->next && !prev->next->bLocalized; prev = prev->next )
+            ;
+        search->next = prev->next;
+        prev->next = search;
+        return;
     }
-    search->next = *pSearch;
-    *pSearch = search;
+    search->next = fs_searchpaths;
+    fs_searchpaths = search;
 }
 
 void __cdecl FS_ShutdownServerIwdNames()

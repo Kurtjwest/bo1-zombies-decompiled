@@ -244,7 +244,7 @@ int __cdecl FX_EffectToHandle(FxSystem *system, FxEffectContainer *effect)
     }
     if ( !effect || effect < system->effects || effect >= &system->effects[1024] )
     {
-        v2 = va("%p %p", system->effects, effect);
+        v2 = va("%p %p", BO1_VA(system->effects), effect);
         if ( !Assert_MyHandler(
                         "c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\fx_system.h",
                         391,
@@ -326,7 +326,7 @@ void __cdecl FX_EffectNoLongerReferenced(FxSystem *system, FxEffectContainer *re
     }
     if ( (remoteEffect->atomics.status & 0x7FE0000) != 0 )
     {
-        v3 = va("%s, %i", remoteEffect->effect.def->name, remoteEffect->atomics.status);
+        v3 = va("%s, %i", BO1_VA(remoteEffect->effect.def->name), remoteEffect->atomics.status);
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_system.cpp",
                         765,
@@ -346,7 +346,7 @@ void __cdecl FX_EffectNoLongerReferenced(FxSystem *system, FxEffectContainer *re
                 21,
                 "effect 0x%08x \"%s\", status 0x%08x, owner 0x%08x\n",
                 remoteEffect,
-                remoteEffect->effect.def->name,
+                BO1_VA(remoteEffect->effect.def->name),
                 remoteEffect->atomics.status,
                 owner);
         else
@@ -1516,7 +1516,7 @@ void __cdecl FX_AssertAllocatedEffect(int localClientNum, unsigned int hEffect, 
     }
     FX_EffectToHandle(&system->system, effect);
     if ( (effect->atomics.status & 0x3FFF) == 0 )
-        Com_Error(ERR_DROP, "FX_AssertAllocatedEffect: %s %s.", effect->effect.def->name, error_msg);
+        Com_Error(ERR_DROP, "FX_AssertAllocatedEffect: %s %s.", BO1_VA(effect->effect.def->name), error_msg);
     if ( (effect->atomics.status & 0x3FFF) == 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_system.cpp",
@@ -3298,7 +3298,7 @@ bool __cdecl FX_SpawnModelPhysics(
         worldOrigin,
         quat,
         velocity,
-        *((const PhysPreset **)visuals.anonymous + 59),
+        *((Ptr32<const PhysPreset> *)visuals.anonymous + 59),
         &gjk_geom_list,
         1,
         id));
@@ -3395,7 +3395,7 @@ void __cdecl FX_SpawnSound(
     }
     else
     {
-        Com_PrintWarning(21, "No visuals for sound particle element in '%s'\n", effect->def->name);
+        Com_PrintWarning(21, "No visuals for sound particle element in '%s'\n", BO1_VA(effect->def->name));
     }
 }
 

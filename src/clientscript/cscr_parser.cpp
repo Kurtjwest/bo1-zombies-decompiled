@@ -1189,13 +1189,13 @@ static void Scr_ModPatchSource(scriptInstance_t inst, const char *extFilename, c
         const int replacementLen = (int)strlen(patch.replacement);
         if (end < 0 || replacementLen + newlines > end - start)
         {
-            Com_Printf(23, "bo1_mod_scriptperf: %s: %s not found, left as is\n", file, patch.name);
+            Com_Printf(23, "bo1_mod_scriptperf: %s: %s not found, left as is\n", file, BO1_VA(patch.name));
             continue;
         }
         memcpy(src + start, patch.replacement, replacementLen);
         memset(src + start + replacementLen, ' ', end - start - replacementLen - newlines);
         memset(src + end - newlines, '\n', newlines);
-        Com_Printf(23, "bo1_mod_scriptperf: %s: %s rewritten\n", file, patch.name);
+        Com_Printf(23, "bo1_mod_scriptperf: %s: %s rewritten\n", file, BO1_VA(patch.name));
     }
 }
 
@@ -1392,7 +1392,7 @@ unsigned int __cdecl Scr_GetSourcePos(
             outBufLen,
             "%s // %s%s, line %d",
             line,
-            gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf,
+            BO1_VA(gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf),
             " (savegame)",
             lineNum + 1);
     else
@@ -1401,7 +1401,7 @@ unsigned int __cdecl Scr_GetSourcePos(
             outBufLen,
             "%s // %s%s, line %d",
             line,
-            gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf,
+            BO1_VA(gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf),
             "",
             lineNum + 1);
     return lineNum;
@@ -1813,7 +1813,7 @@ void __cdecl Scr_GetCodePos(
     }
 }
 
-void __cdecl Scr_GetFileAndLine(scriptInstance_t inst, const char *codePos, char **filename, int *linenum)
+void __cdecl Scr_GetFileAndLine(scriptInstance_t inst, const char *codePos, Ptr32<char> *filename, int *linenum)
 {
     unsigned int bufferIndex; // [esp+0h] [ebp-Ch]
     OpcodeLookup *opcodeLookup; // [esp+4h] [ebp-8h]
@@ -1877,9 +1877,9 @@ void CompileError(scriptInstance_t inst, unsigned int sourcePos, const char *msg
             lineNumber = Scr_GetLineInfo(gScrParserPub[inst].sourceBuf, sourcePos, &col, line);
             Monkey_Error(0);
             if (inst)
-                Com_Error(ERR_SCRIPT_DROP, " %s script compile error %s %s(%d): %s (see console for details)", "Client", text, gScrParserPub[inst].scriptfilename, lineNumber, line);
+                Com_Error(ERR_SCRIPT_DROP, " %s script compile error %s %s(%d): %s (see console for details)", "Client", text, BO1_VA(gScrParserPub[inst].scriptfilename), lineNumber, line);
             else
-                Com_Error(ERR_SCRIPT_DROP, " %s script compile error %s %s(%d): %s (see console for details)", "Server", text, gScrParserPub[0].scriptfilename, lineNumber, line);
+                Com_Error(ERR_SCRIPT_DROP, " %s script compile error %s %s(%d): %s (see console for details)", "Server", text, BO1_VA(gScrParserPub[0].scriptfilename), lineNumber, line);
         }
         else
         {
@@ -2042,7 +2042,7 @@ void __cdecl RuntimeError(
                     msg,
                     v5,
                     v6,
-                    gScrParserPub[1].sourceBufferLookup[bufferIndex].buf,
+                    BO1_VA(gScrParserPub[1].sourceBufferLookup[bufferIndex].buf),
                     lineNum,
                     line);
             else
@@ -2053,7 +2053,7 @@ void __cdecl RuntimeError(
                     msg,
                     v5,
                     v6,
-                    gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf,
+                    BO1_VA(gScrParserPub[inst].sourceBufferLookup[bufferIndex].buf),
                     lineNum,
                     line);
         }

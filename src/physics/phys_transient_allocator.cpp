@@ -81,8 +81,8 @@ int phys_transient_allocator::mt_allocate_internal(int size, int alignment)
             return 0;
     } while ((char *)BO1_I2P(_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&this->m_cur,
-        size + (~(alignment - 1) & (unsigned int)&cur[alignment - 1]),
-        (signed __int32)cur)) != cur);
+        size + (~(alignment - 1) & (unsigned int)BO1_P2I(&cur[alignment - 1])),
+        (signed __int32)BO1_P2I(cur))) != cur);
     return ~(alignment - 1) & (unsigned int)BO1_P2I(&cur[alignment - 1]);
 }
 

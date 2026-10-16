@@ -4,8 +4,9 @@
 #include "physics_system_internal.h"
 #include "phys_contact_manifold.h"
 
-phys_collision_pair *g_list_pcp_iterator;
-contact_point_info *g_list_output_cpi;
+// 32-bit slots: the collision jobs pop and push them with 32-bit compare-exchanges (handles, see ptr32.h)
+Ptr32<phys_collision_pair> g_list_pcp_iterator;
+Ptr32<contact_point_info> g_list_output_cpi;
 
 // no workerCmd ?
 jqModule phys_gjk_collide_jqModule =
@@ -237,7 +238,6 @@ void __cdecl process_list_do_gjk_collide_and_contact_manifold(phys_link_list<phy
 int    phys_gjk_collide_jq_batch_function(jqBatch *pBatch)
 {
     void *v2; // esp
-    volatile unsigned __int32 **Input; // esi
     phys_transient_allocator *cpi_allocator; // eax
     rigid_body_constraint_contact *v5; // ecx
     volatile unsigned __int32 *v6; // eax
@@ -252,25 +252,27 @@ int    phys_gjk_collide_jq_batch_function(jqBatch *pBatch)
     //v13[0] = a1;
     //v13[1] = retaddr;
     //v2 = alloca(17736);
-    Input = (volatile unsigned __int32 **)pBatch->Input;
+    // the batch input: three 32-bit handles (process_list_do_gjk_collide_and_contact_manifold) - the output list
+    // head, the contact search tree root and the pair iterator
+    const unsigned int *batchInput = (const unsigned int *)(void *)pBatch->Input;
+    volatile unsigned __int32 *outputList = (volatile unsigned __int32 *)BO1_I2P(batchInput[0]);
     //phys_contact_manifold_process::phys_contact_manifold_process(&v12);
     cpi_allocator = contact_point_info::get_cpi_allocator();
-    v5 = (rigid_body_constraint_contact *)Input[1];
+    v5 = (rigid_body_constraint_contact *)BO1_I2P(batchInput[1]);
     v12.m_cpi_allocator = cpi_allocator;
     v12.m_rbc_contact_search_tree_root = v5;
-    v6 = Input[2];
+    v6 = (volatile unsigned __int32 *)BO1_I2P(batchInput[2]);
     for ( i = (phys_collision_pair *)BO1_I2P(*v6); *v6; i = (phys_collision_pair *)BO1_I2P(*v6) )
     {
-        if ( (phys_collision_pair *)BO1_I2P(_InterlockedCompareExchange(v6, (signed __int32)i->m_next_link, (signed __int32)i)) == i )
+        if ( (phys_collision_pair *)BO1_I2P(_InterlockedCompareExchange(v6, (signed __int32)i->m_next_link, (signed __int32)BO1_P2I(i))) == i )
             phys_collide_do_gjk_collide_and_contact_manifold(i, &v10, &v12);
-        v6 = Input[2];
     }
     m_first = v12.m_list_cpi.m_first;
     if ( v12.m_list_cpi.m_first )
     {
         do
-            v8 = (contact_point_info *)BO1_I2P(**Input);
-        while ( (contact_point_info *)BO1_I2P(_InterlockedCompareExchange(*Input, (signed __int32)m_first, (signed __int32)v8)) != v8 );
+            v8 = (contact_point_info *)BO1_I2P(*outputList);
+        while ( (contact_point_info *)BO1_I2P(_InterlockedCompareExchange(outputList, (signed __int32)BO1_P2I(m_first), (signed __int32)BO1_P2I(v8))) != v8 );
         if ( !v12.m_list_cpi.m_last_next_ptr
             && _tlAssert(
                      "C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",

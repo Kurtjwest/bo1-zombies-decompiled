@@ -44,7 +44,7 @@ void __cdecl SCR_StopCinematic()
         }
         if ( oneClientWasChanged && *(_BYTE *)BO1_I2P(nextmap->current.integer) )
         {
-            v0 = va("%s\n", nextmap->current.string);
+            v0 = va("%s\n", BO1_VA(nextmap->current.string));
             Cbuf_AddText(0, v0);
             Dvar_SetString((dvar_s *)nextmap, "");
         }

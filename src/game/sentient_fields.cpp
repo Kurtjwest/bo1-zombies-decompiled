@@ -88,7 +88,7 @@ void __cdecl SentientScr_ReadOnly(sentient_s *pSelf, const sentient_fields_s *pF
 
     if ( !pSelf && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\sentient_fields.cpp", 67, 0, "%s", "pSelf") )
         __debugbreak();
-    v2 = va("sentient property '%s' is read-only", pField->name);
+    v2 = va("sentient property '%s' is read-only", BO1_VA(pField->name));
     Scr_Error(v2, 0);
 }
 

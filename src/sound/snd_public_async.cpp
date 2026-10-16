@@ -78,7 +78,7 @@ static void SND_BO1NoDeviceLength(unsigned int id, SndEntHandle entHandle, const
     else if (alias->soundFile->type != 1)
     {
         if (SND_BO1TraceEnabled())
-            SND_BO1TraceText("cl nodevice_length alias=%s ent=%d -> stream (no report)", alias->name, ent);
+            SND_BO1TraceText("cl nodevice_length alias=%s ent=%d -> stream (no report)", BO1_VA(alias->name), ent);
         return;
     }
     else
@@ -88,7 +88,7 @@ static void SND_BO1NoDeviceLength(unsigned int id, SndEntHandle entHandle, const
         msec = snd->frame_rate ? alias->startDelay + (int)((double)snd->frame_count * 1000.0 / (double)snd->frame_rate) : 0;
     }
     if (SND_BO1TraceEnabled())
-        SND_BO1TraceText("cl nodevice_length alias=%s ent=%d msec=%d -> %s", alias ? alias->name : "?", ent, msec, why);
+        SND_BO1TraceText("cl nodevice_length alias=%s ent=%d msec=%d -> %s", BO1_VA(alias ? alias->name : "?"), ent, msec, why);
     CG_ScriptSndLengthNotify(msec, ent);
 }
 

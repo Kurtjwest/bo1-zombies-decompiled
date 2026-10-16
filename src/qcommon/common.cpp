@@ -2533,7 +2533,7 @@ static float com_modFovShared = -1.0f;
 
 static void Com_ModFov_SharedPath(char *path, int size)
 {
-    Com_sprintf(path, size, "%s\\players\\bo1_shared.cfg", fs_homepath->current.string);
+    Com_sprintf(path, size, "%s\\players\\bo1_shared.cfg", BO1_VA(fs_homepath->current.string));
 }
 
 static void Com_ModFov_ReadShared()
@@ -2741,7 +2741,7 @@ void __cdecl Com_WriteKeyConfigToFile(int localClientNum, char *filename)
             if ( dvar )
             {
                 v2 = Dvar_DisplayableValue(dvar);
-                FS_Printf(f, (char *)"set %s \"%s\"\n", dvar->name, v2);
+                FS_Printf(f, (char *)"set %s \"%s\"\n", BO1_VA(dvar->name), v2);
             }
         }
         FS_FCloseFile(f);

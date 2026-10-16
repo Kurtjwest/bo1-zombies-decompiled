@@ -107,7 +107,7 @@ static void __cdecl CScr_TriggerFX()
     {
         const FxEffectDef *fxDef = CG_GetLocalClientStaticGlobals(entref.client)->fxs[cent->nextState.un1.scale];
         Com_Printf(14, "BO1_VISUAL trigger_fx time=%d client=%d ent=%d fx=%s origin=%.1f,%.1f,%.1f\n",
-            cgameGlob->time, entref.client, entref.entnum, fxDef ? fxDef->name : "?",
+            cgameGlob->time, entref.client, entref.entnum, BO1_VA(fxDef ? fxDef->name : "?"),
             cent->pose.origin[0], cent->pose.origin[1], cent->pose.origin[2]);
         CG_SP_VisualShot(entref.client, fxDef ? fxDef->name : 0);
     }

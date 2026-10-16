@@ -472,7 +472,7 @@ void __cdecl Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *loadDef, Mate
         ProfLoad_Begin("Create pixel shader");
         if ( Sys_IsRenderThread() )
         {
-            hr = dx.device->CreatePixelShader((DWORD*)loadDef->program, (IDirect3DPixelShader9 **)&mtlShader->prog);
+            hr = dx.device->CreatePixelShader((DWORD*)loadDef->program, (Ptr32<IDirect3DPixelShader9> *)&mtlShader->prog);
             if ( hr < 0 )
             {
                 g_hr = hr;
@@ -515,7 +515,7 @@ void __cdecl Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *loadDef, Ma
         {
             if ( r_logFile && r_logFile->current.integer )
                 RB_LogPrint("dx.device->CreateVertexShader( loadDef->program, &mtlShader->prog.vs )\n");
-            hr = dx.device->CreateVertexShader(loadDef->program, (IDirect3DVertexShader9 **)&mtlShader->prog);
+            hr = dx.device->CreateVertexShader(loadDef->program, (Ptr32<IDirect3DVertexShader9> *)&mtlShader->prog);
             if ( hr < 0 )
             {
                 ++g_disableRendering;
@@ -987,21 +987,21 @@ Material *__cdecl Material_Duplicate(Material *mtlCopy, char *name)
         mtlNew = Material_Alloc(v3 + 193);
         memcpy(mtlNew, mtlCopy, 0xC0u);
         *(unsigned int *)mtlNew = (unsigned int)BO1_P2I((mtlNew + 192));
-        memcpy(*(unsigned __int8 **)mtlNew, (unsigned __int8 *)name, v3 + 1);
+        memcpy(*(Ptr32<unsigned __int8> *)mtlNew, (unsigned __int8 *)name, v3 + 1);
         stateBitsTableSize = 8 * mtlCopy->stateBitsCount;
         *((unsigned int *)mtlNew + 47) = (unsigned int)BO1_P2I(Material_Alloc(stateBitsTableSize));
-        memcpy(*((unsigned __int8 **)mtlNew + 47), (unsigned __int8 *)mtlCopy->stateBitsTable, stateBitsTableSize);
+        memcpy(*((Ptr32<unsigned __int8> *)mtlNew + 47), (unsigned __int8 *)mtlCopy->stateBitsTable, stateBitsTableSize);
         if ( mtlCopy->textureTable )
         {
             textureTableSize = 16 * mtlCopy->textureCount;
             *((unsigned int *)mtlNew + 45) = (unsigned int)BO1_P2I(Material_Alloc(textureTableSize));
-            memcpy(*((unsigned __int8 **)mtlNew + 45), (unsigned __int8 *)mtlCopy->textureTable, textureTableSize);
+            memcpy(*((Ptr32<unsigned __int8> *)mtlNew + 45), (unsigned __int8 *)mtlCopy->textureTable, textureTableSize);
         }
         if ( mtlCopy->localConstantTable )
         {
             constantTableSize = 32 * mtlCopy->constantCount;
             *((unsigned int *)mtlNew + 46) = (unsigned int)BO1_P2I(Material_Alloc(constantTableSize));
-            memcpy(*((unsigned __int8 **)mtlNew + 46), (unsigned __int8 *)mtlCopy->localConstantTable, constantTableSize);
+            memcpy(*((Ptr32<unsigned __int8> *)mtlNew + 46), (unsigned __int8 *)mtlCopy->localConstantTable, constantTableSize);
         }
         Material_Add((Material *)mtlNew, hashIndex[0]);
         return (Material *)mtlNew;
@@ -1309,7 +1309,7 @@ void __cdecl R_MaterialEdit_f()
             v0 = strstr(rgp.sortedMaterials[i]->info.name, search);
             if ( v0 )
             {
-                Com_Printf(8, "%s\n", rgp.sortedMaterials[i]->info.name);
+                Com_Printf(8, "%s\n", BO1_VA(rgp.sortedMaterials[i]->info.name));
                 if ( !Current_Edit_Material
                     || strlen(rgp.sortedMaterials[i]->info.name) < strlen(Current_Edit_Material->info.name) )
                 {
@@ -1322,7 +1322,7 @@ void __cdecl R_MaterialEdit_f()
     if ( count )
     {
         if ( count != 1 )
-            Com_Printf(8, "Selecting %s.\n", Current_Edit_Material->info.name);
+            Com_Printf(8, "Selecting %s.\n", BO1_VA(Current_Edit_Material->info.name));
         for ( i = 0; i < Current_Edit_Material->constantCount; ++i )
         {
             ct = &Current_Edit_Material->localConstantTable[i];
@@ -1391,7 +1391,7 @@ void __cdecl R_MaterialParameterEdit_f()
             if ( index )
             {
                 cte = &Current_Edit_Material->localConstantTable[index - 1];
-                Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+                Com_Printf(8, "%s:\n", BO1_VA(Current_Edit_Material->info.name));
                 if ( Cmd_Argc() == 2 )
                 {
                     Com_Printf(
@@ -1458,12 +1458,12 @@ void __cdecl R_MaterialParameterEdit_f()
             }
             else
             {
-                Com_Printf(8, "%s is not a parameter of %s.\n", name, Current_Edit_Material->info.name);
+                Com_Printf(8, "%s is not a parameter of %s.\n", name, BO1_VA(Current_Edit_Material->info.name));
             }
         }
         else
         {
-            Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+            Com_Printf(8, "%s:\n", BO1_VA(Current_Edit_Material->info.name));
             for ( i = 0; i < Current_Edit_Material->constantCount; ++i )
             {
                 ct = &Current_Edit_Material->localConstantTable[i];
@@ -1599,21 +1599,21 @@ void __cdecl R_MaterialParameterTweak_f()
                 v2->domain.value.max = max;
                 //*(_QWORD *)&v2->domain.value.max = dvarDomain_4;
                 //*((unsigned int *)&v2->domain.vector + 3) = dvarDomain_12;
-                sprintf(desc, "%s . %s parameter tweak", Current_Edit_Material->info.name, param);
+                sprintf(desc, "%s . %s parameter tweak", BO1_VA(Current_Edit_Material->info.name), param);
                 hack->description = desc;
                 MaterialParameterConstantEntry = cte;
                 memcpy(&MaterialParameterConstantEntry_save, cte, sizeof(MaterialParameterConstantEntry_save));
-                Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+                Com_Printf(8, "%s:\n", BO1_VA(Current_Edit_Material->info.name));
                 Com_Printf(8, "    %s = %g %g %g %g\n", param, cte->literal[0], cte->literal[1], cte->literal[2], cte->literal[3]);
             }
             else
             {
-                Com_Printf(8, "%s is not a parameter of %s.\n", name, Current_Edit_Material->info.name);
+                Com_Printf(8, "%s is not a parameter of %s.\n", name, BO1_VA(Current_Edit_Material->info.name));
             }
         }
         else
         {
-            Com_Printf(8, "%s:\n", Current_Edit_Material->info.name);
+            Com_Printf(8, "%s:\n", BO1_VA(Current_Edit_Material->info.name));
             for ( i = 0; i < Current_Edit_Material->constantCount; ++i )
             {
                 ct = &Current_Edit_Material->localConstantTable[i];
@@ -1711,7 +1711,7 @@ void __cdecl Material_LoadPerMap(const PerMapMaterialTable *mtlTable, int mtlTab
         }
         *mtlTable[permapMtlIndex].material = Material_Register((char *)mtlTable[permapMtlIndex].name, 0);
         if ( !*mtlTable[permapMtlIndex].material )
-            Com_Error(ERR_FATAL, "Could not find permap material '%s'", mtlTable[permapMtlIndex].name);
+            Com_Error(ERR_FATAL, "Could not find permap material '%s'", BO1_VA(mtlTable[permapMtlIndex].name));
     }
 }
 
@@ -1744,7 +1744,7 @@ void __cdecl Material_LoadBuiltIn(const BuiltInMaterialTable *mtlTable, int mtlT
         }
         *mtlTable[builtInMtlIndex].material = Material_Register((char *)mtlTable[builtInMtlIndex].name, 0);
         if ( !*mtlTable[builtInMtlIndex].material )
-            Com_Error(ERR_FATAL, "Could not find material '%s'", mtlTable[builtInMtlIndex].name);
+            Com_Error(ERR_FATAL, "Could not find material '%s'", BO1_VA(mtlTable[builtInMtlIndex].name));
         rgp.dummyMaterial = 0;
     }
 }

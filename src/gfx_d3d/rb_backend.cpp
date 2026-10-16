@@ -960,8 +960,8 @@ void __cdecl RB_StretchPicCmd(GfxRenderCommandExecState *execState)
 
     cmd = (const GfxCmdStretchPic *)execState->cmd;
 
-    if ( **((unsigned int **)execState->cmd + 1) )
-        v1 = va("\"%s\"", cmd->material->info.name);
+    if ( **((Ptr32<unsigned int> *)execState->cmd + 1) )
+        v1 = va("\"%s\"", BO1_VA(cmd->material->info.name));
     else
         v1 = va("\"%s\"", "noname");
 
@@ -987,7 +987,7 @@ void __cdecl RB_StretchPicCmd(GfxRenderCommandExecState *execState)
 void __cdecl RB_StretchPicCmdFlipST(GfxRenderCommandExecState *execState)
 {
     RB_DrawStretchPicFlipST(
-        *((const Material **)execState->cmd + 1),
+        *((Ptr32<const Material> *)execState->cmd + 1),
         *((float *)execState->cmd + 2),
         *((float *)execState->cmd + 3),
         *((float *)execState->cmd + 5),
@@ -1332,7 +1332,7 @@ void __cdecl RB_DrawEmblemLayer(GfxRenderCommandExecState *execState)
 void __cdecl RB_DrawFullScreenColoredQuadCmd(GfxRenderCommandExecState *execState)
 {
   RB_DrawFullScreenColoredQuad(
-    *((const Material **)execState->cmd + 1),
+    *((Ptr32<const Material> *)execState->cmd + 1),
     *((float *)execState->cmd + 2),
     *((float *)execState->cmd + 3),
     *((float *)execState->cmd + 4),
@@ -1350,7 +1350,7 @@ void __cdecl RB_StretchRawCmd(GfxRenderCommandExecState *execState)
         *((unsigned int *)execState->cmd + 4),
         *((unsigned int *)execState->cmd + 5),
         *((unsigned int *)execState->cmd + 6),
-        *((const unsigned __int8 **)execState->cmd + 7));
+        *((Ptr32<const unsigned __int8> *)execState->cmd + 7));
     execState->cmd = (char *)execState->cmd + *(unsigned __int16 *)execState->cmd;
 }
 
@@ -2250,7 +2250,7 @@ void __cdecl RB_DrawTrianglesCmd(GfxRenderCommandExecState *execState)
     normalSize = 12 * *((__int16 *)execState->cmd + 6);
     stOffset = 4 * *((__int16 *)execState->cmd + 6) + normalSize + normalOffset;
     RB_DrawTriangles_Internal(
-        *((const Material **)execState->cmd + 1),
+        *((Ptr32<const Material> *)execState->cmd + 1),
         *((_BYTE *)execState->cmd + 8),
         *((_WORD *)execState->cmd + 5),
         (const unsigned __int16 *)((char *)execState->cmd + 8 * *((__int16 *)execState->cmd + 6) + stOffset),
@@ -3684,9 +3684,9 @@ double __cdecl RB_DrawHudIcon(
     {
         __debugbreak();
     }
-    if ( !IsValidMaterialHandle(*(Material *const *)(text + 3)) )
+    if ( !IsValidMaterialHandle(*(const Ptr32<Material> *)(text + 3)) )
         return 0.0;
-    material = Material_FromHandle(*(Material **)(text + 3));
+    material = Material_FromHandle(*(Ptr32<Material> *)(text + 3));
     RB_DrawStretchPicRotate(material, x, ya, 1.0, w, h, s0, 0.0, s1, 1.0, sinAngle, cosAngle, color, GFX_PRIM_STATS_HUD);
     return w;
 }
@@ -4536,7 +4536,7 @@ void __cdecl RB_DrawText3DCmd(GfxRenderCommandExecState *execState)
 {
     RB_DrawTextInSpace(
         (const char *)execState->cmd + 48,
-        *((Font_s **)execState->cmd + 4),
+        *((Ptr32<Font_s> *)execState->cmd + 4),
         (const float *)execState->cmd + 1,
         (const float *)execState->cmd + 5,
         (const float *)execState->cmd + 8,
@@ -5791,7 +5791,7 @@ void __cdecl RB_UpdateDynamicBuffers(GfxBackEndData *backendData)
     *backendData->dynamicBufferCurrentFrame = 0;
 }
 
-const void *data;
+static const void *data; // (the render thread's current frame; r_water_sim.cpp has a global of this name)
 void     RB_RenderThread(unsigned int threadContext)
 {
     void *Value; // eax

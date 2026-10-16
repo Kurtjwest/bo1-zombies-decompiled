@@ -6,7 +6,7 @@
 #include <DynEntity/DynEntity_load_obj.h>
 #include "r_dpvs.h"
 
-void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(const DpvsPlane **data)
+void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(Ptr32<const DpvsPlane> *data)
 {
     unsigned int planeCount; // [esp+0h] [ebp-28h]
     const DpvsPlane *planes; // [esp+4h] [ebp-24h]

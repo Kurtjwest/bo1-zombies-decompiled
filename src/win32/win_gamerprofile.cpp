@@ -619,7 +619,7 @@ void __cdecl GamerProfile_AppendDvarListToConfig(char *buffer, unsigned int size
                 I_strncpyz(tempString, stringToCopy, 64);
                 stringToCopy = tempString;
             }
-            sprintf(buf, "set %s \"%s\"\n", dvar->name, stringToCopy);
+            sprintf(buf, "set %s \"%s\"\n", BO1_VA(dvar->name), stringToCopy);
             len = &buf[strlen(buf) + 1] - &buf[1];
             I_strncat(loc, len + 1, buf);
             loc += len;

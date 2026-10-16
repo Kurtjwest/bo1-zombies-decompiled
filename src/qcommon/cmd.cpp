@@ -470,12 +470,12 @@ void __cdecl Cmd_Vstr_f()
         {
             if ( dvar->type == DVAR_TYPE_STRING || dvar->type == DVAR_TYPE_ENUM )
             {
-                v0 = va("%s\n", dvar->current.string);
+                v0 = va("%s\n", BO1_VA(dvar->current.string));
                 Cbuf_InsertText(0, v0);
             }
             else
             {
-                Com_Printf(0, "%s is not a string-based dvar\n", dvar->name);
+                Com_Printf(0, "%s is not a string-based dvar\n", BO1_VA(dvar->name));
             }
         }
         else
@@ -849,7 +849,7 @@ void __cdecl AssertCmdArgsConsistency(const CmdArgs *args)
         for ( nestinga = 0; nestinga <= args->nesting; ++nestinga )
         {
             for ( arg = 0; arg < args->argc[nestinga]; ++arg )
-                Com_Printf(16, "nesting %i, arg %i: '%s'\n", nestinga, arg, args->argv[nestinga][arg]);
+                Com_Printf(16, "nesting %i, arg %i: '%s'\n", nestinga, arg, BO1_VA(args->argv[nestinga][arg]));
         }
     }
     if ( totalUsedArgvPool != args->totalUsedArgvPool )
@@ -1210,7 +1210,7 @@ void __cdecl Cmd_ExecuteSingleCommandInternal(
         }
         if ( (restricted || restrict) && !cmd->consoleAccess )
         {
-            Com_DPrintf(16, "ConAccess: cmd not executed: %s.\n", cmd->name);
+            Com_DPrintf(16, "ConAccess: cmd not executed: %s.\n", BO1_VA(cmd->name));
             goto LABEL_31;
         }
         *prev = cmd->next;
@@ -1266,7 +1266,7 @@ void __cdecl Cmd_List_f()
     {
         if ( !match || Com_Filter(match, (char *)cmd->name, 0) )
         {
-            Com_Printf(0, "%s\n", cmd->name);
+            Com_Printf(0, "%s\n", BO1_VA(cmd->name));
             ++i;
         }
     }

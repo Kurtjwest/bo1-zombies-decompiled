@@ -57,6 +57,12 @@ struct EvalValue // sizeof=0x10
     } u;
 };
 
+// thrown (with the error text) by the Eval_* functions; the menu expression parsers catch it
+struct EvalException
+{
+    const char *message;
+};
+
 struct __declspec(align(4)) Eval // sizeof=0x5010
 {                                       // XREF: PC_Int_Expression_Parse/r
                                         // PC_Float_Expression_Parse/r

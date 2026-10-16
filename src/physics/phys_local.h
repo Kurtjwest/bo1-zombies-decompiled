@@ -1838,9 +1838,9 @@ inline void Phys_Vec3ToNitrousVec(const float * const inVector, phys_vec3 *outVe
 
 inline void __cdecl Phys_AxisToNitrousMat(float (*axis)[3], phys_mat44 *outMat)
 {
-    Phys_Vec3ToNitrousVec((float *)axis, &outMat->x);
-    Phys_Vec3ToNitrousVec(&(*axis)[3], &outMat->y);
-    Phys_Vec3ToNitrousVec(&(*axis)[6], &outMat->z);
+    Phys_Vec3ToNitrousVec(axis[0], &outMat->x);
+    Phys_Vec3ToNitrousVec(axis[1], &outMat->y);
+    Phys_Vec3ToNitrousVec(axis[2], &outMat->z);
 }
 
 inline float Abs(const phys_vec3 &vec)

@@ -313,12 +313,12 @@ void __cdecl R_SetNoDraw(GfxSceneEntity *sceneEnt)
     sceneEnt->cull.state = 4;
 }
 
-void __cdecl R_UpdateGfxEntityBoundsCmd(GfxSceneEntity **data)
+void __cdecl R_UpdateGfxEntityBoundsCmd(Ptr32<GfxSceneEntity> *data)
 {
     const DObj *obj; // [esp+0h] [ebp-10h] BYREF
     GfxSceneEntity *localSceneEnt; // [esp+4h] [ebp-Ch] BYREF
     GfxSceneEntity *sceneEnt; // [esp+8h] [ebp-8h]
-    GfxSceneEntity **pSceneEnt; // [esp+Ch] [ebp-4h]
+    Ptr32<GfxSceneEntity> *pSceneEnt; // [esp+Ch] [ebp-4h]
     int savedregs; // [esp+10h] [ebp+0h] BYREF
 
     localSceneEnt = 0;

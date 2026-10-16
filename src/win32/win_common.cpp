@@ -70,14 +70,14 @@ HunkUser **__cdecl Sys_ListFiles(char *directory, char *extension, char *filter,
 
     if ( filter )
     {
-        user = Hunk_UserCreate(0x20000, HU_SCHEME_DEFAULT, 0, 0, "Sys_ListFiles", 3);
+        user = Hunk_UserCreate(sizeof(void *) == 4 ? 0x20000 : 0x30000, HU_SCHEME_DEFAULT, 0, 0, "Sys_ListFiles", 3);
         numfilesa = 0;
         Sys_ListFilteredFiles(user, directory, "", filter, list, &numfilesa);
         list[numfilesa] = 0;
         *numfiles = numfilesa;
         if ( numfilesa )
         {
-            v9 = (HunkUser **)Hunk_UserAlloc(user, 4 * numfilesa + 8, 4, 0);
+            v9 = (HunkUser **)Hunk_UserAlloc(user, sizeof(void *) * (numfilesa + 2), sizeof(void *), 0);
             *v9++ = user;
             for ( i = 0; i < numfilesa; ++i )
                 v9[i] = (HunkUser *)list[i];
@@ -116,7 +116,7 @@ HunkUser **__cdecl Sys_ListFiles(char *directory, char *extension, char *filter,
         }
         else
         {
-            user = Hunk_UserCreate(0x20000, HU_SCHEME_DEFAULT, 0, 0, "Sys_ListFiles", 3);
+            user = Hunk_UserCreate(sizeof(void *) == 4 ? 0x20000 : 0x30000, HU_SCHEME_DEFAULT, 0, 0, "Sys_ListFiles", 3);
             do
             {
                 if ( (!wantsubs && v8 != (pfd.attrib & 0x10) || wantsubs && (pfd.attrib & 0x10) != 0)
@@ -136,7 +136,7 @@ HunkUser **__cdecl Sys_ListFiles(char *directory, char *extension, char *filter,
             *numfiles = numfilesa;
             if ( numfilesa )
             {
-                v9 = (HunkUser **)Hunk_UserAlloc(user, 4 * numfilesa + 8, 4, 0);
+                v9 = (HunkUser **)Hunk_UserAlloc(user, sizeof(void *) * (numfilesa + 2), sizeof(void *), 0);
                 *v9++ = user;
                 for ( i = 0; i < numfilesa; ++i )
                     v9[i] = (HunkUser *)list[i];

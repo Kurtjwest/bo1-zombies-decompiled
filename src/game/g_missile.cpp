@@ -5754,7 +5754,7 @@ gentity_s *__cdecl G_FireRocket(
         }
         Com_Printf(16, "bo1_missile: time %d fire ent %d weapon %s start %.1f %.1f %.1f dir %.3f %.3f %.3f model %s clipmask 0x%x contents 0x%x\n",
             level.time, bolt->s.number, BG_WeaponName(weaponIndex), start[0], start[1], start[2], dir[0], dir[1], dir[2],
-            weapDef->projectileModel ? weapDef->projectileModel->name : "", bolt->clipmask, bolt->r.contents);
+            BO1_VA(weapDef->projectileModel) ? weapDef->projectileModel->name : "", bolt->clipmask, bolt->r.contents);
         if ( s_shotsQueued < Dvar_GetInt("bo1_shotonfire") )
         {
             ++s_shotsQueued;

@@ -1471,7 +1471,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
                 bridge *bk = &list_bridge[k];
 
                 // Emit bk->m_left_i's vertex into the intersection list
-                //iassert(m_allocator.fast_is_within_buffer_limits(ip_cur, sizeof(contact_manifold_mesh_point *)));
+                //iassert(m_allocator.fast_is_within_buffer_limits(ip_cur, sizeof(Ptr32<contact_manifold_mesh_point>)));
 
                 // Duplicate check
                 for (Ptr32<contact_manifold_mesh_point> *chk = ip_list;
@@ -1489,7 +1489,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
                 contact_manifold_mesh_point *vtx = *bk->m_left_i;
                 vtx->m_contact_p = bk->m_intersection_p;
 
-                ip_cur += sizeof(contact_manifold_mesh_point *);
+                ip_cur += sizeof(Ptr32<contact_manifold_mesh_point>);
 
                 // Walk the arc along left_gb's polygon from bk->m_left_i up to
                 // list_bridge[(k+1) % num_bridges]->m_right_i
@@ -1505,7 +1505,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
 
                 while (arc_cur != arc_end)
                 {
-                    //iassert(m_allocator.fast_is_within_buffer_limits(ip_cur, sizeof(contact_manifold_mesh_point *)));
+                    //iassert(m_allocator.fast_is_within_buffer_limits(ip_cur, sizeof(Ptr32<contact_manifold_mesh_point>)));
 
                     for (Ptr32<contact_manifold_mesh_point> *chk = ip_list;
                         (char *)chk != ip_cur;
@@ -1516,7 +1516,7 @@ void phys_contact_manifold_process::intersect_poly_poly()
                     }
 
                     *(Ptr32<contact_manifold_mesh_point> *)ip_cur = *arc_cur;
-                    ip_cur += sizeof(contact_manifold_mesh_point *);
+                    ip_cur += sizeof(Ptr32<contact_manifold_mesh_point>);
 
                     if (arc_cur == arc_last)
                         arc_cur = left_gb->m_cman->m_list_contact_point;
@@ -1529,11 +1529,11 @@ void phys_contact_manifold_process::intersect_poly_poly()
             }
 
             m_contact_point_count =
-                (int)((char *)ip_cur - (char *)ip_list) / sizeof(contact_manifold_mesh_point *);
+                (int)((char *)ip_cur - (char *)ip_list) / sizeof(Ptr32<contact_manifold_mesh_point>);
 
             // Commit the intersection point array into the allocator
             char *temp2 = m_allocator.m_buffer_cur;
-            m_allocator.m_buffer_cur = temp2 + sizeof(contact_manifold_mesh_point *) * m_contact_point_count;
+            m_allocator.m_buffer_cur = temp2 + sizeof(Ptr32<contact_manifold_mesh_point>) * m_contact_point_count;
             iassert(m_allocator.m_buffer_cur <= m_allocator.m_buffer_end);
             iassert(temp2 == (char *)ip_list);
         }

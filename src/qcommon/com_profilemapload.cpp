@@ -242,7 +242,7 @@ void __cdecl ProfLoad_GetEntryRowText(const MapProfileEntry *entry, char *rowTex
         rowText,
         sizeofRowText,
         "%s - %5.3f total, %5.3f self, %5.3f file, %i hits",
-        entry->label,
+        BO1_VA(entry->label),
         (double)((double)entry->ticksTotal * msecPerRawTimerTick * 0.001000000047497451),
         (double)((double)entry->ticksSelf * msecPerRawTimerTick * 0.001000000047497451),
         (double)((double)(entry->elements[1].ticksSelf + entry->elements[2].ticksSelf + entry->elements[0].ticksSelf)
@@ -345,7 +345,7 @@ void ProfLoad_PrintHotSpots()
         Com_Printf(
             12,
             "^6%s: %5.3f self, %5.3f file, %i hits\n",
-            v11[j].label,
+            BO1_VA(v11[j].label),
             (double)v18,
             (double)v17,
             v11[j].accessCount);

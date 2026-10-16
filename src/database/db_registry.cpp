@@ -896,7 +896,7 @@ void __cdecl Load_SndDriverGlobalsAsset(Ptr32<SndDriverGlobals> *sndDriverGlobal
             *sndDriverGlobals = resident->entry.asset.header.sndDriverGlobals;
             Sys_LeaveCriticalSection(CRITSECT_DBHASH);
             Com_Printf(16, "bo1_zombies: SndDriverGlobals '%s' from zone '%s' replaces the resident one\n",
-                header.sndDriverGlobals->name, g_zoneNames[g_zoneIndex].name);
+                BO1_VA(header.sndDriverGlobals->name), g_zoneNames[g_zoneIndex].name);
             return;
         }
         Sys_LeaveCriticalSection(CRITSECT_DBHASH);
@@ -1668,7 +1668,7 @@ void DB_EndReorderZone()
                 }
                 if ( entry->type == 24 )
                 {
-                    bytesa = Com_sprintf(line, 0x200u, "%s,%s%s\r\n", entry->typeString, "mp/", entry->assetName);
+                    bytesa = Com_sprintf(line, 0x200u, "%s,%s%s\r\n", BO1_VA(entry->typeString), "mp/", entry->assetName);
                     WriteFile(file, line, bytesa, &written, 0);
                 }
                 else
@@ -1678,12 +1678,12 @@ void DB_EndReorderZone()
                                             line,
                                             0x200u,
                                             "%s,%s,%s,%s\r\n",
-                                            entry->typeString,
+                                            BO1_VA(entry->typeString),
                                             entry->assetName,
                                             s_dbReorder.zoneName,
                                             "all_mp");
                     else
-                        bytes = Com_sprintf(line, 0x200u, "%s,%s\r\n", entry->typeString, entry->assetName);
+                        bytes = Com_sprintf(line, 0x200u, "%s,%s\r\n", BO1_VA(entry->typeString), entry->assetName);
                     WriteFile(file, line, bytes, &written, 0);
                 }
             }
@@ -3535,8 +3535,8 @@ void __cdecl DB_LoadXAssets(XZoneInfo *zoneInfo, unsigned int zoneCount, int syn
         if ( (allocFlags == 256 || allocFlags == 0x4000) && DB_ZoneHasSpPatch(zoneInfo[k].name) )
         {
             if ( count + 3 > (unsigned int)maxZones )
-                Com_Error(ERR_DROP, "DB_LoadXAssets: too many zones with '%s_patch'", zoneInfo[k].name);
-            Com_sprintf(zoneName[count], 0x40u, "%s_patch", zoneInfo[k].name);
+                Com_Error(ERR_DROP, "DB_LoadXAssets: too many zones with '%s_patch'", BO1_VA(zoneInfo[k].name));
+            Com_sprintf(zoneName[count], 0x40u, "%s_patch", BO1_VA(zoneInfo[k].name));
             locZoneInfo[count].name = zoneName[count];
             locZoneInfo[count].allocFlags = allocFlags == 256 ? 1024 : 0x40000;
             locZoneInfo[count++].freeFlags = 0;
@@ -4542,11 +4542,11 @@ void __cdecl DB_BuildOSPath_FromSource(const char *zoneName, FF_DIR source, unsi
             {
                 __debugbreak();
             }
-            Com_sprintf(filename, size, "%s\\%s\\%s.ff", fs_homepath->current.string, fs_gameDirVar->current.string, zoneName);
+            Com_sprintf(filename, size, "%s\\%s\\%s.ff", BO1_VA(fs_homepath->current.string), fs_gameDirVar->current.string, zoneName);
         }
         else if ( source == FFD_USER_MAP )
         {
-            Com_sprintf(filename, size, "%s\\%s\\%s\\%s.ff", fs_homepath->current.string, "usermaps", zoneName, zoneName);
+            Com_sprintf(filename, size, "%s\\%s\\%s\\%s.ff", BO1_VA(fs_homepath->current.string), "usermaps", zoneName, zoneName);
         }
         else if ( !Assert_MyHandler(
                                  "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
@@ -4567,7 +4567,7 @@ void __cdecl DB_BuildOSPath_FromSource(const char *zoneName, FF_DIR source, unsi
 
 void __cdecl DB_BuildOSPath_ForUsermap(const char *zoneName, unsigned int size, char *filename)
 {
-    Com_sprintf(filename, size, "%s\\%s\\%s.ff", fs_homepath->current.string, "usermaps", zoneName);
+    Com_sprintf(filename, size, "%s\\%s\\%s.ff", BO1_VA(fs_homepath->current.string), "usermaps", zoneName);
 }
 
 void __cdecl DB_UnloadXZone(XZone *zone, bool createDefault)

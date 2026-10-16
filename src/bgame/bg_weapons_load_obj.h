@@ -68,7 +68,7 @@ const char *__cdecl BG_GetWeaponInventoryTypeName(weapInventoryType_t type);
 void __cdecl BG_LoadWeaponStrings();
 void __cdecl BG_LoadPlayerAnimTypes();
 void __cdecl BG_ClearWeaponDefInternal();
-void __cdecl SetConfigString(char **ppszConfigString, const char *pszKeyValue);
+void __cdecl SetConfigString(Ptr32<char> *ppszConfigString, const char *pszKeyValue);
 flameTable *__cdecl BG_LoadFlameTableInternal(const char *folder, char *name);
 void __cdecl SetConfigString2(unsigned __int8 *pMember, const char *pszKeyValue);
 void __cdecl InitFlameTable(flameTable *fTable);

@@ -10,7 +10,7 @@
 
 unsigned int lightPointCount;
 tlAtomicMutex lightGridMutex;
-htab **LightGridHashtable;
+Ptr32<htab> *LightGridHashtable; // 0x100000 32-bit buckets (allocation size below)
 htab *LightGridMemory;
 unsigned int nextAvailable;
 int s_lightGridRowDelta;
@@ -765,7 +765,7 @@ void __cdecl R_UpdateVisHistory(const GfxLightGrid *lightGrid, const unsigned in
 void AllocAllMemoryNeeded()
 {
     if (!LightGridHashtable)
-        LightGridHashtable = (htab **)Z_VirtualAlloc(0x40001C, "initLightGridPoints", 0);
+        LightGridHashtable = (Ptr32<htab> *)Z_VirtualAlloc(0x40001C, "initLightGridPoints", 0);
     if (!LightGridMemory)
         LightGridMemory = (htab *)Z_VirtualAlloc(0x1000000, "initLightGridMemory", 0);
 }

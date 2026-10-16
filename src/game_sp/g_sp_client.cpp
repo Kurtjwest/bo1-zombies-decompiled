@@ -439,7 +439,7 @@ bool G_SP_HeadlessFightCommand(client_t *client, usercmd_s *cmd)
             if (stock && stock != knife && BG_PlayerHasWeapon(ps, stock))
                 BG_TakePlayerWeapon(ps, stock);
             Com_Printf(16, "bo1_fightweapon: time %d melee weapon %s index %u meleeWeapon %s\n", level.time,
-                g_headlessKnife->current.string, knife, BG_WeaponName(ps->meleeWeapon));
+                BO1_VA(g_headlessKnife->current.string), knife, BG_WeaponName(ps->meleeWeapon));
         }
     }
     // A script SwitchToWeapon reaches a test client as its bot weapon request (SV_BotSwitchWeapon),
@@ -645,7 +645,7 @@ bool G_SP_HeadlessFightCommand(client_t *client, usercmd_s *cmd)
         if (!s_aimTagReported)
         {
             s_aimTagReported = 1;
-            Com_Printf(16, "bo1_testclient: aim tag '%s' -> %u (j_head %u)\n", g_headlessFightAimTag->current.string,
+            Com_Printf(16, "bo1_testclient: aim tag '%s' -> %u (j_head %u)\n", BO1_VA(g_headlessFightAimTag->current.string),
                 tag, (unsigned int)scr_const.j_head);
         }
     }

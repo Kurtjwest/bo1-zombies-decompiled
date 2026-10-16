@@ -208,7 +208,7 @@ int __cdecl PC_ReadDefineParms(source_s *source, define_s *define, token_s **par
 
     if ( !PC_ReadSourceToken(source, &token) )
     {
-        SourceError(source, "define %s missing parms", define->name);
+        SourceError(source, "define %s missing parms", BO1_VA(define->name));
         return 0;
     }
     if ( define->numparms > maxparms )
@@ -221,7 +221,7 @@ int __cdecl PC_ReadDefineParms(source_s *source, define_s *define, token_s **par
     if ( strcmp(token.string, "(") )
     {
         PC_UnreadSourceToken(source, &token);
-        SourceError(source, "define %s missing parms", define->name);
+        SourceError(source, "define %s missing parms", BO1_VA(define->name));
         return 0;
     }
     done = 0;
@@ -232,12 +232,12 @@ LABEL_11:
     {
         if ( numparms >= maxparms )
         {
-            SourceError(source, "define %s with too many parms", define->name);
+            SourceError(source, "define %s with too many parms", BO1_VA(define->name));
             return 0;
         }
         if ( numparms >= define->numparms )
         {
-            SourceWarning(source, "define %s has too many parms", define->name);
+            SourceWarning(source, "define %s has too many parms", BO1_VA(define->name));
             return 0;
         }
         parms[numparms] = 0;
@@ -247,7 +247,7 @@ LABEL_11:
         {
             if ( !PC_ReadSourceToken(source, &token) )
             {
-                SourceError(source, "define %s incomplete", define->name);
+                SourceError(source, "define %s incomplete", BO1_VA(define->name));
                 return 0;
             }
             if ( !strcmp(token.string, ",") && !indent )
@@ -266,7 +266,7 @@ LABEL_11:
                 if ( !indent )
                 {
                     if ( !parms[define->numparms - 1] )
-                        SourceWarning(source, "too few define parms to %s", define->name);
+                        SourceWarning(source, "too few define parms to %s", BO1_VA(define->name));
                     done = 1;
 LABEL_38:
                     ++numparms;

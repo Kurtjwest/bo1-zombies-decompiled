@@ -298,7 +298,7 @@ bool __cdecl GDT_RemoteMaterialUpdate(const char *in)
     if ( !MaterialVariable[i] )
       break;
   }
-  *(&v9 + i) = 0;
+  MaterialVariable[i - 2] = 0; // the exe addresses this as (&v9)[i] (v9 sits two bytes below MaterialVariable)
   VariableName = &MaterialVariable[10];
   IsX = MaterialVariable[i - 1] == 120;
   IsY = MaterialVariable[i - 1] == 121;

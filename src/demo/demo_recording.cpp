@@ -834,7 +834,7 @@ void __cdecl Demo_WriteServerCommands(msg_t *msg)
             "DEMO: w ServerCommands MaskCmdNum: %i %i CmdString: %s\n",
             dst[2 * j],
             dst[2 * j + 1],
-            v2->reliableCommandInfo[v8 & 0x7F].cmd);
+            BO1_VA(v2->reliableCommandInfo[v8 & 0x7F].cmd));
         Demo_Printf(4, string);
     }
 }

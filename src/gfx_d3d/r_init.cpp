@@ -479,7 +479,7 @@ HRESULT __cdecl R_CreateDeviceInternal(HWND__ *hwnd, unsigned int behavior, _D3D
         //             d3dpp,
         //             &dx.device);
         if ( Sys_IsHeadlessClient() ) // zombies: a 9Ex device (see R_PreCreateWindow); windowed, so no display mode
-            hr = ((IDirect3D9Ex *)dx.d3d9)->CreateDeviceEx(dx.adapterIndex, (D3DDEVTYPE)DeviceType, hwnd, behavior, d3dpp, NULL, (IDirect3DDevice9Ex **)&dx.device);
+            hr = ((IDirect3D9Ex *)dx.d3d9)->CreateDeviceEx(dx.adapterIndex, (D3DDEVTYPE)DeviceType, hwnd, behavior, d3dpp, NULL, (Ptr32<IDirect3DDevice9Ex> *)&dx.device);
         else
         hr = dx.d3d9->CreateDevice(dx.adapterIndex, (D3DDEVTYPE)DeviceType, hwnd, behavior, d3dpp, &dx.device);
         if ( hr >= 0 )
@@ -1031,7 +1031,7 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
                      "%i = (%i %i), %i = (%i %i), want (%i %i)",
                      top,
                      dx.displayModes[top].Width,
-                     dx.resolutionNameTable[4 * bot - 1023],
+                     BO1_VA(dx.resolutionNameTable[4 * bot - 1023]),
                      bot,
                      dx.displayModes[bot].Width,
                      dx.resolutionNameTable[4 * bot - 1023],

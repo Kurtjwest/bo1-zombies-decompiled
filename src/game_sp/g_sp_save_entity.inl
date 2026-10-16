@@ -52,12 +52,12 @@ static void SP_CheckEntityFields(const SPEntitySaveField *fields, unsigned count
 {
     // The EXE table is not sorted. Validate bounds and pairwise non-overlap without reordering it.
     // Strings, script objects and short model indices are 2 bytes; entity/sentient handles and int model indices
-    // 4; every other type is a pointer (4 bytes in the exe, 8 on 64-bit targets), saved as a 4-byte index.
+    // 4; every other type is a pointer - a 32-bit field (Ptr32, as in the exe) - saved as a 4-byte index.
     for (unsigned i = 0; i < count; ++i)
     {
         const int type = fields[i].type;
         const unsigned expected = (type == 1 || type == 11 || type == 17) ? 2u
-            : (type == 3 || type == 7 || type == 18) ? 4u : (unsigned)sizeof(void *);
+            : (type == 3 || type == 7 || type == 18) ? 4u : (unsigned)sizeof(Ptr32<void>);
         iassert(fields[i].size == expected);
         iassert(fields[i].type != 18 || fields[i].size == 4);
         iassert(fields[i].offset + fields[i].size <= size);
@@ -109,8 +109,8 @@ static void *SP_EntityReference(int type, int index)
 static void SP_WriteEntityStruct(const SPEntitySaveField *fields, unsigned count,
     const void *source, unsigned size, MemoryFile *memFile);
 
-// The image stores a reference as a 4-byte index in the field's slot; a pointer slot (8 bytes on 64-bit targets) is
-// cleared first so its upper half holds no address bits. ReadField reads the low 4 bytes back.
+// The image stores a reference as a 4-byte index in the field's slot (a wider slot is cleared first so it holds no
+// stale bits). ReadField reads the low 4 bytes back.
 static void SP_SetSlotIndex(unsigned char *at, unsigned size, int value)
 {
     if (size > sizeof(value))
@@ -211,11 +211,11 @@ static void SP_WriteStruct(const SPEntitySaveField *fields, unsigned count,
         }
         else if (field.type == 14)
         {
-            XAnimTree_s *tree = *(XAnimTree_s **)at;
+            XAnimTree_s *tree = *(Ptr32<XAnimTree_s> *)at;
             SP_SetSlotIndex(at, field.size, tree ? Scr_GetAnimsIndex(XAnimGetAnims(tree), SCRIPTINSTANCE_SERVER) : 0);
         }
         else if (field.type == 15)
-            SP_SetSlotIndex(at, field.size, *(void **)at != nullptr);
+            SP_SetSlotIndex(at, field.size, *(Ptr32<void> *)at != nullptr);
         else if (field.type == 7)
         {
             // SP 0x007E9F0A: the one-based sentient number as an int (clears infoIndex).
@@ -227,11 +227,11 @@ static void SP_WriteStruct(const SPEntitySaveField *fields, unsigned count,
         else if (field.type == 11)
             *(unsigned short *)at = Scr_SaveObjectIndex(*(unsigned short *)at);
         else if (field.type == 12)
-            SP_SetSlotIndex(at, field.size, SP_SaveAnimScript(*(scr_animscript_t **)at, (const unsigned char *)source));
+            SP_SetSlotIndex(at, field.size, SP_SaveAnimScript(*(Ptr32<scr_animscript_t> *)at, (const unsigned char *)source));
         else if (field.type == 13)
-            SP_SetSlotIndex(at, field.size, Path_SaveNode(*(pathnode_t **)at));
+            SP_SetSlotIndex(at, field.size, Path_SaveNode(*(Ptr32<pathnode_t> *)at));
         else
-            SP_SetSlotIndex(at, field.size, SP_EntityReferenceIndex(field.type, *(void **)at));
+            SP_SetSlotIndex(at, field.size, SP_EntityReferenceIndex(field.type, *(Ptr32<void> *)at));
     }
     MemFile_WriteData(memFile, size, image);
     for (unsigned i = 0; i < count; ++i)
@@ -240,8 +240,8 @@ static void SP_WriteStruct(const SPEntitySaveField *fields, unsigned count,
         const unsigned char *at = (const unsigned char *)source + field.offset;
         if (field.type == 1 && *(const unsigned short *)at)
             MemFile_WriteCString(memFile, (char *)SL_ConvertToString(*(const unsigned short *)at, SCRIPTINSTANCE_SERVER));
-        else if (field.type == 15 && *(tagInfo_s *const *)at)
-            SP_WriteEntityStruct(s_tagFields, ARRAY_COUNT(s_tagFields), *(tagInfo_s *const *)at, sizeof(tagInfo_s), memFile);
+        else if (field.type == 15 && *(const Ptr32<tagInfo_s> *)at)
+            SP_WriteEntityStruct(s_tagFields, ARRAY_COUNT(s_tagFields), *(const Ptr32<tagInfo_s> *)at, sizeof(tagInfo_s), memFile);
     }
 }
 
@@ -287,14 +287,14 @@ static void SP_ReadEntityStruct(const SPEntitySaveField *fields, unsigned count,
         else if (field.type == 14)
         {
             const int index = *(int *)at;
-            *(XAnimTree_s **)at = index ? Com_XAnimCreateSmallTree(Scr_GetAnims(index, SCRIPTINSTANCE_SERVER)) : nullptr;
+            *(Ptr32<XAnimTree_s> *)at = index ? Com_XAnimCreateSmallTree(Scr_GetAnims(index, SCRIPTINSTANCE_SERVER)) : nullptr;
         }
         else if (field.type == 15)
         {
             if (*(int *)at)
             {
-                *(tagInfo_s **)at = (tagInfo_s *)MT_Alloc(sizeof(tagInfo_s), 17, SCRIPTINSTANCE_SERVER);
-                SP_ReadEntityStruct(s_tagFields, ARRAY_COUNT(s_tagFields), *(tagInfo_s **)at, sizeof(tagInfo_s), memFile);
+                *(Ptr32<tagInfo_s> *)at = (tagInfo_s *)MT_Alloc(sizeof(tagInfo_s), 17, SCRIPTINSTANCE_SERVER);
+                SP_ReadEntityStruct(s_tagFields, ARRAY_COUNT(s_tagFields), *(Ptr32<tagInfo_s> *)at, sizeof(tagInfo_s), memFile);
             }
         }
         else if (field.type == 7)
@@ -310,11 +310,11 @@ static void SP_ReadEntityStruct(const SPEntitySaveField *fields, unsigned count,
         else if (field.type == 11)
             *(unsigned short *)at = Scr_LoadObjectIndex(*(unsigned short *)at);
         else if (field.type == 12)
-            *(scr_animscript_t **)at = SP_LoadAnimScript(*(int *)at, (unsigned char *)dest);
+            *(Ptr32<scr_animscript_t> *)at = SP_LoadAnimScript(*(int *)at, (unsigned char *)dest);
         else if (field.type == 13)
-            *(pathnode_t **)at = Path_LoadNode(*(unsigned int *)at);
+            *(Ptr32<pathnode_t> *)at = Path_LoadNode(*(unsigned int *)at);
         else
-            *(void **)at = SP_EntityReference(field.type, *(int *)at);
+            *(Ptr32<void> *)at = SP_EntityReference(field.type, *(int *)at);
     }
 }
 
@@ -443,12 +443,12 @@ static void SP_ReleaseEntityFields(const SPEntitySaveField *fields, unsigned cou
             RemoveRefToObject(SCRIPTINSTANCE_SERVER, *(unsigned short *)at);
             *(unsigned short *)at = 0;
         }
-        else if (fields[i].type == 15 && *(tagInfo_s **)at)
+        else if (fields[i].type == 15 && *(Ptr32<tagInfo_s> *)at)
         {
-            SP_ReleaseEntityFields(s_tagFields, ARRAY_COUNT(s_tagFields), *(tagInfo_s **)at);
-            MT_Free(*(_BYTE **)at, sizeof(tagInfo_s), SCRIPTINSTANCE_SERVER);
+            SP_ReleaseEntityFields(s_tagFields, ARRAY_COUNT(s_tagFields), *(Ptr32<tagInfo_s> *)at);
+            MT_Free(*(Ptr32<_BYTE> *)at, sizeof(tagInfo_s), SCRIPTINSTANCE_SERVER);
         }
-        else if (fields[i].type == 14 && *(XAnimTree_s **)at)
-            Com_XAnimFreeSmallTree(*(XAnimTree_s **)at);
+        else if (fields[i].type == 14 && *(Ptr32<XAnimTree_s> *)at)
+            Com_XAnimFreeSmallTree(*(Ptr32<XAnimTree_s> *)at);
     }
 }

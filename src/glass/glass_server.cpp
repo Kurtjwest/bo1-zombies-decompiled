@@ -99,7 +99,7 @@ void __thiscall GlassesServer::Init()
                     Com_Printf(16, "bo1_glass: init id %u state %u health %.1f origin %.1f %.1f %.1f def %s\n",
                         i, this->glasses[i].state.val.i & 0xF, this->glasses[i].health,
                         glss->glasses[i].origin[0], glss->glasses[i].origin[1], glss->glasses[i].origin[2],
-                        glss->glasses[i].glassDef->name);
+                        BO1_VA(glss->glasses[i].glassDef->name));
             }
         }
         else

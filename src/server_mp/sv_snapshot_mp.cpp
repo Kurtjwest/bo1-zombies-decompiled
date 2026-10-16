@@ -590,12 +590,12 @@ void __cdecl SV_UpdateServerCommandsToClient(client_t *client, msg_t *msg)
         MSG_WriteLong(msg, i);
         MSG_WriteString(msg, client->reliableCommandInfo[i & 0x7F].cmd);
         if ( sv_debugReliableCmds->current.enabled )
-            Com_Printf(15, "%i: %s\n", i - (client->reliableAcknowledge + 1), client->reliableCommandInfo[i & 0x7F].cmd);
+            Com_Printf(15, "%i: %s\n", i - (client->reliableAcknowledge + 1), BO1_VA(client->reliableCommandInfo[i & 0x7F].cmd));
         if ( sv_debugPacketContentsQuick->current.integer > 1 )
             CG_QuickPrint(
                 "ServerCmd: %i: %s\n",
                 i - (client->reliableAcknowledge + 1),
-                client->reliableCommandInfo[i & 0x7F].cmd);
+                BO1_VA(client->reliableCommandInfo[i & 0x7F].cmd));
     }
     bitsUseda = MSG_GetUsedBitCount(msg) - bitsUsed;
     if ( bitsUseda )
@@ -2929,7 +2929,7 @@ void __cdecl SV_PrintServerCommandsForClient(client_t *client)
             "cmd %5d: %8d: %s\n",
             i,
             client->reliableCommandInfo[i & 0x7F].time,
-            client->reliableCommandInfo[i & 0x7F].cmd);
+            BO1_VA(client->reliableCommandInfo[i & 0x7F].cmd));
     Com_Printf(15, "----------");
 }
 

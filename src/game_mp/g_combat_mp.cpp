@@ -409,7 +409,7 @@ void __cdecl DeathGrenadeDrop(gentity_s *self)
         }
         else
         {
-            Com_PrintWarning(14, "Unknown perk_grenadeDeath grenade: %s\n", perk_grenadeDeath->current.string);
+            Com_PrintWarning(14, "Unknown perk_grenadeDeath grenade: %s\n", BO1_VA(perk_grenadeDeath->current.string));
         }
     }
 }

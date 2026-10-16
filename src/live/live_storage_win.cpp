@@ -3346,7 +3346,7 @@ TaskRecord *__cdecl LiveStorage_ReadRecentServers(unsigned __int8 *buf, int bufs
 
 void __cdecl LiveStorage_ReadRecentServersSuccess(int controllerIndex, void *data)
 {
-    Live_PopulateRecentServers(*((unsigned __int8 **)data + 62), *((unsigned int *)data + 63));
+    Live_PopulateRecentServers(*((Ptr32<unsigned __int8> *)data + 62), *((unsigned int *)data + 63));
 }
 
 void __cdecl LiveStorage_DeleteGlobalStats(int controllerIndex)

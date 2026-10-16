@@ -691,7 +691,7 @@ void __cdecl R_LoadLightmaps(GfxBspLoad *load)
         while ( oldLmapBaseIndex < oldLmapCount )
         {
             if ( newLmapIndex
-                && groupInfo[newLmapIndex].wideCount > *(&height + 2 * newLmapIndex)
+                && groupInfo[newLmapIndex].wideCount > groupInfo[newLmapIndex - 1].wideCount
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp_load_obj.cpp",
                             1014,
@@ -702,7 +702,7 @@ void __cdecl R_LoadLightmaps(GfxBspLoad *load)
                 __debugbreak();
             }
             if ( newLmapIndex
-                && groupInfo[newLmapIndex].highCount > (int)BO1_P2I((&buf_p)[2 * newLmapIndex])
+                && groupInfo[newLmapIndex].highCount > groupInfo[newLmapIndex - 1].highCount
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp_load_obj.cpp",
                             1015,
@@ -1099,7 +1099,7 @@ unsigned int __cdecl R_DetermineLightmapCoupling(GfxBspLoad *load, int (*couplin
             origLmapCount = lmapIndex + 1;
     }
     if ( diskLmapCount && diskLmapCount != origLmapCount )
-        Com_Error(ERR_DROP, "LoadMap: funny lump size in %s", s_world.name);
+        Com_Error(ERR_DROP, "LoadMap: funny lump size in %s", BO1_VA(s_world.name));
     memset((unsigned __int8 *)lmapVertCount, 0, sizeof(lmapVertCount));
     memset((unsigned __int8 *)coupling, 0, 0x400u);
     for ( materialIndex = 0; materialIndex < load->materialCount; ++materialIndex )
@@ -2964,10 +2964,10 @@ void __cdecl R_LoadSurfaces(GfxBspLoad *load)
         Com_PrintWarning(8, "Bsp compiled with old version of cod2map.\n");
     R_LoadTriangleSurfaces(load->bspVersion, (DiskTriangleSoup **)&diskSurfaces, &surfCount);
     if ( !surfCount )
-        Com_Error(ERR_DROP, "LoadMap: no surfaces in %s", s_world.name);
+        Com_Error(ERR_DROP, "LoadMap: no surfaces in %s", BO1_VA(s_world.name));
     vertsDisk = (const DiskGfxVertex *)Com_GetBspLump(LUMP_DRAWVERTS, 0x44u, &vertCount);
     if ( !vertCount )
-        Com_Error(ERR_DROP, "LoadMap: no vertices in %s", s_world.name);
+        Com_Error(ERR_DROP, "LoadMap: no vertices in %s", BO1_VA(s_world.name));
     s_world.draw.vertexCount = vertCount;
     vertLayerDataDisk = (const unsigned __int8 *)Com_GetBspLump(LUMP_VERTEX_LAYER_DATA, 1u, &vertLayerDataSize);
     if ( !vertLayerDataSize )
@@ -3178,7 +3178,7 @@ void __cdecl R_LoadSurfaces(GfxBspLoad *load)
                 Com_Error(
                     ERR_DROP,
                     "map has at least two different skies: %s and %s\nOnly one sky per map is supported\n",
-                    material->info.name,
+                    BO1_VA(material->info.name),
                     skyMaterial->info.name);
             skyMaterial = material;
             ++s_world.skySurfCount;
@@ -3439,7 +3439,7 @@ void __cdecl R_SurfCalculateMagicPortalVerts(
                     0,
                     "%s\n\t%s",
                     "triCount <= ARRAY_COUNT( triFillId )",
-                    material->info.name) )
+                    BO1_VA(material->info.name)) )
     {
         __debugbreak();
     }
@@ -3450,7 +3450,7 @@ void __cdecl R_SurfCalculateMagicPortalVerts(
                     0,
                     "%s\n\t%s",
                     "triCount <= ARRAY_COUNT( centerAccum )",
-                    material->info.name) )
+                    BO1_VA(material->info.name)) )
     {
         __debugbreak();
     }
@@ -3461,7 +3461,7 @@ void __cdecl R_SurfCalculateMagicPortalVerts(
                     0,
                     "%s\n\t%s",
                     "triCount <= ARRAY_COUNT( centerWeight )",
-                    material->info.name) )
+                    BO1_VA(material->info.name)) )
     {
         __debugbreak();
     }
@@ -3643,7 +3643,7 @@ void __cdecl R_SetSkyImage(const Material *skyMaterial)
                 Com_Error(
                     ERR_DROP,
                     "colorMap '%s' for sky material '%s' is not a cubemap\n",
-                    texdef->u.image->name,
+                    BO1_VA(texdef->u.image->name),
                     skyMaterial->info.name);
             s_world.skyImage = texdef->u.image;
             s_world.skySamplerState = texdef->samplerState;
@@ -3672,7 +3672,7 @@ void __cdecl R_ValidateSurfaceLightmapUsage(const GfxSurface *surface)
                             ERR_DROP,
                             "World surface using material '%s' doesn't have a lightmap.    This usually means the map was compiled with a"
                             " different version of this material than you have locally.",
-                            surface->material->info.name);
+                            BO1_VA(surface->material->info.name));
                 }
             }
         }
@@ -4352,7 +4352,7 @@ void __cdecl R_LoadMiscModel(char *(*spawnVars)[2], int spawnVarCount)
         scale = R_FloatForKey("modelscale", 1.0, spawnVars, spawnVarCount);
         if ( scale <= 0.0 )
         {
-            v2 = va("Model %s has negative scale at %g %g %g\n", model->name, origin[0], origin[1], origin[2]);
+            v2 = va("Model %s has negative scale at %g %g %g\n", BO1_VA(model->name), origin[0], origin[1], origin[2]);
             if ( !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp_load_obj.cpp",
                             4559,

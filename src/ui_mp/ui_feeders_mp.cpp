@@ -2016,7 +2016,7 @@ char *__cdecl UI_FeederItemText_WeaponGroupMilestones(
             return (char *)"";
     }
     else if ( challenge->type == MILESTONE_GROUP
-                 && (statName = va("STATS_MILESTONE_STATNAME_%s", challenge->name),
+                 && (statName = va("STATS_MILESTONE_STATNAME_%s", BO1_VA(challenge->name)),
                          CL_MilestoneTier_DecToRoman(challenge->milestone, milestoneTierRoman, 5),
                          statName) )
     {

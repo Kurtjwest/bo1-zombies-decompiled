@@ -808,7 +808,6 @@ void __cdecl broad_phase_reset_buffer()
 int    bp_env_jq_batch_function1(jqBatch *pBatch)
 {
     signed __int32 i; // eax
-    float **Input; // esi
     float *v4; // ecx
     double z; // st7
     double y; // st7
@@ -849,16 +848,17 @@ int    bp_env_jq_batch_function1(jqBatch *pBatch)
         process_cluster_environment_collision_prolog((broad_phase_info *)g_bpb_ptr_list[i], &bpb);
     }
 
-    Input = (float **)pBatch->Input;
+    // the batch input is a broad_phase_prolog_task_input (two 32-bit pointers)
+    const broad_phase_prolog_task_input *taskInput = (const broad_phase_prolog_task_input *)(void *)pBatch->Input;
     //tlAtomicMutex::Lock(&g_prolog_task_mutex);
     g_prolog_task_mutex.Lock();
 
-    float *minOut = Input[0];
+    float *minOut = (float *)(phys_vec3 *)taskInput->m_aabb_min;
     minOut[0] = (bpb.m_trace_aabb_min_whace.x < minOut[0]) ? bpb.m_trace_aabb_min_whace.x : minOut[0];
     minOut[1] = (bpb.m_trace_aabb_min_whace.y < minOut[1]) ? bpb.m_trace_aabb_min_whace.y : minOut[1];
     minOut[2] = (bpb.m_trace_aabb_min_whace.z < minOut[2]) ? bpb.m_trace_aabb_min_whace.z : minOut[2];
 
-    float *maxOut = Input[1];
+    float *maxOut = (float *)(phys_vec3 *)taskInput->m_aabb_max;
     maxOut[0] = (bpb.m_trace_aabb_max_whace.x > maxOut[0]) ? bpb.m_trace_aabb_max_whace.x : maxOut[0];
     maxOut[1] = (bpb.m_trace_aabb_max_whace.y > maxOut[1]) ? bpb.m_trace_aabb_max_whace.y : maxOut[1];
     maxOut[2] = (bpb.m_trace_aabb_max_whace.z > maxOut[2]) ? bpb.m_trace_aabb_max_whace.z : maxOut[2];
@@ -1001,7 +1001,7 @@ void broad_phase_process_object_environment_collision(bpi_environment_collision_
 
     phys_transient_allocator transient_buffer;
     m_bpb_i_start = eci->m_bpb_i_start;
-    bpb_ptr_list = (broad_phase_base **)transient_buffer.allocate(sizeof(broad_phase_base *) * eci->m_bpb_count, 4, 0, "phys_transient_allocator out of memory.");
+    bpb_ptr_list = (broad_phase_base **)transient_buffer.allocate(sizeof(broad_phase_base *) * eci->m_bpb_count, sizeof(broad_phase_base *), 0, "phys_transient_allocator out of memory.");
     bpb_ptr_cur = bpb_ptr_list;
 
     for (broad_phase_base *bpb = eci->m_bpb_i_start; bpb != eci->m_bpb_i_end; bpb = bpb->m_list_bpb_next)
@@ -2780,7 +2780,7 @@ void    broad_phase_group::collision_prolog()
         {
             __debugbreak();
         }
-        half_dims_12 = (const phys_mat44 *)BO1_I2P((***(_DWORD ***)BO1_I2P((m_buffer + 16)) + 48));
+        half_dims_12 = (const phys_mat44 *)BO1_I2P((***(Ptr32<Ptr32<_DWORD>> *)BO1_I2P((m_buffer + 16)) + 48));
         v36 = 0;
         *(float *)&i = 0.0;
         if ((int)BO1_P2I(rb_mat) > 0)

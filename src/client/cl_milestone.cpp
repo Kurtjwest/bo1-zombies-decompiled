@@ -113,9 +113,9 @@ void __cdecl CL_GetFrontEndMilestoneLocalizedName(
     if ( outputString && LiveStats_GetChallengeInfo(&challenge, index, milestoneType) )
     {
         if ( challengeType && *challengeType && !I_stricmp(challengeType, "lifetime_") )
-            Com_sprintf(statName, 0x100u, "%s%s", "lifetime_", challenge->name);
+            Com_sprintf(statName, 0x100u, "%s%s", "lifetime_", BO1_VA(challenge->name));
         else
-            Com_sprintf(statName, 0x100u, "%s", challenge->name);
+            Com_sprintf(statName, 0x100u, "%s", BO1_VA(challenge->name));
         if ( challenge->type == MILESTONE_GROUP )
         {
             String = Dvar_GetString("weapon_group_name");
@@ -856,13 +856,13 @@ void __cdecl CL_GetFrontEndMilestoneLocalizedDesc(
     if ( outputString && LiveStats_GetChallengeInfo(&challenge, index, milestoneType) )
     {
         if ( challengeType && *challengeType && !I_stricmp(challengeType, "lifetime_") )
-            Com_sprintf(statName, 0x100u, "%s%s", "lifetime_", challenge->name);
+            Com_sprintf(statName, 0x100u, "%s%s", "lifetime_", BO1_VA(challenge->name));
         else
-            Com_sprintf(statName, 0x100u, "%s", challenge->name);
+            Com_sprintf(statName, 0x100u, "%s", BO1_VA(challenge->name));
         switch ( challenge->type )
         {
             case MILESTONE_GAMEMODE:
-                v5 = va("MPUI_%s", ui_challengeGameMode->current.string);
+                v5 = va("MPUI_%s", BO1_VA(ui_challengeGameMode->current.string));
                 itemNamea = UI_SafeTranslateString(v5);
                 CL_GetMilestoneLocalizedDesc(
                     outputString,

@@ -470,7 +470,7 @@ void __cdecl MSG_WriteEntityDeltaFields(
                 }
                 else
                 {
-                    v11 = va("An ALWAYS_CHANGES field (%s) didn't have its delta written?", fielda->name);
+                    v11 = va("An ALWAYS_CHANGES field (%s) didn't have its delta written?", BO1_VA(fielda->name));
                     if ( !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\sv_msg_write_mp.cpp", 358, 0, v11) )
                         __debugbreak();
                 }

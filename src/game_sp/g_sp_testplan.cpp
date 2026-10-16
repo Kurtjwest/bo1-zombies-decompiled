@@ -1790,7 +1790,7 @@ bool Resupply(gentity_s *player, usercmd_s *cmd)
         GoUse(player, cmd, ent, nullptr, -1.0f, true);
         if (level.time % 5000 == 0)
             Com_Printf(16, "bo1_resupply: time %d floor %d weapon %s ent %d ammo %d\n", level.time,
-                floor, step.weapon, ent->s.number, BG_GetAmmoInClip(ps, weapon) + BG_GetAmmoNotInClip(ps, weapon));
+                floor, BO1_VA(step.weapon), ent->s.number, BG_GetAmmoInClip(ps, weapon) + BG_GetAmmoNotInClip(ps, weapon));
         return true;
     }
     return false;
@@ -1864,7 +1864,7 @@ int FloorWallGun(const gentity_s *player)
             if (strcmp(s_steps[i].name, name))
                 continue;
             char upgraded[64];
-            sprintf_s(upgraded, "%.*s_upgraded_zm", (int)strlen(s_steps[i].weapon) - 3, s_steps[i].weapon);
+            sprintf_s(upgraded, "%.*s_upgraded_zm", (int)strlen(s_steps[i].weapon) - 3, BO1_VA(s_steps[i].weapon));
             if (HasWeaponNamed(&player->client->ps, s_steps[i].weapon) || HasWeaponNamed(&player->client->ps, upgraded))
                 continue;
             gentity_s *ent = TriggerOnFloor(i, player);
@@ -1889,7 +1889,7 @@ void InsertStep(int stepIndex, unsigned int replace, const char *why)
     s_plan.insert(s_plan.begin() + s_index, stepIndex);
     s_planFlags.insert(s_planFlags.begin() + s_index, (unsigned char)(PLAN_INSERTED | PLAN_ARMED));
     s_planReplace.insert(s_planReplace.begin() + s_index, replace);
-    Com_Printf(16, "bo1_plan: time %d insert step %d %s before %s: %s\n", level.time, s_index, s_steps[stepIndex].name,
+    Com_Printf(16, "bo1_plan: time %d insert step %d %s before %s: %s\n", level.time, s_index, BO1_VA(s_steps[stepIndex].name),
         s_index + 1 < (int)s_plan.size() ? s_steps[s_plan[s_index + 1]].name : "-", why);
 }
 
@@ -2263,7 +2263,7 @@ bool CheckUseSuccess(gentity_s *player, const PlanStep &step, const char **why)
     {
         char detail[160];
         const unsigned int bit = BG_GetPerkIndexForName(step.perk);
-        sprintf_s(detail, "%s engine bit %u set %d reload multiplier %.3f", step.perk, bit,
+        sprintf_s(detail, "%s engine bit %u set %d reload multiplier %.3f", BO1_VA(step.perk), bit,
             bit < 52 && (ps->perks[bit >> 5] & (1u << (bit & 31))) != 0,
             Dvar_GetFloat("perk_weapReloadMultiplier"));
         Log("perk", detail);
@@ -2445,7 +2445,7 @@ bool HasLoadedGun(const playerState_s *ps)
 void ThiefLog(gentity_s *player, const char *event, const char *detail)
 {
     Com_Printf(16, "bo1_plan: time %d thief round %d %s step %d %s: %s weapon %s weapons %s origin %.0f %.0f %.0f\n",
-        level.time, s_thiefRounds, event, s_index, s_index < (int)s_plan.size() ? s_steps[s_plan[s_index]].name : "-",
+        level.time, s_thiefRounds, event, s_index, BO1_VA(s_index < (int)s_plan.size() ? s_steps[s_plan[s_index]].name : "-"),
         detail, player->client->ps.weapon ? BG_WeaponName(player->client->ps.weapon) : "none",
         WeaponList(&player->client->ps).c_str(), player->r.currentOrigin[0], player->r.currentOrigin[1],
         player->r.currentOrigin[2]);
@@ -3093,7 +3093,7 @@ bool G_SP_TestPlanCommand(gentity_s *player, client_t *client, usercmd_s *cmd, g
     }
     if (level.time % 10000 == 0 && s_index < (int)s_plan.size())
         Com_Printf(16, "bo1_plan: time %d status step %d %s phase %d origin %.0f %.0f %.0f laststand %d melee %d target %d dist %.0f hint %d/%d view yaw %.0f pitch %.0f\n",
-            level.time, s_index, s_steps[s_plan[s_index]].name, s_phase, player->r.currentOrigin[0], player->r.currentOrigin[1],
+            level.time, s_index, BO1_VA(s_steps[s_plan[s_index]].name), s_phase, player->r.currentOrigin[0], player->r.currentOrigin[1],
             player->r.currentOrigin[2], player->client->lastStand ? 1 : 0, melee ? 1 : 0, target ? target->s.number : -1,
             target ? targetDistance : -1.0f, player->client->ps.cursorHint, player->client->ps.cursorHintEntIndex,
             player->client->ps.viewangles[1], player->client->ps.viewangles[0]);
@@ -4094,7 +4094,7 @@ bool G_SP_TestPlanCommand(gentity_s *player, client_t *client, usercmd_s *cmd, g
             if (step.notify && LevelFlag(step.notify) == 1)
             {
                 char detail[96];
-                sprintf_s(detail, "flag %s already set (notify at %d)", step.notify, LastNotifyTime(step.notify));
+                sprintf_s(detail, "flag %s already set (notify at %d)", BO1_VA(step.notify), LastNotifyTime(step.notify));
                 EndStep(player, "PASS", detail);
                 return false;
             }

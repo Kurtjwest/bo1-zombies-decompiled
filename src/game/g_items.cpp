@@ -553,9 +553,9 @@ void __cdecl PrintPlayerPickupMessage(gentity_s *player, unsigned int weapIdx)
         __debugbreak();
     }
     if ( BG_WeaponIsClipOnly(weapIdx) )
-        v2 = va("%c GAME_PICKUP_CLIPONLY_AMMO %s", 102, weapVariantDef->szDisplayName);
+        v2 = va("%c GAME_PICKUP_CLIPONLY_AMMO %s", 102, BO1_VA(weapVariantDef->szDisplayName));
     else
-        v2 = va("%c GAME_PICKUP_AMMO %s", 102, weapVariantDef->szDisplayName);
+        v2 = va("%c GAME_PICKUP_AMMO %s", 102, BO1_VA(weapVariantDef->szDisplayName));
     SV_GameSendServerCommand(player - g_entities, SV_CMD_CAN_IGNORE, v2);
 }
 
@@ -689,7 +689,7 @@ void __cdecl PrintMessage_CannotGrabItem(
         if ( BG_PlayerHasWeapon(&player->client->ps, weapIndex) )
         {
             WeaponVariantDef = BG_GetWeaponVariantDef(weapIndex);
-            v6 = va("%c GAME_PICKUP_CANTCARRYMOREAMMO %s", 102, WeaponVariantDef->szDisplayName);
+            v6 = va("%c GAME_PICKUP_CANTCARRYMOREAMMO %s", 102, BO1_VA(WeaponVariantDef->szDisplayName));
         }
         else
         {
@@ -1417,9 +1417,9 @@ void __cdecl SaveRegisteredWeapons()
             lastWrittenIndex = weapIndex;
             lastWrittenVariantCount = weapVariantDef->iVariantCount;
             if ( lastWrittenVariantCount )
-                v0 = va("%i %s %i", weapIndex, weapVariantDef->szInternalName, weapVariantDef->iVariantCount);
+                v0 = va("%i %s %i", weapIndex, BO1_VA(weapVariantDef->szInternalName), weapVariantDef->iVariantCount);
             else
-                v0 = va("%i %s", weapIndex, weapVariantDef->szInternalName);
+                v0 = va("%i %s", weapIndex, BO1_VA(weapVariantDef->szInternalName));
             SV_SetConfigstring(count + 2836, v0);
             ++count;
         }
@@ -1496,9 +1496,9 @@ void __cdecl G_RegisterWeapon(unsigned int weapIndex)
         Com_Error(ERR_DROP, "Too many different hintstring values on weapons. Max allowed is %i different strings.", 96);
     if ( *weapDef->worldModel )
     {
-        Name = (char *)XModelGetName(*(const XModel **)weapDef->worldModel);
+        Name = (char *)XModelGetName(*(Ptr32<const XModel> *)weapDef->worldModel);
         modelindex = G_ModelIndex(Name);
-        if ( XModelBad(*(const XModel **)weapDef->worldModel) )
+        if ( XModelBad(*(Ptr32<const XModel> *)weapDef->worldModel) )
             G_OverrideModel(modelindex, (char*)"defaultweapon");
     }
     if ( weapDef->projectileModel )
@@ -1508,7 +1508,7 @@ void __cdecl G_RegisterWeapon(unsigned int weapIndex)
     }
     if ( *((unsigned int *)weapDef->worldModel + 1) )
     {
-        v3 = (char *)XModelGetName(*((const XModel **)weapDef->worldModel + 1));
+        v3 = (char *)XModelGetName(*((Ptr32<const XModel> *)weapDef->worldModel + 1));
         G_ModelIndex(v3);
     }
     if ( weapDef->additionalMeleeModel )

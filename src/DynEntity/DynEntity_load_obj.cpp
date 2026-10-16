@@ -1624,12 +1624,12 @@ PhysPreset *__cdecl DynEnt_AutoCreatePhysPreset(const DynEntityDef *dynEntDef, c
     memset((unsigned __int8 *)physPreset, 0, sizeof(PhysPreset));
     if ( dynEntDef->xModel )
     {
-        DynEnt_Strcpy((char **)physPreset, dynEntDef->xModel->name);
+        DynEnt_Strcpy((Ptr32<char> *)physPreset, dynEntDef->xModel->name);
     }
     else
     {
         sprintf(name, "%d", numAutoPhysPresets + 1);
-        DynEnt_Strcpy((char **)physPreset, name);
+        DynEnt_Strcpy((Ptr32<char> *)physPreset, name);
     }
     if ( params->mass > 0.0 )
         physPreset->mass = params->mass;
@@ -1643,7 +1643,7 @@ PhysPreset *__cdecl DynEnt_AutoCreatePhysPreset(const DynEntityDef *dynEntDef, c
     return physPreset;
 }
 
-void __cdecl DynEnt_Strcpy(char **memberString, const char *keyValue)
+void __cdecl DynEnt_Strcpy(Ptr32<char> *memberString, const char *keyValue)
 {
     char v2; // [esp+3h] [ebp-21h]
     char *v3; // [esp+8h] [ebp-1Ch]

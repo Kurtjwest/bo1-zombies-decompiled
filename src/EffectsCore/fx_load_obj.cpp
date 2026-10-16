@@ -364,7 +364,7 @@ bool __cdecl FX_ParseSingleFlag(const char *token, FxFlagOutputSet *flagOutputSe
     for ( flagDefa = s_allFlagDefs; flagDefa->name; ++flagDefa )
     {
         if ( flagOutputSet->flags[flagDefa->flagType] )
-            Com_Printf(21, "    %s\n", flagDefa->name);
+            Com_Printf(21, "    %s\n", BO1_VA(flagDefa->name));
     }
     Com_ScriptError("Unknown flag '%s'\n", token);
     return 0;
@@ -1052,7 +1052,7 @@ bool __cdecl FX_ParseSound(const char **parse, FxEditorElemDef *edElemDef)
 
 bool __cdecl FX_RegisterAsset_SoundAliasName(char *name, FxElemVisuals *visuals)
 {
-    ReplaceString((const char **)visuals, name, "FX_RegisterAsset_SoundAliasName", 11, SCRIPTINSTANCE_SERVER);
+    ReplaceString((Ptr32<const char> *)visuals, name, "FX_RegisterAsset_SoundAliasName", 11, SCRIPTINSTANCE_SERVER);
     return 1;
 }
 
@@ -1243,7 +1243,7 @@ bool __cdecl FX_ParseEditorElemField(const char **parse, FxEditorElemDef *edElem
     }
     Com_Printf(21, "Valid effects element fields:\n");
     for ( fieldIndexa = 0; fieldIndexa < 0x55; ++fieldIndexa )
-        Com_Printf(21, "    %s\n", s_elemFields[fieldIndexa].keyName);
+        Com_Printf(21, "    %s\n", BO1_VA(s_elemFields[fieldIndexa].keyName));
     Com_ScriptError("unkown field '%s'\n", token);
     return 0;
 }
@@ -1341,7 +1341,7 @@ bool __cdecl FX_ParseEditorEffectField(const char **parse, FxEditorEffectDef *ed
     }
     Com_Printf(21, "Valid effect fields:\n");
     for ( fieldIndexa = 0; fieldIndexa < 4; ++fieldIndexa )
-        Com_Printf(21, "    %s\n", s_effectFields[fieldIndexa].keyName);
+        Com_Printf(21, "    %s\n", BO1_VA(s_effectFields[fieldIndexa].keyName));
     Com_ScriptError("unkown field '%s'\n", token);
     return 0;
 }
@@ -1482,7 +1482,7 @@ const FxEffectDef *__cdecl FX_LoadFailed(const char *name)
     memcpy(effectDef, (unsigned __int8 *)fx_load.defaultEffect, baseBytesNeeded);
     *(unsigned int *)effectDef = (unsigned int) BO1_P2I(& effectDef[baseBytesNeeded]);
     v4 = name;
-    v3 = *(_BYTE **)effectDef;
+    v3 = *(Ptr32<_BYTE> *)effectDef;
     do
     {
         v2 = *v4;

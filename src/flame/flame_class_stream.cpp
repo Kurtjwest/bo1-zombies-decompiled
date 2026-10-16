@@ -206,7 +206,7 @@ void __cdecl Flame_Class_Stream_Fire_Chunks(
     {
         fTable = Flame_FindFlameTable(flameVar_editingFlameTable->current.string);
         Flame_DVarsToFlameVars(fTable);
-        Com_Printf(16, "FLAMETHROWER TEST ACTIVE\n%s\n", flameVar_editingFlameTable->current.string);
+        Com_Printf(16, "FLAMETHROWER TEST ACTIVE\n%s\n", BO1_VA(flameVar_editingFlameTable->current.string));
     }
     memset(diffOrigin, 0, sizeof(diffOrigin));
     diffAngle = 0.0f;

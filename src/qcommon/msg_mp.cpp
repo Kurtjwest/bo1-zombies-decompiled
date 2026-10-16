@@ -2462,7 +2462,7 @@ int __cdecl GetMinBitCountForNum(unsigned int num)
 {
     int v2; // eax
 
-    if (!_BitScanReverse((unsigned long *)&v2, num))
+    if (!_BitScanReverse(&v2, num))
     {
         //v2 = `CountLeadingZeros'::`2': : notFound;
         v2 = 63;
@@ -2725,8 +2725,12 @@ unsigned int __cdecl MSG_CompressWithZLib(
     stream.avail_in = inSizeBytes;
     stream.next_out = to;
     stream.avail_out = outSizeBytes;
-    memset(&stream.zalloc, 0, 16);
-    err = deflateInit2_(&stream, 9, 8, -13, 1, 0, "1.2.3", 52);
+    // (zalloc, zfree, opaque, data_type: 16 bytes in the 32-bit layout; the stream size is the native one)
+    stream.zalloc = 0;
+    stream.zfree = 0;
+    stream.opaque = 0;
+    stream.data_type = 0;
+    err = deflateInit2_(&stream, 9, 8, -13, 1, 0, ZLIB_VERSION, (int)sizeof(stream));
     if ( !err )
     {
         erra = deflate(&stream, 4u);
@@ -2815,8 +2819,11 @@ unsigned int __cdecl MSG_DecompressWithZLib(
     stream.avail_in = inSizeBytes;
     stream.next_out = to;
     stream.avail_out = outSizeBytes;
-    memset(&stream.zalloc, 0, 16);
-    err = inflateInit2_(&stream, -13, "1.2.3", 52);
+    stream.zalloc = 0;
+    stream.zfree = 0;
+    stream.opaque = 0;
+    stream.data_type = 0;
+    err = inflateInit2_(&stream, -13, ZLIB_VERSION, (int)sizeof(stream));
     if ( !err )
     {
         erra = inflate(&stream, 4);
@@ -3977,7 +3984,7 @@ void __cdecl MSG_ReadDeltaField(
                     *toF = Long;
                     *toF ^= *fromF;
                     if ( print )
-                        Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                        Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
                 }
                 else
                 {
@@ -3988,7 +3995,7 @@ void __cdecl MSG_ReadDeltaField(
                     trunc -= 4096;
                     *(float *)toF = (float)trunc;
                     if ( print )
-                        Com_Printf(16, "%s:%i ", field->name, trunc);
+                        Com_Printf(16, "%s:%i ", BO1_VA(field->name), trunc);
                 }
             }
             else
@@ -4020,7 +4027,7 @@ LABEL_25:
                 *toF = v12;
                 *toF ^= *fromF;
                 if ( print )
-                    Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                    Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
             }
             else
             {
@@ -4031,7 +4038,7 @@ LABEL_25:
                 trunc -= 4096;
                 *(float *)toF = (float)trunc;
                 if ( print )
-                    Com_Printf(16, "%s:%i ", field->name, trunc);
+                    Com_Printf(16, "%s:%i ", BO1_VA(field->name), trunc);
             }
             break;
         case 0xFFFFFFA8:
@@ -4039,7 +4046,7 @@ LABEL_25:
             *toF = v13;
             *toF ^= *fromF;
             if ( print )
-                Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
             break;
         case 0xFFFFFF9D:
             if ( MSG_ReadBit(msg) )
@@ -4050,7 +4057,7 @@ LABEL_25:
                     value ^= *fromF;
                     *toF = value;
                     if ( print )
-                        Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                        Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
                 }
                 else
                 {
@@ -4061,7 +4068,7 @@ LABEL_25:
                     trunc -= 2048;
                     *(float *)toF = (float)trunc;
                     if ( print )
-                        Com_Printf(16, "%s:%i ", field->name, trunc);
+                        Com_Printf(16, "%s:%i ", BO1_VA(field->name), trunc);
                 }
             }
             else
@@ -4252,14 +4259,14 @@ LABEL_25:
             OriginFloat = MSG_ReadOriginFloat(field->bits, msg, *(float *)fromF);
             *(float *)toF = OriginFloat;
             if ( print )
-                Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
             break;
         case 0xFFFFFFA6:
         case 0xFFFFFFC0:
             OriginZFloat = MSG_ReadOriginZFloat(msg, *(float *)fromF);
             *(float *)toF = OriginZFloat;
             if ( print )
-                Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
             break;
         case 0xFFFFFF96:
             v27 = MSG_ReadRangedFloat(msg, *(float *)fromF, 0.0, 255.0, 100, 0);
@@ -4275,13 +4282,13 @@ LABEL_25:
             DemoRoundedFloat = MSG_ReadDemoRoundedFloat(msg, field->bits, *(float *)fromF, 5u, 0x10u);
             *(float *)toF = DemoRoundedFloat;
             if ( print )
-                Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
             break;
         case 0xFFFFFF98:
             v30 = MSG_ReadDemoRoundedFloat(msg, field->bits, *(float *)fromF, 7u, 0xCu);
             *(float *)toF = v30;
             if ( print )
-                Com_Printf(16, "%s:%f ", field->name, *(float *)toF);
+                Com_Printf(16, "%s:%f ", BO1_VA(field->name), *(float *)toF);
             break;
         case 0xFFFFFF97:
             Angle = MSG_ReadAngle(msg, 0xAu);
@@ -4935,7 +4942,7 @@ void __cdecl MSG_ReadDeltaPlayerstate(
                         v13 = MSG_GetNumBitsRead(msg);
                         v14 = va(
                             "PlayerState - FieldName: %s From: %d To: %d BitsUsed: %d\n",
-                            field->name,
+                            BO1_VA(field->name),
                             *(_DWORD *)v50,
                             *(_DWORD *)v47,
                             v13 - Bits);
@@ -4946,7 +4953,7 @@ void __cdecl MSG_ReadDeltaPlayerstate(
                         v11 = MSG_GetNumBitsRead(msg);
                         v12 = va(
                             "PlayerState - FieldName: %s From: %.3f To: %.3f BitsUsed: %d\n",
-                            field->name,
+                            BO1_VA(field->name),
                             *v50,
                             *v47,
                             v11 - Bits);

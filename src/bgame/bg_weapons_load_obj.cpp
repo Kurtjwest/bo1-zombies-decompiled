@@ -1084,7 +1084,7 @@ void __cdecl BG_ClearWeaponDefInternal()
     surfaceTypeSoundListCount = 0;
 }
 
-void __cdecl SetConfigString(char **ppszConfigString, const char *pszKeyValue)
+void __cdecl SetConfigString(Ptr32<char> *ppszConfigString, const char *pszKeyValue)
 {
     char v2; // [esp+3h] [ebp-21h]
     char *v3; // [esp+8h] [ebp-1Ch]
@@ -1138,7 +1138,7 @@ flameTable *__cdecl BG_LoadFlameTableInternal(const char *folder, char *name)
                 FS_FCloseFile(f);
                 if ( Info_Validate(buffer) )
                 {
-                    SetConfigString((char **)&fTable->name, name);
+                    SetConfigString((Ptr32<char> *)&fTable->name, name);
                     if ( ParseConfigStringToStruct(
                                  (unsigned __int8 *)fTable,
                                  flameTableFields,
@@ -1201,7 +1201,7 @@ flameTable *__cdecl BG_LoadFlameTableInternal(const char *folder, char *name)
 
 void __cdecl SetConfigString2(unsigned __int8 *pMember, const char *pszKeyValue)
 {
-    SetConfigString((char **)pMember, pszKeyValue);
+    SetConfigString((Ptr32<char> *)pMember, pszKeyValue);
 }
 
 void __cdecl InitFlameTable(flameTable *fTable)
@@ -1656,12 +1656,12 @@ char __cdecl BG_LoadWeaponVariantDefFile(WeaponFullDef *weapFullDef, const char 
     char v14; // [esp+417Ch] [ebp-24310h] BYREF
     _BYTE v15[64]; // [esp+1817Ch] [ebp-10310h] BYREF
     char v16[66116]; // [esp+181BCh] [ebp-102D0h] BYREF
-    char **ppszConfigString; // [esp+28400h] [ebp-8Ch]
+    Ptr32<char> *ppszConfigString; // [esp+28400h] [ebp-8Ch]
     char outputName[64]; // [esp+28404h] [ebp-88h] BYREF
     char dest[64]; // [esp+28444h] [ebp-48h] BYREF
     int i; // [esp+28488h] [ebp-4h]
 
-    ppszConfigString = (char **)weapFullDef;
+    ppszConfigString = (Ptr32<char> *)weapFullDef;
     for ( i = 0; i < 4; ++i )
     {
         v16[0x4000 * i + 320] = 0;
@@ -1785,73 +1785,73 @@ int __cdecl BG_ParseWeaponDefSpecificFieldType(WeaponFullDef *pStruct, const cha
         case 15:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szWeapTypeNames, 8);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->weapType = (weapType_t)arrayIndex;
             goto LABEL_104;
         case 16:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szWeapClassNames, 13);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon class \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon class \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->weapClass = (weapClass_t)arrayIndex;
             goto LABEL_104;
         case 17:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szWeapOverlayReticleNames, 2);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon overlay reticle \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon overlay reticle \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->overlayReticle = (weapOverlayReticle_t)arrayIndex;
             goto LABEL_104;
         case 18:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, penetrateTypeNames, 4);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown penetration type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown penetration type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->penetrateType = (PenetrateType)arrayIndex;
             goto LABEL_104;
         case 19:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, impactTypeNames_0, 16);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown impact type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown impact type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->impactType = (ImpactType)arrayIndex;
             goto LABEL_104;
         case 20:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szWeapStanceNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon stance \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon stance \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->stance = (weapStance_t)arrayIndex;
             goto LABEL_104;
         case 21:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szProjectileExplosionNames, 10);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown projectile explosion \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown projectile explosion \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->projExplosion = (weapProjExposion_t)arrayIndex;
             goto LABEL_104;
         case 22:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, offhandClassNames, 5);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown offhand class \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown offhand class \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->offhandClass = (OffhandClass)arrayIndex;
             goto LABEL_104;
         case 23:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, offhandSlotNames, 5);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown offhand slot \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown offhand slot \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->offhandSlot = (OffhandSlot)arrayIndex;
             goto LABEL_104;
         case 24:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, (const char **)g_playerAnimTypeNames, g_playerAnimTypeNamesCount);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown player anim type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown player anim type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->playerAnimType = arrayIndex;
             goto LABEL_104;
         case 25:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, activeReticleNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown active reticle type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown active reticle type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->activeReticleType = (activeReticleType_t)arrayIndex;
             goto LABEL_104;
         case 26:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, guidedMissileNames, 7);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown guided missile type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown guided missile type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->guidedMissileType = (guidedMissileType_t)arrayIndex;
             goto LABEL_104;
         case 27:
@@ -1860,73 +1860,73 @@ int __cdecl BG_ParseWeaponDefSpecificFieldType(WeaponFullDef *pStruct, const cha
         case 28:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, stickinessNames, 6);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon stickiness type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon stickiness type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->stickiness = (WeapStickinessType)arrayIndex;
             goto LABEL_104;
         case 29:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, rotateTypeNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon rotate type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon rotate type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->rotateType = (WeapRotateType)arrayIndex;
             goto LABEL_104;
         case 30:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, overlayInterfaceNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon overlay interface \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon overlay interface \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->overlayInterface = (WeapOverlayInteface_t)arrayIndex;
             goto LABEL_104;
         case 31:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szWeapInventoryTypeNames, 5);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon inventory type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon inventory type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->inventoryType = (weapInventoryType_t)arrayIndex;
             goto LABEL_104;
         case 32:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szWeapFireTypeNames, 7);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon fire type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon fire type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->fireType = (weapFireType_t)arrayIndex;
             goto LABEL_104;
         case 33:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, szWeapClipTypeNames, 6);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon clip type \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon clip type \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->clipType = (weapClipType_t)arrayIndex;
             goto LABEL_104;
         case 34:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, ammoCounterClipNames, 7);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon ammo counter clip \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon ammo counter clip \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->ammoCounterClip = (ammoCounterClipType_t)arrayIndex;
             goto LABEL_104;
         case 35:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, weapIconRatioNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon hud icon ratio \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon hud icon ratio \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->hudIconRatio = (weaponIconRatioType_t)arrayIndex;
             goto LABEL_104;
         case 36:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, weapIconRatioNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon ammo counter icon ratio \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon ammo counter icon ratio \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->ammoCounterIconRatio = (weaponIconRatioType_t)arrayIndex;
             goto LABEL_104;
         case 37:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, weapIconRatioNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon kill icon ratio \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon kill icon ratio \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->killIconRatio = (weaponIconRatioType_t)arrayIndex;
             goto LABEL_104;
         case 38:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, weapIconRatioNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon dpad icon ratio \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon dpad icon ratio \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapVariantDef->dpadIconRatio = (weaponIconRatioType_t)arrayIndex;
             goto LABEL_104;
         case 39:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, weapIconRatioNames, 3);
             if ( arrayIndex < 0 )
-                Com_Error(ERR_DROP, "Unknown weapon indicator icon ratio \"%s\" in '%s\"", pValue, weapVariantDef->szInternalName);
+                Com_Error(ERR_DROP, "Unknown weapon indicator icon ratio \"%s\" in '%s\"", pValue, BO1_VA(weapVariantDef->szInternalName));
             weapDef->indicatorIconRatio = (weaponIconRatioType_t)arrayIndex;
             goto LABEL_104;
         case 40:
@@ -1997,13 +1997,13 @@ int __cdecl BG_ParseWeaponDefSpecificFieldType(WeaponFullDef *pStruct, const cha
                 Com_PrintWarning(
                     0,
                     "Notetrack-to-Sound: Weapon '%s' has bad entry; notetrack '%s' doesn't have a corresponding sound.\n",
-                    weapVariantDef->szInternalName,
+                    BO1_VA(weapVariantDef->szInternalName),
                     keyName);
 LABEL_104:
             result = 1;
             break;
         default:
-            Com_Error(ERR_DROP, "Bad field type %i in %s", iFieldType, weapVariantDef->szInternalName);
+            Com_Error(ERR_DROP, "Bad field type %i in %s", iFieldType, BO1_VA(weapVariantDef->szInternalName));
             result = 0;
             break;
     }
@@ -2197,20 +2197,20 @@ void __cdecl BG_CheckProjectileValues(WeaponFullDef *weaponFullDef)
         Com_Error(
             ERR_DROP,
             "Projectile speed for WeapType %s must be greater than 0.0",
-            weaponFullDef->weapVariantDef.szDisplayName);
+            BO1_VA(weaponFullDef->weapVariantDef.szDisplayName));
     if ( weaponFullDef->weapDef.destabilizationCurvatureMax >= 1000000000.0
         || weaponFullDef->weapDef.destabilizationCurvatureMax < 0.0 )
     {
         Com_Error(
             ERR_DROP,
             "Destabilization angle for for WeapType %s must be between 0 and 45 degrees",
-            weaponFullDef->weapVariantDef.szDisplayName);
+            BO1_VA(weaponFullDef->weapVariantDef.szDisplayName));
     }
     if ( weaponFullDef->weapDef.destabilizationRateTime < 0.0 )
         Com_Error(
             ERR_DROP,
             "Destabilization rate time for for WeapType %s must be non-negative",
-            weaponFullDef->weapVariantDef.szDisplayName);
+            BO1_VA(weaponFullDef->weapVariantDef.szDisplayName));
 }
 
 void __cdecl InitWeaponDef(WeaponFullDef *weapFullDef)
@@ -2234,7 +2234,7 @@ void __cdecl InitWeaponDef(WeaponFullDef *weapFullDef)
     while ( iField < 748 )
     {
         if ( !pField->iFieldType )
-            *(const char **)((char *)&weapFullDef->weapVariantDef.szInternalName + pField->iOffset) = "";
+            *(Ptr32<const char> *)((char *)&weapFullDef->weapVariantDef.szInternalName + pField->iOffset) = "";
         ++iField;
         ++pField;
     }

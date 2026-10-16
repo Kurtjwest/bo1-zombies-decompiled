@@ -332,7 +332,7 @@ void __cdecl R_GetStaticModelsAabb(
                 int *models,
                 int *models_count,
                 int max_models);
-void __cdecl R_AddCellDynBrushSurfacesInFrustumCmd(DpvsPlane **data);
+void __cdecl R_AddCellDynBrushSurfacesInFrustumCmd(Ptr32<DpvsPlane> *data);
 void __cdecl R_CullDynBrushInCell(unsigned int cellIndex, DpvsPlane *planes, int planeCount);
 unsigned int __cdecl R_SetVisData(unsigned int viewIndex);
 void __cdecl R_GenerateShadowMapCasterCells();

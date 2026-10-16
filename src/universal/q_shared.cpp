@@ -1189,13 +1189,13 @@ bool __cdecl KeyValueToField(
             case 9:
                 if (!IsDedicatedServer())
                 {
-                    *(FxEffectDef **)&pStruct[pField->iOffset] = (FxEffectDef*)FX_Register(pszKeyValue);
+                    *(Ptr32<FxEffectDef> *)&pStruct[pField->iOffset] = (FxEffectDef*)FX_Register(pszKeyValue);
                 }
             case 0xB:
             case 0xC:
                 if (!IsDedicatedServer())
                 {
-                    *(Material **)&pStruct[pField->iOffset] = Material_RegisterHandle(pszKeyValue, 0);
+                    *(Ptr32<Material> *)&pStruct[pField->iOffset] = Material_RegisterHandle(pszKeyValue, 0);
                 }
                 return 1;
             case 0xA:
@@ -1273,7 +1273,11 @@ bool __cdecl ParseConfigStringToStructMerged(
         for ( i = 0; i < 3; ++i )
         {
             v11 = Info_ValueForKey((char *)pszBuffer[i], (char *)pField->szName);
-            I_strncpyz((&dest)[i], v11, 0x2000);
+            {
+                // the exe indexes the adjacent locals { dest, v23, v24 }
+                char *const destList[3] = { dest, v23, v24 };
+                I_strncpyz(destList[i], v11, 0x2000);
+            }
         }
         if ( !strcmp(v23, v24) )
         {
@@ -1288,7 +1292,7 @@ bool __cdecl ParseConfigStringToStructMerged(
                     Com_PrintError(
                         1,
                         "Could not merge field '%s' for merged asset '%s'.\nBase: %s -> %s\nLeft: %s -> %s\nRight: %s -> %s\n",
-                        pField->szName,
+                        BO1_VA(pField->szName),
                         mergedName,
                         *sourceName,
                         dest,

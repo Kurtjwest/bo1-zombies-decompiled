@@ -65,7 +65,7 @@ void __cdecl Com_BeginParseSession(const char *filename)
     {
         Com_Printf(24, "Already parsing:\n");
         for ( i = 0; i < parse->parseInfoNum; ++i )
-            Com_Printf(24, "%i. %s\n", i, parse->parseInfo[i].parseFile);
+            Com_Printf(24, "%i. %s\n", i, BO1_VA(parse->parseInfo[i].parseFile));
         Com_Error(ERR_FATAL, "Com_BeginParseSession: session overflow trying to parse %s", filename);
     }
     pi = &parse->parseInfo[++parse->parseInfoNum];
@@ -251,7 +251,7 @@ void Com_ScriptErrorDrop(const char *msg, ...)
     _vsnprintf(string, 0x1000u, msg, va);
     ap = 0;
     if ( ParseThreadInfo->parseInfoNum )
-        Com_Error(ERR_DROP, "%sFile %s, line %i: %s", v3->errorPrefix, v3->parseFile, v3->lines, string);
+        Com_Error(ERR_DROP, "%sFile %s, line %i: %s", BO1_VA(v3->errorPrefix), v3->parseFile, v3->lines, string);
     else
         Com_Error(ERR_DROP, "%s", string);
 }
@@ -271,7 +271,7 @@ void Com_ScriptError(const char *msg, ...)
     _vsnprintf(string, 0x1000u, msg, va);
     ap = 0;
     if ( ParseThreadInfo->parseInfoNum )
-        Com_PrintError(24, "%sFile %s, line %i: %s", v3->warningPrefix, v3->parseFile, v3->lines, string);
+        Com_PrintError(24, "%sFile %s, line %i: %s", BO1_VA(v3->warningPrefix), v3->parseFile, v3->lines, string);
     else
         Com_PrintError(24, "%s", string);
 }
@@ -291,7 +291,7 @@ void Com_ScriptWarning(const char *msg, ...)
     _vsnprintf(string, 0x1000u, msg, va);
     ap = 0;
     if ( ParseThreadInfo->parseInfoNum )
-        Com_PrintWarning(24, "%sFile %s, line %i: %s", v3->warningPrefix, v3->parseFile, v3->lines, string);
+        Com_PrintWarning(24, "%sFile %s, line %i: %s", BO1_VA(v3->warningPrefix), v3->parseFile, v3->lines, string);
     else
         Com_PrintWarning(24, "%s", string);
 }

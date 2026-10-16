@@ -374,7 +374,7 @@ void G_Mapkit_f_dump()
     const dvar_s *home = Dvar_FindVar("fs_homepath");
     const dvar_s *game = Dvar_FindVar("fs_game");
     char osPath[512];
-    sprintf_s(osPath, "%s/%s/%s", home && home->current.string ? home->current.string : ".",
+    sprintf_s(osPath, "%s/%s/%s", BO1_VA(home && home->current.string ? home->current.string : "."),
         game && game->current.string && *game->current.string ? game->current.string : "main", file);
     FILE *f = 0;
     if (fopen_s(&f, osPath, "wb") || !f)
@@ -394,7 +394,7 @@ static void Mapkit_CatalogWeapon(XAssetHeader header, void *)
 {
     const WeaponVariantDef *v = header.weapon;
     const XModel *world = v && v->weapDef && v->weapDef->worldModel ? v->weapDef->worldModel[0] : NULL;
-    Com_Printf(0, "mapkit_catalog weapon %s %s\n", v && v->szInternalName ? v->szInternalName : "-", world ? XModelGetName(world) : "-");
+    Com_Printf(0, "mapkit_catalog weapon %s %s\n", BO1_VA(v && v->szInternalName ? v->szInternalName : "-"), world ? XModelGetName(world) : "-");
     ++s_catalogCount[0];
 }
 static void Mapkit_CatalogName(XAssetHeader header, void *data)

@@ -864,18 +864,20 @@ char __cdecl Xmodel_ParsePhysicsBrush(
     unsigned int sideCount; // [esp+138h] [ebp-69C0h] BYREF
     unsigned int n; // [esp+13Ch] [ebp-69BCh]
     _DWORD dst[33]; // [esp+140h] [ebp-69B8h] BYREF
-    float v29; // [esp+1C4h] [ebp-6934h]
-    float v30; // [esp+1C8h] [ebp-6930h]
-    float v31; // [esp+1CCh] [ebp-692Ch]
+    float brushMins[3]; // [esp+1C4h] [ebp-6934h] (the exe indexes v29..v31 as one vector)
+    float &v29 = brushMins[0];
+    float &v30 = brushMins[1];
+    float &v31 = brushMins[2];
     float plane[128]; // [esp+1D0h] [ebp-6928h] BYREF
     SimplePlaneIntersection OutPts[1024]; // [esp+3D0h] [ebp-6728h] BYREF
     int InPtCount; // [esp+63D0h] [ebp-728h]
     unsigned int j; // [esp+63D4h] [ebp-724h]
     _DWORD v36[32]; // [esp+63D8h] [ebp-720h] BYREF
     int basePlaneIndex; // [esp+6458h] [ebp-6A0h]
-    float v38; // [esp+645Ch] [ebp-69Ch]
-    float v39; // [esp+6460h] [ebp-698h]
-    float v40; // [esp+6464h] [ebp-694h]
+    float brushMaxs[3]; // [esp+645Ch] [ebp-69Ch] (the exe indexes v38..v40 as one vector)
+    float &v38 = brushMaxs[0];
+    float &v39 = brushMaxs[1];
+    float &v40 = brushMaxs[2];
     adjacencyWinding_t optionalOutWinding[32]; // [esp+6468h] [ebp-690h] BYREF
     int v42; // [esp+6AE8h] [ebp-10h]
     char *str; // [esp+6AECh] [ebp-Ch]
@@ -978,14 +980,14 @@ char __cdecl Xmodel_ParsePhysicsBrush(
     {
         for (k = 0; k < 3; ++k)
         {
-            if (*(&v29 + k) <= OutPts[j].xyz[k])
+            if (brushMins[k] <= OutPts[j].xyz[k])
             {
-                if (OutPts[j].xyz[k] > *(&v38 + k))
-                    *(&v38 + k) = OutPts[j].xyz[k];
+                if (OutPts[j].xyz[k] > brushMaxs[k])
+                    brushMaxs[k] = OutPts[j].xyz[k];
             }
             else
             {
-                *(&v29 + k) = OutPts[j].xyz[k];
+                brushMins[k] = OutPts[j].xyz[k];
             }
         }
     }

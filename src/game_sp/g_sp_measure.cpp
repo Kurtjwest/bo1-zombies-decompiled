@@ -893,7 +893,7 @@ std::string FramePerfZones(bool report)
             const double ms = (double)z->mainTicks / s_fpTscPerMs;
             if (ms < 0.5 || n >= 14)
                 break;
-            sprintf_s(item, "%s[\"%s\",%.1f,%u]", n++ ? "," : "", z->name, ms, z->mainCalls);
+            sprintf_s(item, "%s[\"%s\",%.1f,%u]", n++ ? "," : "", BO1_VA(z->name), ms, z->mainCalls);
             out += item;
         }
         std::sort(zones.begin(), zones.end(), [](BO1ProfZone *a, BO1ProfZone *b) { return a->otherTicks1k > b->otherTicks1k; });
@@ -904,7 +904,7 @@ std::string FramePerfZones(bool report)
             const double ms = (double)z->otherTicks1k * 1024.0 / s_fpTscPerMs;
             if (ms < 1.0 || n >= 8)
                 break;
-            sprintf_s(item, "%s[\"%s\",%.1f]", n++ ? "," : "", z->name, ms);
+            sprintf_s(item, "%s[\"%s\",%.1f]", n++ ? "," : "", BO1_VA(z->name), ms);
             out += item;
         }
         out += "]";

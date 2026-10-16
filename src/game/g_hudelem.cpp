@@ -1529,7 +1529,7 @@ void __cdecl HudElem_SetEnumString(
             return;
         }
     }
-    sprintf(errormsg, "\"%s\" is not a valid value for hudelem field \"%s\"\nShould be one of:", selectedName, f->name);
+    sprintf(errormsg, "\"%s\" is not a valid value for hudelem field \"%s\"\nShould be one of:", selectedName, BO1_VA(f->name));
     for ( nameIndex = 0; nameIndex < nameCount; ++nameIndex )
     {
         v4 = va(" %s", names[nameIndex]);

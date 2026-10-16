@@ -505,7 +505,7 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
     matArray->quat[2] = 0.0f;
     matArray->quat[3] = 1.0f;
     thisMat = matArray;
-    for ( objBoneIndex = 0; objBoneIndex < *(unsigned __int8 *)BO1_I2P((**((unsigned int **)obj + 30) + 4)); ++objBoneIndex )
+    for ( objBoneIndex = 0; objBoneIndex < *(unsigned __int8 *)BO1_I2P((**((Ptr32<unsigned int> *)obj + 30) + 4)); ++objBoneIndex )
     {
         if ( (*(unsigned int *)&obj[4 * (objBoneIndex >> 5) + 20] & (0x80000000 >> (objBoneIndex & 0x1F))) != 0 )
         {
@@ -558,9 +558,9 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
             memcpy(&localMat, thisMata, sizeof(localMat));
             IKImport_AccumulateParentObjBones(
                 ikState,
-                *(const unsigned __int8 **)BO1_I2P((**((unsigned int **)obj + 30) + 12)),
-                *(unsigned __int8 *)BO1_I2P((**((unsigned int **)obj + 30) + 5)),
-                *(Ptr32<float> *)BO1_I2P((**((unsigned int **)obj + 30) + 20)),
+                *(Ptr32<const unsigned __int8> *)BO1_I2P((**((Ptr32<unsigned int> *)obj + 30) + 12)),
+                *(unsigned __int8 *)BO1_I2P((**((Ptr32<unsigned int> *)obj + 30) + 5)),
+                *(Ptr32<float> *)BO1_I2P((**((Ptr32<unsigned int> *)obj + 30) + 20)),
                 objBoneIndexa,
                 matArray,
                 &localMat);
@@ -744,7 +744,7 @@ bool __cdecl IKImport_IsIKEntity_Internal(unsigned __int8 *model)
         return 0;
     if ( ikState && !ikState->isIKModel )
         return 0;
-    if ( !*((unsigned int *)model + 30) || !model[9] || !**((unsigned int **)model + 30) )
+    if ( !*((unsigned int *)model + 30) || !model[9] || !**((Ptr32<unsigned int> *)model + 30) )
         return 0;
     if ( entityNum < 0 )
         return 0;

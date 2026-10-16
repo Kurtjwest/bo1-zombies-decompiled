@@ -348,7 +348,7 @@ const SimplePlaneIntersection *__cdecl RemoveNextPointFormedByThisPlane(
     if ( begina == end )
         return 0;
     returnVal = *begina;
-    memmove((unsigned __int8 *)begina, (unsigned __int8 *)begina + 4, 4 * (end - (begina + 1)));
+    memmove((unsigned __int8 *)begina, (unsigned __int8 *)(begina + 1), sizeof(*begina) * (end - (begina + 1)));
     return returnVal;
 }
 
@@ -924,19 +924,25 @@ char __cdecl FindCycleBFS(
                 const SimplePlaneIntersection **resultCycle,
                 int *resultCycleCount)
 {
-    const SimplePlaneIntersection **v9; // [esp+0h] [ebp-4028h]
-    const SimplePlaneIntersection **enda; // [esp+4h] [ebp-4024h]
-    const SimplePlaneIntersection *v11; // [esp+8h] [ebp-4020h] BYREF
-    int planeIndex; // [esp+Ch] [ebp-401Ch]
-    int v13; // [esp+10h] [ebp-4018h]
-    unsigned int v14[4094]; // [esp+14h] [ebp-4014h]
-    int v15; // [esp+400Ch] [ebp-1Ch]
-    const SimplePlaneIntersection *v16; // [esp+4010h] [ebp-18h]
-    const SimplePlaneIntersection **i; // [esp+4014h] [ebp-14h]
-    signed int j; // [esp+4018h] [ebp-10h]
-    int v19; // [esp+401Ch] [ebp-Ch]
-    signed int v20; // [esp+4020h] [ebp-8h]
-    signed int v21; // [esp+4024h] [ebp-4h]
+    // The decompile spread the breadth-first search queue over consecutive stack variables (v11, planeIndex, v13,
+    // v14[4094]) and walked it with pointer arithmetic on 4-byte slots; this is the queue it describes.
+    struct BfsNode
+    {
+        const SimplePlaneIntersection *pt;
+        int plane;
+        int depth;
+        BfsNode *parent;
+    };
+    static thread_local BfsNode queue[1024];
+    const SimplePlaneIntersection **enda;
+    const SimplePlaneIntersection **i;
+    BfsNode *node;
+    int thirdPlane;
+    int goalPlane;
+    int cycleIndex;
+    int queueTail;
+    int queueHead;
+    int j;
 
     if ( !IsPtFormedByThisPlane(connectingPlane, start)
         && !Assert_MyHandler(
@@ -958,90 +964,84 @@ char __cdecl FindCycleBFS(
     {
         __debugbreak();
     }
-    v11 = start;
-    planeIndex = ThirdPlane(start, basePlane, connectingPlane);
-    v13 = 1;
-    v14[0] = 0;
-    v20 = 0;
-    v21 = 1;
-    v19 = ThirdPlane(end, basePlane, connectingPlane);
-LABEL_8:
-    if ( v21 <= v20 )
+    queue[0].pt = start;
+    queue[0].plane = ThirdPlane(start, basePlane, connectingPlane);
+    queue[0].depth = 1;
+    queue[0].parent = nullptr;
+    queueTail = 0;
+    queueHead = 1;
+    goalPlane = ThirdPlane(end, basePlane, connectingPlane);
+    enda = (const SimplePlaneIntersection **)&pts[ptsCount];
+    for ( ;; )
     {
-        *resultCycleCount = 0;
-        return 0;
-    }
-    else
-    {
-        enda = (const SimplePlaneIntersection **)&pts[ptsCount];
-        for ( i = NextPointFormedByThisPlane(*(&planeIndex + 4 * v20), (const SimplePlaneIntersection **)pts, enda);
-                    ;
-                    i = NextPointFormedByThisPlane(*(&planeIndex + 4 * v20), i + 1, enda) )
+        if ( queueHead <= queueTail )
         {
-            if ( i == enda )
-            {
-                ++v20;
-                goto LABEL_8;
-            }
-            v15 = ThirdPlane(*i, basePlane, *(&planeIndex + 4 * v20));
-            if ( v15 != connectingPlane )
-            {
-                for ( j = 0; j < v21 && *(&planeIndex + 4 * j) != v15; ++j )
-                    ;
-                if ( j >= v21 )
-                {
-                    if ( (unsigned int)v21 >= 0x400
-                        && !Assert_MyHandler(
-                                    "c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp",
-                                    295,
-                                    0,
-                                    "queueHead doesn't index ARRAY_COUNT( queue )\n\t%i not in [0, %i)",
-                                    v21,
-                                    1024) )
-                    {
-                        __debugbreak();
-                    }
-                    *(&v11 + 4 * v21) = *i;
-                    *(&planeIndex + 4 * v21) = v15;
-                    v14[4 * v21 - 1] = v14[4 * v20 - 1] + 1;
-                    v14[4 * v21++] = (unsigned int)BO1_P2I(&v11) + 4 * v20;
-                    if ( v15 == v19 )
-                        break;
-                }
-            }
+            *resultCycleCount = 0;
+            return 0;
         }
-        v9 = &v11 + 4 * v21 - 4;
-        if ( v9[1] != (const SimplePlaneIntersection *)BO1_I2P(v19)
-            && !Assert_MyHandler(
+        for ( i = NextPointFormedByThisPlane(queue[queueTail].plane, (const SimplePlaneIntersection **)pts, enda);
+              i != enda;
+              i = NextPointFormedByThisPlane(queue[queueTail].plane, i + 1, enda) )
+        {
+            thirdPlane = ThirdPlane(*i, basePlane, queue[queueTail].plane);
+            if ( thirdPlane == connectingPlane )
+                continue;
+            for ( j = 0; j < queueHead && queue[j].plane != thirdPlane; ++j )
+                ;
+            if ( j < queueHead )
+                continue;
+            if ( (unsigned int)queueHead >= 0x400
+                && !Assert_MyHandler(
+                            "c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp",
+                            295,
+                            0,
+                            "queueHead doesn't index ARRAY_COUNT( queue )\n\t%i not in [0, %i)",
+                            queueHead,
+                            1024) )
+            {
+                __debugbreak();
+            }
+            queue[queueHead].pt = *i;
+            queue[queueHead].plane = thirdPlane;
+            queue[queueHead].depth = queue[queueTail].depth + 1;
+            queue[queueHead].parent = &queue[queueTail];
+            ++queueHead;
+            if ( thirdPlane == goalPlane )
+                goto found;
+        }
+        ++queueTail;
+    }
+found:
+    node = &queue[queueHead - 1];
+    if ( node->plane != goalPlane
+        && !Assert_MyHandler(
+                    "c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp",
+                    314,
+                    1,
+                    "%s",
+                    "node->plane == goalPlane") )
+    {
+        __debugbreak();
+    }
+    *resultCycleCount = node->depth + 1;
+    cycleIndex = node->depth;
+    while ( node )
+    {
+        resultCycle[cycleIndex--] = node->pt;
+        node = node->parent;
+    }
+    if ( cycleIndex )
+    {
+        if ( !Assert_MyHandler(
                         "c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp",
-                        314,
+                        322,
                         1,
                         "%s",
-                        "node->plane == goalPlane") )
-        {
+                        "cycleIndex == 0") )
             __debugbreak();
-        }
-        *resultCycleCount = (int)BO1_P2I(v9[2]->xyz) + 1;
-        v16 = v9[2];
-        while ( v9 )
-        {
-            resultCycle[(unsigned int)BO1_P2I(v16)] = *v9;
-            v16 = (const SimplePlaneIntersection *)((char *)v16 - 1);
-            v9 = (const SimplePlaneIntersection **)v9[3];
-        }
-        if ( v16 )
-        {
-            if ( !Assert_MyHandler(
-                            "c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp",
-                            322,
-                            1,
-                            "%s",
-                            "cycleIndex == 0") )
-                __debugbreak();
-        }
-        *resultCycle = end;
-        return 1;
     }
+    *resultCycle = end;
+    return 1;
 }
 
 int __cdecl RemovePtsWithPlanesThatOccurLessThanTwice(const SimplePlaneIntersection **pts, int ptsCount)
@@ -1059,7 +1059,7 @@ int __cdecl RemovePtsWithPlanesThatOccurLessThanTwice(const SimplePlaneIntersect
         }
         else
         {
-            memmove((unsigned __int8 *)&pts[ptsIndex], (unsigned __int8 *)&pts[ptsIndex + 1], 4 * (ptsCount - ptsIndex) - 4);
+            memmove((unsigned __int8 *)&pts[ptsIndex], (unsigned __int8 *)&pts[ptsIndex + 1], sizeof(*pts) * (ptsCount - ptsIndex - 1));
             --ptsCount;
             ptsIndex = 0;
         }
@@ -1218,8 +1218,14 @@ int __cdecl ChooseEdgeToRemove(
     v14 = TestConvexWithoutNearPoints((const SimplePlaneIntersection **)v11, ptCount);
     v15 = TestConvexWithoutNearPoints((const SimplePlaneIntersection **)v12, v18);
     v9 = CycleLess(v13, v14, perimiter1, perimiter2, resultCycleCount, ptCount);
-    if ( CycleLess(*(&v13 + v9), v15, *(&perimiter1 + v9), v21, *(&resultCycleCount + v9), v18) )
-        v9 = 2;
+    {
+        // the exe indexes the adjacent locals { v13, v14 }, { perimiter1, perimiter2 }, { resultCycleCount, ptCount }
+        const char isConvex[2] = { v13, v14 };
+        const float perimiter[2] = { perimiter1, perimiter2 };
+        const int cycleCount[2] = { resultCycleCount, (int)ptCount };
+        if ( CycleLess(isConvex[v9], v15, perimiter[v9], v21, cycleCount[v9], v18) )
+            v9 = 2;
+    }
     return 2 - v9;
 }
 
@@ -1233,7 +1239,7 @@ int __cdecl PartitionEdges(
                 int *partition)
 {
     const SimplePlaneIntersection *v8; // [esp+0h] [ebp-1020h]
-    SimplePlaneIntersection *resultCycle; // [esp+8h] [ebp-1018h] BYREF
+    SimplePlaneIntersection *resultCycle[1024]; // [esp+8h] [ebp-1018h] BYREF
     int v10; // [esp+100Ch] [ebp-14h]
     int i; // [esp+1010h] [ebp-10h]
     int resultCycleCount; // [esp+1014h] [ebp-Ch] BYREF
@@ -1254,7 +1260,7 @@ int __cdecl PartitionEdges(
                          edges[partition[i] - 1],
                          edges[v14],
                          connectingPlane,
-                         (const SimplePlaneIntersection **)&resultCycle,
+                         (const SimplePlaneIntersection **)resultCycle,
                          &resultCycleCount) )
             {
                 if ( i < v10 - 1 )
@@ -1263,7 +1269,7 @@ int __cdecl PartitionEdges(
                     memmove(
                         (unsigned __int8 *)&edges[partition[i] + 1],
                         (unsigned __int8 *)&edges[partition[i]],
-                        4 * (v14 - partition[i]));
+                        sizeof(*edges) * (v14 - partition[i]));
                     edges[partition[i]] = v8;
                 }
                 for ( j = i; j < v10; ++j )
@@ -1286,7 +1292,7 @@ int __cdecl Remove(const SimplePlaneIntersection **pts, int ptsCount, const Simp
         ;
     if ( ptsIndex == ptsCount )
         return ptsCount;
-    memmove((unsigned __int8 *)&pts[ptsIndex], (unsigned __int8 *)&pts[ptsIndex + 1], 4 * (ptsCount - ptsIndex) - 4);
+    memmove((unsigned __int8 *)&pts[ptsIndex], (unsigned __int8 *)&pts[ptsIndex + 1], sizeof(*pts) * (ptsCount - ptsIndex - 1));
     ptsCounta = ptsCount - 1;
     if ( ptsCounta >= 3 )
         return RemovePtsWithPlanesThatOccurLessThanTwice(pts, ptsCounta);

@@ -895,7 +895,7 @@ DestructibleDef *__cdecl DestructibleDefLoadFile(const char *name, void *(__cdec
                             count = 312 * *((unsigned int *)pStruct + 3);
                             v4 = Alloc(count);
                             *((unsigned int *)pStruct + 4) = (unsigned int)BO1_P2I(v4);
-                            memset(*((unsigned __int8 **)pStruct + 4), 0, count);
+                            memset(*((Ptr32<unsigned __int8> *)pStruct + 4), 0, count);
                             if ( ParseConfigStringToStruct(
                                          pStruct,
                                          destructibleDefFields,
@@ -930,7 +930,7 @@ DestructibleDef *__cdecl DestructibleDefLoadFile(const char *name, void *(__cdec
                                                             v13 = j;
                                                             v11 = i;
                                                             v9 = model->name;
-                                                            v7 = **(const char ***)BO1_I2P((*((unsigned int *)pStruct + 4) + 312 * i + 48 * j + 44));
+                                                            v7 = **(Ptr32<Ptr32<const char>> *)BO1_I2P((*((unsigned int *)pStruct + 4) + 312 * i + 48 * j + 44));
                                                             v6 = SL_ConvertToString(namea, SCRIPTINSTANCE_SERVER);
                                                             Com_PrintError(
                                                                 20,

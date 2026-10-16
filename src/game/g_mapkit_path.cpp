@@ -235,7 +235,7 @@ void G_Mapkit_AppendPathnodes()
             node->constant.animscriptfunc = (int)BO1_P2I(Hunk_FindDataForFile(1, src->animscript));
             if (!node->constant.animscriptfunc)
             {
-                Com_PrintWarning(18, "mapkit: traverse node %d: animscript '%s' is not loaded\n", i, src->animscript);
+                Com_PrintWarning(18, "mapkit: traverse node %d: animscript '%s' is not loaded\n", i, BO1_VA(src->animscript));
                 node->constant.type = NODE_BADNODE;
             }
         }

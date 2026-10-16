@@ -510,7 +510,7 @@ void __cdecl G_InitializeAmmo(gentity_s *pSelf, unsigned int weaponIndex, unsign
                         0,
                         "%s\n\t(weapVariantDef->szDisplayName) = %s",
                         "(numWeapons >= 0)",
-                        weapVariantDef->szDisplayName) )
+                        BO1_VA(weapVariantDef->szDisplayName)) )
         {
             __debugbreak();
         }

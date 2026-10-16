@@ -158,7 +158,7 @@ static bool SP_HeadlessReplayLoad()
     if (!f)
     {
         s_replayFailed = true;
-        Com_Printf(16, "bo1_replay: cannot open '%s'\n", g_replayPath->current.string);
+        Com_Printf(16, "bo1_replay: cannot open '%s'\n", BO1_VA(g_replayPath->current.string));
         return false;
     }
     char line[512];
@@ -196,7 +196,7 @@ static bool SP_HeadlessReplayLoad()
     s_replayLoaded = clock && !s_replayCmds.empty() && !s_replayPs.empty();
     s_replayFailed = !s_replayLoaded;
     Com_Printf(16, "bo1_replay: loaded '%s' cmds %u ps %u clockOffset %d firstSpawn %d down %d end %d align %d ok %d snapclock %u/%d\n",
-        g_replayPath->current.string, (unsigned int)s_replayCmds.size(), (unsigned int)s_replayPs.size(),
+        BO1_VA(g_replayPath->current.string), (unsigned int)s_replayCmds.size(), (unsigned int)s_replayPs.size(),
         s_replayClockOffset, s_replayFirstSpawn, s_replayDown, s_replayEnd, SP_ReplayAlign(),
         s_replayLoaded ? 1 : 0, (unsigned int)s_replaySnapClock.size(), snapped);
     return s_replayLoaded;

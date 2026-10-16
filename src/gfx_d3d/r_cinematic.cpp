@@ -1247,7 +1247,7 @@ int __cdecl CinematicHunk_Alloc(CinematicHunk *hunk, int size)
     {
         if ( hunk->fragmented )
         {
-            Com_PrintWarning(0, "Bink allocating from fragmented memory at 0x%x.\n", hunk->atFront);
+            Com_PrintWarning(0, "Bink allocating from fragmented memory at 0x%x.\n", BO1_VA(hunk->atFront));
             hunk->fragmented = 0;
         }
         if ( hunk->atFront > hunk->atBack
@@ -1265,7 +1265,7 @@ int __cdecl CinematicHunk_Alloc(CinematicHunk *hunk, int size)
     }
     else
     {
-        v2 = va("CinematicHunk_Alloc failed: 0x%08x 0x%08x 0x%08x\n", hunk->atFront, size, hunk->atBack);
+        v2 = va("CinematicHunk_Alloc failed: 0x%08x 0x%08x 0x%08x\n", BO1_VA(hunk->atFront), size, hunk->atBack);
         if ( !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_cinematic.cpp", 603, 0, v2) )
             __debugbreak();
         return -1;

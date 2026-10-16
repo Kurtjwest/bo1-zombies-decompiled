@@ -120,6 +120,6 @@ int    R_PreSkinXSurface(
                 unsigned int *numSkinnedVerts,
                 GfxModelRigidSurface *surfPos);
 void __cdecl R_TransformSkelMat(const float *in1, const float4 *in2, float *out);
-void __cdecl R_SkinGfxEntityCmd(GfxSceneEntity **data);
+void __cdecl R_SkinGfxEntityCmd(Ptr32<GfxSceneEntity> *data);
 
 extern r_SkinConditions g_skinErrorFlags;

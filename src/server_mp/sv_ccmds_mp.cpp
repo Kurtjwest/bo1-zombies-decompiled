@@ -486,10 +486,10 @@ void __cdecl SV_MapRotate_f()
         Playlist_SetSVMapRotation();
         Playlist_SVMapRotate();
     }
-    Com_Printf(0, "\"sv_mapRotation\" is:\"%s\"\n\n", sv_mapRotation->current.string);
+    Com_Printf(0, "\"sv_mapRotation\" is:\"%s\"\n\n", BO1_VA(sv_mapRotation->current.string));
     if ( !*(_BYTE *)BO1_I2P(sv_mapRotationCurrent->current.integer) )
         Dvar_SetString((dvar_s *)sv_mapRotationCurrent, sv_mapRotation->current.string);
-    Com_Printf(0, "\"sv_mapRotationCurrent\" is:\"%s\"\n\n", sv_mapRotationCurrent->current.string);
+    Com_Printf(0, "\"sv_mapRotationCurrent\" is:\"%s\"\n\n", BO1_VA(sv_mapRotationCurrent->current.string));
     token = UI_GetMapRotationToken();
     if ( !token )
     {
@@ -537,7 +537,7 @@ void __cdecl SV_MapRotate_f()
                 v7 = va("exec %s\n", v6);
                 Cmd_ExecuteSingleCommand(0, 0, v7);
                 Dvar_SetString((dvar_s *)sv_mapRotationCurrent, sv_mapRotation->current.string);
-                Com_Printf(0, "\"sv_mapRotationCurrent\" is:\"%s\"\n\n", sv_mapRotationCurrent->current.string);
+                Com_Printf(0, "\"sv_mapRotationCurrent\" is:\"%s\"\n\n", BO1_VA(sv_mapRotationCurrent->current.string));
             }
         }
         else
@@ -915,7 +915,7 @@ void __cdecl SV_Status_f()
 
     if ( com_sv_running->current.enabled )
     {
-        Com_Printf(0, "map: %s\n", sv_mapname->current.string);
+        Com_Printf(0, "map: %s\n", BO1_VA(sv_mapname->current.string));
         Com_Printf(0, "num score ping guid     name                        lastmsg address                             qport rate\n");
         Com_Printf(0, "--- ----- ---- ---------- --------------- ------- --------------------- ------ -----\n");
         i = 0;
@@ -984,7 +984,7 @@ void __cdecl SV_TeamStatus_f()
 
     if ( com_sv_running->current.enabled )
     {
-        Com_Printf(0, "map: %s\n", sv_mapname->current.string);
+        Com_Printf(0, "map: %s\n", BO1_VA(sv_mapname->current.string));
         Com_Printf(0, "num score ping guid             name                        team lastmsg address                             qport    rate\n");
         Com_Printf(0, "--- ----- ---- ---------- --------------- ---- ------- --------------------- ------ -----\n");
         i = 0;

@@ -36,14 +36,14 @@ int __cdecl Dvar_Command(bool restricted)
         return 0;
     if ( Dvar_GetBool("con_restricted_access") && restricted && (dvar->flags & 0x10000) == 0 )
     {
-        Com_DPrintf(16, "ConAccess: dvar not set: %s.\n", dvar->name);
+        Com_DPrintf(16, "ConAccess: dvar not set: %s.\n", BO1_VA(dvar->name));
         return 0;
     }
     else if ( Cmd_Argc() == 1 )
     {
         v6 = Dvar_DisplayableResetValue(dvar);
         v3 = Dvar_DisplayableValue(dvar);
-        Com_Printf(0, "\"%s\" is: \"%s^7\" default: \"%s^7\"\n", dvar->name, v3, v6);
+        Com_Printf(0, "\"%s\" is: \"%s^7\" default: \"%s^7\"\n", BO1_VA(dvar->name), v3, v6);
         if ( Dvar_HasLatchedValue(dvar) )
         {
             v4 = Dvar_DisplayableLatchedValue(dvar);
@@ -205,7 +205,7 @@ bool __cdecl Dvar_ToggleSimple(dvar_s *dvar)
         case DVAR_TYPE_COLOR:
         case DVAR_TYPE_LINEAR_COLOR_RGB:
         case DVAR_TYPE_COLOR_XYZ:
-            Com_Printf(0, "'toggle' with no arguments makes no sense for dvar '%s'\n", dvar->name);
+            Com_Printf(0, "'toggle' with no arguments makes no sense for dvar '%s'\n", BO1_VA(dvar->name));
             result = 0;
             break;
         case DVAR_TYPE_INT:
@@ -484,7 +484,7 @@ void __cdecl Dvar_WriteSingleVariable(const dvar_s *dvar, int *userData)
         {
             f = *userData;
             v2 = Dvar_DisplayableLatchedValue(dvar);
-            FS_Printf(f, (char*)"seta %s \"%s\"\n", dvar->name, v2);
+            FS_Printf(f, (char*)"seta %s \"%s\"\n", BO1_VA(dvar->name), v2);
         }
     }
 }
@@ -505,7 +505,7 @@ void __cdecl Dvar_WriteSingleDefault(const dvar_s *dvar, int *userData)
         {
             f = *userData;
             v2 = Dvar_DisplayableResetValue(dvar);
-            FS_Printf(f, (char *)"set %s \"%s\"\n", dvar->name, v2);
+            FS_Printf(f, (char *)"set %s \"%s\"\n", BO1_VA(dvar->name), v2);
         }
     }
 }
@@ -585,7 +585,7 @@ void __cdecl Dvar_ListSingle(const dvar_s *dvar, const char *userData)
         else
             Com_Printf(0, " ");
         v2 = Dvar_DisplayableValue(dvar);
-        Com_Printf(0, " %s \"%s\"\n", dvar->name, v2);
+        Com_Printf(0, " %s \"%s\"\n", BO1_VA(dvar->name), v2);
         ++dvar_count_local;
     }
 }
@@ -618,21 +618,23 @@ void __cdecl Com_DvarDumpSingle(const dvar_s *dvar, void *userData)
     const char *v4; // [esp-4h] [ebp-810h]
     char message[2052]; // [esp+4h] [ebp-808h] BYREF
 
-    ++*(unsigned int *)userData;
-    if ( !*((unsigned int *)userData + 2) || Com_Filter(*((const char **)userData + 2), (char *)dvar->name, 0) )
+    DvarDumpInfo *dumpInfo = (DvarDumpInfo *)userData;
+
+    ++dumpInfo->count;
+    if ( !dumpInfo->match || Com_Filter(dumpInfo->match.get(), (char *)dvar->name, 0) )
     {
         if ( Dvar_HasLatchedValue(dvar) )
         {
             v4 = Dvar_DisplayableLatchedValue(dvar);
             v2 = Dvar_DisplayableValue(dvar);
-            Com_sprintf(message, 0x800u, "            %s \"%s\" -- latched \"%s\"\n", dvar->name, v2, v4);
+            Com_sprintf(message, 0x800u, "            %s \"%s\" -- latched \"%s\"\n", BO1_VA(dvar->name), v2, v4);
         }
         else
         {
             v3 = Dvar_DisplayableValue(dvar);
-            Com_sprintf(message, 0x800u, "            %s \"%s\"\n", dvar->name, v3);
+            Com_sprintf(message, 0x800u, "            %s \"%s\"\n", BO1_VA(dvar->name), v3);
         }
-        Com_PrintMessage(*((unsigned int *)userData + 1), message, 0);
+        Com_PrintMessage(dumpInfo->channel, message, 0);
     }
 }
 
@@ -863,7 +865,7 @@ void __cdecl Dvar_RegisterBool_f()
         }
         else if ( dvar->type )
         {
-            Com_Printf(0, "dvar '%s' is not a boolean dvar\n", dvar->name);
+            Com_Printf(0, "dvar '%s' is not a boolean dvar\n", BO1_VA(dvar->name));
         }
     }
     else
@@ -903,7 +905,7 @@ void __cdecl Dvar_RegisterInt_f()
             }
             else if ( dvar->type != DVAR_TYPE_INT && dvar->type != DVAR_TYPE_ENUM )
             {
-                Com_Printf(0, "dvar '%s' is not an integer dvar\n", dvar->name);
+                Com_Printf(0, "dvar '%s' is not an integer dvar\n", BO1_VA(dvar->name));
             }
         }
         else
@@ -948,7 +950,7 @@ void __cdecl Dvar_RegisterFloat_f()
             }
             else if ( dvar->type != DVAR_TYPE_FLOAT )
             {
-                Com_Printf(0, "dvar '%s' is not an integer dvar\n", dvar->name);
+                Com_Printf(0, "dvar '%s' is not an integer dvar\n", BO1_VA(dvar->name));
             }
         }
         else

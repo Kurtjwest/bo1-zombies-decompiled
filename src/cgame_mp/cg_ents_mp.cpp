@@ -3652,8 +3652,8 @@ XAnim_s *__cdecl CG_GetMG42Anims(centity_s *cent)
         __debugbreak();
     }
     XAnimBlend(pAnims, 0, "root", 1u, 2u, 0);
-    BG_CreateXAnim(pAnims, 1u, *((char **)weapVariantDef->szXAnims + 1));
-    BG_CreateXAnim(pAnims, 2u, *((char **)weapVariantDef->szXAnims + 3));
+    BG_CreateXAnim(pAnims, 1u, *((Ptr32<char> *)weapVariantDef->szXAnims + 1));
+    BG_CreateXAnim(pAnims, 2u, *((Ptr32<char> *)weapVariantDef->szXAnims + 3));
     return pAnims;
 }
 
@@ -4081,7 +4081,7 @@ void __cdecl CG_Item(int localClientNum, centity_s *cent)
                 __debugbreak();
             }
             if ( !weapDef->worldModel[weapModel] )
-                Com_Error(ERR_DROP, "No XModel loaded for item index %i, weap index %i, model %i (%s)", cent->nextState.un3.item, weapIdx, weapModel, weapVariantDef->szDisplayName);
+                Com_Error(ERR_DROP, "No XModel loaded for item index %i, weap index %i, model %i (%s)", cent->nextState.un3.item, weapIdx, weapModel, BO1_VA(weapVariantDef->szDisplayName));
             obj = CG_PreProcess_GetDObj(
                             localClientNum,
                             cent->nextState.number,
@@ -4381,7 +4381,7 @@ void __cdecl CG_Missile(int localClientNum, centity_s *cent)
                 if ( zombiemode && zombiemode->current.enabled && Dvar_GetBool("bo1_measure") )
                     Com_Printf(14, "bo1_cgmissile: time %d ent %d weapon %s model %s dobj %d trail %s handle %d\n",
                         CG_GetLocalClientGlobals(localClientNum)->time, s1->number, BG_WeaponName(cent->nextState.weapon),
-                        weapDef->projectileModel ? weapDef->projectileModel->name : "", obj ? 1 : 0,
+                        BO1_VA(weapDef->projectileModel) ? weapDef->projectileModel->name : "", obj ? 1 : 0,
                         weapDef->projTrailEffect ? weapDef->projTrailEffect->name : "", cent->fxTrailHandle ? 1 : 0);
                 v4 = SND_FindAliasId(weapDef->projIgnitionSound);
                 CG_PlaySound(localClientNum, s1->number, cent->pose.origin, 0, 0, 1.0, v4);

@@ -2716,7 +2716,7 @@ void __cdecl R_GetStaticModelsAabb(
     }
 }
 
-void __cdecl R_AddCellDynBrushSurfacesInFrustumCmd(DpvsPlane **data)
+void __cdecl R_AddCellDynBrushSurfacesInFrustumCmd(Ptr32<DpvsPlane> *data)
 {
     unsigned int oldViewIndex; // [esp+0h] [ebp-8h]
 
@@ -3840,7 +3840,7 @@ void __cdecl R_ShowCull(const float *viewOrigin)
                         sceneEntIndex,
                         sceneEnt->entnum,
                         sceneEnt->obj->numModels,
-                        **(const char ***)sceneEnt->obj->localModels);
+                        **(Ptr32<Ptr32<const char>> *)sceneEnt->obj->localModels);
                 else
                     _snprintf(
                         text,
@@ -3870,7 +3870,7 @@ void __cdecl R_ShowCull(const float *viewOrigin)
             if ( Vec3DistanceSq(v9->placement.base.origin, viewOrigin) <= v8 )
             {
                 if ( v9->model && v9->model->name )
-                    _snprintf(string, 0x200u, "%d:%d:%s", sceneEntIndex, v9->entnum, v9->model->name);
+                    _snprintf(string, 0x200u, "%d:%d:%s", sceneEntIndex, v9->entnum, BO1_VA(v9->model->name));
                 else
                     _snprintf(string, 0x200u, "%d:%d:%s", sceneEntIndex, v9->entnum, "");
                 R_AddDebugString(&frontEndDataOut->debugGlobals, v9->placement.base.origin, color, 0.25, string);

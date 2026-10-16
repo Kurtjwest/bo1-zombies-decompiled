@@ -637,10 +637,10 @@ static void Sys_HeadlessMenuDumpEvents(const char *owner, const GenericEventHand
         {
             if (script->condition.filename)
                 Com_Printf(16, "bo1_menudump: %s %s: type %d if (%s) fireOnTrue %d\n", owner,
-                    handler->name ? handler->name : "", script->type, Sys_HeadlessExpToString(&script->condition),
+                    BO1_VA(handler->name) ? handler->name : "", script->type, Sys_HeadlessExpToString(&script->condition),
                     script->fireOnTrue);
             if (script->action && script->action[0])
-                Com_Printf(16, "bo1_menudump: %s %s: %s\n", owner, handler->name ? handler->name : "", script->action);
+                Com_Printf(16, "bo1_menudump: %s %s: %s\n", owner, BO1_VA(handler->name) ? handler->name : "", script->action);
         }
 }
 
@@ -669,7 +669,7 @@ static const char *Sys_HeadlessExpToString(const ExpressionStatement *exp)
             else if (c.dataType == VAL_FLOAT)
                 tok = va("%g", c.internals.floatVal);
             else
-                tok = va("\"%s\"", c.internals.string ? c.internals.string : "");
+                tok = va("\"%s\"", BO1_VA(c.internals.string) ? c.internals.string : "");
         }
         else
         {
@@ -709,16 +709,16 @@ static void Sys_HeadlessMenuDump()
         }
         if (!wanted)
             continue;
-        Com_Printf(16, "bo1_menudump: menu '%s' items %d\n", menu->window.name, menu->itemCount);
+        Com_Printf(16, "bo1_menudump: menu '%s' items %d\n", BO1_VA(menu->window.name), menu->itemCount);
         Sys_HeadlessMenuDumpEvents(menu->window.name, menu->onEvent);
         for (const ItemKeyHandler *key = menu->onKey; key; key = key->next)
             for (const GenericEventScript *script = key->keyScript; script; script = script->next)
-                Com_Printf(16, "bo1_menudump: %s key %d: %s\n", menu->window.name, key->key, script->action ? script->action : "");
+                Com_Printf(16, "bo1_menudump: %s key %d: %s\n", BO1_VA(menu->window.name), key->key, script->action ? script->action : "");
         for (int i = 0; i < menu->itemCount; ++i)
         {
             const itemDef_s *item = menu->items[i];
             Com_Printf(16, "bo1_menudump: %s/%d '%s' type %d style %d rect %g %g %g %g bg '%s' dvar '%s' dvarTest '%s' "
-                "enableDvar '%s' dvarFlags 0x%x flags 0x%x text '%s'\n", menu->window.name, i,
+                "enableDvar '%s' dvarFlags 0x%x flags 0x%x text '%s'\n", BO1_VA(menu->window.name), i,
                 item->window.name ? item->window.name : "", item->type, item->window.style, item->window.rect.x,
                 item->window.rect.y, item->window.rect.w, item->window.rect.h,
                 item->window.background ? Material_GetName(item->window.background) : "", item->dvar ? item->dvar : "",
@@ -727,12 +727,12 @@ static void Sys_HeadlessMenuDump()
                 (item->type == 0 || item->type == 1) && item->typeData.textDef && item->typeData.textDef->text
                     ? item->typeData.textDef->text : "");
             if (item->visibleExp.filename)
-                Com_Printf(16, "bo1_menudump: %s/%d visible: %s\n", menu->window.name, i, Sys_HeadlessExpToString(&item->visibleExp));
+                Com_Printf(16, "bo1_menudump: %s/%d visible: %s\n", BO1_VA(menu->window.name), i, Sys_HeadlessExpToString(&item->visibleExp));
             if (item->forecolorAExp.filename)
-                Com_Printf(16, "bo1_menudump: %s/%d forecolorA: %s\n", menu->window.name, i, Sys_HeadlessExpToString(&item->forecolorAExp));
+                Com_Printf(16, "bo1_menudump: %s/%d forecolorA: %s\n", BO1_VA(menu->window.name), i, Sys_HeadlessExpToString(&item->forecolorAExp));
             if (item->type == 2 && item->typeData.imageDef && item->typeData.imageDef->materialExp.filename)
-                Com_Printf(16, "bo1_menudump: %s/%d material: %s\n", menu->window.name, i, Sys_HeadlessExpToString(&item->typeData.imageDef->materialExp));
-            Sys_HeadlessMenuDumpEvents(va("%s/%d '%s'", menu->window.name, i, item->window.name ? item->window.name : ""),
+                Com_Printf(16, "bo1_menudump: %s/%d material: %s\n", BO1_VA(menu->window.name), i, Sys_HeadlessExpToString(&item->typeData.imageDef->materialExp));
+            Sys_HeadlessMenuDumpEvents(va("%s/%d '%s'", BO1_VA(menu->window.name), i, item->window.name ? item->window.name : ""),
                 item->onEvent);
         }
     }
@@ -790,7 +790,7 @@ static void Sys_HeadlessShotsFrame(int elapsed)
                 Key_IsCatcherActive(0, 16), UI_GetTopActiveMenuName(0) ? UI_GetTopActiveMenuName(0) : "",
                 UI_GetInfo(0)->uiDC.openMenuCount);
             for (int m = 0; m < UI_GetInfo(0)->uiDC.openMenuCount; ++m)
-                Com_Printf(16, "bo1_shots: open menu %d '%s'\n", m, UI_GetInfo(0)->uiDC.menuStack[m].menu->window.name);
+                Com_Printf(16, "bo1_shots: open menu %d '%s'\n", m, BO1_VA(UI_GetInfo(0)->uiDC.menuStack[m].menu->window.name));
             Sys_HeadlessMenuDump();
             Cbuf_AddText(0, va("screenshotJpeg bo1_%d\n", at));
             return;
@@ -890,7 +890,7 @@ static const char *Sys_SweepStackString(UiContext *dc)
     int len = 0;
     text[0] = 0;
     for (int m = 0; m < dc->openMenuCount && len < (int)sizeof(text) - 64; ++m)
-        len += _snprintf(text + len, sizeof(text) - len - 1, "%s%s", m ? "," : "", dc->menuStack[m].menu->window.name);
+        len += _snprintf(text + len, sizeof(text) - len - 1, "%s%s", m ? "," : "", BO1_VA(dc->menuStack[m].menu->window.name));
     text[len] = 0;
     return text;
 }
@@ -1057,7 +1057,7 @@ static void Sys_HeadlessMenuSweepFrame()
             const char *why = nullptr;
             if (!dvarItem && !bindItem && !listItem && Sys_SweepItemDenied(item, &why))
             {
-                Com_Printf(16, "bo1_menusweep: %s/%d type %d '%s': not run (action has '%s')\n", menu->window.name,
+                Com_Printf(16, "bo1_menusweep: %s/%d type %d '%s': not run (action has '%s')\n", BO1_VA(menu->window.name),
                     s_sweepItem, item->type, item->window.name ? item->window.name : "", why);
                 ++s_sweepDenied;
                 ++s_sweepItem;
@@ -1078,7 +1078,7 @@ static void Sys_HeadlessMenuSweepFrame()
         if (s_sweepPhase == 1)
         {
             Com_Printf(16, "bo1_menusweep: %s/%d type %d '%s' key %d dvar '%s' '%s' -> '%s' stack '%s'%s\n",
-                menu->window.name, s_sweepItem, item->type, item->window.name ? item->window.name : "", s_sweepKey,
+                BO1_VA(menu->window.name), s_sweepItem, item->type, item->window.name ? item->window.name : "", s_sweepKey,
                 item->dvar ? item->dvar : "", s_sweepBefore, value, Sys_SweepStackString(dc),
                 bindItem ? (g_waitingForKey ? " waiting for a key" : " NOT waiting for a key") : "");
             if (dvarItem && !strcmp(value, s_sweepBefore))
@@ -1100,18 +1100,18 @@ static void Sys_HeadlessMenuSweepFrame()
         }
         if (s_sweepPhase == 5)
         {
-            Com_Printf(16, "bo1_menusweep: %s/%d key %d dvar '%s' '%s' -> '%s'\n", menu->window.name, s_sweepItem,
+            Com_Printf(16, "bo1_menusweep: %s/%d key %d dvar '%s' '%s' -> '%s'\n", BO1_VA(menu->window.name), s_sweepItem,
                 K_LEFTARROW, item->dvar, s_sweepBefore, value);
             Sys_SweepPress(dc, menu, K_RIGHTARROW);
             s_sweepPhase = 2;
             return;
         }
         if (s_sweepPhase == 2)
-            Com_Printf(16, "bo1_menusweep: %s/%d back dvar '%s' '%s' (%s) stack '%s'\n", menu->window.name, s_sweepItem,
+            Com_Printf(16, "bo1_menusweep: %s/%d back dvar '%s' '%s' (%s) stack '%s'\n", BO1_VA(menu->window.name), s_sweepItem,
                 item->dvar ? item->dvar : "", value, strcmp(value, s_sweepBefore) ? "CHANGED" : "restored",
                 Sys_SweepStackString(dc));
         else
-            Com_Printf(16, "bo1_menusweep: %s/%d restored stack '%s'\n", menu->window.name, s_sweepItem,
+            Com_Printf(16, "bo1_menusweep: %s/%d restored stack '%s'\n", BO1_VA(menu->window.name), s_sweepItem,
                 Sys_SweepStackString(dc));
         if (s_sweepPhase == 2 && (!Sys_SweepMenuOpen(dc, menu) || dc->menuStack[dc->openMenuCount - 1].menu != menu))
             Sys_SweepRestoreStack(dc);
@@ -1141,7 +1141,7 @@ static const dvar_t *bo1_dvardump;
 
 static void __cdecl Sys_DvarDumpOne(const dvar_s *dvar, void *)
 {
-    Com_Printf(16, "bo1_dvardump\t%s\t%d\t0x%x\t%s\t%s\n", dvar->name, dvar->type, dvar->flags,
+    Com_Printf(16, "bo1_dvardump\t%s\t%d\t0x%x\t%s\t%s\n", BO1_VA(dvar->name), dvar->type, dvar->flags,
         Dvar_DisplayableResetValue(dvar), Dvar_DisplayableValue(dvar));
 }
 
@@ -1186,7 +1186,7 @@ static void Sys_AutoQuitFrame()
     if (s_quitNotifyAt >= 0 && com_sv_running->current.enabled && level.time >= s_quitNotifyAt)
     {
         Com_Printf(16, "bo1_quitnotify: %d ms after init; level.time %d, %d '%s' notifies. Quitting.\n", elapsed,
-            level.time, s_quitNotifySeen, bo1_quitnotify->current.string);
+            level.time, s_quitNotifySeen, BO1_VA(bo1_quitnotify->current.string));
         s_quitNotifyAt = -1;
         Com_Quit_f();
         return;
@@ -1744,7 +1744,7 @@ static void Sys_HeadlessItemKey_f()
     const int handled = Item_HandleKey(0, dc, item, key, 1);
     Item_HandleKey(0, dc, item, key, 0);
     Com_Printf(16, "bo1_itemkey: %s item %d key %d handled %d dvar '%s' '%s' -> '%s'\n", Cmd_Argv(1), index, key,
-        handled, item->dvar ? item->dvar : "", beforeCopy, item->dvar ? Dvar_GetVariantString(item->dvar) : "");
+        handled, BO1_VA(item->dvar) ? item->dvar : "", beforeCopy, item->dvar ? Dvar_GetVariantString(item->dvar) : "");
 }
 
 // zombies mouse-1: headless mouse through the paths real input takes.
@@ -1762,7 +1762,7 @@ static void Sys_HeadlessUiMouseState(const char *what)
     const int index = menu ? menu->cursorItem[0] : -1;
     const itemDef_s *item = menu && index >= 0 && index < menu->itemCount ? menu->items[index] : nullptr;
     Com_Printf(16, "bo1_uimouse: %s cursor %.1f %.1f visible %d menu '%s' item %d '%s' '%s' catchers 0x%x\n", what,
-        dc->cursor.x, dc->cursor.y, dc->isCursorVisible, menu && menu->window.name ? menu->window.name : "", index,
+        dc->cursor.x, dc->cursor.y, dc->isCursorVisible, BO1_VA(menu && menu->window.name ? menu->window.name : ""), index,
         item && item->window.name ? item->window.name : "", item && (item->type == 0 || item->type == 1) && item->typeData.textDef && item->typeData.textDef->text ? item->typeData.textDef->text : "",
         CL_GetLocalClientUIGlobals(0)->keyCatchers);
 }
@@ -1836,7 +1836,7 @@ static void Sys_HeadlessUiMouse_f()
         {
             menuDef_t *m = dc->menuStack[i].menu;
             Com_Printf(16, "bo1_uimouse: stack %d '%s' fullScreen %d 3d %d dyn 0x%x static 0x%x animating %d\n", i,
-                m->window.name ? m->window.name : "", m->fullScreen, m->ui3dWindowId,
+                BO1_VA(m->window.name) ? m->window.name : "", m->fullScreen, m->ui3dWindowId,
                 Window_GetDynamicFlags(dc->contextIndex, &m->window), m->window.staticFlags,
                 Menu_ItemsAreAnimating(0, dc, m));
         }
@@ -1846,7 +1846,7 @@ static void Sys_HeadlessUiMouse_f()
             {
                 if (Rect_ContainsPoint(dc->contextIndex, Window_GetRect(&m->items[i]->window), dc->cursor.x, dc->cursor.y))
                     Com_Printf(16, "bo1_uimouse: under cursor item %d '%s' type %d dyn 0x%x visible %d\n", i,
-                        m->items[i]->window.name ? m->items[i]->window.name : "", m->items[i]->type,
+                        BO1_VA(m->items[i]->window.name) ? m->items[i]->window.name : "", m->items[i]->type,
                         Window_GetDynamicFlags(dc->contextIndex, &m->items[i]->window),
                         Item_IsVisible(0, dc->contextIndex, m->items[i]));
             }
@@ -1859,7 +1859,7 @@ static void Sys_HeadlessUiMouse_f()
 // "Close window" send), so a headless client can test closing through MainWndProc. The window is on the private desktop.
 static void Sys_HeadlessWmClose_f()
 {
-    Com_Printf(16, "bo1_wmclose: posting WM_CLOSE to the game window %p\n", g_wv.hWnd);
+    Com_Printf(16, "bo1_wmclose: posting WM_CLOSE to the game window %p\n", BO1_VA(g_wv.hWnd));
     if (g_wv.hWnd)
         PostMessageA(g_wv.hWnd, WM_CLOSE, 0, 0);
 }

@@ -1766,7 +1766,7 @@ void __cdecl CL_DownloadsComplete(int localClientNum)
         Com_SyncThreads();
         if ( fs_gameDirVar && *(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer) )
         {
-            v1 = va("%s/%s", fs_homepath->current.string, fs_gameDirVar->current.string);
+            v1 = va("%s/%s", BO1_VA(fs_homepath->current.string), fs_gameDirVar->current.string);
             Sys_Mkdir(v1);
         }
         if ( cls.wwwDlDisconnected

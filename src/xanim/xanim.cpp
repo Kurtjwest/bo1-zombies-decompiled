@@ -3515,7 +3515,7 @@ unsigned int __cdecl XAnimAllocInfoWithParent(
         if ( info->animToModel )
         {
             if ( info->parts->bStreamable )
-                Com_PrintWarning(16, "Cannot play streamed anim '%s' because the anim cache is disabled.", info->parts->name);
+                Com_PrintWarning(16, "Cannot play streamed anim '%s' because the anim cache is disabled.", BO1_VA(info->parts->name));
         }
         return infoIndex;
     }
@@ -4337,7 +4337,7 @@ void __cdecl XAnimSetupSyncNodes_r(XAnim_s *anims, unsigned int animIndex, int p
             }
             while ( !IsLeafNode(anim) );
             v6 = XAnimGetAnimDebugName(anims, animIndex);
-            Com_Error(ERR_DROP, "duplicate specification of animation sync in '%s' %d nodes above '%s'", anims->debugName, count, v6);
+            Com_Error(ERR_DROP, "duplicate specification of animation sync in '%s' %d nodes above '%s'", BO1_VA(anims->debugName), count, v6);
         }
     }
     if ( !IsLeafNode(anim) )

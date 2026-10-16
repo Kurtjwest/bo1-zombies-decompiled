@@ -169,7 +169,7 @@ void __cdecl Scr_GetCodePos(
                 unsigned int index,
                 char *outBuf,
                 unsigned int outBufLen);
-void __cdecl Scr_GetFileAndLine(scriptInstance_t inst, const char *codePos, char **filename, int *linenum);
+void __cdecl Scr_GetFileAndLine(scriptInstance_t inst, const char *codePos, Ptr32<char> *filename, int *linenum);
 void CompileError(scriptInstance_t inst, unsigned int sourcePos, const char *msg, ...);
 void __cdecl Scr_IgnoreLeaks(scriptInstance_t inst);
 void CompileError2(scriptInstance_t inst, char *codePos, const char *msg, ...);

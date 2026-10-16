@@ -1103,7 +1103,7 @@ void CL_ConsolePrint_AddLine(
                         goto LABEL_79;
                     }
                     bcassert(con.lineOffset, sizeof(con.textTempLine));
-                    if (!IsValidMaterialHandle(*(Material *const *)(text + 3))
+                    if (!IsValidMaterialHandle(*(const Ptr32<Material> *)(text + 3))
                         && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\client\\cl_console.cpp",
                             1343,
@@ -3438,7 +3438,7 @@ void __cdecl ConDrawInput_AutoCompleteArg(const char **stringList, int stringCou
         }
         if ( matchCount )
         {
-            qsort(matches, matchCount, 4u, (int (__cdecl *)(const void *, const void *))ConDrawInput_CompareStrings);
+            qsort(matches, matchCount, sizeof(*matches), (int (__cdecl *)(const void *, const void *))ConDrawInput_CompareStrings);
             consoleFont = cls.consoleFont;
             ArgChar = ConDrawInput_TextFieldFirstArgChar();
             x = (float)((float)R_TextWidth(g_consoleField.buffer, ArgChar, consoleFont) + conDrawInputGlob.leftX) - 6.0;

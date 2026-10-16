@@ -59,7 +59,7 @@ struct bdLinkedList
     //  a2 = pointer to Node* slot holding the node to remove
     // --------------------------------------------------------
 
-    inline Node **removeAt(Node **slot)
+    inline Ptr32<Node> *removeAt(Ptr32<Node> *slot)
     {
         Node *node = *slot;
         if (!node)
@@ -84,7 +84,7 @@ struct bdLinkedList
         bdMemory::deallocate(node);
 
         --m_size;
-        return reinterpret_cast<Node **>(this);
+        return &m_head; // (the original returns the list itself, whose first member is the head slot)
     }
 
     // --------------------------------------------------------
@@ -99,14 +99,10 @@ struct bdLinkedList
         if (!node)
             return reinterpret_cast<int *>(this);
 
-        // copy bdReference<T>
-        *reinterpret_cast<void **>(&node->m_value) =
-            *reinterpret_cast<void *const *>(value);
-
-        if (*reinterpret_cast<void **>(&node->m_value))
-            InterlockedIncrement(
-                reinterpret_cast<volatile LONG *>(
-                    reinterpret_cast<char *>(*reinterpret_cast<void **>(&node->m_value)) + 4));
+        // copy bdReference<T> (a new reference: count it)
+        node->m_value.m_ptr = value->m_ptr;
+        if (node->m_value.m_ptr)
+            InterlockedIncrement(&node->m_value.m_ptr->m_refCount);
 
         new (&node->m_value + 1) bdSecurityID(
             reinterpret_cast<const bdSecurityID *>(

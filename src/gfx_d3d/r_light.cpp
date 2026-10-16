@@ -73,11 +73,11 @@ GfxLightDef *__cdecl R_RegisterLightDef_LoadObj(const char *name)
     {
         Com_Printf(8, "Loaded light defs:\n");
         for ( defIndexa = 0; defIndexa < lightGlob.defCount; ++defIndexa )
-            Com_Printf(8, "    %s\n", lightGlob.defs[defIndexa]->name);
+            Com_Printf(8, "    %s\n", BO1_VA(lightGlob.defs[defIndexa]->name));
         Com_Error(
             ERR_DROP,
             "Can't load light def %s; %i unique light defs already loaded",
-            lightGlob.defs[defIndex]->name,
+            BO1_VA(lightGlob.defs[defIndex]->name),
             lightGlob.defCount);
     }
     defa = R_LoadLightDef(name);
@@ -471,7 +471,10 @@ void __cdecl R_GetBspSpotLightSurfs(const GfxLight *light, int lightIndex, GfxBs
     maxs[1] = light->origin[1] + light->radius;
     maxs[2] = light->origin[2] + light->radius;
     drawSurfs[1] = scene.visLightShadow[lightIndex].drawSurfs;
-    surfaces[1] = (GfxSurface **)&drawSurfs[1][512];
+    // The retail code collects the surface pointers in the second half of the draw surface array (512 draw surfaces
+    // hold 1024 4-byte pointers); 8-byte pointers do not fit there, so they get their own list.
+    GfxSurface *lightSurfs[0x400];
+    surfaces[1] = lightSurfs;
     surfCounts[1] = 0;
     bspLightCallback.surfaceVisData = surfaceVisData;
     R_BoxSurfaces(mins, maxs, &allowSurf_0[1], &bspLightCallback, &surfaces[1], 0x400u, &surfCounts[1], 1u);

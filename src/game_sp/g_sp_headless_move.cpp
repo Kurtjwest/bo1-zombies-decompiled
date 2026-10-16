@@ -164,14 +164,14 @@ static void SP_HeadlessWeaponCycle(gentity_s *player, usercmd_s *cmd, int elapse
         const WeaponVariantDef *variant = weaponIndex ? BG_GetWeaponVariantDef(weaponIndex) : nullptr;
         if (def)
             Com_Printf(16, "bo1_weapcyc_asset: w=%d name=%s has=%d fireType=%d fire=%d,%d lastFire=%d reload=%d,%d add=%d,%d raise=%d drop=%d quickRaise=%d,%d ads=%.6f,%.6f spread=%.3f,%.3f,%.3f add=%.3f decay=%.3f clip=%d\n",
-                weaponIndex, variant->szInternalName, BG_PlayerHasWeapon(ps, weaponIndex), def->fireType, def->iFireTime,
+                weaponIndex, BO1_VA(variant->szInternalName), BG_PlayerHasWeapon(ps, weaponIndex), def->fireType, def->iFireTime,
                 def->iFireDelay, def->iLastFireTime, variant->iReloadTime, variant->iReloadEmptyTime, def->iReloadAddTime,
                 def->iReloadEmptyAddTime, def->iRaiseTime, def->iDropTime, def->quickRaiseTime, def->quickDropTime,
                 variant->fOOPosAnimLength[0], variant->fOOPosAnimLength[1], def->fHipSpreadStandMin, def->hipSpreadStandMax,
                 def->fAdsSpread, def->fHipSpreadFireAdd, def->fHipSpreadDecayRate, variant->iClipSize);
         if (def)
             Com_Printf(16, "bo1_weapcyc_asset2: w=%d name=%s first=%d sprint=%d,%d start=%d,%d end=%d emptyRaise=%d emptyDrop=%d quickDrop=%d rechamber=%d\n",
-                weaponIndex, variant->szInternalName, def->iFirstRaiseTime, def->sprintInTime, def->sprintOutTime,
+                weaponIndex, BO1_VA(variant->szInternalName), def->iFirstRaiseTime, def->sprintInTime, def->sprintOutTime,
                 def->iReloadStartTime, def->iReloadStartAddTime, def->iReloadEndTime, def->iEmptyRaiseTime,
                 def->iEmptyDropTime, def->quickDropTime, def->iRechamberTime);
         else
@@ -276,7 +276,7 @@ static void SP_HeadlessWeaponCommand(gentity_s *player, usercmd_s *cmd)
             const WeaponDef *def = BG_GetWeaponDef(weapon);
             const WeaponVariantDef *variant = BG_GetWeaponVariantDef(weapon);
             Com_Printf(16, "bo1_weapon_asset: w=%u name=%s raise=%d drop=%d first=%d sprint=%d,%d reload=%d,%d,%d fire=%d,%d melee=%d,%d,%d,%d adsrate=%.9f,%.9f zoom=%.3f,%.3f,%.3f zoomfrac=%.3f,%.3f sway=%.3f,%.3f,%.3f,%.3f range=%.3f\n",
-                weapon, variant->szInternalName, def->iRaiseTime, def->iDropTime, def->iFirstRaiseTime,
+                weapon, BO1_VA(variant->szInternalName), def->iRaiseTime, def->iDropTime, def->iFirstRaiseTime,
                 def->sprintInTime, def->sprintOutTime, variant->iReloadTime, variant->iReloadEmptyTime, def->iReloadAddTime,
                 def->iFireTime, def->iFireDelay, def->iMeleeTime, def->iMeleeDelay, def->meleeChargeTime,
                 def->meleeChargeDelay, variant->fOOPosAnimLength[0], variant->fOOPosAnimLength[1],
@@ -569,7 +569,7 @@ bool G_SP_HeadlessMoveCommand(client_t *client, usercmd_s *cmd)
 
     Com_Printf(16, "bo1_move: t=%d ph=%s ox=%.3f oy=%.3f oz=%.3f vx=%.3f vy=%.3f vz=%.3f g=%d vh=%.3f fm=%d rm=%d sp=%d j=%d"
         " spr=%d speed=%d pmf=0x%x wst=%d health=%d st=%d ss=%d se=%d sl=%d w=%d yaw=%.2f pdir=%.2f\n",
-        level.time, phase->name, ps->origin[0], ps->origin[1], ps->origin[2], ps->velocity[0], ps->velocity[1],
+        level.time, BO1_VA(phase->name), ps->origin[0], ps->origin[1], ps->origin[2], ps->velocity[0], ps->velocity[1],
         ps->velocity[2], ps->groundEntityNum, ps->viewHeightCurrent, phase->forward, phase->right, phase->sprint ? 1 : 0,
         cmd->button_bits.testBit(10) ? 1 : 0, (ps->pm_flags & 0x8000) ? 1 : 0, ps->speed, ps->pm_flags,
         ps->weaponstate, player->health, cmd->serverTime, ps->sprintState.lastSprintStart, ps->sprintState.lastSprintEnd,

@@ -24,7 +24,7 @@ struct WaterGlobStatic // sizeof=0x1C00
                                         // WaterAmplitudesFromFrequencies+207/o ...
 };
 
-void __cdecl R_UploadWaterTextureInternal(water_t **data);
+void __cdecl R_UploadWaterTextureInternal(Ptr32<water_t> *data);
 void __cdecl WaterFrequenciesAtTime(complex_s *H, const water_t *water, float t);
 void __cdecl WaterAmplitudesFromFrequencies(complex_s *H, const water_t *water);
 void __cdecl TransposeArray(complex_s *H, unsigned int M);

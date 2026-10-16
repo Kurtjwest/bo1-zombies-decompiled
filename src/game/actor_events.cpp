@@ -599,7 +599,7 @@ void __cdecl Actor_DumpEvents(actor_s *self, ai_event_t event, gentity_s *origin
             18,
             "%d ^3 %s^7:    from entity^5 %d ^7at time^5 %d\n",
             self->ent->s.number,
-            g_ai_event_info[event].name,
+            BO1_VA(g_ai_event_info[event].name),
             number,
             level.time);
     }

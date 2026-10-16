@@ -1335,7 +1335,7 @@ MaterialTechnique *__cdecl Material_LoadTechnique(char *name)
     bool error; // [esp+15Bh] [ebp-69h]
     MaterialPass passes[4]; // [esp+15Ch] [ebp-68h] BYREF
     const char *token; // [esp+1ACh] [ebp-18h]
-    MaterialStateMap **stateMapForPass; // [esp+1B0h] [ebp-14h]
+    Ptr32<MaterialStateMap> *stateMapForPass; // [esp+1B0h] [ebp-14h]
     unsigned __int16 passCount; // [esp+1B4h] [ebp-10h]
     const char *formatString; // [esp+1B8h] [ebp-Ch]
     const char *text; // [esp+1BCh] [ebp-8h] BYREF
@@ -1394,14 +1394,14 @@ MaterialTechnique *__cdecl Material_LoadTechnique(char *name)
             stateMapSize = 4 * passCount;
             nameSize = strlen(name) + 1;
             technique = Material_Alloc(nameSize + 24 * passCount + 8);
-            stateMapForPass = (MaterialStateMap **)&technique[20 * passCount + 8];
+            stateMapForPass = (Ptr32<MaterialStateMap> *)&technique[20 * passCount + 8];
             *(unsigned int *)technique = (unsigned int)BO1_P2I(&stateMapForPass[passCount]);
-            memcpy(*(unsigned __int8 **)technique, (unsigned __int8 *)name, nameSize);
+            memcpy(*(Ptr32<unsigned __int8> *)technique, (unsigned __int8 *)name, nameSize);
 
             *((_WORD *)technique + 2) = techFlags;
-            if ( !strcmp(*(const char **)technique, "zprepass")
-                || !strncmp(*(const char **)technique, "pimp_technique_zprepass_", 0x18u)
-                || !strncmp(*(const char **)technique, "pimp_technique_layer_zprepass_", 0x1Eu) )
+            if ( !strcmp(*(Ptr32<const char> *)technique, "zprepass")
+                || !strncmp(*(Ptr32<const char> *)technique, "pimp_technique_zprepass_", 0x18u)
+                || !strncmp(*(Ptr32<const char> *)technique, "pimp_technique_layer_zprepass_", 0x1Eu) )
             {
                 *((_WORD *)technique + 2) |= 4u;
             }
@@ -1426,7 +1426,8 @@ MaterialTechnique *__cdecl Material_LoadTechnique(char *name)
             }
             *((_WORD *)technique + 3) = passCount;
             memcpy(technique + 8, (unsigned __int8 *)passes, 20 * passCount);
-            memcpy((unsigned __int8 *)stateMapForPass, (unsigned __int8 *)stateMap, stateMapSize);
+            for ( passIndex = 0; passIndex < passCount; ++passIndex )
+                stateMapForPass[passIndex] = stateMap[passIndex]; // native pointers -> the technique's 32-bit slots
             return (MaterialTechnique *)technique;
         }
         else
@@ -1978,7 +1979,7 @@ int __cdecl Material_ParseRuleSetConditionTest(const char **text, const char *to
                         0,
                         "%s\n\t(s_stateMapSrcBitGroup[sourceIndex].name) = %s",
                         "(stateBitsIndex < 2)",
-                        s_stateMapSrcBitGroup[sourceIndex].name) )
+                        BO1_VA(s_stateMapSrcBitGroup[sourceIndex].name)) )
         {
             __debugbreak();
         }
@@ -2084,7 +2085,7 @@ bool __cdecl Material_ParseRuleSetValue(
                             0,
                             "%s\n\t(stateSet[stateIndex].name) = %s",
                             "(stateBitsIndex < 2)",
-                            stateSet[stateIndex].name) )
+                            BO1_VA(stateSet[stateIndex].name)) )
             {
                 __debugbreak();
             }
@@ -2412,7 +2413,7 @@ char __cdecl Material_ResourceDestForStreamDest(
     }
     if ( inputTable[inputIndex].isAssigned )
     {
-        Com_ScriptError("vertex input '%s' specified more than once.\n", inputTable[inputIndex].name);
+        Com_ScriptError("vertex input '%s' specified more than once.\n", BO1_VA(inputTable[inputIndex].name));
         return 0;
     }
     else
@@ -2510,7 +2511,7 @@ bool __cdecl Material_CheckUnspecifiedVertexInputs(const ShaderVaryingDef *input
     {
         if ( !inputTable[inputIndex].isAssigned )
         {
-            Com_ScriptError("vertex input '%s' is not specified.\n", inputTable[inputIndex].name);
+            Com_ScriptError("vertex input '%s' is not specified.\n", BO1_VA(inputTable[inputIndex].name));
             isValid = 0;
         }
     }
@@ -2665,11 +2666,11 @@ ID3DXBuffer *__cdecl Material_CompileShader(
     unsigned int lineNumber[2]; // [esp+81Ch] [ebp-8648h] BYREF
     char dest[516]; // [esp+824h] [ebp-8640h] BYREF
     unsigned int shaderTextLen; // [esp+A28h] [ebp-843Ch]
-    int v18; // [esp+A2Ch] [ebp-8438h] BYREF
+    ID3DXConstantTable *v18; // [esp+A2Ch] [ebp-8438h] BYREF
     HRESULT hr; // [esp+A30h] [ebp-8434h]
     GfxAssembledShaderText prog; // [esp+A34h] [ebp-8430h] BYREF
     char *shaderString; // [esp+8E50h] [ebp-14h]
-    unsigned int v22[2]; // [esp+8E54h] [ebp-10h] BYREF
+    ID3DXBuffer *v22[2]; // [esp+8E54h] [ebp-10h] BYREF (error messages)
     ID3DXBuffer *shader; // [esp+8E5Ch] [ebp-8h] BYREF
     int v24; // [esp+8E60h] [ebp-4h]
 
@@ -2696,18 +2697,20 @@ LABEL_22:
     v5 = strstr(shaderName, "pimp_shader_sw4");
     if ( !v5 )
         v24 |= 0x10000u;
-    hr = D3DXCompileShader(shaderString, shaderTextLen, 0, 0, entryPoint, target, v24, &shader, NULL, NULL);
+    // (the retail call passes the error buffer and constant table out-parameters; they are typed here instead of
+    // being called through raw vtable offsets)
+    hr = D3DXCompileShader(shaderString, shaderTextLen, 0, 0, entryPoint, target, v24, &shader, &v22[0], &v18);
     //hr = D3DXCompileShader(shaderString, shaderTextLen, 0, 0, entryPoint, target, v24, &shader, v22, &v18);
     //__asm { fnclex }
     if ( v22[0] )
     {
         v13 = 0;
-        v6 = (const char *)BO1_I2P((*(int (__stdcall **)(unsigned int))BO1_I2P((*(unsigned int *)BO1_I2P(v22[0]) + 12)))(v22[0]));
+        v6 = (const char *)v22[0]->GetBufferPointer();
         if ( I_stristr(v6, "error") )
             v12 = Com_ScriptError;
         else
             v12 = Com_ScriptWarning;
-        errorMessage = (char *)BO1_I2P((*(int (__stdcall **)(unsigned int))BO1_I2P((*(unsigned int *)BO1_I2P(v22[0]) + 12)))(v22[0]));
+        errorMessage = (char *)v22[0]->GetBufferPointer();
         Material_FileIncludeFileAndLineNumber(&prog, errorMessage, &fileName, lineNumber);
         if ( v12 )
         {
@@ -2728,7 +2731,7 @@ LABEL_22:
             Com_SetScriptWarningPrefix(prefix);
             Com_SetScriptErrorPrefix(ScriptErrorPrefix);
         }
-        (*(void (__thiscall **)(unsigned int, unsigned int))BO1_I2P((*(unsigned int *)BO1_I2P(v22[0]) + 8)))(v22[0], v22[0]);
+        v22[0]->Release();
     }
     if ( hr < 0 )
     {
@@ -2746,12 +2749,12 @@ LABEL_22:
             Hunk_FreeTempMemory(shaderString);
             return 0;
         }
-        (*(void (__stdcall **)(int))BO1_I2P((*(unsigned int *)BO1_I2P(v18) + 8)))(v18);
+        v18->Release();
         Material_CacheShaderDX(shaderString, shaderTextLen, entryPoint, target, shader, 0);
         goto LABEL_22;
     }
     if ( v18 )
-        (*(void (__stdcall **)(int))BO1_I2P((*(unsigned int *)BO1_I2P(v18) + 8)))(v18);
+        v18->Release();
     Com_ScriptError("%s compilation failed - NULL shader\n", dest);
     Hunk_FreeTempMemory(shaderString);
     return 0;
@@ -3803,7 +3806,7 @@ char __cdecl Material_ParseShaderArguments(
     for ( i = 0; i < paramCount; ++i )
     {
         if ( !paramTable[i].isAssigned )
-            Com_PrintWarning(8, "    %s\n", paramTable[i].name);
+            Com_PrintWarning(8, "    %s\n", BO1_VA(paramTable[i].name));
     }
     Com_PrintWarning(8, "%i parameter(s) were undefined\n", paramCount - usedCount);
     return 0;
@@ -3990,7 +3993,7 @@ const char *__cdecl Material_RegisterString(char *string)
         {
             if ( strcmp(mtlLoadGlob.stringHashTable[hashIndex].string, string) )
             {
-                v1 = va("%s != %s", mtlLoadGlob.stringHashTable[hashIndex].string, string);
+                v1 = va("%s != %s", BO1_VA(mtlLoadGlob.stringHashTable[hashIndex].string), string);
                 if ( !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                                 2209,
@@ -4314,7 +4317,7 @@ bool __cdecl Material_ParseCodeConstantSource_r(
                         "%s\n\t(sourceTable[sourceIndex].name) = %s",
                         "(sourceTable[sourceIndex].subtable || (sourceTable[sourceIndex].source < CONST_SRC_FIRST_CODE_MATRIX && sour"
                         "ceTable[sourceIndex].arrayStride == 1))",
-                        sourceTable[sourceIndex].name) )
+                        BO1_VA(sourceTable[sourceIndex].name)) )
         {
             __debugbreak();
         }
@@ -5349,7 +5352,7 @@ bool __cdecl Material_ValidateShaderLinkage(
         {
             Com_ScriptError(
                 "Pixel shader input '%s' doesn't have a corresponding vertex shader output.\n",
-                pixelInputs[paramIndex].name);
+                BO1_VA(pixelInputs[paramIndex].name));
             isValid = 0;
         }
     }
@@ -5807,13 +5810,13 @@ Material *__cdecl Material_LoadLayered(const char *assetName)
                 Com_PrintError(
                     1,
                     "In layered material, expected material '%s' %s; using default instead.    Recompile the bsp to fix.\n",
-                    mtl[layerCount]->info.name,
+                    BO1_VA(mtl[layerCount]->info.name),
                     "without a normal map to have one");
             else
                 Com_PrintError(
                     1,
                     "In layered material, expected material '%s' %s; using default instead.    Recompile the bsp to fix.\n",
-                    mtl[layerCount]->info.name,
+                    BO1_VA(mtl[layerCount]->info.name),
                     "with a normal map to not have one");
             hasError = 1;
         }
@@ -6167,7 +6170,7 @@ unsigned int __cdecl Material_GetCullFlags(Material *material)
                 Com_PrintWarning(
                     8,
                     "Material '%s' uses technique set '%s' with mismatched cull modes.\n",
-                    material->info.name,
+                    BO1_VA(material->info.name),
                     techniqueSet->name);
                 break;
             }
@@ -6422,7 +6425,7 @@ char __cdecl Material_ValidatePassArguments(
                 Com_PrintError(
                     8,
                     "material '%s' using technique '%s' from techniqueSet '%s' doesn't expose a '%s' texture\n",
-                    mtl->info.name,
+                    BO1_VA(mtl->info.name),
                     techniqueName,
                     mtl->localTechniqueSet->name,
                     argNamea);
@@ -6435,7 +6438,7 @@ char __cdecl Material_ValidatePassArguments(
             Com_PrintError(
                 8,
                 "material '%s' using technique '%s' from techniqueSet '%s' doesn't expose a '%s' constant\n",
-                mtl->info.name,
+                BO1_VA(mtl->info.name),
                 techniqueName,
                 mtl->localTechniqueSet->name,
                 argName);
@@ -6840,7 +6843,7 @@ MaterialTechniqueSet *__cdecl Material_RegisterLayeredTechniqueSet(const Materia
                     8,
                     "Material '%s' uses technique set '%s' which cannot be used in a layered material; using default instead.    Reco"
                     "mpile the bsp to fix.\n",
-                    mtl[layerIndex]->info.name,
+                    BO1_VA(mtl[layerIndex]->info.name),
                     mtl[layerIndex]->localTechniqueSet->name);
                 return 0;
             }
@@ -7262,7 +7265,7 @@ void __cdecl Material_ApplyStateBitsRemapRuleSet(
     Com_Error(
         ERR_FATAL,
         "No rule in stateMap '%s' rule set %i matched the current material state for material '%s'",
-        stateMap->name,
+        BO1_VA(stateMap->name),
         ruleSetIndex,
         material->info.name);
 }
@@ -7693,7 +7696,7 @@ bool __cdecl Material_Compare(const Material *mtl0, const Material *mtl1)
     {
         if ( hasLightmap[0] )
         {
-            v3 = va("material '%s' no techlit, but hasLightmap", mtl0->info.name);
+            v3 = va("material '%s' no techlit, but hasLightmap", BO1_VA(mtl0->info.name));
             if ( !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                             10903,
@@ -7705,7 +7708,7 @@ bool __cdecl Material_Compare(const Material *mtl0, const Material *mtl1)
         }
         if ( hasLightmap[1] )
         {
-            v4 = va("material '%s' no techlit, but hasLightmap", mtl1->info.name);
+            v4 = va("material '%s' no techlit, but hasLightmap", BO1_VA(mtl1->info.name));
             if ( !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material_load_obj.cpp",
                             10904,

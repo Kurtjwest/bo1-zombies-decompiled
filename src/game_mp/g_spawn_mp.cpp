@@ -1093,7 +1093,7 @@ void __cdecl GScr_GetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
     {
         case F_ENTITY:
             if ( *(unsigned int *)&b[ofs] )
-                Scr_AddEntity(*(gentity_s **)&b[ofs], SCRIPTINSTANCE_SERVER);
+                Scr_AddEntity(*(Ptr32<gentity_s> *)&b[ofs], SCRIPTINSTANCE_SERVER);
             break;
         case F_ENTHANDLE:
             if ( ((EntHandle *)&b[ofs])->isDefined() )
@@ -1104,11 +1104,11 @@ void __cdecl GScr_GetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
             break;
         case F_ACTOR:
             if ( *(unsigned int *)&b[ofs] )
-                Scr_AddEntity(**(gentity_s ***)&b[ofs], SCRIPTINSTANCE_SERVER);
+                Scr_AddEntity(**(Ptr32<Ptr32<gentity_s>> *)&b[ofs], SCRIPTINSTANCE_SERVER);
             break;
         case F_SENTIENT:
             if ( *(unsigned int *)&b[ofs] )
-                Scr_AddEntity(**(gentity_s ***)&b[ofs], SCRIPTINSTANCE_SERVER);
+                Scr_AddEntity(**(Ptr32<Ptr32<gentity_s>> *)&b[ofs], SCRIPTINSTANCE_SERVER);
             break;
         case F_SENTIENTHANDLE:
             if ( ((SentientHandle *)&b[ofs])->isDefined() )
@@ -1119,7 +1119,7 @@ void __cdecl GScr_GetGenericField(unsigned __int8 *b, fieldtype_t type, int ofs,
             break;
         case F_PATHNODE:
             if ( *(unsigned int *)&b[ofs] )
-                Scr_AddPathnode(*(pathnode_t **)&b[ofs]);
+                Scr_AddPathnode(*(Ptr32<pathnode_t> *)&b[ofs]);
             break;
         case F_OBJECT:
             id = *(unsigned int *)&b[ofs];

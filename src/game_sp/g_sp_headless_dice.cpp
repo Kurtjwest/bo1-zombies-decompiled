@@ -126,7 +126,7 @@ bool DiceLoad()
     if (!f)
     {
         s_diceFailed = true;
-        Com_Printf(16, "bo1_dice: cannot open '%s'\n", g_dicePath->current.string);
+        Com_Printf(16, "bo1_dice: cannot open '%s'\n", BO1_VA(g_dicePath->current.string));
         return false;
     }
     char line[256], name[64];
@@ -199,7 +199,7 @@ bool DiceLoad()
     fclose(f);
     s_diceLoaded = !s_dice.empty();
     s_diceFailed = !s_diceLoaded;
-    Com_Printf(16, "bo1_dice: loaded '%s' zombies %u ok %d\n", g_dicePath->current.string, (unsigned int)s_dice.size(),
+    Com_Printf(16, "bo1_dice: loaded '%s' zombies %u ok %d\n", BO1_VA(g_dicePath->current.string), (unsigned int)s_dice.size(),
         s_diceLoaded ? 1 : 0);
     return s_diceLoaded;
 }

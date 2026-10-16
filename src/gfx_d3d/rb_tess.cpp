@@ -361,7 +361,7 @@ unsigned int __cdecl R_TessRopeMeshList(const GfxDrawSurfListArgs *listArgs, Gfx
         {
             v4 = va(
                 "0x%08x 0x%08x %i %i %s",
-                data->codeMeshes[LOWORD(drawSurf.packed)].indices,
+                BO1_VA(data->codeMeshes[LOWORD(drawSurf.packed)].indices),
                 data->codeMeshPtr->indices,
                 3 * data->codeMeshes[LOWORD(drawSurf.packed)].triCount,
                 61440,
@@ -811,7 +811,7 @@ unsigned int __cdecl R_TessParticleCloudList(const GfxDrawSurfListArgs *listArgs
     info = listArgs->info;
     if (r_logFile->current.integer)
     {
-        v2 = va("--- RB_TessParticleCloud( %s ) ---\n", context.state->material->info.name);
+        v2 = va("--- RB_TessParticleCloud( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v2);
     }
     drawSurf.fields = info->drawSurfs[listArgs->firstDrawSurfIndex].fields;
@@ -1053,7 +1053,7 @@ void __cdecl R_DrawXModelSkinnedCached(GfxCmdBufContext context, const GfxModelS
 
     if ( r_logFile->current.integer )
     {
-        v2 = va("--- R_DrawXModelSkinnedCached( %s ) ---\n", context.state->material->info.name);
+        v2 = va("--- R_DrawXModelSkinnedCached( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v2);
     }
     if ( !modelSurf
@@ -1112,7 +1112,7 @@ void __cdecl R_DrawXModelSkinnedUncached(GfxCmdBufContext context, XSurface *xsu
 
     if ( r_logFile->current.integer )
     {
-        RB_LogPrint(va("--- R_DrawXModelSkinnedUncached( %s ) ---\n", context.state->material->info.name));
+        RB_LogPrint(va("--- R_DrawXModelSkinnedUncached( %s ) ---\n", BO1_VA(context.state->material->info.name)));
     }
 
     iassert(xsurf);
@@ -1481,7 +1481,7 @@ unsigned int __cdecl R_TessXModelRigidDrawSurfList(
     baseTechType = info->baseTechType;
     if (r_logFile->current.integer)
     {
-        v2 = va("--- RB_TessXModelRigid( %s ) ---\n", context.state->material->info.name);
+        v2 = va("--- RB_TessXModelRigid( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v2);
     }
     drawSurfCount = info->drawSurfCount - listArgs->firstDrawSurfIndex;
@@ -1678,7 +1678,7 @@ unsigned int __cdecl R_TessXModelWaterList(const GfxDrawSurfListArgs *listArgs, 
     info = listArgs->info;
     if (r_logFile->current.integer)
     {
-        v3 = va("--- R_TessXModelWaterList( %s ) ---\n", context.state->material->info.name);
+        v3 = va("--- R_TessXModelWaterList( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v3);
     }
     drawSurfCount = info->drawSurfCount - listArgs->firstDrawSurfIndex;
@@ -1819,7 +1819,7 @@ unsigned int __cdecl R_TessXModelRigidSkinnedDrawSurfList(
     baseTechType = info->baseTechType;
     if (r_logFile->current.integer)
     {
-        v2 = va("--- R_TessXModelRigidSkinnedDrawSurfList( %s ) ---\n", context.state->material->info.name);
+        v2 = va("--- R_TessXModelRigidSkinnedDrawSurfList( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v2);
     }
     drawSurfCount = info->drawSurfCount - listArgs->firstDrawSurfIndex;
@@ -1932,7 +1932,7 @@ unsigned int __cdecl R_TessStaticModelRigidDrawSurfList(
     info = listArgs->info;
     if (r_logFile->current.integer)
     {
-        RB_LogPrint(va("--- R_TessStaticModelRigidDrawSurfList( %s ) ---\n", context.state->material->info.name));
+        RB_LogPrint(va("--- R_TessStaticModelRigidDrawSurfList( %s ) ---\n", BO1_VA(context.state->material->info.name)));
     }
     baseTechType = info->baseTechType;
     R_SetupPassCriticalPixelShaderArgs(context);
@@ -2019,7 +2019,7 @@ unsigned int __cdecl R_TessStaticModelSkinnedDrawSurfList(
     info = listArgs->info;
     if (r_logFile->current.integer)
     {
-        v2 = va("--- R_TessStaticModelSkinnedDrawSurfList( %s ) ---\n", context.state->material->info.name);
+        v2 = va("--- R_TessStaticModelSkinnedDrawSurfList( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v2);
     }
     R_SetupPassCriticalPixelShaderArgs(context);
@@ -2075,7 +2075,7 @@ unsigned int __cdecl R_TessStaticModelPreTessList(const GfxDrawSurfListArgs *lis
     info = listArgs->info;
     if (r_logFile->current.integer)
     {
-        v2 = va("--- RB_TessStaticModelCached( %s ) ---\n", context.state->material->info.name);
+        v2 = va("--- RB_TessStaticModelCached( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v2);
     }
     R_SetupPassCriticalPixelShaderArgs(context);
@@ -2121,7 +2121,7 @@ unsigned int __cdecl R_TessStaticModelCachedList(const GfxDrawSurfListArgs *list
     info = listArgs->info;
     if (r_logFile->current.integer)
     {
-        v2 = va("--- RB_TessStaticModelCached( %s ) ---\n", context.state->material->info.name);
+        v2 = va("--- RB_TessStaticModelCached( %s ) ---\n", BO1_VA(context.state->material->info.name));
         RB_LogPrint(v2);
     }
     R_SetupPassCriticalPixelShaderArgs(context);

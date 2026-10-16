@@ -237,7 +237,7 @@ RESTART:
                         Com_Error(
                             ERR_DROP,
                             "Fastfile for zone '%s' appears corrupt or unreadable (code %i.)",
-                            g_load.filename,
+                            BO1_VA(g_load.filename),
                             err + 110);
                     }
                     if ( g_load.f )
@@ -281,7 +281,7 @@ RESTART:
 
                     if ( err )
                     {
-                        v2 = va("Invalid fast file '%s' (%d != Z_OK)", g_load.filename, err);
+                        v2 = va("Invalid fast file '%s' (%d != Z_OK)", BO1_VA(g_load.filename), err);
                         if ( !Assert_MyHandler(
                                         "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",
                                         1547,
@@ -319,7 +319,7 @@ void DB_ReadXFileStage()
             __debugbreak();
         }
         if ( !DB_ReadData() && GetLastError() != 38 )
-            Com_Error(ERR_DROP, "Read error of file '%s'", g_load.filename);
+            Com_Error(ERR_DROP, "Read error of file '%s'", BO1_VA(g_load.filename));
     }
 }
 
@@ -381,7 +381,7 @@ void __cdecl DB_LoadXFileInternal()
     }
     DB_ReadXFileStage();
     if ( !g_load.outstandingReads )
-        Com_Error(ERR_DROP, "Fastfile for zone '%s' is empty.", g_load.filename);
+        Com_Error(ERR_DROP, "Fastfile for zone '%s' is empty.", BO1_VA(g_load.filename));
     DB_WaitXFileStage();
     DB_ReadXFileStage();
     if ( g_load.stream.avail_in < 8
@@ -401,7 +401,7 @@ void __cdecl DB_LoadXFileInternal()
     if ( memcmp(magic, "IWff0100", 8u) && memcmp(magic, "IWffu100", 8u) )
     {
         //BLOPS_NULLSUB();
-        Com_Error(ERR_DROP, "Fastfile for zone '%s' is corrupt or unreadable.", g_load.filename);
+        Com_Error(ERR_DROP, "Fastfile for zone '%s' is corrupt or unreadable.", BO1_VA(g_load.filename));
     }
     if ( g_load.stream.avail_in < 4
         && !Assert_MyHandler(
@@ -422,14 +422,14 @@ void __cdecl DB_LoadXFileInternal()
             Com_Error(
                 ERR_DROP,
                 "Fastfile for zone '%s' is newer than client executable (version %d, expecting %d)",
-                g_load.filename,
+                BO1_VA(g_load.filename),
                 version,
                 473);
         else
             Com_Error(
                 ERR_DROP,
                 "Fastfile for zone '%s' is out of date (version %d, expecting %d)",
-                g_load.filename,
+                BO1_VA(g_load.filename),
                 version,
                 473);
     }
@@ -444,7 +444,7 @@ void __cdecl DB_LoadXFileInternal()
     {
         //BLOPS_NULLSUB();
         DB_CancelLoadXFile();
-        Com_Error(ERR_DROP, "Fastfile for zone '%s' could not be loaded (%s)", g_load.filename, failureReason);
+        Com_Error(ERR_DROP, "Fastfile for zone '%s' could not be loaded (%s)", BO1_VA(g_load.filename), failureReason);
     }
     if ( g_load.deflateBufferPos != 0x8000
         && !Assert_MyHandler(
@@ -470,8 +470,8 @@ void __cdecl DB_LoadXFileInternal()
             g_loadedExternalBytes = 0;
         }
     }
-    Com_Printf(16, "Loading fastfile '%s'\n", g_load.filename);
-    tlPrintf("TLPrint: Loading fastfile '%s'\n", g_load.filename);
+    Com_Printf(16, "Loading fastfile '%s'\n", BO1_VA(g_load.filename));
+    tlPrintf("TLPrint: Loading fastfile '%s'\n", BO1_VA(g_load.filename));
     DB_AllocXBlocks(file.blockSize, g_load.filename, g_load.blocks, g_load.allocType, g_load.flags);
     DB_InitStreams(g_load.blocks);
     Load_XAssetListCustom();
@@ -498,7 +498,7 @@ void __cdecl DB_LoadXFileInternal()
         __debugbreak();
     }
     v1 = g_totalWait;
-    Com_Printf(10, "Loaded fastfile '%s' in %ims (%dms waiting)\n", g_load.filename, Sys_Milliseconds() - g_load.startTime, v1);
+    Com_Printf(10, "Loaded fastfile '%s' in %ims (%dms waiting)\n", BO1_VA(g_load.filename), Sys_Milliseconds() - g_load.startTime, v1);
     if ( (g_load.flags & 1) != 0 )
         g_minimumFastFileLoaded = 1;
     DB_CancelLoadXFile();

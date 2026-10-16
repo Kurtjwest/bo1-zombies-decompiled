@@ -1262,7 +1262,7 @@ void __cdecl FireWeapon(gentity_s *ent, int gametime, int shotCount)
                     Weapon_Flamethrower_Fire(ent, &wp);
                     break;
                 default:
-                    Com_Error(ERR_DROP, "Unknown weapon type %i for %s", wp.weapDef->weapType, wp.weapVariantDef->szInternalName);
+                    Com_Error(ERR_DROP, "Unknown weapon type %i for %s", wp.weapDef->weapType, BO1_VA(wp.weapVariantDef->szInternalName));
                     break;
             }
         }
@@ -1815,7 +1815,7 @@ int __cdecl G_GivePlayerWeapon(
                         0,
                         "%s\n\t(BG_GetWeaponVariantDef(iWeaponIndex)->szDisplayName) = %s",
                         "(!level.clientIsSpawning)",
-                        WeaponVariantDef->szDisplayName) )
+                        BO1_VA(WeaponVariantDef->szDisplayName)) )
             __debugbreak();
     }
     if ( BG_HoldWeapon(pPS, iWeaponIndex) )

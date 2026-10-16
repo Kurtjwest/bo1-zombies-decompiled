@@ -125,7 +125,7 @@ void __cdecl CG_PrintEntities(unsigned int localClientNum)
                     else
                         model = cgs->gameModels[cent->cent.nextState.index.brushmodel];
                     if ( model )
-                        Com_Printf(14, "\t%s", model->name);
+                        Com_Printf(14, "\t%s", BO1_VA(model->name));
                     else
                         Com_Printf(14, "\t%s", "NONE");
                 }

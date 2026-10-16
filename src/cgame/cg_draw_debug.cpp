@@ -888,7 +888,7 @@ void __cdecl CG_DrawSoundOverlay(const ScreenPlacement *scrPlace)
     y = 82.0f;
     string = va(
                          "%s sounds    reverb: %s    channels in use %d    sort by %s",
-                         *(Ptr32<const char> *)BO1_I2P((snd_drawInfo->domain.integer.max + 4 * type)),
+                         BO1_VA(*(Ptr32<const char> *)BO1_I2P((snd_drawInfo->domain.integer.max + 4 * type))),
                          "",
                          v6,
                          *(Ptr32<const char> *)BO1_I2P((snd_drawSort->domain.integer.max + 4 * type)));

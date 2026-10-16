@@ -1287,7 +1287,7 @@ const MaterialTechnique *__cdecl Material_GetTechnique(const Material *material,
     {
         v2 = va(
                      "material '%s' missing techset. %d tech %d",
-                     material->info.name,
+                     BO1_VA(material->info.name),
                      material->localTechniqueSet != 0,
                      techType);
         if ( !Assert_MyHandler(
@@ -1315,7 +1315,7 @@ MaterialTechniqueSet *__cdecl Material_GetTechniqueSet(const Material *material)
     {
         v1 = va(
                      "material '%s' missing techset. If you are building fastfile, check Launcher for error messages.",
-                     material->info.name);
+                     BO1_VA(material->info.name));
         if ( !Assert_MyHandler(
                         "c:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.h",
                         554,
@@ -4948,7 +4948,7 @@ void R_SetDLightsConstants(
 
             // Stash spot lightDef pointer bit-aliased into diffuseColor[0]. The non-null
             // check below is what triggers the spot's attenuation-image binding.
-            *(const GfxLightDef **)&diffuseColor[0] = L.def;
+            *(Ptr32<const GfxLightDef> *)&diffuseColor[0] = L.def;
 
             lightAttentuation[1] = L.origin[0] - viewInfo->cullViewInfo.viewParms.origin[0];
             lightAttentuation[2] = L.origin[1] - viewInfo->cullViewInfo.viewParms.origin[1];
@@ -5022,7 +5022,7 @@ void R_SetDLightsConstants(
     // ===== Bind spot attenuation image (codeImages[17]) =====
     if (*(uint32_t *)&diffuseColor[0])
     {
-        const GfxLightDef *spotDef = *(const GfxLightDef **)&diffuseColor[0];
+        const GfxLightDef *spotDef = *(Ptr32<const GfxLightDef> *)&diffuseColor[0];
         input->codeImages[TEXTURE_SRC_CODE_DLIGHT_ATTENUATION] = spotDef->attenuation.image;
         R_SetInputCodeImageSamplerState(input, 0x11u, spotDef->attenuation.samplerState);
     }

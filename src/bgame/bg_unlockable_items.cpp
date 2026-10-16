@@ -618,7 +618,7 @@ void BG_UnlockablesBuildDefaultClasses()
     int loadoutSlot; // [esp+1Ch] [ebp-1Ch]
     int defaultClassNum; // [esp+20h] [ebp-18h]
     signed int defaultGlobalItemNum; // [esp+24h] [ebp-14h]
-    itemInfo_t *killStreakItems[4]; // [esp+28h] [ebp-10h] BYREF
+    Ptr32<itemInfo_t> killStreakItems[4]; // [esp+28h] [ebp-10h] BYREF (32-bit slots: qsort element size 4)
 
     for ( defaultClassNum = 0; defaultClassNum < 20; ++defaultClassNum )
     {
@@ -648,7 +648,7 @@ void BG_UnlockablesBuildDefaultClasses()
                                              "Default Class %s already has equipment in slot %s has no room for %s",
                                              s_classNames[defaultClass],
                                              loadoutName,
-                                             itemInfo->name);
+                                             BO1_VA(itemInfo->name));
                                 if ( !Assert_MyHandler(
                                                 "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                                 404,
@@ -668,7 +668,7 @@ void BG_UnlockablesBuildDefaultClasses()
             {
                 if ( defaultGlobalItemNum >= 4 )
                 {
-                    v0 = va("Too many default global items at %s", itemInfo->name);
+                    v0 = va("Too many default global items at %s", BO1_VA(itemInfo->name));
                     if ( !Assert_MyHandler(
                                     "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                     376,
@@ -725,7 +725,7 @@ int __cdecl BG_UnlockablesCompareItemsBySortKey(const void *arg0, const void *ar
 
     returnValue = *(unsigned int *)BO1_I2P((*(unsigned int *)arg0 + 264)) - *(unsigned int *)BO1_I2P((*(unsigned int *)arg1 + 264));
     if ( !returnValue )
-        return **(unsigned int **)arg0 - **(unsigned int **)arg1;
+        return **(Ptr32<unsigned int> *)arg0 - **(Ptr32<unsigned int> *)arg1; // the arrays sorted hold 32-bit item pointers
     return returnValue;
 }
 
@@ -761,7 +761,7 @@ char __cdecl BG_UnlockablesBuildItemInfo(int itemIndex, itemInfo_t *itemInfo)
         return 0;
     if ( itemInfo->isValid )
     {
-        v3 = va("Item number %d already contains an item %s\n", itemIndex, itemInfo->name);
+        v3 = va("Item number %d already contains an item %s\n", itemIndex, BO1_VA(itemInfo->name));
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                         769,
@@ -1026,7 +1026,7 @@ void __cdecl BG_UnlockablesParseDualWieldInfo(itemInfo_t *itemInfo)
             }
             else
             {
-                Com_PrintWarning(1, "WARNING: Dual Wield ONLY weapon: %s was added to the unlockable items.\n", itemInfo->name);
+                Com_PrintWarning(1, "WARNING: Dual Wield ONLY weapon: %s was added to the unlockable items.\n", BO1_VA(itemInfo->name));
             }
             itemInfo->cost = -1;
         }
@@ -1043,14 +1043,14 @@ void __cdecl BG_UnlockablesParseFaceCamoInfo(itemInfo_t *itemInfo)
     if ( itemInfo && itemInfo->loadoutSlot == LOADOUTSLOT_FACEPAINT_PATTERN )
     {
         if ( s_unlockableItems.numFaceCamoPatterns >= 64 )
-            Com_PrintError(13, "Only %d face camo patterns supported cannot add %s\n", 64, itemInfo->name);
+            Com_PrintError(13, "Only %d face camo patterns supported cannot add %s\n", 64, BO1_VA(itemInfo->name));
         else
             s_unlockableItems.faceCamoPatterns[s_unlockableItems.numFaceCamoPatterns++] = itemInfo->index;
     }
     else if ( itemInfo && itemInfo->loadoutSlot == LOADOUTSLOT_FACEPAINT_COLOR )
     {
         if ( s_unlockableItems.numFaceCamoColors >= 64 )
-            Com_PrintError(13, "Only %d face camo colors supported cannot add %s\n", 64, itemInfo->name);
+            Com_PrintError(13, "Only %d face camo colors supported cannot add %s\n", 64, BO1_VA(itemInfo->name));
         else
             s_unlockableItems.faceCamoColors[s_unlockableItems.numFaceCamoColors++] = itemInfo->index;
     }
@@ -1103,7 +1103,7 @@ void __cdecl BG_UnlockablesParsePerkProChallenges(itemInfo_t *itemInfo)
         }
         v2 = va(
                      "Not enough challenges for perkPro for perk %s only %d challenges found",
-                     itemInfo->name,
+                     BO1_VA(itemInfo->name),
                      currentProChallenge);
         if ( !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp", 738, 0, v2) )
             __debugbreak();
@@ -1294,7 +1294,7 @@ eAttachment __cdecl BG_UnlockablesGetItemAttachment(int itemIndex, int attachmen
     Com_PrintWarning(
         17,
         "Item %s does not have attachment number %d it only has %d attachments\n",
-        itemInfo->name,
+        BO1_VA(itemInfo->name),
         attachmentNum,
         itemInfo->numAttachments[0]);
     return ATTACHMENT_NONE;
@@ -1762,13 +1762,13 @@ void __cdecl BG_UnlockablesPurchaseItem(int controllerIndex, int itemIndex, int 
     itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
     if ( BG_UnlockablesIsItemPurchased(controllerIndex, itemIndex) )
     {
-        Com_PrintError(15, "Item %s is already purchased.\n", itemInfo->name);
+        Com_PrintError(15, "Item %s is already purchased.\n", BO1_VA(itemInfo->name));
     }
     else if ( itemInfo )
     {
         if ( BG_UnlockablesIsItemLocked(controllerIndex, itemIndex) )
         {
-            Com_PrintError(15, "Item %s is locked for the current level\n", itemInfo->name);
+            Com_PrintError(15, "Item %s is locked for the current level\n", BO1_VA(itemInfo->name));
         }
         else
         {
@@ -1782,7 +1782,7 @@ void __cdecl BG_UnlockablesPurchaseItem(int controllerIndex, int itemIndex, int 
             }
             else
             {
-                Com_PrintError(15, "Item %s costs %d and you only have %d\n", itemInfo->name, cost, currentCodPoints);
+                Com_PrintError(15, "Item %s costs %d and you only have %d\n", BO1_VA(itemInfo->name), cost, currentCodPoints);
             }
         }
     }
@@ -1838,7 +1838,7 @@ void __cdecl BG_UnlockablesSellItem(int controllerIndex, int itemIndex)
         {
             if ( BG_UnlockablesIsItemLocked(controllerIndex, itemIndex) )
             {
-                Com_PrintError(15, "Item %s is locked for the current level\n", itemInfo->name);
+                Com_PrintError(15, "Item %s is locked for the current level\n", BO1_VA(itemInfo->name));
             }
             else
             {
@@ -1887,7 +1887,7 @@ void __cdecl BG_UnlockablesSellItem(int controllerIndex, int itemIndex)
     }
     else
     {
-        Com_PrintError(15, "Item %s has not been purchased.\n", itemInfo->name);
+        Com_PrintError(15, "Item %s has not been purchased.\n", BO1_VA(itemInfo->name));
     }
 }
 
@@ -2053,7 +2053,7 @@ void __cdecl BG_UnlockablesPurchaseItemAttachmentPoint(int controllerIndex, int 
         {
             if ( BG_UnlockablesIsItemAttachmentPointPurchased(controllerIndex, itemIndex, attachmentPoint) )
             {
-                Com_PrintError(15, "Attachment point %s is already purchased for item %s\n", attachmentPoint, itemInfo->name);
+                Com_PrintError(15, "Attachment point %s is already purchased for item %s\n", attachmentPoint, BO1_VA(itemInfo->name));
             }
             else
             {
@@ -2148,7 +2148,7 @@ void __cdecl BG_UnlockablesPurchaseItemAttachment(int controllerIndex, int itemI
         {
             if ( BG_UnlockablesIsItemAttachmentPurchased(controllerIndex, itemIndex, attachmentNum) )
             {
-                Com_PrintError(15, "Attachment num %d is already purchased for item %s\n", attachmentNum, itemInfo->name);
+                Com_PrintError(15, "Attachment num %d is already purchased for item %s\n", attachmentNum, BO1_VA(itemInfo->name));
             }
             else
             {
@@ -2719,7 +2719,7 @@ void __cdecl BG_UnlockablesEquipClassToSlot(
             if ( !DDL_SetInt(&searchState, itemIndex, (char *)buffer) )
             {
                 ItemInfo = BG_UnlockablesGetItemInfo(itemIndex);
-                DDL_PrintError("DDL: Error equipping class %s with item %s\n", customClassName, ItemInfo->name);
+                DDL_PrintError("DDL: Error equipping class %s with item %s\n", customClassName, BO1_VA(ItemInfo->name));
             }
         }
     }
@@ -2820,7 +2820,7 @@ bool __cdecl BG_UnlockablesIsItemEquipped(int controllerIndex, const char *custo
     itemInfo = BG_UnlockablesGetItemInfo(itemIndex);
     if ( itemInfo->loadoutSlot == LOADOUTSLOT_INVALID )
     {
-        v3 = va("Item %s has an invalid loadout slot\n", itemInfo->name);
+        v3 = va("Item %s has an invalid loadout slot\n", BO1_VA(itemInfo->name));
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                         3090,
@@ -3625,7 +3625,7 @@ LABEL_2:
                                     && !SV_CacValidate_IsItemPurchased(cacBuffer, itemIndex, pLevel, rank) )
                                 {
                                     if ( itemInfoa )
-                                        Com_Printf(0, "User claims item %s, but it's not purchased!\n", itemInfoa->name);
+                                        Com_Printf(0, "User claims item %s, but it's not purchased!\n", BO1_VA(itemInfoa->name));
                                     else
                                         Com_PrintError(0, "SV_CACValidate_CheckIfEquippedItemsArePurchased(): iteminfo is NULL!\n");
                                     return 0;
@@ -3667,7 +3667,7 @@ LABEL_23:
                         {
                             itemInfo = BG_UnlockablesGetItemInfo(currentItemIndex);
                             if ( itemInfo )
-                                Com_Printf(0, "User claims item %s, but it's not purchased!\n", itemInfo->name);
+                                Com_Printf(0, "User claims item %s, but it's not purchased!\n", BO1_VA(itemInfo->name));
                             else
                                 Com_PrintError(0, "SV_CACValidate_CheckIfEquippedItemsArePurchased(): iteminfo is NULL!\n");
                             return 0;
@@ -3964,7 +3964,7 @@ void __cdecl BG_UnlockablesPurchaseItemAttachmentPointCmd()
         if ( itemInfo )
         {
             if ( BG_GetAttachmentPointIndex(attachmentPoint) == 5 )
-                Com_PrintError(15, "Item attachment point %s not found for item %s\n", attachmentPoint, itemInfo->name);
+                Com_PrintError(15, "Item attachment point %s not found for item %s\n", attachmentPoint, BO1_VA(itemInfo->name));
             else
                 BG_UnlockablesPurchaseItemAttachmentPoint(0, itemIndex, attachmentPoint);
         }
@@ -4064,7 +4064,7 @@ void __cdecl BG_UnlockablesPurchaseItemOption(int controllerIndex, int itemIndex
             {
                 if ( BG_UnlockablesIsItemOptionPurchased(controllerIndex, itemIndex, optionIndex) )
                 {
-                    Com_PrintError(15, "Option Index %d is arleady purchased for item %s\n", optionIndex, itemInfo->name);
+                    Com_PrintError(15, "Option Index %d is arleady purchased for item %s\n", optionIndex, BO1_VA(itemInfo->name));
                     return;
                 }
                 if ( optionIndex < BG_GetWeaponOptionCount() )
@@ -4157,7 +4157,7 @@ void __cdecl BG_UnlockablesEquipClass(int controllerIndex, const char *customCla
     {
         if ( itemInfo->loadoutSlot == LOADOUTSLOT_INVALID )
         {
-            Com_Printf(1, "Item %s has an invalid loadout slot\n", itemInfo->name);
+            Com_Printf(1, "Item %s has an invalid loadout slot\n", BO1_VA(itemInfo->name));
         }
         else
         {
@@ -4320,7 +4320,7 @@ void __cdecl BG_UnlockablesEquipClassAttachment(
             attachmentNum = BG_UnlockablesIsItemAttachmentValid(itemInfo, attachmentName);
             if ( attachmentNum == -1 )
             {
-                v5 = va("attachment %s is not valid for item %s\n", attachmentName, itemInfo->name);
+                v5 = va("attachment %s is not valid for item %s\n", attachmentName, BO1_VA(itemInfo->name));
                 if ( !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\bgame\\bg_unlockable_items.cpp",
                                 3211,

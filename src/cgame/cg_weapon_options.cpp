@@ -348,7 +348,7 @@ void __thiscall WeaponOptions::WeaponOverride::Init(const WeaponVariantDef *weap
         Com_PrintWarning(
             14,
             "Couldn't find weapon parent '%s' for weapon '%s' in weaponOptions.csv\n",
-            weapVarDef->weapDef->parentWeaponName,
+            BO1_VA(weapVarDef->weapDef->parentWeaponName),
             weapVarDef->szInternalName);
     }
     else
@@ -464,7 +464,7 @@ void __thiscall WeaponOptions::WeaponOverride::Init(const WeaponVariantDef *weap
         }
     }
     if ( Dvar_GetBool("bo1_measure") ) // w1 c10 measurement runs: which weapon rows the camo path found
-        Com_Printf(14, "bo1_weapoverride: weapon %s parent %s row %d gold %d black %d\n", weapVarDef->szInternalName,
+        Com_Printf(14, "bo1_weapoverride: weapon %s parent %s row %d gold %d black %d\n", BO1_VA(weapVarDef->szInternalName),
             weapVarDef->weapDef->parentWeaponName, row, this->numToGold, this->numToBlack);
 }
 

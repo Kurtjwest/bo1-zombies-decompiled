@@ -166,7 +166,7 @@ void __cdecl Path_ReadOnly(int offset)
 {
     const char *v1; // eax
 
-    v1 = va("pathnode property '%s' is read-only", fields_3[offset].name);
+    v1 = va("pathnode property '%s' is read-only", BO1_VA(fields_3[offset].name));
     Scr_Error(v1, 0);
 }
 
@@ -1114,7 +1114,7 @@ void __cdecl Path_MovingNodesInCylinder()
             if (m_tree_root)
             {
                 for (j = m_tree_root->m_data; j; j = (void *)BO1_I2P(*((_DWORD *)j + 5)))
-                    Path_NodesInCylinder_process(*((pathnode_t **)j + 4));
+                    Path_NodesInCylinder_process(*((Ptr32<pathnode_t> *)j + 4));
             }
         }
     }

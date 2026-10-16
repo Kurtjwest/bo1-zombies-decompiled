@@ -75,7 +75,7 @@ void __cdecl R_PixelCost_PrintColorCodeKey()
             8,
             "    %3.0f%%: %s\n",
             (float)((float)s_pixelCostColorCodeTable[codeIndex].count * 1.5625),
-            s_pixelCostColorCodeTable[codeIndex].colorName);
+            BO1_VA(s_pixelCostColorCodeTable[codeIndex].colorName));
     Com_Printf(8, "----------------------\n\n");
 }
 

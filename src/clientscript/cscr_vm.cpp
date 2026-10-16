@@ -273,7 +273,7 @@ char *__cdecl Scr_GetNextCodepos(
                 if (gScrVmPub[inst].function_count >= 32)
                     goto LABEL_23;
                 *localId = 0;
-                result = *(char **)pos;
+                result = *(Ptr32<char> *)pos;
                 break;
             case 'S':
             case 'W':
@@ -544,7 +544,7 @@ char *__cdecl Scr_GetNextCodepos(
             {
                 v12 = *(_DWORD *)posa;
                 posc = posa + 4;
-                v11 = *(const char **)posc;
+                v11 = *(Ptr32<const char> *)posc;
                 posa = posc + 4;
                 if (v12 == caseValue)
                 {
@@ -1516,12 +1516,13 @@ void __cdecl VM_TerminateStack(
     int size = stackValue->size;
     unsigned int localId = stackValue->localId;
     const char *buf = stackValue->buf;
-    buf += (sizeof(const char *) + sizeof(unsigned char)) * size;
+    // archived stack entries are { unsigned char type; 32-bit value } (5 bytes)
+    buf += (sizeof(Ptr32<const char>) + sizeof(unsigned char)) * size;
 
     while (size)
     {
-        buf -= sizeof(const char *);
-        u.codePosValue = *(const char **)buf;
+        buf -= sizeof(Ptr32<const char>);
+        u.codePosValue = *(Ptr32<const char> *)buf;
         buf -= sizeof(unsigned char);
         unsigned char type = buf[0];
         size--;
@@ -2949,11 +2950,11 @@ void __cdecl Scr_ErrorInternal(scriptInstance_t inst)
             bcassert(g_script_error_level[inst], ARRAY_COUNT(g_script_error[inst]));
             longjmp(g_script_error[inst][g_script_error_level[inst]], -1);
         }
-        Sys_Error((char *)"%s", gScrVarPub[inst].error_message);
+        Sys_Error((char *)"%s", BO1_VA(gScrVarPub[inst].error_message));
     }
 
     if (gScrVmPub[inst].terminal_error)
-        Sys_Error((char *)"%s", gScrVarPub[inst].error_message);
+        Sys_Error((char *)"%s", BO1_VA(gScrVarPub[inst].error_message));
 }
 
 scr_animtree_t __cdecl Scr_GetAnimTree(unsigned int index, unsigned int user, scriptInstance_t inst)
@@ -4026,7 +4027,7 @@ void __cdecl VM_Resume(scriptInstance_t inst, unsigned int timeId)
     while (1)
     {
         if (gScrVarPub[inst].error_message
-            && !va("%s", gScrVarPub[inst].error_message)
+            && !va("%s", BO1_VA(gScrVarPub[inst].error_message))
             && !Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                 4437,
@@ -4146,7 +4147,7 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t inst, unsigned int startLocalId,
 {
     VariableValue *top; // [esp+8h] [ebp-14h]
     char *buf; // [esp+Ch] [ebp-10h]
-    const char **bufa; // [esp+Ch] [ebp-10h]
+    Ptr32<const char> *bufa; // [esp+Ch] [ebp-10h] (5-byte entries: type, 32-bit value)
     unsigned int localId; // [esp+10h] [ebp-Ch]
     int function_count; // [esp+14h] [ebp-8h]
     int size; // [esp+18h] [ebp-4h]
@@ -4193,7 +4194,7 @@ void __cdecl VM_UnarchiveStack(scriptInstance_t inst, unsigned int startLocalId,
         --size;
         top[1].type = (unsigned __int8)*buf;
         ++top;
-        bufa = (const char **)(buf + 1);
+        bufa = (Ptr32<const char> *)(buf + 1);
         if (top->type == 7)
         {
             if (gScrVmPub[inst].function_count >= 32
@@ -5599,7 +5600,7 @@ negWait:
             RemoveRefToObject(inst, objectId);
             gScrVmPub[inst].function_frame->fs.pos = localFs.pos;
             if (gScrVmGlob[inst].recordPlace)
-                Scr_GetFileAndLine(inst, localFs.pos, (char **)&gScrVmGlob[inst].lastFileName, &gScrVmGlob[inst].lastLine);
+                Scr_GetFileAndLine(inst, localFs.pos, (Ptr32<char> *)&gScrVmGlob[inst].lastFileName, &gScrVmGlob[inst].lastLine);
             if (gScrVmDebugPub[inst].func_table[builtinIndex].breakpointCount)
             {
                 iassert(gScrVmPub[inst].top == localFs.top - 1);
@@ -5672,7 +5673,7 @@ $LN205_0:
                 localFs.localId = AllocChildThread(inst, selfId, localFs.localId);
                 gScrVmPub[inst].function_frame->fs.pos = localFs.pos;
                 function_frame = gScrVmPub[inst].function_frame;
-                v68 = *(const char **)function_frame->fs.pos;
+                v68 = *(Ptr32<const char> *)function_frame->fs.pos;
                 function_frame->fs.pos += 4;
                 localFs.pos = v68;
                 goto function_call;

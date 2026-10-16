@@ -262,7 +262,7 @@ void __cdecl CG_PlayFxOnTag(int localClientNum, centity_s *cent, int eventParm)
                 const bool hasBone = CG_GetBoneIndex(localClientNum, dobjHandle, tagName, &boneIndex) != 0;
                 Com_Printf(14, "BO1_VISUAL event_fx_tag time=%d client=%d ent=%d type=%d fx=%s tag=%s bone=%d origin=%.1f,%.1f,%.1f handle=%u\n",
                     CG_GetLocalClientGlobals(localClientNum)->time, localClientNum, dobjHandle, cent->nextState.eType,
-                    fxDef ? fxDef->name : "?", tagAndEffect + 3, hasBone ? boneIndex : -1,
+                    BO1_VA(fxDef ? fxDef->name : "?"), tagAndEffect + 3, hasBone ? boneIndex : -1,
                     cent->pose.origin[0], cent->pose.origin[1], cent->pose.origin[2], handle);
                 CG_SP_VisualShot(localClientNum, fxDef ? fxDef->name : 0);
             }
@@ -1534,7 +1534,7 @@ void __cdecl CG_EntityEvent(int localClientNum, centity_s *cent, int event)
                         }
                         else
                         {
-                            Com_Printf(25, "Script spawning dyn ent with model with no physPreset %s\n", model->name);
+                            Com_Printf(25, "Script spawning dyn ent with model with no physPreset %s\n", BO1_VA(model->name));
                         }
                     }
                     return;
@@ -1565,7 +1565,7 @@ void __cdecl CG_EntityEvent(int localClientNum, centity_s *cent, int event)
                         v7 = SND_FindAliasId((char *)weaponDef->detonateSound);
                     goto LABEL_570;
                 case EV_NIGHTVISION_WEAR:
-                    if (isPlayerView && ((ps->eFlags & 0x300) != 0 || !**((_BYTE **)weaponVariantDef->szXAnims + 40)))
+                    if (isPlayerView && ((ps->eFlags & 0x300) != 0 || !**((Ptr32<_BYTE> *)weaponVariantDef->szXAnims + 40)))
                         CG_PlaySound(localClientNum, p_nextState->number, 0, 0, 0, 1.0, cgMedia.nightVisionOn);
                     if (isPlayerView)
                         v7 = SND_FindAliasId((char *)weaponDef->nightVisionWearSoundPlayer);
@@ -1573,7 +1573,7 @@ void __cdecl CG_EntityEvent(int localClientNum, centity_s *cent, int event)
                         v7 = SND_FindAliasId((char *)weaponDef->nightVisionWearSound);
                     goto LABEL_570;
                 case EV_NIGHTVISION_REMOVE:
-                    if (isPlayerView && ((ps->eFlags & 0x300) != 0 || !**((_BYTE **)weaponVariantDef->szXAnims + 41)))
+                    if (isPlayerView && ((ps->eFlags & 0x300) != 0 || !**((Ptr32<_BYTE> *)weaponVariantDef->szXAnims + 41)))
                         CG_PlaySound(localClientNum, p_nextState->number, 0, 0, 0, 1.0, cgMedia.nightVisionOff);
                     if (isPlayerView)
                         v7 = SND_FindAliasId((char *)weaponDef->nightVisionRemoveSoundPlayer);
@@ -2360,7 +2360,7 @@ void __cdecl CG_PlayFx(int localClientNum, centity_s *cent, const float *angles)
         if (CG_SP_VisualsEnabled())
         {
             Com_Printf(14, "BO1_VISUAL event_fx time=%d client=%d ent=%d fx=%s origin=%.1f,%.1f,%.1f\n",
-                LocalClientGlobals->time, localClientNum, cent->nextState.number, fxDef ? fxDef->name : "?",
+                LocalClientGlobals->time, localClientNum, cent->nextState.number, BO1_VA(fxDef ? fxDef->name : "?"),
                 cent->pose.origin[0], cent->pose.origin[1], cent->pose.origin[2]);
             CG_SP_VisualShot(localClientNum, fxDef ? fxDef->name : 0);
         }
