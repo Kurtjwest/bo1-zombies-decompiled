@@ -93,6 +93,21 @@ static void RefreshAllWindowState()
         RefreshWindowState(w);
 }
 
+// Text from the engine is UTF-8 when it comes from the file system and Windows-1252 / Latin-1 when it is the game's own
+// (localized strings, console text, error messages). stringWithUTF8String: returns nil for the latter, and AppKit
+// raises on a nil window title, pasteboard string or panel message, so this always returns a string.
+static NSString *EngineString(const char *s)
+{
+    if (!s)
+        return @"";
+    NSString *r = [NSString stringWithUTF8String:s];
+    if (!r)
+        r = [NSString stringWithCString:s encoding:NSWindowsCP1252StringEncoding];
+    if (!r)
+        r = [NSString stringWithCString:s encoding:NSISOLatin1StringEncoding];
+    return r ? r : @"";
+}
+
 static void Emit(BridgeEvent &ev)
 {
     if (!ev.time)
@@ -590,7 +605,7 @@ static BridgeWindow *Main_CreateWindow(const char *title, int x, int y, int clie
         NSRect content = ToCocoaRect(x, y, clientW, clientH);
         BO1Window *win = [[BO1Window alloc] initWithContentRect:content styleMask:style backing:NSBackingStoreBuffered defer:NO];
         win.releasedWhenClosed = NO;
-        win.title = [NSString stringWithUTF8String:title ? title : "BO1 Zombies"];
+        win.title = EngineString(title ? title : "BO1 Zombies");
         win.acceptsMouseMovedEvents = YES;
         win.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone | NSWindowCollectionBehaviorManaged;
         win.backgroundColor = [NSColor blackColor];
@@ -719,7 +734,7 @@ static void Main_GetFrameRect(BridgeWindow *w, BridgeRect *r)
 static void Main_SetTitle(BridgeWindow *w, const char *title)
 {
     if (w && title)
-        w->window.title = [NSString stringWithUTF8String:title];
+        w->window.title = EngineString(title);
 }
 
 static void Main_FocusWindow(BridgeWindow *w)
@@ -892,7 +907,7 @@ static void Main_SetClipboardText(const char *utf8)
         NSPasteboard *pb = [NSPasteboard generalPasteboard];
         [pb clearContents];
         if (utf8)
-            [pb setString:[NSString stringWithUTF8String:utf8] forType:NSPasteboardTypeString];
+            [pb setString:EngineString(utf8) forType:NSPasteboardTypeString];
     }
 }
 
@@ -973,14 +988,8 @@ int Bridge_MessageBox(const char *title, const char *text, int buttons, int icon
     int result = 0;
     @autoreleasepool
     {
-        NSString *t = [NSString stringWithUTF8String:title ? title : ""];
-        NSString *m = [NSString stringWithUTF8String:text ? text : ""];
-        if (!t)
-            t = @"";
-        if (!m)
-            m = [NSString stringWithCString:text ? text : "" encoding:NSISOLatin1StringEncoding];
-        if (!m)
-            m = @"";
+        NSString *t = EngineString(title);
+        NSString *m = EngineString(text);
         if ([NSThread isMainThread])
             result = RunAlert(t, m, buttons, icon);
         else
@@ -995,11 +1004,14 @@ static void Main_OpenURL(const char *url)
         return;
     @autoreleasepool
     {
-        NSString *s = [NSString stringWithUTF8String:url];
+        NSString *s = EngineString(url);
+        if (!s.length)
+            return;
         NSURL *u = [NSURL URLWithString:s];
         if (!u)
             u = [NSURL fileURLWithPath:s];
-        [[NSWorkspace sharedWorkspace] openURL:u];
+        if (u)
+            [[NSWorkspace sharedWorkspace] openURL:u];
     }
 }
 
@@ -1031,7 +1043,7 @@ int Bridge_ChooseFolder(const char *message, char *out, int outSize)
             panel.canCreateDirectories = NO;
             panel.prompt = @"Choose";
             if (message)
-                panel.message = [NSString stringWithUTF8String:message];
+                panel.message = EngineString(message);
             if ([panel runModal] == NSModalResponseOK && panel.URLs.count)
             {
                 const char *p = panel.URLs[0].path.fileSystemRepresentation;

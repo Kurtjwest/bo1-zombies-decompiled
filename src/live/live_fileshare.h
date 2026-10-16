@@ -59,9 +59,11 @@ enum fileSharePooledFileContext_t : __int32
     FILESHARE_POOLEDFILEDETAILS_FRIEND = 0x2,
 };
 
-struct __declspec(align(8)) ratingHistory_t // sizeof=0xC88
+struct __declspec(align(8)) ratingHistory_t // sizeof=0x12C8 (0xC88 as recovered)
 {                                       // XREF: .data:s_fileShareRatingHistory/r
-    _BYTE files[3200];                  // XREF: Live_FileShare_SaveRating(int,unsigned __int64,uchar)+43/w
+    // 200 entries of 24 bytes {xuid, fileID, rating}: Live_FileShare_IsRated / SaveRating index 24 * i for i < 200
+    // (the recovered 3200 bytes were 16 per entry, so a lookup read 1600 bytes past the array)
+    _BYTE files[4800];                  // XREF: Live_FileShare_SaveRating(int,unsigned __int64,uchar)+43/w
                                         // Live_FileShare_IsRated(int,unsigned __int64,uchar *)+64/r
     int next;
     // padding byte

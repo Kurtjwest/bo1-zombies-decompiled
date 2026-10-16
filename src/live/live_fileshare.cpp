@@ -896,7 +896,7 @@ void __cdecl Live_FileShare_SaveRating(int controllerIndex, unsigned __int64 fil
 
 char __cdecl Live_FileShare_IsRated(int controllerIndex, unsigned __int64 fileID, unsigned __int8 *rating)
 {
-    __int64 v3; // rax
+    __int64 v3 = 0; // rax (the xuid's low word only, as decompiled; the high word must not be stack garbage)
     int i; // [esp+8h] [ebp-Ch]
 
     LODWORD(v3) = Live_GetXuid(controllerIndex);

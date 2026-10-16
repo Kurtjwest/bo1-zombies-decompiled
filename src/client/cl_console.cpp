@@ -3005,7 +3005,10 @@ bool __cdecl Con_IsGameMessageWindowActive(int localClientNum, unsigned int wind
     {
         __debugbreak();
     }
-    return SLODWORD(con.color[4009 * localClientNum - 2462 + 13 * windowIndex]) > 0;
+    // the decompiled form indexed con.color with 4009 * localClientNum - 2462 + 13 * windowIndex (floats back from
+    // color into messageBuffer): with windowIndex unsigned the sum is a 32-bit unsigned index, which wraps on a
+    // 32-bit pointer but is ~4 billion elements past color on a 64-bit one
+    return con.messageBuffer[localClientNum].gamemsgWindows[windowIndex].activeLineCount > 0;
 }
 
 void __cdecl Con_DrawSay(int localClientNum, int x, int y)
