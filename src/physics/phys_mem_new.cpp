@@ -281,7 +281,8 @@ void __cdecl phys_memory_manager_init(void *const memory_buffer, int memory_buff
     g_phys_memory_manager = (phys_memory_manager *)BO1_I2P(v2);
     if (v2)
     {
-        new ((void*)BO1_I2P(v2)) phys_memory_manager((char*)(v2 + sizeof(phys_memory_manager)), (int)(((unsigned int)BO1_P2I(memory_buffer) + memory_buffer_size) - v2 - sizeof(phys_memory_manager)));
+        // v2 is a 32-bit handle: the buffer after the manager is decoded from handle arithmetic, not cast from it
+        new ((void*)BO1_I2P(v2)) phys_memory_manager((char*)BO1_I2P(v2 + (unsigned int)sizeof(phys_memory_manager)), (int)(((unsigned int)BO1_P2I(memory_buffer) + memory_buffer_size) - v2 - (unsigned int)sizeof(phys_memory_manager)));
         //phys_memory_manager::phys_memory_manager(
         //    (phys_memory_manager *)v2,
         //    (char *)(v2 + 976),

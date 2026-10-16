@@ -1,3 +1,7 @@
+#if !defined(_WIN32)
+#include <dlfcn.h>
+#include <execinfo.h>
+#endif
 #include <universal/bo1_ptrcast.h>
 #include "win_main.h"
 #include "win_net.h"
@@ -256,9 +260,32 @@ static LONG __stdcall Sys_HeadlessExceptionFilter(_EXCEPTION_POINTERS *info)
         moduleName,
         (unsigned int)BO1_P2I(rec->ExceptionAddress) - (unsigned int)BO1_P2I(module),
         (unsigned int)GetCurrentThreadId());
+#if !defined(_WIN32)
+    // Not a PE image with 32-bit stack words here: list the return addresses of the native call stack as module
+    // offsets (the crash handler also printed it symbolized on stderr)
+    {
+        void *frames[48];
+        const int n = backtrace(frames, 48);
+        char line[1024];
+        int len = _snprintf(line, sizeof(line), "BO1_HEADLESS FRAMES:");
+        for (int i = 0; i < n && len < (int)sizeof(line) - 48; ++i)
+        {
+            Dl_info di;
+            if (dladdr(frames[i], &di) && di.dli_fbase)
+            {
+                const char *name = di.dli_fname ? strrchr(di.dli_fname, '/') : nullptr;
+                len += _snprintf(line + len, sizeof(line) - len, " %s+0x%llX", name ? name + 1 : "?",
+                                 (unsigned long long)((const char *)frames[i] - (const char *)di.dli_fbase));
+            }
+        }
+        Sys_HeadlessEmergencyLog("%s\n", line);
+    }
+    if (0)
+#else
     // the return addresses on the faulting stack that point into this module, innermost first (a stack scan, so
     // stale words can appear): feed the offsets to llvm-symbolizer for a call stack
     if (module && module == GetModuleHandleA(NULL))
+#endif
     {
         const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const char *)module + ((const IMAGE_DOS_HEADER *)module)->e_lfanew);
         unsigned int base = (unsigned int)BO1_P2I(module);

@@ -9,8 +9,45 @@
 #import <objc/runtime.h>
 
 #include "cocoa_bridge.h"
+#include "../win32compat/main_thread.h"
 #include <stdlib.h>
 #include <string.h>
+#include <type_traits>
+
+// AppKit objects belong to the main thread, but the engine also calls the bridge from its render thread, which
+// creates, shows and sizes the game window. Such calls run on the main thread while the caller waits
+// (main_thread.h: the main thread runs them from its Win32 waits and from the event pump).
+template <typename F> static auto OnMain(F &&f) -> decltype(f())
+{
+    if (w32::IsMainThread())
+        return f();
+    if constexpr (std::is_void_v<decltype(f())>)
+    {
+        w32::RunOnMainThread([&] {
+            @autoreleasepool
+            {
+                f();
+            }
+        });
+    }
+    else
+    {
+        decltype(f()) r{};
+        w32::RunOnMainThread([&] {
+            @autoreleasepool
+            {
+                r = f();
+            }
+        });
+        return r;
+    }
+}
+
+// wakes the main thread when it waits in the Cocoa run loop (Bridge_PumpEvents) instead of a Win32 wait
+static void WakeMainRunLoop(void)
+{
+    dispatch_async_f(dispatch_get_main_queue(), nullptr, [](void *) { w32::ServiceMainThreadCalls(); });
+}
 
 static BridgeEventHandler g_handler;
 static double g_unitScale = 1.0; // points per Win32 unit
@@ -463,6 +500,7 @@ void Bridge_Init(BridgeEventHandler handler)
             NSScreen *main = [NSScreen mainScreen];
             g_unitScale = main ? 1.0 / main.backingScaleFactor : 1.0;
         }
+        w32::AddMainThreadWaker(WakeMainRunLoop);
         g_appDelegate = [[BO1AppDelegate alloc] init];
         [NSApp setDelegate:g_appDelegate];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
@@ -474,6 +512,7 @@ void Bridge_Init(BridgeEventHandler handler)
 
 void Bridge_PumpEvents(int waitMs)
 {
+    w32::ServiceMainThreadCalls();
     @autoreleasepool
     {
         NSDate *until = waitMs > 0 ? [NSDate dateWithTimeIntervalSinceNow:waitMs / 1000.0] : [NSDate distantPast];
@@ -487,13 +526,14 @@ void Bridge_PumpEvents(int waitMs)
         }
         [NSApp updateWindows];
     }
+    w32::ServiceMainThreadCalls();
 }
 
-int Bridge_IsAppActive(void) { return [NSApp isActive] ? 1 : 0; }
-void Bridge_ActivateApp(void) { [NSApp activateIgnoringOtherApps:YES]; }
+static int Main_IsAppActive(void) { return [NSApp isActive] ? 1 : 0; }
+static void Main_ActivateApp(void) { [NSApp activateIgnoringOtherApps:YES]; }
 double Bridge_UnitScale(void) { return g_unitScale; }
 
-BridgeWindow *Bridge_CreateWindow(const char *title, int x, int y, int clientW, int clientH, int borderless, int resizable, void *userData)
+static BridgeWindow *Main_CreateWindow(const char *title, int x, int y, int clientW, int clientH, int borderless, int resizable, void *userData)
 {
     @autoreleasepool
     {
@@ -532,7 +572,7 @@ BridgeWindow *Bridge_CreateWindow(const char *title, int x, int y, int clientW, 
     }
 }
 
-void Bridge_DestroyWindow(BridgeWindow *w)
+static void Main_DestroyWindow(BridgeWindow *w)
 {
     if (!w)
         return;
@@ -549,7 +589,7 @@ void Bridge_DestroyWindow(BridgeWindow *w)
     delete w;
 }
 
-void Bridge_ShowWindow(BridgeWindow *w, int show)
+static void Main_ShowWindow(BridgeWindow *w, int show)
 {
     if (!w)
         return;
@@ -562,20 +602,20 @@ void Bridge_ShowWindow(BridgeWindow *w, int show)
     else
         [w->window orderOut:nil];
 }
-void Bridge_MinimizeWindow(BridgeWindow *w)
+static void Main_MinimizeWindow(BridgeWindow *w)
 {
     if (w)
         [w->window miniaturize:nil];
 }
-void Bridge_RestoreWindow(BridgeWindow *w)
+static void Main_RestoreWindow(BridgeWindow *w)
 {
     if (w && w->window.miniaturized)
         [w->window deminiaturize:nil];
 }
-int Bridge_IsMinimized(BridgeWindow *w) { return w && w->window.miniaturized ? 1 : 0; }
-int Bridge_IsVisible(BridgeWindow *w) { return w && w->window.visible ? 1 : 0; }
+static int Main_IsMinimized(BridgeWindow *w) { return w && w->window.miniaturized ? 1 : 0; }
+static int Main_IsVisible(BridgeWindow *w) { return w && w->window.visible ? 1 : 0; }
 
-void Bridge_SetWindowStyle(BridgeWindow *w, int borderless, int resizable)
+static void Main_SetWindowStyle(BridgeWindow *w, int borderless, int resizable)
 {
     if (!w)
         return;
@@ -592,7 +632,7 @@ void Bridge_SetWindowStyle(BridgeWindow *w, int borderless, int resizable)
     }
 }
 
-void Bridge_SetClientRect(BridgeWindow *w, int x, int y, int clientW, int clientH)
+static void Main_SetClientRect(BridgeWindow *w, int x, int y, int clientW, int clientH)
 {
     if (!w)
         return;
@@ -601,7 +641,7 @@ void Bridge_SetClientRect(BridgeWindow *w, int x, int y, int clientW, int client
     [w->window setFrame:frame display:YES];
 }
 
-void Bridge_GetClientRect(BridgeWindow *w, BridgeRect *r)
+static void Main_GetClientRect(BridgeWindow *w, BridgeRect *r)
 {
     if (!w)
     {
@@ -612,7 +652,7 @@ void Bridge_GetClientRect(BridgeWindow *w, BridgeRect *r)
     *r = ToWinRect(content);
 }
 
-void Bridge_GetFrameRect(BridgeWindow *w, BridgeRect *r)
+static void Main_GetFrameRect(BridgeWindow *w, BridgeRect *r)
 {
     if (!w)
     {
@@ -622,13 +662,13 @@ void Bridge_GetFrameRect(BridgeWindow *w, BridgeRect *r)
     *r = ToWinRect(w->window.frame);
 }
 
-void Bridge_SetTitle(BridgeWindow *w, const char *title)
+static void Main_SetTitle(BridgeWindow *w, const char *title)
 {
     if (w && title)
         w->window.title = [NSString stringWithUTF8String:title];
 }
 
-void Bridge_FocusWindow(BridgeWindow *w)
+static void Main_FocusWindow(BridgeWindow *w)
 {
     if (!w)
         return;
@@ -636,9 +676,9 @@ void Bridge_FocusWindow(BridgeWindow *w)
     [w->window makeFirstResponder:w->view];
 }
 
-int Bridge_IsKeyWindow(BridgeWindow *w) { return w && w->window.isKeyWindow && [NSApp isActive] ? 1 : 0; }
+static int Main_IsKeyWindow(BridgeWindow *w) { return w && w->window.isKeyWindow && [NSApp isActive] ? 1 : 0; }
 
-void Bridge_SetCoversScreen(BridgeWindow *w, int covers)
+static void Main_SetCoversScreen(BridgeWindow *w, int covers)
 {
     if (!w || (bool)covers == w->coversScreen)
         return;
@@ -654,10 +694,10 @@ void Bridge_SetCoversScreen(BridgeWindow *w, int covers)
     }
 }
 
-void *Bridge_GetMetalLayer(BridgeWindow *w) { return w ? (__bridge void *)w->view.layer : nullptr; }
-double Bridge_GetBackingScale(BridgeWindow *w) { return w ? w->window.backingScaleFactor : 1.0; }
+static void *Main_GetMetalLayer(BridgeWindow *w) { return w ? (__bridge void *)w->view.layer : nullptr; }
+static double Main_GetBackingScale(BridgeWindow *w) { return w ? w->window.backingScaleFactor : 1.0; }
 
-void Bridge_SetCursorVisible(int visible)
+static void Main_SetCursorVisible(int visible)
 {
     if (visible)
     {
@@ -674,7 +714,7 @@ void Bridge_SetCursorVisible(int visible)
     }
 }
 
-void Bridge_SetMouseCaptured(int captured)
+static void Main_SetMouseCaptured(int captured)
 {
     if ((bool)captured == g_mouseCaptured)
         return;
@@ -682,7 +722,7 @@ void Bridge_SetMouseCaptured(int captured)
     CGAssociateMouseAndMouseCursorPosition(captured ? false : true);
 }
 
-void Bridge_WarpCursor(int x, int y)
+static void Main_WarpCursor(int x, int y)
 {
     CGPoint p = CGPointMake(x * g_unitScale, y * g_unitScale);
     CGWarpMouseCursorPosition(p);
@@ -690,7 +730,7 @@ void Bridge_WarpCursor(int x, int y)
         CGAssociateMouseAndMouseCursorPosition(true);
 }
 
-void Bridge_GetCursorPos(int *x, int *y)
+static void Main_GetCursorPos(int *x, int *y)
 {
     NSPoint p = [NSEvent mouseLocation];
     double H = PrimaryHeight();
@@ -698,18 +738,18 @@ void Bridge_GetCursorPos(int *x, int *y)
     *y = (int)lround((H - p.y) / g_unitScale);
 }
 
-void Bridge_SetArrowCursor(int wait)
+static void Main_SetArrowCursor(int wait)
 {
     (void)wait;
     [[NSCursor arrowCursor] set];
 }
 
 int Bridge_IsMacKeyDown(uint16_t code) { return code < 256 && g_keyDown[code] ? 1 : 0; }
-uint32_t Bridge_CurrentModifiers(void) { return ModsFromFlags([NSEvent modifierFlags]); }
+static uint32_t Main_CurrentModifiers(void) { return ModsFromFlags([NSEvent modifierFlags]); }
 
-int Bridge_GetScreenCount(void) { return (int)[NSScreen screens].count; }
+static int Main_GetScreenCount(void) { return (int)[NSScreen screens].count; }
 
-int Bridge_GetScreenRect(int index, BridgeRect *full, BridgeRect *work, double *refreshHz)
+static int Main_GetScreenRect(int index, BridgeRect *full, BridgeRect *work, double *refreshHz)
 {
     NSArray<NSScreen *> *screens = [NSScreen screens];
     if (index < 0 || index >= (int)screens.count)
@@ -729,7 +769,7 @@ int Bridge_GetScreenRect(int index, BridgeRect *full, BridgeRect *work, double *
     return 1;
 }
 
-int Bridge_ScreenForPoint(int x, int y)
+static int Main_ScreenForPoint(int x, int y)
 {
     NSArray<NSScreen *> *screens = [NSScreen screens];
     for (NSUInteger i = 0; i < screens.count; ++i)
@@ -741,7 +781,7 @@ int Bridge_ScreenForPoint(int x, int y)
     return 0;
 }
 
-int Bridge_GetScreenModes(int index, int *widths, int *heights, int *rates, int maxModes)
+static int Main_GetScreenModes(int index, int *widths, int *heights, int *rates, int maxModes)
 {
     NSArray<NSScreen *> *screens = [NSScreen screens];
     if (index < 0 || index >= (int)screens.count)
@@ -780,7 +820,7 @@ int Bridge_GetScreenModes(int index, int *widths, int *heights, int *rates, int 
     return n;
 }
 
-char *Bridge_GetClipboardText(void)
+static char *Main_GetClipboardText(void)
 {
     @autoreleasepool
     {
@@ -791,7 +831,7 @@ char *Bridge_GetClipboardText(void)
     }
 }
 
-void Bridge_SetClipboardText(const char *utf8)
+static void Main_SetClipboardText(const char *utf8)
 {
     @autoreleasepool
     {
@@ -895,7 +935,7 @@ int Bridge_MessageBox(const char *title, const char *text, int buttons, int icon
     return result;
 }
 
-void Bridge_OpenURL(const char *url)
+static void Main_OpenURL(const char *url)
 {
     if (!url)
         return;
@@ -950,10 +990,8 @@ int Bridge_ChooseFolder(const char *message, char *out, int outSize)
             }
         }
     };
-    if ([NSThread isMainThread])
-        run();
-    else
-        dispatch_sync(dispatch_get_main_queue(), run);
+    // (not dispatch_sync: the main thread may be blocked in a Win32 wait, where it runs queued calls instead)
+    OnMain([&] { run(); });
     return ok;
 }
 
@@ -981,5 +1019,48 @@ const char *Bridge_BundleResourcePath(void)
     }
     return path;
 }
+
+// ---- the bridge entry points that use AppKit: on the main thread, whichever thread calls them
+int Bridge_IsAppActive(void) { return OnMain([&] { return Main_IsAppActive(); }); }
+void Bridge_ActivateApp(void) { OnMain([&] { Main_ActivateApp(); }); }
+BridgeWindow *Bridge_CreateWindow(const char *title, int x, int y, int clientW, int clientH, int borderless, int resizable, void *userData)
+{
+    return OnMain([&] { return Main_CreateWindow(title, x, y, clientW, clientH, borderless, resizable, userData); });
+}
+void Bridge_DestroyWindow(BridgeWindow *w) { OnMain([&] { Main_DestroyWindow(w); }); }
+void Bridge_ShowWindow(BridgeWindow *w, int show) { OnMain([&] { Main_ShowWindow(w, show); }); }
+void Bridge_MinimizeWindow(BridgeWindow *w) { OnMain([&] { Main_MinimizeWindow(w); }); }
+void Bridge_RestoreWindow(BridgeWindow *w) { OnMain([&] { Main_RestoreWindow(w); }); }
+int Bridge_IsMinimized(BridgeWindow *w) { return OnMain([&] { return Main_IsMinimized(w); }); }
+int Bridge_IsVisible(BridgeWindow *w) { return OnMain([&] { return Main_IsVisible(w); }); }
+void Bridge_SetWindowStyle(BridgeWindow *w, int borderless, int resizable) { OnMain([&] { Main_SetWindowStyle(w, borderless, resizable); }); }
+void Bridge_SetClientRect(BridgeWindow *w, int x, int y, int clientW, int clientH) { OnMain([&] { Main_SetClientRect(w, x, y, clientW, clientH); }); }
+void Bridge_GetClientRect(BridgeWindow *w, BridgeRect *r) { OnMain([&] { Main_GetClientRect(w, r); }); }
+void Bridge_GetFrameRect(BridgeWindow *w, BridgeRect *r) { OnMain([&] { Main_GetFrameRect(w, r); }); }
+void Bridge_SetTitle(BridgeWindow *w, const char *title) { OnMain([&] { Main_SetTitle(w, title); }); }
+void Bridge_FocusWindow(BridgeWindow *w) { OnMain([&] { Main_FocusWindow(w); }); }
+int Bridge_IsKeyWindow(BridgeWindow *w) { return OnMain([&] { return Main_IsKeyWindow(w); }); }
+void Bridge_SetCoversScreen(BridgeWindow *w, int covers) { OnMain([&] { Main_SetCoversScreen(w, covers); }); }
+void *Bridge_GetMetalLayer(BridgeWindow *w) { return OnMain([&] { return Main_GetMetalLayer(w); }); }
+double Bridge_GetBackingScale(BridgeWindow *w) { return OnMain([&] { return Main_GetBackingScale(w); }); }
+void Bridge_SetCursorVisible(int visible) { OnMain([&] { Main_SetCursorVisible(visible); }); }
+void Bridge_SetMouseCaptured(int captured) { OnMain([&] { Main_SetMouseCaptured(captured); }); }
+void Bridge_WarpCursor(int x, int y) { OnMain([&] { Main_WarpCursor(x, y); }); }
+void Bridge_GetCursorPos(int *x, int *y) { OnMain([&] { Main_GetCursorPos(x, y); }); }
+void Bridge_SetArrowCursor(int wait) { OnMain([&] { Main_SetArrowCursor(wait); }); }
+uint32_t Bridge_CurrentModifiers(void) { return OnMain([&] { return Main_CurrentModifiers(); }); }
+int Bridge_GetScreenCount(void) { return OnMain([&] { return Main_GetScreenCount(); }); }
+int Bridge_GetScreenRect(int index, BridgeRect *full, BridgeRect *work, double *refreshHz)
+{
+    return OnMain([&] { return Main_GetScreenRect(index, full, work, refreshHz); });
+}
+int Bridge_ScreenForPoint(int x, int y) { return OnMain([&] { return Main_ScreenForPoint(x, y); }); }
+int Bridge_GetScreenModes(int index, int *widths, int *heights, int *rates, int maxModes)
+{
+    return OnMain([&] { return Main_GetScreenModes(index, widths, heights, rates, maxModes); });
+}
+char *Bridge_GetClipboardText(void) { return OnMain([&] { return Main_GetClipboardText(); }); }
+void Bridge_SetClipboardText(const char *utf8) { OnMain([&] { Main_SetClipboardText(utf8); }); }
+void Bridge_OpenURL(const char *url) { OnMain([&] { Main_OpenURL(url); }); }
 
 } // extern "C"

@@ -4,6 +4,7 @@
 #include <windows.h>
 #include "kernel32_internal.h"
 #include "arena.h"
+#include "main_thread.h"
 
 #include <mach/mach.h>
 #include <mach/thread_act.h>
@@ -183,6 +184,15 @@ void QueueApc(KThread *thread, void (*fn)(void *), void *arg)
     g_waitCv.notify_all();
 }
 
+void WakeAllWaiters()
+{
+    // taking the lock orders this after a waiter's last check of its condition (no lost wakeup)
+    {
+        std::lock_guard<std::mutex> g(g_waitLock);
+    }
+    g_waitCv.notify_all();
+}
+
 static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BOOL alertable)
 {
     KThread *self = CurrentThread();
@@ -204,10 +214,21 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
     if (alertable && RunApcs(self))
         return WAIT_IO_COMPLETION;
 
+    // the main thread runs the calls other threads are waiting on it for while it waits (main_thread.h)
+    const bool mainThread = IsMainThread();
+    if (mainThread)
+        ServiceMainThreadCalls();
     auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms == INFINITE ? 0 : ms);
     std::unique_lock<std::mutex> lk(g_waitLock);
     for (;;)
     {
+        if (mainThread && MainThreadCallsPending())
+        {
+            lk.unlock();
+            ServiceMainThreadCalls();
+            lk.lock();
+            continue;
+        }
         if (alertable && !self->apcs.empty())
         {
             lk.unlock();
@@ -511,7 +532,25 @@ void DeleteCriticalSection(LPCRITICAL_SECTION cs)
 }
 void EnterCriticalSection(LPCRITICAL_SECTION cs)
 {
-    pthread_mutex_lock(CsMutex(cs));
+    pthread_mutex_t *m = CsMutex(cs);
+    if (IsMainThread())
+    {
+        // the owner may be waiting for a call queued for the main thread (main_thread.h): keep running those
+        // while the section is busy (macOS has no pthread_mutex_timedlock)
+        for (unsigned tries = 0; pthread_mutex_trylock(m) != 0; ++tries)
+        {
+            ServiceMainThreadCalls();
+            if (tries < 64)
+                sched_yield();
+            else
+            {
+                struct timespec ts = {0, 50000};
+                nanosleep(&ts, nullptr);
+            }
+        }
+    }
+    else
+        pthread_mutex_lock(m);
     cs->OwningThread = (HANDLE)(uintptr_t)ThreadSelfId();
     cs->RecursionCount++;
 }
@@ -893,6 +932,35 @@ DWORD QueueUserAPC(PAPCFUNC fn, HANDLE h, ULONG_PTR data)
 
 void Sleep(DWORD ms)
 {
+    if (IsMainThread() && ms != INFINITE)
+    {
+        // the main thread runs the calls other threads queued for it while it sleeps (main_thread.h): the engine
+        // waits for the render thread in Sleep loops (R_BeginRegistration) while that thread creates the window
+        ServiceMainThreadCalls();
+        if (ms == 0)
+        {
+            sched_yield();
+            ServiceMainThreadCalls();
+            return;
+        }
+        const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms);
+        std::unique_lock<std::mutex> lk(g_waitLock);
+        for (;;)
+        {
+            if (MainThreadCallsPending())
+            {
+                lk.unlock();
+                ServiceMainThreadCalls();
+                lk.lock();
+                continue;
+            }
+            if (g_waitCv.wait_until(lk, deadline) == std::cv_status::timeout)
+                break;
+        }
+        lk.unlock();
+        ServiceMainThreadCalls();
+        return;
+    }
     if (ms == 0)
     {
         sched_yield();
@@ -918,10 +986,20 @@ DWORD SleepEx(DWORD ms, BOOL alertable)
     KThread *self = CurrentThread();
     if (RunApcs(self))
         return WAIT_IO_COMPLETION;
+    const bool mainThread = IsMainThread();
+    if (mainThread)
+        ServiceMainThreadCalls();
     auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms == INFINITE ? 0 : ms);
     std::unique_lock<std::mutex> lk(g_waitLock);
     for (;;)
     {
+        if (mainThread && MainThreadCallsPending())
+        {
+            lk.unlock();
+            ServiceMainThreadCalls();
+            lk.lock();
+            continue;
+        }
         if (!self->apcs.empty())
         {
             lk.unlock();

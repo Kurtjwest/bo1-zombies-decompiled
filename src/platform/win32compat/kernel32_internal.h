@@ -133,6 +133,9 @@ KThread *CurrentThread();
 KThread *FindThread(DWORD id);
 void ForEachThread(void (*fn)(KThread *, void *), void *ctx);
 void QueueApc(KThread *thread, void (*fn)(void *), void *arg);
+// Wakes every thread blocked in a Win32 wait (they re-check what they wait for); the main thread then also runs
+// the calls other threads queued for it (main_thread.h).
+void WakeAllWaiters();
 void SetError(DWORD e);
 DWORD ErrnoToWin32(int e);
 

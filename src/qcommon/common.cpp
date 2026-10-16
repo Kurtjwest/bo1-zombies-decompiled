@@ -1228,7 +1228,13 @@ void __cdecl Com_SetRecommended(int localClientNum, int restart)
         Com_Error(ERR_FATAL, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE %.0f GHZ %i MB", info.configureGHz, info.sysMB);
     }
     if ( !Com_SetRecommendedGpu(&info, (char **)&text) )
+#if defined(_WIN32)
         Com_Error(ERR_FATAL, "configure_mp.csv: EXE_ERR_COULDNT_CONFIGURE %s", info.gpuDescription);
+#else
+        // the table only knows the PC GPUs of 2010 (rows match vendor and model names): an Apple GPU keeps the
+        // GPU dvars' defaults instead of failing the autoconfigure
+        Com_Printf(16, "configure_mp.csv: no GPU configuration matches \"%s\", keeping the defaults\n", info.gpuDescription);
+#endif
     Com_EndParseSession();
     checksum = Com_ConfigureChecksum(csv, filesize);
     FS_FreeFile(csv);

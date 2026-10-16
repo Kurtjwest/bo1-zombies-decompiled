@@ -9,6 +9,7 @@
 #include <io.h>
 #include "kernel32_internal.h"
 #include "arena.h"
+#include "main_thread.h"
 #include <universal/ptr32.h>
 
 #include <dlfcn.h>
@@ -1454,6 +1455,24 @@ void PlatformInit(int argc, char **argv)
             bo1ptr::RegisterWindow(top - size, size);
     }
     CurrentThread(); // the main thread gets its id first
+    // AppKit work requested by other threads runs here, woken from the Win32 waits (main_thread.h)
+    SetMainThread();
+    AddMainThreadWaker(WakeAllWaiters);
     InstallCrashHandlers();
 }
 } // namespace w32
+
+// MSVC CRT rand()/srand() (msvc_crt.h maps the engine's calls here): the CRT's linear congruential generator, its
+// state per thread and starting at 1 in every thread, as the multithreaded CRT keeps _holdrand.
+static thread_local unsigned int t_msvcHoldRand = 1;
+
+extern "C" int bo1_msvc_rand(void)
+{
+    t_msvcHoldRand = t_msvcHoldRand * 214013u + 2531011u;
+    return (int)((t_msvcHoldRand >> 16) & 0x7FFFu);
+}
+
+extern "C" void bo1_msvc_srand(unsigned int seed)
+{
+    t_msvcHoldRand = seed;
+}

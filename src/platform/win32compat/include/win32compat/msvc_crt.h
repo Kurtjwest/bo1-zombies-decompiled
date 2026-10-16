@@ -506,6 +506,28 @@ static inline unsigned long long _xgetbv(unsigned int x) { (void)x; return 0; }
 #define crandom bo1_crandom
 #endif
 
+// MSVC's rand(): 15-bit results (RAND_MAX 0x7FFF) from a per-thread LCG seeded with 1. The engine scales rand() by
+// 1/32767 or 1/32768 and masks it with 0x7FFF; with the 31-bit rand() of macOS, GaussianRandom's rejection loop
+// never ends and the scaled values leave their ranges. (kernel32_misc.cpp)
+#ifdef __cplusplus
+extern "C" {
+#endif
+int bo1_msvc_rand(void);
+void bo1_msvc_srand(unsigned int seed);
+#ifdef __cplusplus
+}
+// standard library headers call std::rand() (std::random_shuffle), which the macros below turn into these names
+namespace std
+{
+using ::bo1_msvc_rand;
+using ::bo1_msvc_srand;
+}
+#endif
+#undef RAND_MAX
+#define RAND_MAX 0x7FFF
+#define rand() bo1_msvc_rand()
+#define srand(seed) bo1_msvc_srand(seed)
+
 #ifdef __cplusplus
 // _BitScanForward/_BitScanReverse with MSVC's DWORD (unsigned long, 32-bit there) index argument: accept any integer
 // index type; clang's builtins only take unsigned int*.

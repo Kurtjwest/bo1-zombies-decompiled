@@ -991,18 +991,20 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
     while ( bot <= top )
     {
         mid = (bot + top) / 2;
-        comparison = (const char *)BO1_I2P((dx.displayModes[mid].Width - width));
-        if ( !comparison )
+        // (decompiled through resolutionNameTable[4 * mid - 1023 / 1022], i.e. displayModes[mid].Height / RefreshRate)
+        int diff = (int)(dx.displayModes[mid].Width - width);
+        if ( !diff )
         {
-            comparison = &dx.resolutionNameTable[4 * mid - 1023][-(int)height];
-            if ( !comparison )
+            diff = (int)(dx.displayModes[mid].Height - height);
+            if ( !diff )
             {
-                comparison = &dx.resolutionNameTable[4 * mid - 1022][-refreshRate];
-                if ( !comparison )
+                diff = (int)dx.displayModes[mid].RefreshRate - refreshRate;
+                if ( !diff )
                     return (const char *)BO1_I2P(refreshRate);
             }
         }
-        if ( (int)BO1_P2I(comparison) >= 0 )
+        (void)comparison;
+        if ( diff >= 0 )
             top = mid - 1;
         else
             bot = mid + 1;
@@ -1023,18 +1025,18 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
     {
         __debugbreak();
     }
-    if ( dx.displayModes[top].Width == width && dx.resolutionNameTable[4 * top - 1023] == (const char *)BO1_I2P(height) )
-        return dx.resolutionNameTable[4 * top - 1022];
-    if ( dx.displayModes[bot].Width != width || dx.resolutionNameTable[4 * bot - 1023] != (const char *)BO1_I2P(height) )
+    if ( dx.displayModes[top].Width == width && dx.displayModes[top].Height == height )
+        return (const char *)BO1_I2P(dx.displayModes[top].RefreshRate);
+    if ( dx.displayModes[bot].Width != width || dx.displayModes[bot].Height != height )
     {
         v4 = va(
                      "%i = (%i %i), %i = (%i %i), want (%i %i)",
                      top,
                      dx.displayModes[top].Width,
-                     BO1_VA(dx.resolutionNameTable[4 * bot - 1023]),
+                     dx.displayModes[top].Height,
                      bot,
                      dx.displayModes[bot].Width,
-                     BO1_VA(dx.resolutionNameTable[4 * bot - 1023]),
+                     dx.displayModes[bot].Height,
                      width,
                      height);
         if ( !Assert_MyHandler(
@@ -1046,7 +1048,7 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
                         v4) )
             __debugbreak();
     }
-    return dx.resolutionNameTable[4 * bot - 1022];
+    return (const char *)BO1_I2P(dx.displayModes[bot].RefreshRate);
 }
 
 bool __cdecl R_SetCustomResolution(GfxWindowParms *wndParms)
@@ -1368,8 +1370,10 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
                      &dx.displayModes[dx.displayModeCount]);
         if ( hr >= 0 )
         {
-            if ( !dx.resolutionNameTable[4 * dx.displayModeCount - 1022] )
-                dx.resolutionNameTable[4 * dx.displayModeCount - 1022] = (const char *)BO1_I2P(60);
+            // (decompiled as resolutionNameTable[4 * displayModeCount - 1022]: an unsigned index that only wraps
+            // back into displayModes in 32-bit address arithmetic)
+            if ( !dx.displayModes[dx.displayModeCount].RefreshRate )
+                dx.displayModes[dx.displayModeCount].RefreshRate = 60;
             ++dx.displayModeCount;
         }
     }
@@ -1380,11 +1384,11 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
     {
         resolutionCount = R_AddValidResolution(
                                                 dx.displayModes[modeIndex].Width,
-                                                (int)BO1_P2I(dx.resolutionNameTable[4 * modeIndex - 1023]),
+                                                dx.displayModes[modeIndex].Height,
                                                 resolutionCount,
                                                 availableResolutions);
         refreshRateCount = R_AddValidRefreshRate(
-                                                 (int)BO1_P2I(dx.resolutionNameTable[4 * modeIndex - 1022]),
+                                                 dx.displayModes[modeIndex].RefreshRate,
                                                  refreshRateCount,
                                                  availableRefreshRates);
     }
