@@ -28,6 +28,8 @@ extern "C" void objc_autoreleasePoolPop(void *pool);
 #include <deque>
 #include <memory>
 #include <mutex>
+#include <thread>
+#include <chrono>
 #include <string>
 #include <unordered_map>
 #include <vector>
@@ -286,6 +288,7 @@ struct Globals
     uint64_t frameIndex = 0;
     uint64_t frameSerials[kMaxFramesInFlight + 1] = {};
     std::atomic<uint64_t> completedSerial{0};
+    std::atomic<uint64_t> handlersRun{0}; // completed handlers that have finished (Shutdown waits for all)
     std::mutex timeLock;
     double frameGpuAccum[8] = {};
     double lastFrameGpuTime = 0;
@@ -385,10 +388,10 @@ size_t AlignUp(size_t v, size_t a) { return (v + a - 1) & ~(a - 1); }
 // ======================================================================================================================
 // command buffers
 // ======================================================================================================================
-void PublishCompleted(uint64_t serial)
+void PublishCompleted(Globals *g, uint64_t serial)
 {
-    uint64_t cur = G->completedSerial.load(std::memory_order_acquire);
-    while (cur < serial && !G->completedSerial.compare_exchange_weak(cur, serial, std::memory_order_acq_rel))
+    uint64_t cur = g->completedSerial.load(std::memory_order_acquire);
+    while (cur < serial && !g->completedSerial.compare_exchange_weak(cur, serial, std::memory_order_acq_rel))
     {
     }
 }
@@ -418,7 +421,8 @@ void EnsureCmdBuf()
             if (t > 0 && t < 10.0)
                 g->frameGpuAccum[frame & 7] += t;
         }
-        PublishCompleted(serial);
+        PublishCompleted(g, serial); // g, not G: the handler runs on Metal's thread
+        g->handlersRun.fetch_add(1, std::memory_order_acq_rel);
     }];
 }
 
@@ -1070,7 +1074,15 @@ void DrawClearQuad(uint32_t flags, const float color[4], float depth, uint32_t s
     const float p[4] = {depth, 0, 0, 0};
     [enc setVertexBytes:p length:sizeof(p) atIndex:0];
     [enc setFragmentBytes:color length:sizeof(float) * 4 atIndex:0];
+    // a Direct3D Clear adds nothing to an occlusion query: stop counting for the clear draw
+    const VisSegment *seg = G->activeVis && !G->activeVis->segments.empty() && G->activeVis->segments.back().vb == G->vis
+                                ? &G->activeVis->segments.back()
+                                : nullptr;
+    if (seg)
+        [enc setVisibilityResultMode:MTLVisibilityResultModeDisabled offset:0];
     [enc drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
+    if (seg)
+        [enc setVisibilityResultMode:MTLVisibilityResultModeCounting offset:seg->offset];
     // the Direct3D state goes back on before the next draw
     G->haveValid = false;
 }
@@ -1141,6 +1153,11 @@ void Shutdown()
         CommitCurrent();
         if (!G->inFlight.empty())
             [G->inFlight.back().second waitUntilCompleted];
+        // waitUntilCompleted can return before the completed handlers have run (see WaitForSerial), and they use
+        // the Globals: it is deleted once every committed command buffer's handler has finished (bounded wait)
+        const uint64_t created = G->nextSerial - 1;
+        for (int i = 0; i < 20000 && G->handlersRun.load(std::memory_order_acquire) < created; ++i)
+            std::this_thread::sleep_for(std::chrono::microseconds(100));
         delete G;
         G = nullptr;
     }
@@ -1346,7 +1363,9 @@ void UploadTexture(Texture *tex, uint32_t slice, uint32_t level, uint32_t x, uin
         }
         const size_t imageBytes = (size_t)rowPitch * rows;
         const size_t imageStride = tex->type == TEX_3D ? (slicePitch ? slicePitch : imageBytes) : imageBytes;
-        const size_t total = imageStride * (d - 1) + imageBytes;
+        // the last row holds only the region's texels: data may point into a larger image (a locked box, an
+        // UpdateSurface rectangle) whose allocation ends right after them
+        const size_t total = imageStride * (d - 1) + (size_t)rowPitch * (rows - 1) + RowBytes(tex->format, w);
         Buffer *sb;
         uint32_t off;
         void *p = Transient(total, 16, &sb, &off);
@@ -1385,6 +1404,12 @@ void ReadTexture(Texture *tex, uint32_t slice, uint32_t level, uint32_t x, uint3
             TextureDesc rd{TEX_2D, tex->format, tex->width, tex->height, 1, 1, 1, USAGE_SHADER_READ | USAGE_RENDER_TARGET,
                            "bo1 readback resolve"};
             resolved = CreateTexture(rd);
+            if (!resolved)
+            {
+                for (uint32_t r = 0; r < rows; ++r)
+                    memset((uint8_t *)dst + (size_t)r * rowPitch, 0, std::min(tight, rowPitch));
+                return;
+            }
             ResolveTexture(tex, resolved, 0, 0);
             src = resolved;
             slice = level = 0;
@@ -2208,7 +2233,7 @@ void WaitForSerial(uint64_t serial)
         if (f.first >= serial)
         {
             [f.second waitUntilCompleted];
-            PublishCompleted(f.first);
+            PublishCompleted(G, f.first);
             break;
         }
     }

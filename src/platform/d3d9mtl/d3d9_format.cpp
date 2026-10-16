@@ -104,7 +104,9 @@ const FormatInfo *FindFormat(D3DFORMAT f)
             fi.mtl = e.mtl;
             fi.mtlSrgb = e.mtlSrgb;
             memcpy(fi.swizzle, e.sw, 4);
-            fi.swizzled = !(e.sw[0] == R && e.sw[1] == G && e.sw[2] == B && e.sw[3] == A);
+            // depth formats get no swizzled view: shaders sample them as depth2d (a scalar, so the swizzle would
+            // change nothing), and Metal does not document texture swizzle for depth/stencil pixel formats
+            fi.swizzled = !e.depth && !(e.sw[0] == R && e.sw[1] == G && e.sw[2] == B && e.sw[3] == A);
             fi.bytes = e.bytes;
             fi.mtlBytes = e.mtlBytes;
             fi.compressed = e.compressed;
