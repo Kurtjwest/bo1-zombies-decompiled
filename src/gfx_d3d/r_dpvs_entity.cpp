@@ -1,5 +1,6 @@
 #include <universal/bo1_ptrcast.h>
 #include "r_dpvs_entity.h"
+#include "r_dpvs_sceneent.h"
 #include "r_model_pose.h"
 #include <cgame/cg_pose_utils.h>
 #include "r_dobj_skin.h"
@@ -17,7 +18,10 @@ void __cdecl R_AddEntitySurfacesInFrustumCmd(unsigned __int16 *data)
     const DpvsPlane *planes; // [esp+2Ch] [ebp-8h]
     GfxSceneEntity *sceneEnt; // [esp+30h] [ebp-4h]
 
-    sceneEnt = *(GfxSceneEntity **)data;
+    // data is a DpvsEntityCmd (32-bit handles): the decompiled form read sceneEnt as a native pointer, which on
+    // 64-bit took the planes handle for its upper half
+    const DpvsEntityCmd *cmd = (const DpvsEntityCmd *)data;
+    sceneEnt = cmd->sceneEnt;
     boneMatrix = R_UpdateSceneEntBounds(sceneEnt, &localSceneEnt, &obj, 1);
     if ( boneMatrix )
     {
@@ -31,8 +35,8 @@ void __cdecl R_AddEntitySurfacesInFrustumCmd(unsigned __int16 *data)
         {
             __debugbreak();
         }
-        planes = (const DpvsPlane *)BO1_I2P(*((unsigned int *)data + 1));
-        v2 = data[4];
+        planes = cmd->planes;
+        v2 = cmd->planeCount;
         minmax = localSceneEnt->cull.mins;
         v5 = 0;
         plane = (DpvsPlane *)planes;
@@ -51,7 +55,7 @@ LABEL_14:
         if ( !v1
             && R_BoundsInCell(
                      (mnode_t *)g_worldDpvsPlanes->nodes,
-                     data[5],
+                     cmd->cellIndex,
                      localSceneEnt->cull.mins,
                      localSceneEnt->cull.maxs) )
         {
@@ -67,7 +71,7 @@ LABEL_14:
             {
                 __debugbreak();
             }
-            *(_BYTE *)BO1_I2P((localSceneEnt->entnum + *((unsigned int *)data + 3))) = 1;
+            cmd->entVisData[localSceneEnt->entnum] = 1;
         }
         else
         {

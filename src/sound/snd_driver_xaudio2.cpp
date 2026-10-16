@@ -200,7 +200,8 @@ void __cdecl iSND_ReleaseStreamBuffer(unsigned int streamVoice, unsigned int buf
     iassert(streamVoice < SND_MAX_STREAM_VOICES);
     iassert(bufferIndex < StreamVoice::BUFFER_COUNT);
 
-    releaseWindow = (char *)BO1_I2P(InterlockedExchange((volatile unsigned int *)&g_sd.streamVoices[streamVoice].buffers[bufferIndex].pAudioData, 0));
+    // XAUDIO2_BUFFER::pAudioData is a native pointer: exchanged whole (a 32-bit exchange left its upper half)
+    releaseWindow = (char *)InterlockedExchangePointer((void *volatile *)&g_sd.streamVoices[streamVoice].buffers[bufferIndex].pAudioData, nullptr);
 
     if (releaseWindow)
     {
