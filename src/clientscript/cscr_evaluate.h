@@ -1,5 +1,6 @@
 #pragma once
 #include <universal/ptr32.h>
+#include <setjmp.h>
 #include "cscr_main.h"
 #include "cscr_variable.h"
 #include "cscr_debugger.h"
@@ -152,4 +153,4 @@ void __cdecl Scr_FreeDebugExprValue(scriptInstance_t inst, sval_u val);
 
 
 extern int g_script_error_level[2];
-extern int g_script_error[2][33][16];
+extern jmp_buf g_script_error[2][33]; // (jmp_buf: int[16] on 32-bit Windows)

@@ -2,6 +2,7 @@
 #include "q_shared.h"
 #include "assertive.h"
 #include <string.h>
+#include <setjmp.h>
 #include <qcommon/msg_mp.h>
 #include <ctype.h>
 #include <qcommon/common.h>
@@ -24,7 +25,9 @@ struct va_info_t
 
 va_info_t va_info[15];
 TraceThreadInfo g_traceThreadInfo[15];
-int g_com_error[15][16];
+// per thread context; jmp_buf (int[16] on 32-bit Windows, as the decompiled int[15][16] was) is larger on other
+// targets (192 bytes on arm64 macOS), so the type has to be the platform's own
+jmp_buf g_com_error[15];
 int valueindex;
 
 // *WARNING* One or more selections were skipped as they could not be interpreted as c data

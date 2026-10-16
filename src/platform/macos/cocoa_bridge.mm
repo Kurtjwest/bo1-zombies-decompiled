@@ -835,21 +835,63 @@ static int RunAlert(NSString *title, NSString *text, int buttons, int icon)
     return (int)(r - NSAlertFirstButtonReturn);
 }
 
+// A message box from another thread. Win32 shows one from any thread; AppKit only runs alerts on the main thread,
+// which may be the very thread the caller is waiting for (Sys_Error suspends the other threads, and a fatal error on
+// the database thread happens while the main thread waits for the load). CFUserNotification alerts are shown by the
+// system on behalf of the process and can be run from any thread.
+static int RunAlertFromThread(NSString *title, NSString *text, int buttons, int icon)
+{
+    // the cursor may be hidden and decoupled from the mouse (mouse look): give it back so the alert can be clicked
+    CGAssociateMouseAndMouseCursorPosition(true);
+    CGDisplayShowCursor(kCGDirectMainDisplay);
+    const CFOptionFlags level = icon == 2   ? kCFUserNotificationStopAlertLevel
+                                : icon == 1 ? kCFUserNotificationCautionAlertLevel
+                                            : kCFUserNotificationNoteAlertLevel;
+    CFStringRef def = CFSTR("OK"), alt = nullptr, other = nullptr;
+    switch (buttons)
+    {
+    case 1: alt = CFSTR("Cancel"); break;
+    case 3:
+        def = CFSTR("Yes");
+        alt = CFSTR("No");
+        other = CFSTR("Cancel");
+        break;
+    case 4:
+        def = CFSTR("Yes");
+        alt = CFSTR("No");
+        break;
+    default: break;
+    }
+    CFOptionFlags response = kCFUserNotificationDefaultResponse;
+    CFUserNotificationDisplayAlert(0, level, nullptr, nullptr, nullptr, (__bridge CFStringRef)title,
+                                   (__bridge CFStringRef)text, def, alt, other, &response);
+    switch (response & 3)
+    {
+    case kCFUserNotificationAlternateResponse: return 1;
+    case kCFUserNotificationOtherResponse: return 2;
+    case kCFUserNotificationCancelResponse: return buttons == 1 || buttons == 3 ? (buttons == 1 ? 1 : 2) : 0;
+    default: return 0;
+    }
+}
+
 int Bridge_MessageBox(const char *title, const char *text, int buttons, int icon)
 {
-    __block int result = 0;
-    NSString *t = [NSString stringWithUTF8String:title ? title : ""];
-    NSString *m = [NSString stringWithUTF8String:text ? text : ""];
-    if (!t)
-        t = @"";
-    if (!m)
-        m = [NSString stringWithCString:text ? text : "" encoding:NSISOLatin1StringEncoding];
-    if ([NSThread isMainThread])
-        result = RunAlert(t, m, buttons, icon);
-    else
-        dispatch_sync(dispatch_get_main_queue(), ^{
-          result = RunAlert(t, m, buttons, icon);
-        });
+    int result = 0;
+    @autoreleasepool
+    {
+        NSString *t = [NSString stringWithUTF8String:title ? title : ""];
+        NSString *m = [NSString stringWithUTF8String:text ? text : ""];
+        if (!t)
+            t = @"";
+        if (!m)
+            m = [NSString stringWithCString:text ? text : "" encoding:NSISOLatin1StringEncoding];
+        if (!m)
+            m = @"";
+        if ([NSThread isMainThread])
+            result = RunAlert(t, m, buttons, icon);
+        else
+            result = RunAlertFromThread(t, m, buttons, icon);
+    }
     return result;
 }
 

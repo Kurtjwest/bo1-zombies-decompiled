@@ -17,7 +17,7 @@
 scrEvaluateGlob_t gScrEvaluateGlob[2];
 
 int g_script_error_level[2];
-int g_script_error[2][33][16];
+jmp_buf g_script_error[2][33];
 
 int __cdecl Scr_CompareCanonicalStrings(unsigned int *arg1, unsigned int *arg2)
 {
@@ -1768,8 +1768,8 @@ void __cdecl Scr_EvalMethod(
         }
         entref = Scr_GetEntityIdRef(inst, objectId);
         RemoveRefToObject(inst, objectId);
-        //LOWORD(v8) = entref.client;
-        ((void(__cdecl *)(_DWORD, int))BO1_I2P(func_name.stringValue))(*(_DWORD *)&entref.entnum, entref.client);
+        // a method takes the entity reference by value (one register on 64-bit targets, not two)
+        ((void(__cdecl *)(scr_entref_t))BO1_I2P(func_name.stringValue))(entref);
     }
     if (g_script_error_level[inst] < 0
         && !Assert_MyHandler(

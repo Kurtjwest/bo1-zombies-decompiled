@@ -805,7 +805,7 @@ void Com_Error(errorParm_t code, const char *fmt, ...)
             TaskManager2_ComErrorCleanup();
             GlassCl_WaitUpdate();
             Value = (int *)Sys_GetValue(2);
-            longjmp(Value, -1);
+            longjmp(*(jmp_buf *)Value, -1);
         }
         if ( !com_fixedConsolePosition )
         {
@@ -833,7 +833,7 @@ void __cdecl Com_CheckError()
     if ( errorEntered )
     {
         Value = (int *)Sys_GetValue(2);
-        longjmp(Value, -1);
+        longjmp(*(jmp_buf *)Value, -1);
     }
 }
 
@@ -1727,7 +1727,7 @@ static void Com_InitContentPacks_SP()
 
 void __cdecl Com_Init(char *commandLine)
 {
-    if ( _setjmp((int *)Sys_GetValue(2)) )
+    if ( _setjmp(*(jmp_buf *)Sys_GetValue(2)) )
     {
         Sys_Error(va("Error during initialization:\n%s\n", com_errorMessage));
     }
@@ -1736,7 +1736,7 @@ void __cdecl Com_Init(char *commandLine)
 
     Monkey_Start();
 
-    if ( !_setjmp((int*)Sys_GetValue(2)) )
+    if ( !_setjmp(*(jmp_buf *)Sys_GetValue(2)) )
         Com_AddStartupCommands();
 
     if ( !I_strcmp(sv_mapname->current.string, "") )
@@ -1748,7 +1748,7 @@ void __cdecl Com_Init(char *commandLine)
 #ifndef BO1_DEDICATED
     if (!com_sv_running->current.enabled && !IsDedicatedServer())
     {
-        if (_setjmp((int *)Sys_GetValue(2)))
+        if (_setjmp(*(jmp_buf *)Sys_GetValue(2)))
         {
             Sys_Error(va("Error during initialization:\n%s\n", com_errorMessage));
         }
@@ -3276,7 +3276,7 @@ void __cdecl Com_Frame()
     cl_flame_proftimer.reset();
     Value = Sys_GetValue(2);
     //if ( !_setjmp3(Value, 0) )
-    if ( !_setjmp((int*)Value) )
+    if ( !_setjmp(*(jmp_buf *)Value) )
     {
         Com_CheckSyncFrame();
         Com_Frame_Try_Block_Function();
@@ -3619,7 +3619,7 @@ void Com_StartHunkUsers()
 
     Value = Sys_GetValue(2);
     //if ( _setjmp3(Value, 0) )
-    if (_setjmp((int *)Value))
+    if (_setjmp(*(jmp_buf *)Value))
     {
         Sys_Error((char*)"Error during initialization:\n%s\n", com_errorMessage);
 

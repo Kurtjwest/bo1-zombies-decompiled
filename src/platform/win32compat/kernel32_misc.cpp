@@ -783,11 +783,17 @@ void RaiseException(DWORD code, DWORD, DWORD nargs, const ULONG_PTR *args)
 {
     if (code == 0x406D1388 && nargs >= 2 && args)
     {
-        // MSVC "set thread name" exception: { type=0x1000, name, threadId, flags }
-        const char *name = (const char *)args[1];
-        DWORD tid = nargs >= 3 ? (DWORD)args[2] : (DWORD)-1;
-        if (name && (tid == (DWORD)-1 || tid == GetCurrentThreadId()))
-            pthread_setname_np(name);
+        // MSVC "set thread name" exception. The engine's THREADNAME_INFO (qcommon/threads.h) keeps the 32-bit
+        // layout and passes its size in DWORDs: { DWORD type = 0x1000, 32-bit name pointer, DWORD threadId,
+        // DWORD flags }.
+        const uint32_t *w = (const uint32_t *)args;
+        if (w[0] == 0x1000)
+        {
+            const char *name = (const char *)Ptr32_Decode(w[1]);
+            const DWORD tid = nargs >= 3 ? (DWORD)w[2] : (DWORD)-1;
+            if (name && (tid == (DWORD)-1 || tid == GetCurrentThreadId()))
+                pthread_setname_np(name);
+        }
         return;
     }
     fprintf(stderr, "RaiseException(0x%08X)\n", code);

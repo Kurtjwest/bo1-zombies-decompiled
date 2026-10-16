@@ -1,4 +1,5 @@
 #pragma once
+#include <stdarg.h>
 
 enum dlStatus_t : __int32
 {                                       // XREF: ?CL_WWWDownload@@YAXXZ/r
@@ -12,7 +13,7 @@ typedef void *_HTRequest;
 typedef int _HTAlertOpcode;
 // HACK END
 
-int __cdecl DL_VPrintf(const char *fmt, char *argptr);
+int __cdecl DL_VPrintf(const char *fmt, va_list argptr);
 int __cdecl terminate_handler_WINDOWSNAMINGCLASH(_HTRequest *request, struct _HTResponse *response, void *param, int status);
 int __cdecl HTAlertCallback_progress(_HTRequest *request, _HTAlertOpcode op);
 int __cdecl HTAlertCallback_confirm(_HTRequest *request, _HTAlertOpcode op, int msgnum);

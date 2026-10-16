@@ -34,7 +34,7 @@ void __cdecl    Stream_Thread(unsigned int threadContext)
     do
         Value = Sys_GetValue(2);
     //while ( _setjmp3(Value, 0) );
-    while ( _setjmp((int*)Value) );
+    while ( _setjmp(*(jmp_buf *)Value) );
 
     while ( 1 )
     {

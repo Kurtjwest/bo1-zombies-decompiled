@@ -37,7 +37,7 @@ miniDumper::miniDumper(bool bPromptUserForMiniDump)
     miniDumper::s_pMiniDumper = this;
     this->m_bPromptUserForMiniDump = bPromptUserForMiniDump;
     SetUnhandledExceptionFilter(miniDumper::unhandledExceptionHandler);
-    miniDumper::s_pCriticalSection = (LPCRITICAL_SECTION)operator new(0x18u);
+    miniDumper::s_pCriticalSection = (LPCRITICAL_SECTION)operator new(sizeof(CRITICAL_SECTION)); // (0x18 on 32-bit Windows)
     if ( miniDumper::s_pCriticalSection )
         InitializeCriticalSection(miniDumper::s_pCriticalSection);
 }

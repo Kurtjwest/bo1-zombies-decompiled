@@ -1540,12 +1540,7 @@ void __cdecl DevGui_DrawGraph(const DevMenuItem *menu, int localClientNum)
     knot[0] = *v3;
     knot[1] = v3[1];
     if ( graph->textCallback )
-        ((void (__cdecl *)(DevGraph *, unsigned int, unsigned int, char *, int))graph->textCallback)(
-            graph,
-            LODWORD(knot[0]),
-            LODWORD(knot[1]),
-            text,
-            256);
+        graph->textCallback(graph, knot[0], knot[1], text, 256); // (the knot coordinates are floats)
     else
         sprintf(text, "X: %.4f, Y: %.4f", knot[0], knot[1]);
     DevGui_DrawFont(x, y, (const unsigned __int8 *)&devgui_colorText->current, text, 1.0, 1.0);

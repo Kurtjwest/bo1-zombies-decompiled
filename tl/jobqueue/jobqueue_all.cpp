@@ -499,7 +499,7 @@ LABEL_3:
 
         uint64_t mask = 1ULL << bitIndex;
 
-        volatile uint64_t *cell =
+        volatile unsigned __int64 *cell =
             &level->CellAvailable[cellIndex];
 
         while (true)

@@ -4026,7 +4026,7 @@ void __cdecl    DB_Thread(unsigned int threadContext)
     }
     Value = (int*)Sys_GetValue(2);
     //if ( _setjmp3(Value, 0) )
-    if ( _setjmp(Value) )
+    if ( _setjmp(*(jmp_buf *)Value) )
         Com_ErrorAbort();
     while ( 1 )
     {

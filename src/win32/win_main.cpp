@@ -1428,6 +1428,11 @@ void    Sys_Error(char *error, ...)
         }
 
         Sys_SetErrorText(string);
+#if !defined(_WIN32)
+        // macOS: there is no error console window to close afterwards; the message box was the whole error UI, so
+        // quit once it is dismissed (from whichever thread hit the error; the others stay suspended)
+        TerminateProcess(GetCurrentProcess(), 1);
+#endif
 
         // wait for the user to quit
         while (GetMessage(&Msg, 0, 0, 0))

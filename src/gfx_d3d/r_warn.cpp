@@ -68,7 +68,6 @@ void R_WarnOncePerFrame(GfxWarningType warnType, ...)
 {
     char message[1028]; // [esp+0h] [ebp-410h] BYREF
     float frameRate; // [esp+408h] [ebp-8h]
-    char *vargs; // [esp+40Ch] [ebp-4h]
     va_list va; // [esp+41Ch] [ebp+Ch] BYREF
 
     va_start(va, warnType);
@@ -81,11 +80,10 @@ void R_WarnOncePerFrame(GfxWarningType warnType, ...)
     if ( s_warnCount[warnType] < rg.frontEndFrameCount )
     {
         s_warnCount[warnType] = rg.frontEndFrameCount + (int)(float)(frameRate * r_warningRepeatDelay->current.value);
-        va_copy(vargs, va);
         _vsnprintf(message, 0x400u, s_warnFormat[warnType], va);
-        vargs = 0;
         Com_PrintWarning(8, "%s", message);
     }
+    va_end(va);
 }
 
 unsigned int frameCount;

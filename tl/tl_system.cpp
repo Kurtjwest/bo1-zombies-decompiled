@@ -108,7 +108,7 @@ void __cdecl tlDebugPrint(const char *txt)
     OutputDebugStringA(txt);
 }
 
-void __cdecl tlVPrintf(const char *Format, char *args)
+void __cdecl tlVPrintf(const char *Format, va_list args)
 {
   char Work[512]; // [esp+0h] [ebp-204h] BYREF
 

@@ -91,7 +91,7 @@ public:
         EXT_Link<T> *v4; // [esp+0h] [ebp-10h]
         EXT_Link<T> *v6; // [esp+8h] [ebp-8h]
 
-        v6 = (EXT_Link<T> *)operator new(sizeof(T));
+        v6 = (EXT_Link<T> *)operator new(sizeof(EXT_Link<T>)); // (the link, not the data it points at)
         if (v6)
         {
             v6->m_Next = 0;

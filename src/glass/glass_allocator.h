@@ -52,6 +52,10 @@ struct SmallAllocatorTemplate//<GlassPhysics * *> // sizeof=0x4
     {
         using other = SmallAllocatorTemplate<U>;
     };
+
+    // (allocators compare equal when they share the pool; some standard libraries require these)
+    template <class U> bool operator==(const SmallAllocatorTemplate<U> &other) const noexcept { return alloc.v == other.alloc.v; }
+    template <class U> bool operator!=(const SmallAllocatorTemplate<U> &other) const noexcept { return alloc.v != other.alloc.v; }
 };
 
 // aislop
