@@ -3505,7 +3505,7 @@ void __cdecl EmitBoolOrExpression(
                 scr_block_s *block)
 {
     unsigned __int8 *pos; // [esp+0h] [ebp-Ch]
-    char *offset; // [esp+4h] [ebp-8h]
+    ptrdiff_t offset; // [esp+4h] [ebp-8h] (a byte count)
     const char *nextPos; // [esp+8h] [ebp-4h]
 
     EmitExpression(inst, expr1, block);
@@ -3516,8 +3516,8 @@ void __cdecl EmitBoolOrExpression(
     nextPos = TempMallocAlignStrict(0);
     EmitExpression(inst, expr2, block);
     EmitCastBool(inst, expr2sourcePos);
-    offset = (char *)(TempMallocAlignStrict(0) - nextPos);
-    if ( (unsigned int)BO1_P2I(offset) >= 0x10000
+    offset = TempMallocAlignStrict(0) - nextPos;
+    if ( (unsigned int)offset >= 0x10000
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     2564,
@@ -3527,7 +3527,7 @@ void __cdecl EmitBoolOrExpression(
     {
         __debugbreak();
     }
-    *(_WORD *)pos = (_WORD)BO1_P2I(offset);
+    *(_WORD *)pos = (_WORD)offset;
 }
 
 void __cdecl EmitCastBool(scriptInstance_t inst, sval_u sourcePos)
@@ -3545,7 +3545,7 @@ void __cdecl EmitBoolAndExpression(
                 scr_block_s *block)
 {
     unsigned __int8 *pos; // [esp+0h] [ebp-Ch]
-    char *offset; // [esp+4h] [ebp-8h]
+    ptrdiff_t offset; // [esp+4h] [ebp-8h] (a byte count)
     const char *nextPos; // [esp+8h] [ebp-4h]
 
     EmitExpression(inst, expr1, block);
@@ -3556,8 +3556,8 @@ void __cdecl EmitBoolAndExpression(
     nextPos = TempMallocAlignStrict(0);
     EmitExpression(inst, expr2, block);
     EmitCastBool(inst, expr2sourcePos);
-    offset = (char *)(TempMallocAlignStrict(0) - nextPos);
-    if ( (unsigned int)BO1_P2I(offset) >= 0x10000
+    offset = TempMallocAlignStrict(0) - nextPos;
+    if ( (unsigned int)offset >= 0x10000
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     2584,
@@ -3567,7 +3567,7 @@ void __cdecl EmitBoolAndExpression(
     {
         __debugbreak();
     }
-    *(_WORD *)pos = (_WORD)BO1_P2I(offset);
+    *(_WORD *)pos = (_WORD)offset;
 }
 
 char __cdecl EmitOrEvalBinaryOperatorExpression(
@@ -4050,7 +4050,7 @@ void __cdecl EmitIfStatement(
                 sval_u *ifStatBlock)
 {
     unsigned __int8 *pos; // [esp+0h] [ebp-Ch]
-    char *offset; // [esp+4h] [ebp-8h]
+    ptrdiff_t offset; // [esp+4h] [ebp-8h] (a byte count)
     const char *nextPos; // [esp+8h] [ebp-4h]
 
     EmitExpression(inst, expr, block);
@@ -4072,8 +4072,8 @@ void __cdecl EmitIfStatement(
         __debugbreak();
     }
     EmitNOP2(inst, lastStatement, endSourcePos, ifStatBlock->block);
-    offset = (char *)(TempMallocAlignStrict(0) - nextPos);
-    if ( (unsigned int)BO1_P2I(offset) >= 0x10000
+    offset = TempMallocAlignStrict(0) - nextPos;
+    if ( (unsigned int)offset >= 0x10000
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
                     3020,
@@ -4083,7 +4083,7 @@ void __cdecl EmitIfStatement(
     {
         __debugbreak();
     }
-    *(_WORD *)pos = (_WORD)BO1_P2I(offset);
+    *(_WORD *)pos = (_WORD)offset;
 }
 
 void __cdecl EmitNOP2(scriptInstance_t inst, bool lastStatement, unsigned int endSourcePos, scr_block_s *block)
@@ -4228,7 +4228,7 @@ void __cdecl EmitIfElseStatement(
     sval_u *elseStatBlock)
 {
     unsigned int checksum; // [esp+0h] [ebp-24h]
-    char *offset; // [esp+4h] [ebp-20h]
+    ptrdiff_t offset; // [esp+4h] [ebp-20h] (a byte count)
     const char *nextPos1; // [esp+8h] [ebp-1Ch]
     unsigned __int8 *pos1; // [esp+Ch] [ebp-18h]
     Ptr32<scr_block_s> childBlocks[2]; // [esp+10h] [ebp-14h] BYREF
@@ -4266,8 +4266,8 @@ void __cdecl EmitIfElseStatement(
         nextPos2 = TempMallocAlignStrict(0);
     }
     gScrVarPub[inst].checksum = checksum + 1;
-    offset = (char *)(TempMallocAlignStrict(0) - nextPos1);
-    if ((unsigned int)BO1_P2I(offset) >= 0x10000
+    offset = TempMallocAlignStrict(0) - nextPos1;
+    if ((unsigned int)offset >= 0x10000
         && !Assert_MyHandler(
             "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_compiler.cpp",
             3084,
@@ -4277,7 +4277,7 @@ void __cdecl EmitIfElseStatement(
     {
         __debugbreak();
     }
-    *(_WORD *)pos1 = (_WORD)BO1_P2I(offset);
+    *(_WORD *)pos1 = (_WORD)offset;
     Scr_TransferBlock(block, elseStatBlock->block);
     EmitStatement(inst, stmt2, lastStatement, endSourcePos, elseStatBlock->block);
     EmitNOP2(inst, lastStatement, endSourcePos, elseStatBlock->block);

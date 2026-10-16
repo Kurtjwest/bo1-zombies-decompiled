@@ -997,11 +997,13 @@ void __cdecl Mark_EmblemSetAsset(EmblemSet *emblemSet)
 
 void __cdecl DB_FreeXAssetHeader_EmblemSet_(XAssetPoolEntry<EmblemSet> **pool, XAssetHeader header)
 {
-    XAssetPoolEntry<EmblemSet> *oldFreeHead; // [esp+8h] [ebp-4h]
-
-    oldFreeHead = *pool;
-    *pool = (XAssetPoolEntry<EmblemSet> *)header.xmodelPieces;
-    header.xmodelPieces->name = (const char *)oldFreeHead;
+    // Every pool begins with its 32-bit freeHead (XAssetPool), and a free entry's first word is its next link
+    // (XAssetPoolEntry::next). The decompiled form moved them as native pointers through XAssetPoolEntry ** and
+    // XModelPieces::name: on 64-bit, *pool = ... wrote 8 bytes over the freeHead and the first entry's texture handle.
+    Ptr32<void> *freeHead = (Ptr32<void> *)pool;
+    Ptr32<void> *next = (Ptr32<void> *)header.data;
+    Ptr32_Raw(*next) = Ptr32_Raw(*freeHead);
+    *freeHead = header.data;
 }
 
 XAssetHeader __cdecl DB_AllocMaterial(void *arg)

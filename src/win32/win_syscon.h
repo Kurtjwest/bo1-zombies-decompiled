@@ -32,7 +32,7 @@ struct WinConData // sizeof=0x620
 LRESULT __stdcall InputLineWndProc(HWND__ *hWnd, UINT uMsg, HWND__ *wParam, LPARAM lParam);
 void __cdecl Sys_CreateConsole(HINSTANCE__ *hInstance);
 LRESULT __stdcall ConWndProc(HWND__ *hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-char *__cdecl Conbuf_CleanText(const char *source, char *target, int sizeofTarget);
+int __cdecl Conbuf_CleanText(const char *source, char *target, int sizeofTarget);
 void __cdecl Sys_DestroyConsole();
 void __cdecl Sys_ShowConsole();
 char *__cdecl Sys_ConsoleInput();
