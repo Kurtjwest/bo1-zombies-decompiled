@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "brush_edges.h"
 #include <universal/assertive.h>
 #include <cstring>
@@ -1003,14 +1004,14 @@ LABEL_8:
                     *(&v11 + 4 * v21) = *i;
                     *(&planeIndex + 4 * v21) = v15;
                     v14[4 * v21 - 1] = v14[4 * v20 - 1] + 1;
-                    v14[4 * v21++] = (unsigned int)&v11 + 4 * v20;
+                    v14[4 * v21++] = (unsigned int)BO1_P2I(&v11) + 4 * v20;
                     if ( v15 == v19 )
                         break;
                 }
             }
         }
         v9 = &v11 + 4 * v21 - 4;
-        if ( v9[1] != (const SimplePlaneIntersection *)v19
+        if ( v9[1] != (const SimplePlaneIntersection *)BO1_I2P(v19)
             && !Assert_MyHandler(
                         "c:\\projects_pc\\cod\\codsrc\\src\\qcommon\\../../common/brush_edges.cpp",
                         314,
@@ -1020,11 +1021,11 @@ LABEL_8:
         {
             __debugbreak();
         }
-        *resultCycleCount = (int)v9[2]->xyz + 1;
+        *resultCycleCount = (int)BO1_P2I(v9[2]->xyz) + 1;
         v16 = v9[2];
         while ( v9 )
         {
-            resultCycle[(unsigned int)v16] = *v9;
+            resultCycle[(unsigned int)BO1_P2I(v16)] = *v9;
             v16 = (const SimplePlaneIntersection *)((char *)v16 - 1);
             v9 = (const SimplePlaneIntersection **)v9[3];
         }
@@ -1323,10 +1324,10 @@ int __cdecl NumberOfUniquePoints(const SimplePlaneIntersection **pts, int ptsCou
     v4 = 0;
     for ( i = 0; i < ptsCount; ++i )
     {
-        for ( j = 0; j < v4 && !VecNCompareCustomEpsilon(pts[i]->xyz, (const float *)v3[j], 0.0099999998, 3); ++j )
+        for ( j = 0; j < v4 && !VecNCompareCustomEpsilon(pts[i]->xyz, (const float *)BO1_I2P(v3[j]), 0.0099999998, 3); ++j )
             ;
         if ( j == v4 )
-            v3[v4++] = (unsigned int)pts[i];
+            v3[v4++] = (unsigned int)BO1_P2I(pts[i]);
     }
     return v4;
 }

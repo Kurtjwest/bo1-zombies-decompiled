@@ -42,7 +42,26 @@
 
     #define RADSTRUCT struct
 
-    #if defined(_WIN64)
+    #if defined(__APPLE__) && defined(__aarch64__)
+
+      // macOS (Apple silicon) port: the engine is Windows code, so the RAD headers present their 64-bit Windows
+      // API (DirectSound/Direct3D 9 sound and texture interfaces); the Bink calls behind it are implemented natively
+      // in src/platform/macos/bink_mac.cpp.
+      #define __RADWIN__
+      #define __RADNT__
+      #define __RADINEXE__
+      #define __RAD32__
+      #define __RAD64__
+      #define __RADARM64__
+      #define __RADLITTLEENDIAN__
+      #define RADINLINE inline
+      #define RADRESTRICT __restrict
+      // no u8/s32/... macros: they would rename the type tokens sse2neon builds its NEON intrinsic names from
+      #ifndef RAD_NO_LOWERCASE_TYPES
+        #define RAD_NO_LOWERCASE_TYPES
+      #endif
+
+    #elif defined(_WIN64)
 
       #define __RADWIN__
       #define __RADNT__
@@ -366,7 +385,7 @@
 
     #else
 
-      #ifdef __RADNT__
+      #if defined(__RADNT__) && !defined(__RADARM64__)
         #ifndef _WIN32
           #define _WIN32
         #endif
@@ -504,6 +523,13 @@
           #define UINTa unsigned __int64
           #define SINTa signed __int64
         #endif
+      #elif defined(__RADARM64__)
+        #define U32 unsigned int
+        #define S32 signed int
+        #define UINTADDR unsigned long long
+        #define INTADDR long long
+        #define UINTa unsigned long long
+        #define SINTa signed long long
       #else
         #error Unknown 64-bit processor (see radbase.h)
       #endif

@@ -53,7 +53,7 @@ char __cdecl Monkey_InitCommunication(const char *server)
             memset(&zookeeper.sin_port, 0, 14);
             zookeeper.sin_family = 2;
             zookeeper.sin_port = htons(7000);
-            zookeeper.sin_addr.S_un.S_addr = addr;
+            zookeeper.sin_addr.s_addr = addr;
             if ( connect(g_MonkeySock, (const struct sockaddr *)&zookeeper, 16) )
             {
                 err = WSAGetLastError();
@@ -173,16 +173,10 @@ bool __cdecl Monkey_SocketHasData()
 
     if ( !g_MonkeyConnected )
         return 0;
-    errorfds.fd_count = 0;
-    readfds.fd_array[0] = g_MonkeySock;
-    readfds.fd_count = 1;
-    for ( i = 0; i < errorfds.fd_count && errorfds.fd_array[i] != g_MonkeySock; ++i )
-        ;
-    if ( i == errorfds.fd_count && errorfds.fd_count < 0x40 )
-    {
-        errorfds.fd_array[i] = g_MonkeySock;
-        ++errorfds.fd_count;
-    }
+    FD_ZERO(&errorfds);
+    FD_ZERO(&readfds);
+    FD_SET(g_MonkeySock, &readfds);
+    FD_SET(g_MonkeySock, &errorfds);
     timeout.tv_sec = 0;
     timeout.tv_usec = 0;
     avail = select(g_MonkeySock + 1, &readfds, 0, &errorfds, &timeout);

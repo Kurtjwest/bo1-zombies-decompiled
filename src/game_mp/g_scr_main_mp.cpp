@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <sound/snd_bo1_trace.h>
 #include <game_sp/g_sp_vision.h>
 #include <game_sp/g_sp_testplan.h>
@@ -383,7 +384,7 @@ void __cdecl GScr_SetScriptsForPathNode(scriptInstance_t inst, pathnode_t *loadN
                 {
                     __debugbreak();
                 }
-                loadNode->constant.animscriptfunc = (int)Hunk_FindDataForFile(1, animscript);
+                loadNode->constant.animscriptfunc = (int)BO1_P2I(Hunk_FindDataForFile(1, animscript));
                 if ( !loadNode->constant.animscriptfunc )
                 {
                     // zombies: SP's traverses are animscripts/traverse/<name> (SP 0x007EEC60)
@@ -392,7 +393,7 @@ void __cdecl GScr_SetScriptsForPathNode(scriptInstance_t inst, pathnode_t *loadN
                     Hunk_SetDataForFile(
                         1,
                         animscript,
-                        (void *)loadNode->constant.animscriptfunc,
+                        (void *)BO1_I2P(loadNode->constant.animscriptfunc),
                         (void *(__cdecl *)(int))GScr_AnimscriptAlloc);
                 }
                 if ( !loadNode->constant.animscriptfunc )
@@ -1128,7 +1129,7 @@ int __cdecl Scr_GetArrayValues_Vector(
                 return 0;
             }
             v8 = &(*vector_array)[3 * vector_array_index];
-            next = (float *)entry_value->u.next;
+            next = (float *)BO1_I2P(entry_value->u.next);
             *v8 = *next;
             v8[1] = next[1];
             v8[2] = next[2];
@@ -1740,7 +1741,7 @@ void GScr_AnimHasNotetrack()
     anim = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER).linkPointer;
     name = (unsigned __int16)Scr_GetConstString(1u, SCRIPTINSTANCE_SERVER);
     Anims = Scr_GetAnims(HIWORD(anim), SCRIPTINSTANCE_SERVER);
-    v1 = XAnimNotetrackExists(Anims, (unsigned __int16)anim, name);
+    v1 = XAnimNotetrackExists(Anims, (unsigned __int16)BO1_P2I(anim), name);
     Scr_AddBool(v1, SCRIPTINSTANCE_SERVER);
 }
 
@@ -1754,7 +1755,7 @@ void GScr_GetNotetrackTimes()
     name.intValue = Scr_GetConstString(1u, SCRIPTINSTANCE_SERVER);
     Scr_MakeArray(SCRIPTINSTANCE_SERVER);
     Anims = Scr_GetAnims(HIWORD(anim), SCRIPTINSTANCE_SERVER);
-    XAnimAddNotetrackTimesToScriptArray(Anims, (unsigned __int16)anim, name.stringValue);
+    XAnimAddNotetrackTimesToScriptArray(Anims, (unsigned __int16)BO1_P2I(anim), name.stringValue);
 }
 
 void GScr_GetBrushModelCenter()
@@ -16235,9 +16236,9 @@ void print_0()
         for (i = 0; ; i = (const dvar_s *)((char *)i + 1))
         {
             result = i;
-            if ((int)i >= num)
+            if ((int)BO1_P2I(i) >= num)
                 break;
-            DebugString = Scr_GetDebugString((unsigned int)i, SCRIPTINSTANCE_SERVER);
+            DebugString = Scr_GetDebugString((unsigned int)BO1_P2I(i), SCRIPTINSTANCE_SERVER);
             Com_Printf(level.scriptPrintChannel, "%s", DebugString);
         }
     }

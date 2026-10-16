@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <qcommon/actor_model_state.h>
 #include <game_sp/g_sp_levelstart.h>
 #include "g_utils_mp.h"
@@ -840,7 +841,7 @@ int __cdecl G_EntLinkToInternal(gentity_s *ent, gentity_s *parent, unsigned int 
             break;
     }
     tagInfo = MT_Alloc(112, 17, SCRIPTINSTANCE_SERVER);
-    *(unsigned int *)tagInfo = (unsigned int)parent;
+    *(unsigned int *)tagInfo = (unsigned int)BO1_P2I(parent);
     *((_WORD *)tagInfo + 4) = 0;
     if ( tagName )
     {
@@ -858,7 +859,7 @@ int __cdecl G_EntLinkToInternal(gentity_s *ent, gentity_s *parent, unsigned int 
         }
     }
     Scr_SetString((unsigned __int16 *)tagInfo + 4, tagName, SCRIPTINSTANCE_SERVER);
-    *((unsigned int *)tagInfo + 1) = (unsigned int)parent->tagChildren;
+    *((unsigned int *)tagInfo + 1) = (unsigned int)BO1_P2I(parent->tagChildren);
     *((unsigned int *)tagInfo + 3) = index;
     memset((unsigned __int8 *)tagInfo + 16, 0, 0x30u);
     parent->tagChildren = ent;

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_dpvs_entity.h"
 #include "r_model_pose.h"
 #include <cgame/cg_pose_utils.h>
@@ -30,7 +31,7 @@ void __cdecl R_AddEntitySurfacesInFrustumCmd(unsigned __int16 *data)
         {
             __debugbreak();
         }
-        planes = (const DpvsPlane *)*((unsigned int *)data + 1);
+        planes = (const DpvsPlane *)BO1_I2P(*((unsigned int *)data + 1));
         v2 = data[4];
         minmax = localSceneEnt->cull.mins;
         v5 = 0;
@@ -66,7 +67,7 @@ LABEL_14:
             {
                 __debugbreak();
             }
-            *(_BYTE *)(localSceneEnt->entnum + *((unsigned int *)data + 3)) = 1;
+            *(_BYTE *)BO1_I2P((localSceneEnt->entnum + *((unsigned int *)data + 3))) = 1;
         }
         else
         {

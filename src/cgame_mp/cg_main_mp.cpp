@@ -1919,6 +1919,12 @@ void __cdecl CG_RegisterDvars()
 
 int cg_entArrayCount = MAX_GENTITIES; // mod (L43): see cg_local_mp.h
 
+// element counts of the per-local-client arrays (CG_AllocateClientMemory)
+#define CG_FAKE_ENTITY_COUNT 512 // cg_fakeEntitiesInuseArray
+#define CG_WEAPON_INFO_COUNT 2048
+#define CG_DESTRUCTIBLE_COUNT 144 // destructible.cpp walks 0x90
+#define CG_IK_STATE_COUNT 32
+
 int __cdecl CG_AllocateClientMemory_SizeRequired(int maxLocalClients)
 {
     int localClientNum; // [esp+0h] [ebp-8h]
@@ -1926,9 +1932,18 @@ int __cdecl CG_AllocateClientMemory_SizeRequired(int maxLocalClients)
 
     // mod (L43): bo1_mod_netents (command line) sizes cg_entitiesArray / cg_entityOriginArray for numbers 1537..2046
     cg_entArrayCount = Dvar_GetInt("bo1_mod_netents") ? MAX_CL_ENTNUM : MAX_GENTITIES;
-    size = 907268 * maxLocalClients;
+    // CG_AllocateClientMemory's arrays from their structure sizes (the exe's 907268 + 1062080 per local client only
+    // hold for its 32-bit layouts), plus room for each allocation's alignment
+    size = (int)(sizeof(cg_s) + sizeof(cgs_t) + CG_FAKE_ENTITY_COUNT * sizeof(fake_centity_s) + sizeof(ViewModelInfo) + 4 * 128) * maxLocalClients;
     for ( localClientNum = 0; localClientNum < maxLocalClients; ++localClientNum )
-        size += 1062080 + (cg_entArrayCount - MAX_GENTITIES) * (int)sizeof(centity_s) + (cg_entArrayCount > MAX_GENTITIES ? (MAX_CL_ENTNUM - 1536) * 12 : 0);
+    {
+        size += (int)(CG_WEAPON_INFO_COUNT * sizeof(weaponInfo_s)
+            + cg_entArrayCount * sizeof(centity_s)
+            + (cg_entArrayCount > MAX_GENTITIES ? MAX_CL_ENTNUM : 1536) * 12
+            + CG_DESTRUCTIBLE_COUNT * sizeof(Destructible)
+            + CG_IK_STATE_COUNT * sizeof(IKState)
+            + 5 * 16);
+    }
     return size;
 }
 
@@ -1936,21 +1951,20 @@ void __cdecl CG_AllocateClientMemory(HunkUser *hunk, int maxLocalClients)
 {
     int localClientNum; // [esp+0h] [ebp-4h]
 
-    cgArray = (cg_s *)Hunk_UserAlloc(hunk, 466048 * maxLocalClients, 128, "cgArray");
-    // zombies: was 12712 * maxLocalClients (the MP exe's sizeof(cgs_t)); cgs_t holds 32 actor corpses now
-    // (MAX_ACTOR_CORPSES_SP), and the literal let cgsArray overrun into the next hunk block.
-    static_assert(sizeof(cg_s) <= 466048, "cgArray literal");
+    // the exe's literals (466048, 415744, 52, 73728, 24768, 117760 bytes) are its 32-bit structure sizes times the
+    // counts; zombies: cgs_t holds 32 actor corpses (MAX_ACTOR_CORPSES_SP), so it was always sized from the type
+    cgArray = (cg_s *)Hunk_UserAlloc(hunk, sizeof(cg_s) * maxLocalClients, 128, "cgArray");
     cgsArray = (cgs_t *)Hunk_UserAlloc(hunk, sizeof(cgs_t) * maxLocalClients, 8, "cgsArray");
-    cg_fakeEntitiesArray = (fake_centity_s *)Hunk_UserAlloc(hunk, 415744 * maxLocalClients, 4, "cg_fakeEntitiesArray");
-    cg_viewModelArray = (ViewModelInfo *)Hunk_UserAlloc(hunk, 52 * maxLocalClients, 4, "cg_viewModelArray");
+    cg_fakeEntitiesArray = (fake_centity_s *)Hunk_UserAlloc(hunk, CG_FAKE_ENTITY_COUNT * sizeof(fake_centity_s) * maxLocalClients, 8, "cg_fakeEntitiesArray");
+    cg_viewModelArray = (ViewModelInfo *)Hunk_UserAlloc(hunk, sizeof(ViewModelInfo) * maxLocalClients, 8, "cg_viewModelArray");
     for ( localClientNum = 0; localClientNum < maxLocalClients; ++localClientNum )
     {
-        cg_weaponsArray[localClientNum] = (weaponInfo_s *)Hunk_UserAlloc(hunk, 73728, 4, "cg_weaponsArray");
-        cg_entitiesArray[localClientNum] = (centity_s *)Hunk_UserAlloc(hunk, cg_entArrayCount * sizeof(centity_s), 4, "cg_entitiesArray"); // mod (L43): retail 827392
+        cg_weaponsArray[localClientNum] = (weaponInfo_s *)Hunk_UserAlloc(hunk, CG_WEAPON_INFO_COUNT * sizeof(weaponInfo_s), 8, "cg_weaponsArray");
+        cg_entitiesArray[localClientNum] = (centity_s *)Hunk_UserAlloc(hunk, cg_entArrayCount * sizeof(centity_s), 8, "cg_entitiesArray"); // mod (L43): retail 827392
         cg_entityOriginArray[localClientNum] = (float (*)[3])Hunk_UserAlloc(hunk, (cg_entArrayCount > MAX_GENTITIES ? MAX_CL_ENTNUM : 1536) * 12, 4, "cg_entityOriginArray"); // mod (L43): retail 18432
-        cg_destructibles[localClientNum] = (Destructible *)Hunk_UserAlloc(hunk, 24768, 4, "cg_destructibles");
-        cg_ikBuf[localClientNum] = (unsigned __int8 *)Hunk_UserAlloc(hunk, 117760, 16, "ikStatesArray");
-        memset(cg_ikBuf[localClientNum], 0, 0x1CC00u);
+        cg_destructibles[localClientNum] = (Destructible *)Hunk_UserAlloc(hunk, CG_DESTRUCTIBLE_COUNT * sizeof(Destructible), 8, "cg_destructibles");
+        cg_ikBuf[localClientNum] = (unsigned __int8 *)Hunk_UserAlloc(hunk, CG_IK_STATE_COUNT * sizeof(IKState), 16, "ikStatesArray");
+        memset(cg_ikBuf[localClientNum], 0, CG_IK_STATE_COUNT * sizeof(IKState));
         IK_AllocateLocalClientMemory(cg_ikBuf[localClientNum], localClientNum);
     }
 }

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "glass_load_obj.h"
 #include "glass.h"
 #include <universal/com_memory.h>
@@ -33,10 +34,10 @@ Glasses *__cdecl GetGlasses()
 {
     bool v1; // [esp+4h] [ebp-8h]
 
-    v1 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+    v1 = fs_gameDirVar && *(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer);
     if ( v1 || !useFastFile->current.enabled )
-        return (Glasses *)((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_LoadObj)(GetGlasses_LoadObj);
+        return (Glasses *)BO1_I2P(((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_LoadObj)(GetGlasses_LoadObj));
     else
-        return (Glasses *)((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_FastFile)(GetGlasses_FastFile);
+        return (Glasses *)BO1_I2P(((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_FastFile)(GetGlasses_FastFile));
 }
 

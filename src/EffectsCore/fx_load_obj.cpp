@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "fx_load_obj.h"
 #include <universal/com_memory.h>
 #include <gfx_d3d/r_model.h>
@@ -243,7 +244,7 @@ XModel *__cdecl FX_RegisterModel(char *modelName)
     return R_RegisterModel(modelName);
 }
 
-bool __cdecl FX_RegisterMarkMaterials(const char *materialName, Material **materials)
+bool __cdecl FX_RegisterMarkMaterials(const char *materialName, Ptr32<Material> *materials)
 {
     Material *v2; // eax
     char materialNameWithPrefix[260]; // [esp+14h] [ebp-118h] BYREF
@@ -1478,7 +1479,7 @@ const FxEffectDef *__cdecl FX_LoadFailed(const char *name)
     baseBytesNeeded = fx_load.defaultEffect->totalSize - (v5 - fx_load.defaultEffect->name);
     effectDef = FX_AllocMem(fx_load.defaultEffect->totalSize - (v5 - (fx_load.defaultEffect->name + 1)) + strlen(name));
     memcpy(effectDef, (unsigned __int8 *)fx_load.defaultEffect, baseBytesNeeded);
-    *(unsigned int *)effectDef = (unsigned int) & effectDef[baseBytesNeeded];
+    *(unsigned int *)effectDef = (unsigned int) BO1_P2I(& effectDef[baseBytesNeeded]);
     v4 = name;
     v3 = *(_BYTE **)effectDef;
     do
@@ -1491,9 +1492,9 @@ const FxEffectDef *__cdecl FX_LoadFailed(const char *name)
     *((unsigned int *)effectDef + 7) += effectDef - (unsigned __int8 *)fx_load.defaultEffect;
     for ( elemIndex = 0; elemIndex < *((unsigned int *)effectDef + 5) + *((unsigned int *)effectDef + 4); ++elemIndex )
     {
-        v7 = (unsigned int *)(*((unsigned int *)effectDef + 7) + 292 * elemIndex + 188);
+        v7 = (unsigned int *)BO1_I2P((*((unsigned int *)effectDef + 7) + 292 * elemIndex + 188));
         *v7 += relocationDistance;
-        v6 = (unsigned int *)(*((unsigned int *)effectDef + 7) + 292 * elemIndex + 192);
+        v6 = (unsigned int *)BO1_I2P((*((unsigned int *)effectDef + 7) + 292 * elemIndex + 192));
         *v6 += relocationDistance;
     }
     return (const FxEffectDef *)effectDef;

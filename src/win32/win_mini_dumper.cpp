@@ -103,7 +103,7 @@ bool miniDumper::enablePrivilege(
                 void *hToken,
                 _TOKEN_PRIVILEGES *ptpOld)
 {
-    unsigned long cbOld; // [esp+8h] [ebp-18h] BYREF
+    DWORD cbOld; // [esp+8h] [ebp-18h] BYREF
     _TOKEN_PRIVILEGES tp; // [esp+Ch] [ebp-14h] BYREF
     int bOk; // [esp+1Ch] [ebp-4h]
 

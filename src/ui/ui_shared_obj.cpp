@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_shared_obj.h"
 #include <universal/com_files.h>
 #include <universal/q_parse.h>
@@ -336,11 +337,12 @@ struct// $CD64A558AFC89A5F4974E935559855BB // sizeof=0x141C
                                         // Asset_Parse+13E/o ...
     MenuList menuList;                  // XREF: UI_LoadMenu_LoadObj+17/w
                                         // UI_LoadMenu_LoadObj:loc_77E012/o ...
-    itemDef_s *items[512];              // XREF: Menu_Init+7C/o
+    // the parsed lists are copied (memcpy) into the menu assets, whose pointer arrays have 32-bit elements
+    Ptr32<itemDef_s> items[512];        // XREF: Menu_Init+7C/o
                                         // Menu_PostParse+5A/o
-    animParamsDef_t *animStates[256];   // XREF: Item_Init+72/o
+    Ptr32<animParamsDef_t> animStates[256]; // XREF: Item_Init+72/o
                                         // Item_PostParse+6B/o ...
-    menuDef_t *menus[512];              // XREF: UI_LoadMenu_LoadObj+17/o
+    Ptr32<menuDef_t> menus[512];        // XREF: UI_LoadMenu_LoadObj+17/o
                                         // UI_LoadMenus_LoadObj+1A/o
 } g_load_0;
 
@@ -1097,7 +1099,7 @@ int __cdecl PC_EventScript_Parse(int handle, GenericEventScript **baseScript)
         {
             if ( !PC_ReadTokenHandle(handle, &pc_token) )
                 return 0;
-            if ( &pc_token != (pc_token_s *)-16 && pc_token.string[0] == 125 )
+            if ( &pc_token != (pc_token_s *)BO1_I2P(-16) && pc_token.string[0] == 125 )
                 break;
             if ( !v7 || I_stricmp(pc_token.string, "if") )
             {
@@ -1137,7 +1139,7 @@ LABEL_75:
                         }
                         if ( !PC_ReadTokenHandle(handle, &pc_token) )
                             return 0;
-                        if ( &pc_token == (pc_token_s *)-16 || pc_token.string[0] != 123 )
+                        if ( &pc_token == (pc_token_s *)BO1_I2P(-16) || pc_token.string[0] != 123 )
                         {
                             Com_PrintError(16, "Expected '{' after 'else'.\n");
                             return 0;
@@ -1166,7 +1168,7 @@ LABEL_75:
                         goto LABEL_36;
                     if ( !PC_ReadTokenHandle(handle, &pc_token) )
                         return 0;
-                    if ( &pc_token == (pc_token_s *)-16 || pc_token.string[0] != 123 )
+                    if ( &pc_token == (pc_token_s *)BO1_I2P(-16) || pc_token.string[0] != 123 )
                     {
                         Com_PrintError(16, "Expected '{' after 'elseif'.\n");
                         return 0;
@@ -1200,7 +1202,7 @@ LABEL_36:
                 }
                 if ( !PC_ReadTokenHandle(handle, &pc_token) )
                     return 0;
-                if ( &pc_token == (pc_token_s *)-16 || pc_token.string[0] != 123 )
+                if ( &pc_token == (pc_token_s *)BO1_I2P(-16) || pc_token.string[0] != 123 )
                 {
                     Com_PrintError(16, "Expected '{' after 'if'.\n");
                     return 0;
@@ -1573,7 +1575,7 @@ void __cdecl Item_PostParse(itemDef_s *item)
     if ( item->animInfo )
     {
         size = 4 * item->animInfo->animStateCount;
-        item->animInfo->animStates = (animParamsDef_t **)UI_Alloc(size, 4);
+        item->animInfo->animStates = (Ptr32<animParamsDef_t> *)UI_Alloc(size, 4);
         memcpy((unsigned __int8 *)item->animInfo->animStates, (unsigned __int8 *)g_load_0.animStates, size);
     }
 }
@@ -1753,7 +1755,7 @@ int    MenuParse_blurWorld(menuDef_t *menu, int handle)
 
 int __cdecl MenuParse_legacySplitScreenScale(menuDef_t *menu, int handle)
 {
-    return SetItemStaticFlag(menu, handle, (int)&objBuf[1758][2]);
+    return SetItemStaticFlag(menu, handle, (int)BO1_P2I(&objBuf[1758][2]));
 }
 
 int __cdecl SetItemStaticFlag(menuDef_t *menu, int handle, int flag)
@@ -3560,7 +3562,7 @@ int __cdecl ItemParse_state(itemDef_s *item, int handle)
         item->animInfo->animStates = g_load_0.animStates;
         *item->animInfo->animStates = (animParamsDef_t *)UI_Alloc(0x6Cu, 4);
         Item_PropertiesToAnimState(item, *item->animInfo->animStates);
-        **(unsigned int **)item->animInfo->animStates = (unsigned int)String_Alloc("Default");
+        **(unsigned int **)item->animInfo->animStates = (unsigned int)BO1_P2I(String_Alloc("Default"));
         ++item->animInfo->animStateCount;
     }
     animParams = (animParamsDef_t *)UI_Alloc(0x6Cu, 4);
@@ -3602,9 +3604,9 @@ void __cdecl Item_SetupKeywordHash()
 MenuList *__cdecl UI_LoadMenu(const char *menuFile, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (MenuList *)((int (__cdecl *)(const char *, int))UI_LoadMenus_FastFile)(menuFile, imageTrack);
+        return (MenuList *)BO1_I2P(((int (__cdecl *)(const char *, int))UI_LoadMenus_FastFile)(menuFile, imageTrack));
     else
-        return (MenuList *)((int (__cdecl *)(const char *, int))UI_LoadMenu_LoadObj)(menuFile, imageTrack);
+        return (MenuList *)BO1_I2P(((int (__cdecl *)(const char *, int))UI_LoadMenu_LoadObj)(menuFile, imageTrack));
 }
 
 MenuList * UI_LoadMenu_LoadObj(char *menuFile, int imageTrack)
@@ -3818,7 +3820,7 @@ void __cdecl Menu_PostParse(menuDef_t *menu)
     if ( !menu && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ui\\ui_shared_obj.cpp", 4324, 0, "%s", "menu") )
         __debugbreak();
     size = 4 * menu->itemCount;
-    menu->items = (itemDef_s **)UI_Alloc(size, 4);
+    menu->items = (Ptr32<itemDef_s> *)UI_Alloc(size, 4);
     memcpy((unsigned __int8 *)menu->items, (unsigned __int8 *)g_load_0.items, size);
     if ( menu->fullScreen )
     {
@@ -3835,8 +3837,8 @@ MenuList *__cdecl UI_LoadMenus(const char *menuFile, int imageTrack)
     if ( G_ExitAfterToolComplete() )
         return 0;
     if ( useFastFile->current.enabled )
-        return (MenuList *)((int (__cdecl *)(const char *, int))UI_LoadMenus_FastFile)(menuFile, imageTrack);
-    return (MenuList *)((int (__cdecl *)(const char *, int))UI_LoadMenus_LoadObj)(menuFile, imageTrack);
+        return (MenuList *)BO1_I2P(((int (__cdecl *)(const char *, int))UI_LoadMenus_FastFile)(menuFile, imageTrack));
+    return (MenuList *)BO1_I2P(((int (__cdecl *)(const char *, int))UI_LoadMenus_LoadObj)(menuFile, imageTrack));
 }
 
 char menuBuf[32768];

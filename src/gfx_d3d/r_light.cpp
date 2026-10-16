@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_light.h"
 #include <qcommon/common.h>
 #include "r_light_load_obj.h"
@@ -535,7 +536,7 @@ int __cdecl R_AllowBspSpotLightShadows(int surfIndex, void *__formal)
 
 int __cdecl R_AllowBspSpotLight(int surfIndex, void *bspLightCallbackAsVoid)
 {
-    if (*(_BYTE *)(*(_DWORD *)bspLightCallbackAsVoid + surfIndex))
+    if (*(_BYTE *)BO1_I2P((*(_DWORD *)bspLightCallbackAsVoid + surfIndex)))
         return BoxInPlanes(
             scene.dynamicSpotLightPlanes,
             6u,
@@ -558,7 +559,7 @@ void __cdecl R_GetStaticModelLightSurfs(const GfxLight *visibleLights, int visib
     unsigned int surfaceCount; // [esp+64h] [ebp-844h]
     const GfxLight *light; // [esp+68h] [ebp-840h]
     GfxStaticModelId staticModelId; // [esp+6Ch] [ebp-83Ch]
-    Material *const *pMaterial; // [esp+70h] [ebp-838h]
+    const Ptr32<Material> *pMaterial; // [esp+70h] [ebp-838h]
     unsigned __int16 list[2]; // [esp+74h] [ebp-834h] BYREF
     unsigned int *lodData; // [esp+78h] [ebp-830h]
     int lod; // [esp+7Ch] [ebp-82Ch]

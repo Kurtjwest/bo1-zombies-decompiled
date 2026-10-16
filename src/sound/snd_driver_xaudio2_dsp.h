@@ -1,7 +1,7 @@
 #pragma once
 
-#include <XAPOBase.h>
-#include <XAudio2.h>
+#include <xapobase.h>
+#include <xaudio2.h>
 #include <universal/assertive.h>
 #include "snd_radverb.h"
 

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_players_mp.h"
 #include "cg_local_mp.h"
 #include <client_mp/cl_cgame_mp.h>
@@ -478,7 +479,7 @@ void __cdecl CG_HighlightPlayer(int localClientNum, centity_s *cent, ShaderConst
     {
         clientNum = cent->nextState.clientNum;
         client = &cgameGlob->bgs.clientinfo[clientNum];
-        if ( (const cg_s *)((char *)cgameGlob + clientNum * 1480) == (const cg_s *)-389096
+        if ( (const cg_s *)((char *)cgameGlob + clientNum * 1480) == (const cg_s *)BO1_I2P(-389096)
             && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_players_mp.cpp", 853, 0, "%s", "client") )
         {
             __debugbreak();
@@ -599,7 +600,7 @@ LABEL_11:
 int delta = 5;
 void __cdecl CG_Player(int localClientNum, centity_s *cent)
 {
-    XModel **worldModel; // esi
+    Ptr32<XModel> *worldModel; // esi
     unsigned int String; // eax
     bool v4; // [esp+38h] [ebp-1D8h]
     float v5; // [esp+3Ch] [ebp-1D4h]
@@ -1329,7 +1330,7 @@ void __cdecl CG_PlayerUpdateUserRigidBody(int localClientNum, centity_s *cent)
     if ( use_rigid_body )
     {
         if ( !cent->pose.physUserBody )
-            cent->pose.physUserBody = (int)Phys_CreateUserBody(cent->pose.origin, cent->nextState.number, PHYS_GEOM_CYLINDER);
+            cent->pose.physUserBody = (int)BO1_P2I(Phys_CreateUserBody(cent->pose.origin, cent->nextState.number, PHYS_GEOM_CYLINDER));
         if ( cent->pose.physUserBody )
             Phys_SetUserBody(cent->pose.physUserBody, cent->pose.origin);
         if ( (p_nextState->lerp.eFlags & 8) != 0 )
@@ -1367,7 +1368,7 @@ void __cdecl CG_PlayerUpdateUserRigidBody(int localClientNum, centity_s *cent)
         proneFeetPos[1] = (float)(proneFeetDist * dir[1]) + cent->pose.origin[1];
         proneFeetPos[2] = (float)(proneFeetDist * dir[2]) + cent->pose.origin[2];
         if ( !cent->pose.physUserBodyProneFeet )
-            cent->pose.physUserBodyProneFeet = (int)Phys_CreateUserBody(proneFeetPos, cent->nextState.number + 0x10000, PHYS_GEOM_CYLINDER_LARGE);
+            cent->pose.physUserBodyProneFeet = (int)BO1_P2I(Phys_CreateUserBody(proneFeetPos, cent->nextState.number + 0x10000, PHYS_GEOM_CYLINDER_LARGE));
         if ( cent->pose.physUserBodyProneFeet )
             Phys_SetUserBody(cent->pose.physUserBodyProneFeet, proneFeetPos);
     }

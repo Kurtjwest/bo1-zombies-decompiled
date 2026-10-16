@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "fx_convert.h"
 #include <gfx_d3d/r_material_load_obj.h>
 #include "FxCurve.h"
@@ -72,7 +73,7 @@ const FxEffectDef *__cdecl FX_Convert(const FxEditorEffectDef *editorEffect, voi
                     if ( !*((unsigned int *)elemVisual->anonymous + 59) )
                     {
                         v2 = FX_RegisterPhysPreset("default");
-                        *((unsigned int *)elemVisual->anonymous + 59) = (unsigned int)v2;
+                        *((unsigned int *)elemVisual->anonymous + 59) = (unsigned int)BO1_P2I(v2);
                         Com_PrintError(
                             20,
                             "ERROR: no physics preset specified for the FX model [%s]\n",
@@ -637,7 +638,7 @@ int __cdecl FX_FindEmission(const FxEffectDef *emission, const FxEditorEffectDef
     {
         __debugbreak();
     }
-    if ( editorEffect == (const FxEditorEffectDef *)-96
+    if ( editorEffect == (const FxEditorEffectDef *)BO1_I2P(-96)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp",
                     1204,
@@ -1311,7 +1312,7 @@ void __cdecl FxCurveIterator_MoveToTime(FxCurveIterator *source, float time)
     {
         __debugbreak();
     }
-    if ( source->master == (const FxCurve *)-8
+    if ( source->master == (const FxCurve *)BO1_I2P(-8)
         && !Assert_MyHandler(
                     "c:\\projects_pc\\cod\\codsrc\\src\\effectscore\\FxCurve.h",
                     87,
@@ -1945,7 +1946,7 @@ void __cdecl FX_BoundFloatRange(FxFloatRange *range, float lower, float upper)
     }
 }
 
-void __cdecl FX_ConvertTrail(FxTrailDef **outTrailDef, const FxEditorElemDef *edElemDef, unsigned __int8 **mempool)
+void __cdecl FX_ConvertTrail(Ptr32<FxTrailDef> *outTrailDef, const FxEditorElemDef *edElemDef, unsigned __int8 **mempool)
 {
     if ( edElemDef->elemType != 5
         && !Assert_MyHandler(
@@ -2032,7 +2033,7 @@ void __cdecl FX_ConvertTrail_CompileVertices(
     SNAP_TOLERANCE_NORM = 0.95f;
     SMOOTH_THRESHOLD = 0.0f;
     trailDef = &edElemDef->trailDef;
-    if ( edElemDef != (const FxEditorElemDef *)-832 )
+    if ( edElemDef != (const FxEditorElemDef *)BO1_I2P(-832) )
     {
         if ( !trailDef
             && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_convert.cpp", 875, 0, "%s", "trailDef") )

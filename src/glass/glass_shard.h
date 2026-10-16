@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 #include <universal/com_math.h>
 #include <physics/phys_local.h>
 #include <gfx_d3d/r_material.h>
@@ -102,7 +103,7 @@ struct ShardGroup // sizeof=0x54
         int mod);
     int __thiscall TracePoint(float *p0, const float *p1);
 };
-static_assert(sizeof(ShardGroup) == 84);
+BO1_LAYOUT32_ASSERT(sizeof(ShardGroup) == 84);
 
 struct GlassShardMeshVertex // sizeof=0x2
 {
@@ -357,7 +358,7 @@ struct GlassShard // sizeof=0x90
     static int lastFreeMemorySize;
     static int removeReasonsCount[BO1_TOTAL];
 };
-static_assert(sizeof(GlassShard) == 144);
+BO1_LAYOUT32_ASSERT(sizeof(GlassShard) == 144);
 
 void GlassShard_Defrag(void *ptr); // changed from static member func
 

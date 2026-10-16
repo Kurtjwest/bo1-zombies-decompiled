@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cl_main_pc_mp.h"
 
 #include <live/live_storage_win.h>
@@ -341,7 +342,7 @@ void __cdecl CL_ConnectHackDW()
 
 bool __cdecl CL_CDKeyValidate(netadr_t addr)
 {
-#ifdef WIN32
+#if defined(WIN32) || defined(__APPLE__)
     // no-steam: without a logged-on Steam client there is no ticket to make; connect without one (the server
     // decides: SV_GetChallenge admits ticketless clients only when it runs without Steam itself).
     if (!g_steamInitialized)
@@ -794,9 +795,9 @@ void CL_RconLogin()
     if ( Cmd_Argc() == 3 )
     {
         password = (char *)Cmd_Argv(2);
-        v0 = (unsigned int)&password[strlen(password) + 1];
-        if ( v0 - (unsigned int)(password + 1) < 0x18 )
-            memcpy((unsigned __int8 *)&rconGlob, (unsigned __int8 *)password, v0 - (unsigned int)password);
+        v0 = (unsigned int)BO1_P2I(&password[strlen(password) + 1]);
+        if ( v0 - (unsigned int)BO1_P2I((password + 1)) < 0x18 )
+            memcpy((unsigned __int8 *)&rconGlob, (unsigned __int8 *)password, v0 - (unsigned int)BO1_P2I(password));
         else
             Com_Printf(14, "rcon password must be %i characters or less\n", 24);
     }
@@ -1280,7 +1281,7 @@ void __cdecl CL_WWWDownload()
         else if ( ret == DL_DONE)
         {
             cls.download = 0;
-            FS_BuildOSPath((char *)fs_homepath->current.integer, 0, cls.originalDownloadName, to_ospath);
+            FS_BuildOSPath((char *)BO1_I2P(fs_homepath->current.integer), 0, cls.originalDownloadName, to_ospath);
             remove(to_ospath);
             if ( rename(cls.downloadTempName, to_ospath) )
             {
@@ -2306,7 +2307,7 @@ void __cdecl CL_QuickMatch_Frame()
                             0,
                             "%s\n\t%s",
                             "\"Unknown quickmatchstate! %i\\n\"",
-                            (const char *)s_quickmatchstate) )
+                            (const char *)BO1_I2P(s_quickmatchstate)) )
             {
                 __debugbreak();
             }

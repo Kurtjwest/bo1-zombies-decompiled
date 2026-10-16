@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_image.h"
 #include <universal/com_memory.h>
 #include <xanim/xmodel.h>
@@ -88,7 +89,7 @@ void __cdecl R_GetImageList(ImageList *imageList)
 
 void __cdecl R_AddImageToList(XAssetHeader header, XAssetHeader *data)
 {
-    if ( (unsigned int)data->xmodelPieces >= sizeof(((ImageList *)0)->image) / sizeof(GfxImage *)
+    if ( Ptr32_Raw(data->xmodelPieces) >= sizeof(((ImageList *)0)->image) / sizeof(GfxImage *)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
                     225,
@@ -98,7 +99,7 @@ void __cdecl R_AddImageToList(XAssetHeader header, XAssetHeader *data)
     {
         __debugbreak();
     }
-    data[(int)data->xmodelPieces++ + 1] = header;
+    data[(int)BO1_P2I(data->xmodelPieces++) + 1] = header;
 }
 
 void __cdecl R_SumOfUsedImages(Image_MemUsage *usage)
@@ -342,7 +343,7 @@ void __cdecl R_ShutdownImages()
         if ( image )
         {
             if ( Image_IsProg(image) )
-                v4[v2++] = (unsigned int)image;
+                v4[v2++] = (unsigned int)BO1_P2I(image);
             else
                 Image_Free(imageGlobals.imageHashTable[i]);
         }
@@ -350,7 +351,7 @@ void __cdecl R_ShutdownImages()
     memset((unsigned __int8 *)&imageGlobals, 0, 0x2000u);
     for ( j = 0; j < v2; ++j )
     {
-        imagea = (GfxImage *)v4[j];
+        imagea = (GfxImage *)BO1_I2P(v4[j]);
         imageGlobals.imageHashTable[Image_GetAvailableHashLocation(imagea->name)] = imagea;
     }
 }
@@ -709,12 +710,12 @@ void __cdecl R_DelayLoadImage(XAssetHeader header, void *data)
     if (image->delayLoadPixels)
     {
         image->delayLoadPixels = 0;
-        externalDataSize = (const char *)image->cardMemory.platform[0];
+        externalDataSize = (const char *)BO1_I2P(image->cardMemory.platform[0]);
         image->cardMemory.platform[0] = 0;
         image->cardMemory.platform[1] = 0;
         if (r_loadForRenderer->current.enabled && !Image_LoadFromFile(image, 0))
             Image_AssignDefaultTexture(image);
-        DB_LoadedExternalData((unsigned int)externalDataSize);
+        DB_LoadedExternalData((unsigned int)BO1_P2I(externalDataSize));
     }
 }
 
@@ -938,7 +939,7 @@ GfxImage *__cdecl Image_FindExisting_FastFile(const char *name)
 GfxImage *__cdecl Image_Register(char *imageName, unsigned __int8 semantic, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (GfxImage *)((int (__cdecl *)(char *, unsigned int, int))Image_Register_FastFile)(imageName, semantic, imageTrack);
+        return (GfxImage *)BO1_I2P(((int (__cdecl *)(char *, unsigned int, int))Image_Register_FastFile)(imageName, semantic, imageTrack));
     else
         return Image_Register_LoadObj(imageName, semantic, imageTrack);
 }
@@ -1319,13 +1320,13 @@ GfxImage *R_InitRawImage()
     rgp.rawImage = result;
     if ( !result )
     {
-        result = (GfxImage *)Assert_MyHandler(
+        result = (GfxImage *)BO1_I2P(Assert_MyHandler(
                                                      "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
                                                      1466,
                                                      1,
                                                      "%s",
-                                                     "rgp.rawImage");
-        if ( !(_BYTE)result )
+                                                     "rgp.rawImage"));
+        if ( !(_BYTE)BO1_P2I(result) )
             __debugbreak();
     }
     return result;
@@ -1419,13 +1420,13 @@ GfxImage *R_InitCodeImages()
     rgp.r32fWhiteImage = result;
     if ( !result )
     {
-        result = (GfxImage *)Assert_MyHandler(
+        result = (GfxImage *)BO1_I2P(Assert_MyHandler(
                                                      "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_image.cpp",
                                                      1568,
                                                      1,
                                                      "%s",
-                                                     "rgp.r32fWhiteImage");
-        if ( !(_BYTE)result )
+                                                     "rgp.r32fWhiteImage"));
+        if ( !(_BYTE)BO1_P2I(result) )
             __debugbreak();
     }
     rgp.heatMapImage = 0;

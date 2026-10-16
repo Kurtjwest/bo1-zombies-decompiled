@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_servercmds_mp.h"
 #include "cg_actors_mp.h"
 #include <client_mp/cl_cgame_mp.h>
@@ -1268,7 +1269,7 @@ void __cdecl CG_ConfigStringModified(int localClientNum)
                                 }
                                 else
                                 {
-                                    *((unsigned int *)cgs + num - 1403) = (unsigned int)FX_Register(str);
+                                    *((unsigned int *)cgs + num - 1403) = (unsigned int)BO1_P2I(FX_Register(str));
                                     if ( !*((unsigned int *)cgs + num - 1403)
                                         && !Assert_MyHandler(
                                                     "C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_servercmds_mp.cpp",
@@ -1283,7 +1284,7 @@ void __cdecl CG_ConfigStringModified(int localClientNum)
                             }
                             else
                             {
-                                *((unsigned int *)cgs + num - 1403) = (unsigned int)R_RegisterModel(str);
+                                *((unsigned int *)cgs + num - 1403) = (unsigned int)BO1_P2I(R_RegisterModel(str));
                             }
                             break;
                     }

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "com_workercmds.h"
 
 #include <tl/jobqueue/jobqueue_all.h>
@@ -6,7 +7,7 @@
 #include <gfx_d3d/r_foliage.h>
 #include <tl/tl_system.h>
 #include <qcommon/threads.h>
-#include <Windows.h>
+#include <windows.h>
 #include <gfx_d3d/r_workercmds.h>
 
 bool g_WorkerCmdInit;
@@ -83,7 +84,7 @@ void __cdecl Sys_AddWorkerCmdInternal(jqWorkerCmd *name, unsigned __int8 *data, 
         batch.ConditionalAddress = cond->address;
         batch.ConditionalValue = cond->value;
     }
-    batch.ParamData[0] = (unsigned int)name;
+    batch.ParamData[0] = (unsigned int)BO1_P2I(name);
     batch.ParamData[1] = _InterlockedExchangeAdd(&name->ppu_fence, 1u);
     jqAddBatch(&batch, name->queue);
 }

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_feeders.h"
 #include <qcommon/com_clients.h>
 #include "ui_server.h"
@@ -676,7 +677,7 @@ char *__cdecl UI_FeederItemText_Servers(int localClientNum, int contextIndex, in
 
 char *__cdecl UI_FeederItemText_ServerStatus(int index, unsigned int column)
 {
-    if ( index < 0 || index >= (int)sharedUiInfo.serverStatusInfoScoreBoard.lines[2][5] || column > 1 )
+    if ( index < 0 || index >= (int)BO1_P2I(sharedUiInfo.serverStatusInfoScoreBoard.lines[2][5]) || column > 1 )
         return (char *)"";
     if ( sharedUiInfo.serverStatusInfo.lines[index + 4][column + 6]
         && *sharedUiInfo.serverStatusInfo.lines[index + 4][column + 6] == 64 )
@@ -697,7 +698,7 @@ char *__cdecl UI_FeederItemText_ServerStatusScoreboard(int index, unsigned int c
 
 const char *__cdecl UI_FeederItemText_Mods(int index)
 {
-    if ( index < 0 || index >= (int)sharedUiInfo.modList[63].modDescr )
+    if ( index < 0 || index >= (int)BO1_P2I(sharedUiInfo.modList[63].modDescr) )
         return "";
     if ( sharedUiInfo.modList[index].modName && *sharedUiInfo.modList[index].modName )
         return sharedUiInfo.modList[index].modName;
@@ -2397,7 +2398,7 @@ void __cdecl UI_OverrideCursorPos_Servers(int localClientNum, int contextIndex, 
     {
         if (sharedUiInfo.serverStatus.currentServer >= 0)
         {
-            maxScroll = (int)Item_ListBox_MaxScroll(localClientNum, contextIndex, item);
+            maxScroll = (int)BO1_P2I(Item_ListBox_MaxScroll(localClientNum, contextIndex, item));
             if ( listPtr->startPos[contextIndex] > maxScroll )
                 listPtr->startPos[contextIndex] = maxScroll;
             if ( listPtr->cursorPos[contextIndex] >= listPtr->startPos[contextIndex]

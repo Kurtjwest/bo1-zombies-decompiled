@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "g_missile.h"
 #include "actor_zombie_exposed.h"
 #include <server_mp/sv_main_mp.h>
@@ -3135,9 +3136,9 @@ int __cdecl StickMissile(
             return isStuck;
         entnum = other->s.number;
         if ( other->client->ps.pm_type == 9
-            && (int)g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495] >= 0 )
+            && (int)BO1_P2I(g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495]) >= 0 )
         {
-            entnum = (int)g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495];
+            entnum = (int)BO1_P2I(g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495]);
         }
         ent->flags |= 0x1000u;
         boneName = 0;

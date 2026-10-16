@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_light_load_obj.h"
 #include <universal/com_files.h>
 #include <universal/q_shared.h>
@@ -27,7 +28,7 @@ GfxLightDef *__cdecl R_LoadLightDef(const char *name)
     if ( fileSize )
     {
         def = Hunk_Alloc(0x10u, "R_RegisterLightDef", 21);
-        *(unsigned int *)def = (unsigned int)Hunk_Alloc(strlen(name) + 1, "R_RegisterLightDef", 21);
+        *(unsigned int *)def = (unsigned int)BO1_P2I(Hunk_Alloc(strlen(name) + 1, "R_RegisterLightDef", 21));
         if ( !def
             && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_light_load_obj.cpp", 110, 0, "%s", "def") )
         {

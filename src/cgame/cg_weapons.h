@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 #include <sound/snd.h>
 #include <bgame/bg_weapons_def.h>
 
@@ -34,7 +35,7 @@ struct weaponInfo_s // sizeof=0x24
     const char *translatedModename;
     const char *translatedAIOverlayDescription;
 };
-static_assert(sizeof(weaponInfo_s) == 0x24);
+BO1_LAYOUT32_ASSERT(sizeof(weaponInfo_s) == 0x24);
 
 struct weaponState_t // sizeof=0x90
 {                                       // XREF: ?ClientThink_real@@YAXPAUgentity_s@@PAUusercmd_s@@@Z/r

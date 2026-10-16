@@ -1,7 +1,7 @@
 // j1: play-session recorder (TOOL for a playtests, off by default; see g_sp_playtrace.h and notes/playtrace.md).
 // It only reads game state; it never changes it. The client half is src/cgame/cg_sp_playtrace.cpp.
 #include "g_sp_playtrace.h"
-#include <Windows.h>
+#include <windows.h>
 #include <cstdio>
 #include <cstdarg>
 #include <ctime>

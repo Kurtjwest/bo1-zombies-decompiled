@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <universal/profile.h>
 #include "r_dobj_skin.h"
 #include <universal/q_shared.h>
@@ -382,8 +383,8 @@ unsigned int    R_SkinSceneDObjModels(
                 else
                 {
                     ++surfPos2;
-                    surfPos2__->oldSkinnedCachedOffset = (int)&frontEndDataOut->tempSkinBuf[32 * surfPos2__->skinnedCachedOffset
-                        + firstSurf];
+                    surfPos2__->oldSkinnedCachedOffset = (int)BO1_P2I(&frontEndDataOut->tempSkinBuf[32 * surfPos2__->skinnedCachedOffset
+                        + firstSurf]);
                     surfPos2__->skinnedCachedOffset = -1;
                 }
             }

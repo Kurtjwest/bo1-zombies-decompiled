@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_stream.h"
 #include "r_dvars.h"
 #include <xanim/xanim.h>
@@ -504,7 +505,7 @@ void __cdecl R_Stream_ForceLoadImage(GfxImage *image, int part)
 void __cdecl R_Stream_ForceLoadModel(XModel *model, int part)
 {
     int lod; // [esp+0h] [ebp-14h]
-    Material *const *material; // [esp+4h] [ebp-10h]
+    const Ptr32<Material> *material; // [esp+4h] [ebp-10h]
     int surfCount; // [esp+8h] [ebp-Ch]
     XSurface *surfaces; // [esp+Ch] [ebp-8h] BYREF
     int surfIter; // [esp+10h] [ebp-4h]
@@ -537,7 +538,7 @@ char __cdecl R_StreamTouchDObjAndCheck(const DObj *obj, int level)
     unsigned int surfaceCount; // [esp+20h] [ebp-70h]
     char targBoneIndexLow; // [esp+24h] [ebp-6Ch]
     char invTargBoneIndexLow; // [esp+28h] [ebp-68h]
-    Material **materials; // [esp+2Ch] [ebp-64h]
+    Ptr32<Material> *materials; // [esp+2Ch] [ebp-64h]
     XSurface *surfaces; // [esp+30h] [ebp-60h] BYREF
     unsigned int hidePartBits[5]; // [esp+34h] [ebp-5Ch] BYREF
     int targBoneIndexHigh; // [esp+48h] [ebp-48h]
@@ -1087,7 +1088,7 @@ void __cdecl importance_swap_func(void **a, void **b)
 
 bool __cdecl importance_compare_func(void *a, void *b)
 {
-    return *(const int *)&s_streamImages.importance[(unsigned int)a] > *(const int *)&s_streamImages.importance[(unsigned int)b];
+    return *(const int *)&s_streamImages.importance[(unsigned int)BO1_P2I(a)] > *(const int *)&s_streamImages.importance[(unsigned int)BO1_P2I(b)];
 }
 
 void *aux_buffer[2113];
@@ -1702,7 +1703,7 @@ void R_StreamUpdateTouchedModels()
 void __cdecl R_StreamUpdateForXModelTouched(const XModel *model)
 {
     int lod; // [esp+0h] [ebp-14h]
-    Material *const *material; // [esp+4h] [ebp-10h]
+    const Ptr32<Material> *material; // [esp+4h] [ebp-10h]
     int surfCount; // [esp+8h] [ebp-Ch]
     XSurface *surfaces; // [esp+Ch] [ebp-8h] BYREF
     int surfIter; // [esp+10h] [ebp-4h]
@@ -1730,7 +1731,7 @@ void __cdecl R_StreamUpdateForcedModels()
     float distSq; // [esp+28h] [ebp-2Ch]
     int i; // [esp+30h] [ebp-24h]
     XModel *model; // [esp+34h] [ebp-20h]
-    Material **material; // [esp+38h] [ebp-1Ch]
+    Ptr32<Material> *material; // [esp+38h] [ebp-1Ch]
     int surfCount; // [esp+3Ch] [ebp-18h]
     XSurface *surfaces; // [esp+40h] [ebp-14h] BYREF
     int modelIter; // [esp+44h] [ebp-10h]
@@ -2243,7 +2244,7 @@ void __cdecl MultiplePointDistSqFromBounds(
     float4 v6; // [esp-20h] [ebp-120h]
     float4 v7; // [esp-10h] [ebp-110h]
 
-    if ( ((unsigned int)&s_viewPos & 0xF) != 0
+    if ( ((unsigned int)BO1_P2I(&s_viewPos) & 0xF) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                     3465,
@@ -2253,7 +2254,7 @@ void __cdecl MultiplePointDistSqFromBounds(
     {
         __debugbreak();
     }
-    if ( ((unsigned __int8)mip0mins & 0xF) != 0
+    if ( ((unsigned __int8)BO1_P2I(mip0mins) & 0xF) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                     3469,
@@ -2263,7 +2264,7 @@ void __cdecl MultiplePointDistSqFromBounds(
     {
         __debugbreak();
     }
-    if ( ((unsigned __int8)mip0maxs & 0xF) != 0
+    if ( ((unsigned __int8)BO1_P2I(mip0maxs) & 0xF) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_stream.cpp",
                     3470,
@@ -2479,7 +2480,7 @@ void __cdecl R_StreamUpdateForXModel(const XModel *remoteModel, float distSq)
     float v3; // [esp+4h] [ebp-3Ch]
     float v4; // [esp+10h] [ebp-30h]
     int materialIndex; // [esp+1Ch] [ebp-24h]
-    Material **materialHandles; // [esp+20h] [ebp-20h]
+    Ptr32<Material> *materialHandles; // [esp+20h] [ebp-20h]
     XModelHighMipBounds *highMipBounds; // [esp+24h] [ebp-1Ch]
     XModelHighMipBounds *bounds; // [esp+28h] [ebp-18h]
     float importance; // [esp+2Ch] [ebp-14h]

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <universal/q_shared.h>
-#include <Windows.h>
+#include <windows.h>
 
 struct XuidInfo // sizeof=0x30
 {                                       // XREF: .data:recentPlayerInfo/r

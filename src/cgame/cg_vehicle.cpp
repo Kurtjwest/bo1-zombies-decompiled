@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_vehicle.h"
 #include <client/splitscreen.h>
 #include <universal/com_math_anglevectors.h>
@@ -663,7 +664,7 @@ void    CG_Vehicle_PreControllers(
         else
             v79 = 0.0f;
 
-        LODWORD(v77[1]) = (int)&fc;
+        LODWORD(v77[1]) = (int)BO1_P2I(&fc);
         v76 = v77;
         v75 = (float)(v79 * 3.1415927f) - 1.5707964f;
         fc = cosf(v75);

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "fx_profile.h"
 #include "fx_system.h"
 #include "fx_draw.h"
@@ -245,7 +246,7 @@ void __cdecl FX_DrawPriorityDebug(int clientIndex, void (__cdecl *drawFunc)(char
         v11 = 0;
         for ( j = 0; j < num; ++j )
         {
-            if ( (const FxEffectDef *)base[2 * j] == v14->effect.def )
+            if ( (const FxEffectDef *)BO1_I2P(base[2 * j]) == v14->effect.def )
             {
                 v11 = &base[2 * j];
                 break;
@@ -267,7 +268,7 @@ void __cdecl FX_DrawPriorityDebug(int clientIndex, void (__cdecl *drawFunc)(char
             {
                 __debugbreak();
             }
-            base[2 * num] = (unsigned int)v14->effect.def;
+            base[2 * num] = (unsigned int)BO1_P2I(v14->effect.def);
             base[2 * num++ + 1] = 1;
         }
     }
@@ -303,7 +304,7 @@ void __cdecl FX_DrawPriorityDebug(int clientIndex, void (__cdecl *drawFunc)(char
         v8 = num;
     for ( k = 0; k < v8; ++k )
     {
-        v7 = va("%4i     %4i     %s", *(unsigned __int8 *)(base[2 * k] + 5), base[2 * k + 1], *(const char **)base[2 * k]);
+        v7 = va("%4i     %4i     %s", *(unsigned __int8 *)BO1_I2P((base[2 * k] + 5)), base[2 * k + 1], *(const char **)BO1_I2P(base[2 * k]));
         drawFunc(v7);
     }
 }
@@ -315,8 +316,8 @@ int __cdecl FX_ComparePriorityDebugEntries(unsigned int *e0, unsigned int *e1)
     int v5; // [esp+Ch] [ebp-Ch]
     int bc; // [esp+14h] [ebp-4h]
 
-    ap = *(unsigned __int8 *)(*e0 + 5);
-    v5 = *(unsigned __int8 *)(*e1 + 5);
+    ap = *(unsigned __int8 *)BO1_I2P((*e0 + 5));
+    v5 = *(unsigned __int8 *)BO1_I2P((*e1 + 5));
     ac = e0[1];
     bc = e1[1];
     if ( ap > v5 )

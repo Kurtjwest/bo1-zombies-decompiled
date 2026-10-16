@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "snd_globals.h"
 #include "snd_dvar.h"
 #include "snd_utils.h"
@@ -132,7 +133,7 @@ const snd_master *__cdecl SND_GetMasterCurrent()
 {
     unsigned int v0; // eax
 
-    if ( !snd_master_override->current.integer || !*(_BYTE *)snd_master_override->current.integer )
+    if ( !snd_master_override->current.integer || !*(_BYTE *)BO1_I2P(snd_master_override->current.integer) )
         return SND_GetMasterByConfig();
     v0 = SND_HashName(snd_master_override->current.string);
     return SND_GetMaster(v0);

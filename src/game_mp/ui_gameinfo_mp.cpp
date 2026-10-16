@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_gameinfo_mp.h"
 #include <universal/q_parse.h>
 #include <ui/ui_utils.h>
@@ -92,11 +93,11 @@ void __cdecl UI_LoadArenas()
     sharedUiInfo.mapCount = 0;
     ui_numArenas = 0;
     ModArenas = 0;
-    if (fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer)
+    if (fs_gameDirVar && *(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer))
         ModArenas = UI_LoadModArenas();
-    if (!ModArenas || (!fs_gameDirVar || !*(_BYTE *)fs_gameDirVar->current.integer ? (v7 = 0) : (v7 = 1), !v7))
+    if (!ModArenas || (!fs_gameDirVar || !*(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer) ? (v7 = 0) : (v7 = 1), !v7))
         UI_LoadArenasFromFile();
-    v6 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+    v6 = fs_gameDirVar && *(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer);
     if (v6 && !ModArenas)
     {
         UI_LoadModsMap(FFD_MOD_DIR);
@@ -321,11 +322,11 @@ const char *UI_LoadArenasFromFile_LoadObj()
     unsigned int v9; // [esp+24B4h] [ebp-4h]
 
     ui_numArenas = 0;
-    result = (const char *)FS_GetFileList("mp", (char*)"arena", FS_LIST_PURE_ONLY, listbuf, 1024);
+    result = (const char *)BO1_I2P(FS_GetFileList("mp", (char*)"arena", FS_LIST_PURE_ONLY, listbuf, 1024));
     v1 = result;
     v3 = listbuf;
     v8 = 0;
-    while ( v8 < (int)v1 )
+    while ( v8 < (int)BO1_P2I(v1) )
     {
         v9 = strlen(v3);
         sprintf(string, "%s/%s", "mp", v3);
@@ -337,7 +338,7 @@ const char *UI_LoadArenasFromFile_LoadObj()
                 FS_Read((unsigned __int8 *)buffer, len, f);
                 buffer[len] = 0;
                 FS_FCloseFile(f);
-                ui_numArenas += UI_ParseInfos(buffer, 128 - ui_numArenas, (char **)(4 * ui_numArenas + 160058192));
+                ui_numArenas += UI_ParseInfos(buffer, 128 - ui_numArenas, (char **)BO1_I2P((4 * ui_numArenas + 160058192)));
             }
             else
             {

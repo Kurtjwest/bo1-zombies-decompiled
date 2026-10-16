@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_dpvs_static.h"
 #include "r_dvars.h"
 #include "r_debug.h"
@@ -565,7 +566,7 @@ float (*__cdecl TestOccludersPartial(const float (*bounds)[3], int *numOccluders
     __int64 min_8; // [esp+E88h] [ebp-10h]
     int planeIdx; // [esp+E94h] [ebp-4h]
 
-    if ( ((unsigned __int8)plane & 0xF) != 0
+    if ( ((unsigned __int8)BO1_P2I(plane) & 0xF) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_dpvs_static.cpp",
                     288,
@@ -1051,7 +1052,7 @@ int __cdecl R_AddCellStaticSurfacesInFrustum(DpvsStaticCellCmd *dpvsCell)
     unsigned int bits; // [esp+10h] [ebp-15D4h]
     unsigned int k; // [esp+14h] [ebp-15D0h]
     int j; // [esp+18h] [ebp-15CCh]
-    float alignas(16) planebuf[320][4];
+    alignas(16) float planebuf[320][4];
     float (*occluderPlanes)[4]; // [esp+146Ch] [ebp-178h]
     const GfxCell *cell; // [esp+1470h] [ebp-174h]
     DpvsClipPlanes out; // [esp+1474h] [ebp-170h] BYREF

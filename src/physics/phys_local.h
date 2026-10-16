@@ -1,8 +1,10 @@
 #pragma once
+#include <universal/bo1_layout.h>
 #include <universal/assertive.h>
 #include <cstring>
+#include <new>
 
-#include <Windows.h> // interlockedxchg
+#include <windows.h> // interlockedxchg
 #include <cmath>
 
 struct phys_vec2 // sizeof=0x8
@@ -247,7 +249,7 @@ struct chull_t // sizeof=0x20
     int touched;
     chull_t *next_list;
 };
-static_assert(sizeof(chull_t) == 0x20);
+BO1_LAYOUT32_ASSERT(sizeof(chull_t) == 0x20);
 
 struct minspec_mutex // sizeof=0x4
 {                                       // XREF: .data:minspec_mutex g_render_mutex/r

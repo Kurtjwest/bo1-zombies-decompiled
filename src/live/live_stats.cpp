@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_stats.h"
 #include <universal/assertive.h>
 #include "live_storage.h"
@@ -1524,12 +1525,12 @@ void __cdecl LiveStats_PublishNews(int controllerIndex)
                 {
                     targetValue = StringTable_GetColumnValueForRow(statsMilestonestable, rowNum, 2);
                     name = s_statsMilestonesCompleted[controllerIndex][j].name;
-                    v17 = (unsigned int)&name[strlen(name) + 1];
+                    v17 = (unsigned int)BO1_P2I(&name[strlen(name) + 1]);
                     v14 = (char *)&newRank + 3;
                     while ( *++v14 )
                         ;
                     v15 = s_statsMilestonesCompleted[controllerIndex][j].name;
-                    memcpy(v14, v15, v17 - (unsigned int)v15);
+                    memcpy(v14, v15, v17 - (unsigned int)BO1_P2I(v15));
                     v11 = va(
                                     "userPublishNews TICKER_STATSMILESTONEUPDATE %s %s %s\n",
                                     localized_weaponname_string,

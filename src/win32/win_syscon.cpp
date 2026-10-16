@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "win_syscon.h"
 #include <universal/q_shared.h>
 #include "win_main.h"
@@ -20,7 +21,7 @@ LRESULT __stdcall InputLineWndProc(HWND__ *hWnd, UINT uMsg, HWND__ *wParam, LPAR
             return 0;
         }
     }
-    else if ( uMsg == 258 && wParam == (HWND__ *)13 )
+    else if ( uMsg == 258 && wParam == (HWND__ *)BO1_I2P(13) )
     {
         GetWindowTextA(s_wcd.hwndInputLine, inputBuffer, 1024);
         strncat(s_wcd.consoleText, inputBuffer, 512 - strlen(s_wcd.consoleText) - 5);
@@ -60,9 +61,9 @@ void __cdecl Sys_CreateConsole(HINSTANCE__ *hInstance)
     WndClass.cbClsExtra = 0;
     WndClass.cbWndExtra = 0;
     WndClass.hInstance = hInstance;
-    WndClass.hIcon = LoadIconA(hInstance, (LPCSTR)1);
-    WndClass.hCursor = LoadCursorA(0, (LPCSTR)0x7F00);
-    WndClass.hbrBackground = (HBRUSH__ *)5;
+    WndClass.hIcon = LoadIconA(hInstance, (LPCSTR)BO1_I2P(1));
+    WndClass.hCursor = LoadCursorA(0, (LPCSTR)BO1_I2P(0x7F00));
+    WndClass.hbrBackground = (HBRUSH__ *)BO1_I2P(5);
     WndClass.lpszMenuName = 0;
     WndClass.lpszClassName = "CoD Black Ops WinConsole";
     if ( RegisterClassA(&WndClass) )
@@ -104,7 +105,7 @@ void __cdecl Sys_CreateConsole(HINSTANCE__ *hInstance)
             lParam = LoadImageA(0, "codlogo.bmp", 0, 0, 0, 0x10u);
             if ( lParam )
             {
-                s_wcd.codLogo = CreateWindowExA(0, "Static", 0, 0x5000000Eu, 5, 5, 0, 0, s_wcd.hWnd, (HMENU)1, hInstance, 0);
+                s_wcd.codLogo = CreateWindowExA(0, "Static", 0, 0x5000000Eu, 5, 5, 0, 0, s_wcd.hWnd, (HMENU)BO1_I2P(1), hInstance, 0);
                 SendMessageA(s_wcd.codLogo, 0x172u, 0, (LPARAM)lParam);
             }
             s_wcd.hwndInputLine = CreateWindowExA(
@@ -117,7 +118,7 @@ void __cdecl Sys_CreateConsole(HINSTANCE__ *hInstance)
                                                             608,
                                                             20,
                                                             s_wcd.hWnd,
-                                                            (HMENU)0x65,
+                                                            (HMENU)BO1_I2P(0x65),
                                                             hInstance,
                                                             0);
             s_wcd.hwndBuffer = CreateWindowExA(
@@ -130,14 +131,14 @@ void __cdecl Sys_CreateConsole(HINSTANCE__ *hInstance)
                                                      606,
                                                      324,
                                                      s_wcd.hWnd,
-                                                     (HMENU)0x64,
+                                                     (HMENU)BO1_I2P(0x64),
                                                      hInstance,
                                                      0);
             SendMessageA(s_wcd.hwndBuffer, 0x30u, (WPARAM)s_wcd.hfBufferFont, 0);
-            s_wcd.SysInputLineWndProc = (int (__stdcall *)(HWND__ *, unsigned int, unsigned int, int))SetWindowLongA(
+            s_wcd.SysInputLineWndProc = (int (__stdcall *)(HWND__ *, unsigned int, unsigned int, int))BO1_I2P(SetWindowLongA(
                                                                                                                                                                                                     s_wcd.hwndInputLine,
                                                                                                                                                                                                     -4,
-                                                                                                                                                                                                    (int)InputLineWndProc);
+                                                                                                                                                                                                    (int)BO1_P2I(InputLineWndProc)));
             SendMessageA(s_wcd.hwndInputLine, 0x30u, (WPARAM)s_wcd.hfBufferFont, 0);
             SetFocus(s_wcd.hwndInputLine);
             Con_GetTextCopy(text, 0x4000);
@@ -290,7 +291,7 @@ void __cdecl Conbuf_AppendText(char *pMsg)
     else
         source = &pMsg[strlen(pMsg) - 0x3FFF];
     v3 = Conbuf_CleanText(source, target, 0x8000);
-    s_totalChars += (unsigned int)v3;
+    s_totalChars += (unsigned int)BO1_P2I(v3);
     if ( s_totalChars <= 0x4000 )
     {
         SendMessageA(s_wcd.hwndBuffer, 0xB1u, 0xFFFFu, 0xFFFF);
@@ -298,7 +299,7 @@ void __cdecl Conbuf_AppendText(char *pMsg)
     else
     {
         SendMessageA(s_wcd.hwndBuffer, 0xB1u, 0, -1);
-        s_totalChars = (unsigned int)v3;
+        s_totalChars = (unsigned int)BO1_P2I(v3);
     }
     SendMessageA(s_wcd.hwndBuffer, 0xB6u, 0, 0xFFFF);
     SendMessageA(s_wcd.hwndBuffer, 0xB7u, 0, 0);

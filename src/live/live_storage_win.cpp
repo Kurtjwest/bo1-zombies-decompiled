@@ -1,6 +1,7 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_storage_win.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include <universal/assertive.h>
 #include <qcommon/common.h>
 #include <ddl/ddl_api.h>
@@ -328,7 +329,7 @@ void LiveStorage_InitCustomClassesNames()
         {
             __debugbreak();
         }
-        if ( *(_BYTE *)customclass[i]->current.integer )
+        if ( *(_BYTE *)BO1_I2P(customclass[i]->current.integer) )
             allUnitialized = 0;
     }
     if ( allUnitialized )
@@ -409,7 +410,7 @@ void __cdecl SV_DumpFileOps()
 
 void __cdecl SV_UseFileOp()
 {
-    SV_GetFreeFileOp()->fileBuffer = (unsigned __int8 *)1;
+    SV_GetFreeFileOp()->fileBuffer = (unsigned __int8 *)BO1_I2P(1);
 }
 
 void __cdecl SV_FreeFileOp()

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "destructible.h"
 #include <game_mp/g_utils_mp.h>
 #include <game_mp/g_main_mp.h>
@@ -2377,7 +2378,7 @@ void __cdecl CG_DestructibleRadiusDamage(
         {
             de = &g_destructible_events[g_destructible_events_count++];
             de->type = 1;
-            de->ehe.localClientNum = (int)self;
+            de->ehe.localClientNum = (int)BO1_P2I(self);
             p_attacker = &de->ed.attacker;
             de->erd.point[0] = *(float *)point;
             p_attacker[1] = point[1];
@@ -2982,8 +2983,8 @@ void __cdecl CG_DestructibleDamage(
         {
             de = &g_destructible_events[g_destructible_events_count++];
             de->type = 0;
-            de->ehe.localClientNum = (int)self;
-            de->ehe.event = (int)attacker;
+            de->ehe.localClientNum = (int)BO1_P2I(self);
+            de->ehe.event = (int)BO1_P2I(attacker);
             de->ed.dir[0] = *dir;
             de->ed.dir[1] = dir[1];
             de->ed.dir[2] = dir[2];

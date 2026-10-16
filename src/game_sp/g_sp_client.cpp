@@ -1,5 +1,5 @@
 #include "g_sp_client.h"
-#include <Windows.h>
+#include <windows.h>
 #include "g_sp_levelstart.h"
 #include "g_sp_ext.h"
 #include <client_mp/g_client_mp.h>

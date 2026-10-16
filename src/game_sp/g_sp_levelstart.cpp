@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <qcommon/cm_mapkit.h>
 #include <database/db_registry.h>
 #include "g_sp_levelstart.h"
@@ -305,7 +306,7 @@ static void GScr_SP_LoadEntityScripts(scriptInstance_t inst)
                 continue;
             Com_sprintf(filename, sizeof(filename), "animscripts/traverse/%s", animscript);
             func = GScr_LoadScriptAndLabel(inst, filename, "main", 1);
-            Hunk_SetDataForFile(1, animscript, (void *)func, GScr_SP_HunkNameAlloc);
+            Hunk_SetDataForFile(1, animscript, (void *)BO1_I2P(func), GScr_SP_HunkNameAlloc);
         }
         else if ( !I_stricmp(classname, "misc_mg42") || !I_stricmp(classname, "misc_turret") )
         {

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "rb_draw3d.h"
 #include "r_dvars.h"
 #include "r_state.h"
@@ -1591,7 +1592,7 @@ GfxCmdBufSourceState *RB_DebugShaderDrawCommandsCommon()
     for ( viewInfoIndex = 0; viewInfoIndex < data->viewInfoCount; ++viewInfoIndex )
     {
         RB_DebugShaderRenderCommands(&data->viewInfo[viewInfoIndex]);
-        result = (GfxCmdBufSourceState *)(viewInfoIndex + 1);
+        result = (GfxCmdBufSourceState *)BO1_I2P((viewInfoIndex + 1));
     }
     return result;
 }

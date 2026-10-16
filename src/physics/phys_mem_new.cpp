@@ -1,6 +1,7 @@
+#include <universal/bo1_ptrcast.h>
 #include "phys_mem_new.h"
 
-#include <Windows.h> // interlockedexchange
+#include <windows.h> // interlockedexchange
 #include <new>
 #include <universal/q_shared.h>
 
@@ -65,7 +66,7 @@ int phys_memory_manager::allocate(unsigned int size, unsigned int alignment)
     {
         v6 = *p_m_buffer_cur;
         v7 = v4 & (v6 + v3);
-        if ( (char *)(v7 + size) > this->m_buffer_end )
+        if ( (char *)BO1_I2P((v7 + size)) > this->m_buffer_end )
             return 0;
         if ( _InterlockedCompareExchange(p_m_buffer_cur, v7 + size, v6) == v6 )
             break;
@@ -95,7 +96,7 @@ phys_slot_pool *phys_memory_manager::allocate_slot_pool()
         //v6 = phys_memory_manager::allocate(this, 0x18u, 8u);
         v6 = this->allocate(24, 8);
         ++this->m_list_slot_pool_count;
-        v4 = (phys_slot_pool *)v6;
+        v4 = (phys_slot_pool *)BO1_I2P(v6);
     }
     else
     {
@@ -182,7 +183,7 @@ void *__cdecl PMM_PERM_ALLOCATE(unsigned int size, unsigned int alignment)
     void *result; // eax
 
     //result = (void *)phys_memory_manager::allocate(g_phys_memory_manager, size, alignment);
-    result = (void *)g_phys_memory_manager->allocate(size, alignment);
+    result = (void *)BO1_I2P(g_phys_memory_manager->allocate(size, alignment));
     if ( !result )
     {
         if ( _tlAssert("source/phys_mem_new.cpp", 265, "ptr", "physics memory manager error: out of memory.") )
@@ -274,13 +275,13 @@ void __cdecl phys_memory_manager_init(void *const memory_buffer, int memory_buff
     {
         __debugbreak();
     }
-    v2 = ((unsigned int)memory_buffer + 7) & 0xFFFFFFF8;
+    v2 = ((unsigned int)BO1_P2I(memory_buffer) + 7) & 0xFFFFFFF8;
     g_phys_memory_buffer = memory_buffer;
     g_phys_memory_buffer_size = memory_buffer_size;
-    g_phys_memory_manager = (phys_memory_manager *)v2;
+    g_phys_memory_manager = (phys_memory_manager *)BO1_I2P(v2);
     if (v2)
     {
-        new ((void*)v2) phys_memory_manager((char*)(v2 + sizeof(phys_memory_manager)), (int)(((unsigned int)memory_buffer + memory_buffer_size) - v2 - sizeof(phys_memory_manager)));
+        new ((void*)BO1_I2P(v2)) phys_memory_manager((char*)(v2 + sizeof(phys_memory_manager)), (int)(((unsigned int)BO1_P2I(memory_buffer) + memory_buffer_size) - v2 - sizeof(phys_memory_manager)));
         //phys_memory_manager::phys_memory_manager(
         //    (phys_memory_manager *)v2,
         //    (char *)(v2 + 976),
@@ -296,7 +297,7 @@ void phys_slot_pool::extra_info_init(char *slot)
     {
         ei = (phys_slot_pool::extra_info *)&slot[(unsigned __int16)this->m_map_key - sizeof(phys_slot_pool::extra_info)];
         ei->m_slot_pool_owner = this;
-        ei->m_allocation_owner = (void *)0xFEDCBA98;
+        ei->m_allocation_owner = (void *)BO1_I2P(0xFEDCBA98);
 
         _InterlockedExchangeAdd(&this->m_total_slot_count, 1u);
         _InterlockedExchangeAdd(&this->m_allocated_slot_count, 1u);
@@ -372,10 +373,10 @@ void __thiscall phys_slot_pool::extra_info_allocate(char *slot)
         __debugbreak();
     }
 
-    if ((phys_slot_pool *)_InterlockedCompareExchange(
+    if ((phys_slot_pool *)BO1_I2P(_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&ei->m_allocation_owner,
         0xFEDCBA98,
-        (signed __int32)this) != this
+        (signed __int32)this)) != this
         && _tlAssert("source/phys_mem_new.cpp", 312, "retv", "internal error."))
     {
         __debugbreak();
@@ -464,10 +465,10 @@ void __thiscall phys_slot_pool::extra_info_free(unsigned __int8 *slot)
         __debugbreak();
     }
 
-    if ((phys_slot_pool *)_InterlockedCompareExchange(
+    if ((phys_slot_pool *)BO1_I2P(_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&ei->m_allocation_owner,
         (signed __int32)this,
-        0xFEDCBA98) != (phys_slot_pool *)0xFEDCBA98
+        0xFEDCBA98)) != (phys_slot_pool *)BO1_I2P(0xFEDCBA98)
         && _tlAssert(
             "source/phys_mem_new.cpp",
             332,
@@ -537,7 +538,7 @@ void __thiscall phys_slot_pool::validate_slot(char *slot)
     {
         __debugbreak();
     }
-    if ((unsigned int)ei->m_allocation_owner != 0xFEDCBA98
+    if ((unsigned int)BO1_P2I(ei->m_allocation_owner) != 0xFEDCBA98
         && _tlAssert(
             "source/phys_mem_new.cpp",
             347,
@@ -656,7 +657,7 @@ char * phys_slot_pool::allocate_slot()
     while (1)
     {
         cur = *(volatile signed __int64 *)&this->m_first_free_slot;
-        v3 = (char *)LODWORD(cur);
+        v3 = (char *)BO1_I2P(LODWORD(cur));
         if (!v3)
             break; // free list empty, fall through to fresh alloc
 
@@ -673,9 +674,9 @@ char * phys_slot_pool::allocate_slot()
     }
 
     // No free slots � allocate fresh from memory manager
-    char *v5 = (char *)g_phys_memory_manager->allocate(
+    char *v5 = (char *)BO1_I2P(g_phys_memory_manager->allocate(
         (unsigned __int16)this->m_map_key,
-        (unsigned int)this->m_map_key >> 16);
+        (unsigned int)this->m_map_key >> 16));
     this->extra_info_init(v5);
     return v5;
 #endif

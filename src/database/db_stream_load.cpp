@@ -79,28 +79,28 @@ void __cdecl DB_ConvertOffsetToAlias(unsigned int *data)
     *data = *(unsigned int *)&g_streamBlocks[(offset - 1) >> 29].data[(offset - 1) & 0x1FFFFFFF];
 }
 
+// *data is a 32-bit pointer field holding a fastfile block offset; it becomes a Ptr32 handle to that address.
 void __cdecl DB_ConvertOffsetToPointer(unsigned int *data)
 {
-    *data = (unsigned int)&g_streamBlocks[(unsigned int)(*data - 1) >> 29].data[(*data - 1) & 0x1FFFFFFF];
+    *data = Ptr32_Encode(&g_streamBlocks[(unsigned int)(*data - 1) >> 29].data[(*data - 1) & 0x1FFFFFFF]);
 }
 
-void __cdecl Load_XStringCustom(const char **str)
+void __cdecl Load_XStringCustom(Ptr32<const char> *str)
 {
     unsigned __int8 *numBytesLoaded; // [esp+4h] [ebp-8h]
 
     numBytesLoaded = DB_LoadXFileDataNullTerminated((unsigned __int8 *)*str);
-    DB_IncStreamPos((int)numBytesLoaded);
+    DB_IncStreamPos((int)(intptr_t)numBytesLoaded);
 }
 
-void __cdecl Load_TempStringCustom(const char **str)
+void __cdecl Load_TempStringCustom(Ptr32<const char> *str)
 {
     const char *String; // [esp+0h] [ebp-4h]
 
     Load_XStringCustom(str);
-    if ( *str )
-        String = (const char *)SL_GetString((char *)*str, 4u, SCRIPTINSTANCE_SERVER);
-    else
-        String = 0;
-    *str = String;
+    String = *str;
+    // the zone's script string list keeps each string's SL id in its pointer slot (Load_ScriptStringCustom reads it
+    // back as an integer): store the id itself, not a pointer encoding of it
+    Ptr32_Raw(*str) = String ? (uint32_t)SL_GetString((char *)String, 4u, SCRIPTINSTANCE_SERVER) : 0u;
 }
 

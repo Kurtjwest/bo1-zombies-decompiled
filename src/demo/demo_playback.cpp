@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "demo_playback.h"
 #include "demo_common.h"
 #include <universal/physicalmemory.h>
@@ -1906,7 +1907,7 @@ void __cdecl Demo_RunFirstFrameEvents(int localClientNum)
             Dvar_SetInt((dvar_s *)r_clipSize, 0);
             Dvar_SetInt((dvar_s *)r_clipCodec, 0);
             Dvar_SetInt((dvar_s *)r_clipFPS, 24);
-            FS_BuildOSPath((char *)fs_homepath->current.integer, (char*)"movies", (char *)"", ospath);
+            FS_BuildOSPath((char *)BO1_I2P(fs_homepath->current.integer), (char*)"movies", (char *)"", ospath);
             FS_CreatePath(ospath);
             v1 = va("movie_start \"%s%s.avi\"\n", ospath, demo.demoName);
             Cbuf_AddText(localClientNum, v1);

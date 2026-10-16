@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "rbc_def_vehicle.h"
 #include <physics/phys_constraint_solver_multithreaded.h>
 #include "rbc_def_generic.h"
@@ -200,7 +201,7 @@ void rigid_body_constraint_wheel::get_wheel_collide_segment(
     //
     //v17[0] = a2;
     //v17[1] = p1a;
-    if (((unsigned __int8)p0 & 0xF) != 0
+    if (((unsigned __int8)BO1_P2I(p0) & 0xF) != 0
         && _tlAssert(
             "c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_math.h",
             444,
@@ -209,7 +210,7 @@ void rigid_body_constraint_wheel::get_wheel_collide_segment(
     {
         __debugbreak();
     }
-    if (((unsigned __int8)p1 & 0xF) != 0
+    if (((unsigned __int8)BO1_P2I(p1) & 0xF) != 0
         && _tlAssert(
             "c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_math.h",
             444,
@@ -451,8 +452,8 @@ void rigid_body_constraint_wheel::setup_constraint(pulse_sum_constraint_solver *
     this->m_ps_suspension = 0;
     this->m_ps_side_fric = 0;
     this->m_ps_fwd_fric = 0;
-    ps_wheel = (pulse_sum_wheel *)this->m_wheel_flags;
-    if (((unsigned __int8)ps_wheel & 1) != 0)
+    ps_wheel = (pulse_sum_wheel *)BO1_I2P(this->m_wheel_flags);
+    if (((unsigned __int8)BO1_P2I(ps_wheel) & 1) != 0)
     {
         b1 = this->b1;
         phys_multiply(&b1_suspension_dir, &this->b1->m_mat, &this->m_b1_suspension_dir_loc);
@@ -488,9 +489,9 @@ void rigid_body_constraint_wheel::setup_constraint(pulse_sum_constraint_solver *
         v13 = k_;
         k_ = this->m_hard_limit_dist - 3.400000095367432;
         if (k_ > v13)
-            v14 = (unsigned int)ps_wheel & 0xFFFFFFFD;
+            v14 = (unsigned int)BO1_P2I(ps_wheel) & 0xFFFFFFFD;
         else
-            v14 = (unsigned int)ps_wheel | 2;
+            v14 = (unsigned int)BO1_P2I(ps_wheel) | 2;
         this->m_wheel_flags = v14;
         hitn.x = v7->m_mat.w.x + b2_r.x;
         hitn.y = y + v7->m_mat.w.y;

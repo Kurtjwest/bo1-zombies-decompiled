@@ -3,7 +3,7 @@
 #include <universal/dvar.h>
 #include <client/cl_gamepad.h>
 
-#include <XInput.h>
+#include <xinput.h>
 
 struct GamePad // sizeof=0x7C
 {                                       // XREF: .data:s_gamePads/r

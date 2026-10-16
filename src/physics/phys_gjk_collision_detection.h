@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 #include "phys_local.h"
 #include "phys_gjk.h"
 #include "rigid_body.h"
@@ -43,7 +44,7 @@ struct destructible_ent_aa : phys_auto_activate_callback // sizeof=0xC
     }
     void auto_activate(struct broad_phase_info *bpi_impactor);
 };
-static_assert(sizeof(destructible_ent_aa) == 12);
+BO1_LAYOUT32_ASSERT(sizeof(destructible_ent_aa) == 12);
 
 struct dynamic_ent_aa : phys_auto_activate_callback // sizeof=0xC
 {

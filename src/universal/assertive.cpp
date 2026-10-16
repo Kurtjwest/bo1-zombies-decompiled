@@ -1,6 +1,7 @@
+#include <universal/bo1_ptrcast.h>
 #include "assertive.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include "com_buildinfo.h"
 #include "q_shared.h"
 #include <win32/win_common.h>
@@ -210,11 +211,11 @@ void __cdecl LoadMapFilesForDir(const char *dir)
         sprintf(string, "%s\\*.map", v2);
     }
     hFindFile = FindFirstFileA(string, &FindFileData);
-    if ( hFindFile != (HANDLE)-1 )
+    if ( hFindFile != (HANDLE)BO1_I2P(-1) )
     {
         do
         {
-            baseAddress = (unsigned int)GetModuleBase(FindFileData.cFileName);
+            baseAddress = (unsigned int)BO1_P2I(GetModuleBase(FindFileData.cFileName));
             if ( baseAddress )
             {
                 v3 = Sys_DefaultInstallPath();
@@ -434,7 +435,7 @@ LABEL_91:
             return 0;
         }
         strncpy(filenameBuffer, pszNameStart + 1, v12 - pszNameStart - 1);
-        *((_BYTE *)&lineOffset[3] + (int)pszNameStop - (int)pszNameStart + 3) = 0;
+        *((_BYTE *)&lineOffset[3] + (int)BO1_P2I(pszNameStop) - (int)BO1_P2I(pszNameStart) + 3) = 0;
         filenameSubStr = filenameBuffer;
         if ( !SkipLines(1, fp) )
             return 0;
@@ -504,7 +505,7 @@ char __cdecl ReadLine(_iobuf *fp)
 
 LABEL_1:
     lineBufferEndPos -= lineBufferStartPos;
-    if ( (int)lineBufferEndPos < 0
+    if ( (int)BO1_P2I(lineBufferEndPos) < 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\universal\\assertive.cpp",
                     306,
@@ -517,15 +518,15 @@ LABEL_1:
     memmove(
         (unsigned __int8 *)lineBuffer,
         (unsigned __int8 *)&lineBuffer[lineBufferStartPos],
-        (unsigned int)lineBufferEndPos);
+        (unsigned int)BO1_P2I(lineBufferEndPos));
     lineBufferStartPos = 0;
     for ( i = 0; ; ++i )
     {
-        if ( i >= (int)lineBufferEndPos )
+        if ( i >= (int)BO1_P2I(lineBufferEndPos) )
         {
 LABEL_13:
-            readSize = 4096 - (unsigned int)lineBufferEndPos - 1;
-            bytesRead = fread(&lineBuffer[(unsigned int)lineBufferEndPos], 1u, readSize, fp);
+            readSize = 4096 - (unsigned int)BO1_P2I(lineBufferEndPos) - 1;
+            bytesRead = fread(&lineBuffer[(unsigned int)BO1_P2I(lineBufferEndPos)], 1u, readSize, fp);
             if ( bytesRead > readSize
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\universal\\assertive.cpp",
@@ -537,12 +538,12 @@ LABEL_13:
                 __debugbreak();
             }
             lineBufferEndPos += bytesRead;
-            lineBuffer[(unsigned int)lineBufferEndPos] = 0;
+            lineBuffer[(unsigned int)BO1_P2I(lineBufferEndPos)] = 0;
             if ( !bytesRead )
             {
                 if ( !lineBufferEndPos )
                     return 0;
-                lineBufferStartPos = (int)lineBufferEndPos;
+                lineBufferStartPos = (int)BO1_P2I(lineBufferEndPos);
                 return 1;
             }
             goto LABEL_1;
@@ -550,7 +551,7 @@ LABEL_13:
         if ( lineBuffer[i] == 10 )
             break;
     }
-    if ( (unsigned __int8 *)(i + 1) == lineBufferEndPos )
+    if ( (unsigned __int8 *)BO1_I2P((i + 1)) == lineBufferEndPos )
         goto LABEL_13;
     lineBuffer[i] = 0;
     if (lineBuffer[i + 1] == 13)

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_material.h"
 #include <universal/com_memory.h>
 #include "r_dvars.h"
@@ -540,7 +541,7 @@ void __cdecl Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *loadDef, Ma
     }
 }
 
-void __cdecl Load_BuildVertexDecl(MaterialVertexDeclaration **mtlVertDecl)
+void __cdecl Load_BuildVertexDecl(Ptr32<MaterialVertexDeclaration> *mtlVertDecl)
 {
     IDirect3DVertexDeclaration9 *v1; // eax
     MaterialStreamRouting data[16]; // [esp+8h] [ebp-28h] BYREF
@@ -984,21 +985,21 @@ Material *__cdecl Material_Duplicate(Material *mtlCopy, char *name)
         v3 = strlen(name);
         mtlNew = Material_Alloc(v3 + 193);
         memcpy(mtlNew, mtlCopy, 0xC0u);
-        *(unsigned int *)mtlNew = (unsigned int)(mtlNew + 192);
+        *(unsigned int *)mtlNew = (unsigned int)BO1_P2I((mtlNew + 192));
         memcpy(*(unsigned __int8 **)mtlNew, (unsigned __int8 *)name, v3 + 1);
         stateBitsTableSize = 8 * mtlCopy->stateBitsCount;
-        *((unsigned int *)mtlNew + 47) = (unsigned int)Material_Alloc(stateBitsTableSize);
+        *((unsigned int *)mtlNew + 47) = (unsigned int)BO1_P2I(Material_Alloc(stateBitsTableSize));
         memcpy(*((unsigned __int8 **)mtlNew + 47), (unsigned __int8 *)mtlCopy->stateBitsTable, stateBitsTableSize);
         if ( mtlCopy->textureTable )
         {
             textureTableSize = 16 * mtlCopy->textureCount;
-            *((unsigned int *)mtlNew + 45) = (unsigned int)Material_Alloc(textureTableSize);
+            *((unsigned int *)mtlNew + 45) = (unsigned int)BO1_P2I(Material_Alloc(textureTableSize));
             memcpy(*((unsigned __int8 **)mtlNew + 45), (unsigned __int8 *)mtlCopy->textureTable, textureTableSize);
         }
         if ( mtlCopy->localConstantTable )
         {
             constantTableSize = 32 * mtlCopy->constantCount;
-            *((unsigned int *)mtlNew + 46) = (unsigned int)Material_Alloc(constantTableSize);
+            *((unsigned int *)mtlNew + 46) = (unsigned int)BO1_P2I(Material_Alloc(constantTableSize));
             memcpy(*((unsigned __int8 **)mtlNew + 46), (unsigned __int8 *)mtlCopy->localConstantTable, constantTableSize);
         }
         Material_Add((Material *)mtlNew, hashIndex[0]);
@@ -1108,7 +1109,7 @@ void __cdecl Material_GetHashIndex(const char *name, unsigned __int16 *hashIndex
 Material *__cdecl Material_Register(char *name, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (Material *)((int (__cdecl *)(char *, int))Material_Register_FastFile)(name, imageTrack);
+        return (Material *)BO1_I2P(((int (__cdecl *)(char *, int))Material_Register_FastFile)(name, imageTrack));
     else
         return Material_Register_LoadObj(name, imageTrack);
 }
@@ -1197,7 +1198,7 @@ void __cdecl R_MaterialList_f()
 {
     const char *fmt; // [esp+8h] [ebp-8150h]
     unsigned int i; // [esp+138h] [ebp-8020h]
-    const char **p_name; // [esp+13Ch] [ebp-801Ch]
+    const Ptr32<const char> *p_name; // [esp+13Ch] [ebp-801Ch]
     int v3; // [esp+140h] [ebp-8018h]
     MaterialMemory *v4; // [esp+144h] [ebp-8014h]
     unsigned int inData; // [esp+148h] [ebp-8010h] BYREF
@@ -1234,7 +1235,7 @@ void __cdecl R_MaterialList_f()
         else
             fmt = "%6.1f";
         Com_Printf(8, fmt, v7);
-        Com_Printf(8, "     %s\n", *p_name);
+        Com_Printf(8, "     %s\n", (const char *)*p_name);
     }
     Com_Printf(8, "-----------------------\n");
     Com_Printf(8, "current total    %5.1f MB\n", (float)((float)v3 / 1048576.0));
@@ -1262,7 +1263,7 @@ void __cdecl R_GetMaterialList(XAssetHeader header, char *data)
         }
         materialMemory = (XAssetHeader *)&data[8 * *(unsigned int *)data + 4];
         materialMemory->xmodelPieces = header.xmodelPieces;
-        materialMemory[1].xmodelPieces = (XModelPieces *)memory;
+        materialMemory[1].xmodelPieces = (XModelPieces *)BO1_I2P(memory);
         ++*(unsigned int *)data;
     }
 }
@@ -1877,7 +1878,7 @@ unsigned int __cdecl Material_LoadFile(const char *filename, int *file)
 
 bool __cdecl IsValidMaterialHandle(Material *const handle)
 {
-    if ( ((unsigned __int8)handle & 3) != 0
+    if ( ((unsigned __int8)BO1_P2I(handle) & 3) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_material.cpp",
                     2407,

@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_ptrcast.h>
 
 #include "cscr_main.h"
 #include "cscr_variable.h"
@@ -33,7 +34,7 @@ struct scr_anim_s // sizeof=0x4
     }
     scr_anim_s(int i)
     {
-        linkPointer = (const char *)i; // BO1HACK
+        linkPointer = (const char *)BO1_I2P(i); // BO1HACK
     }
 };
 
@@ -45,7 +46,7 @@ struct scr_animtree_t // sizeof=0x4
     }
     scr_animtree_t(int val)
     {
-        anims = (XAnim_s *)val;
+        anims = (XAnim_s *)BO1_I2P(val);
     }
     scr_animtree_t()
     {

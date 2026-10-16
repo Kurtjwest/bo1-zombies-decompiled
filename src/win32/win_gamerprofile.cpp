@@ -1,4 +1,5 @@
-#include <Windows.h>
+#include <universal/bo1_ptrcast.h>
+#include <windows.h>
 
 #include "win_gamerprofile.h"
 #include <universal/dvar.h>
@@ -403,9 +404,9 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int controllerIndex, profileWri
     gamerSettings[controllerIndex].show_blood = cg_blood->current.enabled;
     if ( _stricmp(gpad_buttonsConfig->current.string, "BUTTONS_ZOMBIETRON") )
         I_strncpyz(gamerSettings[controllerIndex].gpadButtonsConfig, gpad_buttonsConfig->current.string, 256);
-    if ( !*(_BYTE *)gpad_buttonsConfig->current.integer )
+    if ( !*(_BYTE *)BO1_I2P(gpad_buttonsConfig->current.integer) )
         Dvar_SetString((dvar_s *)gpad_buttonsConfig, "buttons_default");
-    if ( !*(_BYTE *)gpad_sticksConfig->current.integer )
+    if ( !*(_BYTE *)BO1_I2P(gpad_sticksConfig->current.integer) )
         Dvar_SetString((dvar_s *)gpad_sticksConfig, "thumbstick_default");
     if ( Dvar_GetBool("gpad_enabled") )
     {
@@ -451,7 +452,7 @@ void __cdecl GamerProfile_UpdateProfileFromDvars(int controllerIndex, profileWri
     gamerSettings[controllerIndex].categoryPlaylist = categoryPlaylist->current.integer;
     gamerSettings[controllerIndex].wagerCategory = wagerCategory->current.integer;
     gamerSettings[controllerIndex].wagerCategoryPlaylist = wagerCategoryPlaylist->current.integer;
-    if ( !*(_BYTE *)customclass[0]->current.integer )
+    if ( !*(_BYTE *)BO1_I2P(customclass[0]->current.integer) )
         ResetCreateAClassNames(controllerIndex);
     for ( i = 0; i < 10; ++i )
         I_strncpyz(gamerSettings[controllerIndex].customClass[i], customclass[i]->current.string, 16);

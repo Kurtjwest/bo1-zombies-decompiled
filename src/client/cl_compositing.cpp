@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cl_compositing.h"
 #include <gfx_d3d/r_material.h>
 #include <gfx_d3d/r_streamalloc.h>
@@ -20,7 +21,7 @@ IDirect3DQuery9 *s_compositingFence;
 
 void __cdecl CL_CompositeSetupImageCallback(unsigned int *param)
 {
-    *param = (unsigned int)CL_CompositeSetupImage();
+    *param = (unsigned int)BO1_P2I(CL_CompositeSetupImage());
 }
 
 GfxImage *__cdecl CL_CompositeSetupImage()

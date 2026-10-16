@@ -1,3 +1,5 @@
+#include <universal/bo1_ptrcast.h>
+#include <universal/bo1_layout.h>
 #include "physics_system_internal.h"
 #include "phys_assert.h"
 #include "phys_util.h"
@@ -98,33 +100,33 @@ void __cdecl rigid_body_island_qsort(rigid_body **list, int list_count)
         rigid_body_island_qsort(&list[list_count / 2], list_count - list_count / 2);
         v4 = &list[list_count / 2];
         last = &list[list_count];
-        for ( i = (unsigned int)(v4 - 1); v4 < last; ++v4 )
+        for ( i = (unsigned int)BO1_P2I((v4 - 1)); v4 < last; ++v4 )
         {
-            v6 = *(rigid_body **)i;
-            if ( (*v4)->m_partition_node.m_partition_size <= *(unsigned int *)(*(unsigned int *)i + 348) )
+            v6 = *(rigid_body **)BO1_I2P(i);
+            if ( (*v4)->m_partition_node.m_partition_size <= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 348)) )
                 break;
-            *(unsigned int *)i = (unsigned int)*v4;
+            *(unsigned int *)BO1_I2P(i) = (unsigned int)BO1_P2I(*v4);
             *v4 = v6;
             v7 = i - 4;
-            if ( i > (unsigned int)v3 )
+            if ( i > (unsigned int)BO1_P2I(v3) )
             {
                 while ( 1 )
                 {
-                    v8 = *(unsigned int *)v7;
-                    if ( *(unsigned int *)(*(unsigned int *)i + 348) <= *(unsigned int *)(*(unsigned int *)v7 + 348) )
+                    v8 = *(unsigned int *)BO1_I2P(v7);
+                    if ( *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 348)) <= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(v7) + 348)) )
                         break;
-                    *(unsigned int *)v7 = *(unsigned int *)i;
-                    *(unsigned int *)i = v8;
+                    *(unsigned int *)BO1_I2P(v7) = *(unsigned int *)BO1_I2P(i);
+                    *(unsigned int *)BO1_I2P(i) = v8;
                     v3 = list;
                     i = v7;
                     v7 -= 4;
-                    if ( i <= (unsigned int)list )
+                    if ( i <= (unsigned int)BO1_P2I(list) )
                         goto LABEL_12;
                 }
                 v3 = list;
             }
 LABEL_12:
-            i = (unsigned int)v4;
+            i = (unsigned int)BO1_P2I(v4);
         }
     }
     else if ( list_count == 2 )
@@ -156,33 +158,33 @@ void __cdecl merge_sort(rigid_body_constraint_contact **list, int list_count)
         merge_sort(&list[list_count / 2], list_count - list_count / 2);
         v4 = &list[list_count / 2];
         last = &list[list_count];
-        for ( i = (unsigned int)(v4 - 1); v4 < last; ++v4 )
+        for ( i = (unsigned int)BO1_P2I((v4 - 1)); v4 < last; ++v4 )
         {
-            v6 = *(rigid_body_constraint_contact **)i;
-            if ( (*v4)->m_solver_priority >= *(unsigned int *)(*(unsigned int *)i + 20) )
+            v6 = *(rigid_body_constraint_contact **)BO1_I2P(i);
+            if ( (*v4)->m_solver_priority >= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 20)) )
                 break;
-            *(unsigned int *)i = (unsigned int)*v4;
+            *(unsigned int *)BO1_I2P(i) = (unsigned int)BO1_P2I(*v4);
             *v4 = v6;
             v7 = i - 4;
-            if ( i > (unsigned int)v3 )
+            if ( i > (unsigned int)BO1_P2I(v3) )
             {
                 while ( 1 )
                 {
-                    v8 = *(unsigned int *)v7;
-                    if ( *(unsigned int *)(*(unsigned int *)i + 20) >= *(unsigned int *)(*(unsigned int *)v7 + 20) )
+                    v8 = *(unsigned int *)BO1_I2P(v7);
+                    if ( *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 20)) >= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(v7) + 20)) )
                         break;
-                    *(unsigned int *)v7 = *(unsigned int *)i;
-                    *(unsigned int *)i = v8;
+                    *(unsigned int *)BO1_I2P(v7) = *(unsigned int *)BO1_I2P(i);
+                    *(unsigned int *)BO1_I2P(i) = v8;
                     v3 = list;
                     i = v7;
                     v7 -= 4;
-                    if ( i <= (unsigned int)list )
+                    if ( i <= (unsigned int)BO1_P2I(list) )
                         goto LABEL_12;
                 }
                 v3 = list;
             }
 LABEL_12:
-            i = (unsigned int)v4;
+            i = (unsigned int)BO1_P2I(v4);
         }
     }
     else if ( list_count == 2 )
@@ -887,7 +889,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         v5[44].m_prev_T_internal = v5 + 2;
         v5[44].m_next_T_internal = v5 + 2;
         v5[45].m_prev_T_internal = 0;
-        v5[45].m_next_T_internal = (phys_free_list<rigid_body>::T_internal_base *)1;
+        v5[45].m_next_T_internal = (phys_free_list<rigid_body>::T_internal_base *)BO1_I2P(1);
     }
     v7 = i->m_list_rbc_point.m_dummy_head.m_next_T_internal;
     p_m_list_island_count = &i->m_list_island_count;
@@ -950,7 +952,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         v23 = ii[2].m_next_T_internal;
         if (v23)
             ++v23[33].m_prev_T_internal;
-        if (((int)ii[24].m_prev_T_internal & 1) != 0)
+        if (((int)BO1_P2I(ii[24].m_prev_T_internal) & 1) != 0)
         {
             if (v22->b1)
                 ++v22->b1->m_contact_count;
@@ -1015,10 +1017,10 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         v38 = i1[2].m_next_T_internal;
         v39 = i1 + 1;
         for (i2 = 0; v38; v38 = v38[6].m_prev_T_internal)
-            i2 += (int)v38[4].m_prev_T_internal;
+            i2 += (int)BO1_P2I(v38[4].m_prev_T_internal);
         v41 = i1[3].m_prev_T_internal;
         for (i3 = 0; v41; v41 = v41[6].m_prev_T_internal)
-            i3 += (int)v41[4].m_prev_T_internal;
+            i3 += (int)BO1_P2I(v41[4].m_prev_T_internal);
         if (i3 <= i2)
             i3 = i2;
         if (v39->m_prev_T_internal)
@@ -1032,7 +1034,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         &i->m_list_rigid_body != i4;
         i4 = (phys_free_list<rigid_body> *)i4->m_dummy_head.m_next_T_internal)
     {
-        if ((int)i4->m_ptr_list[87] > 0)
+        if ((int)BO1_P2I(i4->m_ptr_list[87]) > 0)
         {
             if ((rigid_body **)i4->m_ptr_list[84] != i4->m_ptr_list
                 && _tlAssert(
@@ -1078,7 +1080,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         {
             x = v47;
         }
-        if (*(_DWORD *)(LODWORD(x) + 336) != LODWORD(x)
+        if (*(_DWORD *)BO1_I2P((LODWORD(x) + 336)) != LODWORD(x)
             && _tlAssert(
                 "source/physics_system_internal.cpp",
                 163,
@@ -1087,8 +1089,8 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         {
             __debugbreak();
         }
-        i5->m_ptr_list[2] = *(rigid_body_constraint_point **)(LODWORD(x) + 296);
-        *(_DWORD *)(LODWORD(x) + 296) = (_DWORD)i5->m_ptr_list;
+        i5->m_ptr_list[2] = *(rigid_body_constraint_point **)BO1_I2P((LODWORD(x) + 296));
+        *(_DWORD *)BO1_I2P((LODWORD(x) + 296)) = (_DWORD)BO1_P2I(i5->m_ptr_list);
     }
     v50 = i;
     for (i6 = (phys_free_list<rigid_body_constraint_hinge> *)i->m_list_rbc_hinge.m_dummy_head.m_next_T_internal;
@@ -1114,7 +1116,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         {
             v54 = v53;
         }
-        if (*(_DWORD *)(LODWORD(v54) + 336) != LODWORD(v54)
+        if (*(_DWORD *)BO1_I2P((LODWORD(v54) + 336)) != LODWORD(v54)
             && _tlAssert(
                 "source/physics_system_internal.cpp",
                 163,
@@ -1124,8 +1126,8 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             __debugbreak();
         }
         v50 = i;
-        i6->m_ptr_list[2] = *(rigid_body_constraint_hinge **)(LODWORD(v54) + 300);
-        *(_DWORD *)(LODWORD(v54) + 300) = (_DWORD)i6->m_ptr_list;
+        i6->m_ptr_list[2] = *(rigid_body_constraint_hinge **)BO1_I2P((LODWORD(v54) + 300));
+        *(_DWORD *)BO1_I2P((LODWORD(v54) + 300)) = (_DWORD)BO1_P2I(i6->m_ptr_list);
     }
     v56 = (phys_free_list<rigid_body_constraint_distance> *)v50->m_list_rbc_dist.m_dummy_head.m_next_T_internal;
     if (&v50->m_list_rbc_dist != v56)
@@ -1151,7 +1153,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 m_min_distance = v58;
             }
-            if (*(_DWORD *)(LODWORD(m_min_distance) + 336) != LODWORD(m_min_distance)
+            if (*(_DWORD *)BO1_I2P((LODWORD(m_min_distance) + 336)) != LODWORD(m_min_distance)
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1160,9 +1162,9 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v56->m_ptr_list[2] = *(rigid_body_constraint_distance **)(LODWORD(m_min_distance) + 304);
+            v56->m_ptr_list[2] = *(rigid_body_constraint_distance **)BO1_I2P((LODWORD(m_min_distance) + 304));
             v50 = i;
-            *(_DWORD *)(LODWORD(m_min_distance) + 304) = (_DWORD)v56->m_ptr_list;
+            *(_DWORD *)BO1_I2P((LODWORD(m_min_distance) + 304)) = (_DWORD)BO1_P2I(v56->m_ptr_list);
             v56 = (phys_free_list<rigid_body_constraint_distance> *)v56->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_dist != v56);
     }
@@ -1190,7 +1192,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 }
                 m_flags = v61->m_ptr_list[1][1].m_flags;
             }
-            if (*(_DWORD *)(m_flags + 336) != m_flags
+            if (*(_DWORD *)BO1_I2P((m_flags + 336)) != m_flags
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1200,8 +1202,8 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v61->m_ptr_list[2] = *(rigid_body_constraint_ragdoll **)(m_flags + 308);
-            *(_DWORD *)(m_flags + 308) = (_DWORD)v61->m_ptr_list;
+            v61->m_ptr_list[2] = *(rigid_body_constraint_ragdoll **)BO1_I2P((m_flags + 308));
+            *(_DWORD *)BO1_I2P((m_flags + 308)) = (_DWORD)BO1_P2I(v61->m_ptr_list);
             v61 = (phys_free_list<rigid_body_constraint_ragdoll> *)v61->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_ragdoll != v61);
     }
@@ -1229,7 +1231,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 m_pitch_stability_factor = v68;
             }
-            if (*(_DWORD *)(LODWORD(m_pitch_stability_factor) + 336) != LODWORD(m_pitch_stability_factor)
+            if (*(_DWORD *)BO1_I2P((LODWORD(m_pitch_stability_factor) + 336)) != LODWORD(m_pitch_stability_factor)
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1239,8 +1241,8 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v66->m_ptr_list[2] = *(rigid_body_constraint_wheel **)(LODWORD(m_pitch_stability_factor) + 312);
-            *(_DWORD *)(LODWORD(m_pitch_stability_factor) + 312) = (_DWORD)v66->m_ptr_list;
+            v66->m_ptr_list[2] = *(rigid_body_constraint_wheel **)BO1_I2P((LODWORD(m_pitch_stability_factor) + 312));
+            *(_DWORD *)BO1_I2P((LODWORD(m_pitch_stability_factor) + 312)) = (_DWORD)BO1_P2I(v66->m_ptr_list);
             v66 = (phys_free_list<rigid_body_constraint_wheel> *)v66->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_wheel != v66);
     }
@@ -1268,7 +1270,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 v74 = v73;
             }
-            if (*(_DWORD *)(LODWORD(v74) + 336) != LODWORD(v74)
+            if (*(_DWORD *)BO1_I2P((LODWORD(v74) + 336)) != LODWORD(v74)
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1277,9 +1279,9 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v71->m_ptr_list[2] = *(rigid_body_constraint_angular_actuator **)(LODWORD(v74) + 316);
+            v71->m_ptr_list[2] = *(rigid_body_constraint_angular_actuator **)BO1_I2P((LODWORD(v74) + 316));
             v50 = i;
-            *(_DWORD *)(LODWORD(v74) + 316) = (_DWORD)v71->m_ptr_list;
+            *(_DWORD *)BO1_I2P((LODWORD(v74) + 316)) = (_DWORD)BO1_P2I(v71->m_ptr_list);
             v71 = (phys_free_list<rigid_body_constraint_angular_actuator> *)v71->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_angular_actuator != v71);
     }
@@ -1307,7 +1309,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 m_pulse_sum = v78;
             }
-            if (*(_DWORD *)(LODWORD(m_pulse_sum) + 336) != LODWORD(m_pulse_sum)
+            if (*(_DWORD *)BO1_I2P((LODWORD(m_pulse_sum) + 336)) != LODWORD(m_pulse_sum)
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1317,8 +1319,8 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v76->m_ptr_list[2] = *(rigid_body_constraint_upright **)(LODWORD(m_pulse_sum) + 320);
-            *(_DWORD *)(LODWORD(m_pulse_sum) + 320) = (_DWORD)v76->m_ptr_list;
+            v76->m_ptr_list[2] = *(rigid_body_constraint_upright **)BO1_I2P((LODWORD(m_pulse_sum) + 320));
+            *(_DWORD *)BO1_I2P((LODWORD(m_pulse_sum) + 320)) = (_DWORD)BO1_P2I(v76->m_ptr_list);
             v76 = (phys_free_list<rigid_body_constraint_upright> *)v76->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_upright != v76);
     }
@@ -1328,14 +1330,14 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         do
         {
             m_list_count = v81->m_list_count;
-            if (m_list_count && (v83 = *(_DWORD *)(m_list_count + 336)) != 0)
+            if (m_list_count && (v83 = *(_DWORD *)BO1_I2P((m_list_count + 336))) != 0)
             {
                 v84 = v83;
             }
             else
             {
                 m_list_count_high_water = v81->m_list_count_high_water;
-                if ((!m_list_count_high_water || !*(_DWORD *)(m_list_count_high_water + 336))
+                if ((!m_list_count_high_water || !*(_DWORD *)BO1_I2P((m_list_count_high_water + 336)))
                     && _tlAssert(
                         "source/physics_system_internal.cpp",
                         229,
@@ -1344,9 +1346,9 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 {
                     __debugbreak();
                 }
-                v84 = *(_DWORD *)(v81->m_list_count_high_water + 336);
+                v84 = *(_DWORD *)BO1_I2P((v81->m_list_count_high_water + 336));
             }
-            if (*(_DWORD *)(v84 + 336) != v84
+            if (*(_DWORD *)BO1_I2P((v84 + 336)) != v84
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1356,8 +1358,8 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v81->m_ptr_list[0] = *(rigid_body_constraint_custom_orientation **)(v84 + 324);
-            *(_DWORD *)(v84 + 324) = (_DWORD)&v81->m_list_count;
+            v81->m_ptr_list[0] = *(rigid_body_constraint_custom_orientation **)BO1_I2P((v84 + 324));
+            *(_DWORD *)BO1_I2P((v84 + 324)) = (_DWORD)BO1_P2I(&v81->m_list_count);
             v81 = (phys_free_list<rigid_body_constraint_custom_orientation> *)v81->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_custom_orientation != v81);
     }
@@ -1385,7 +1387,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 v89 = v88;
             }
-            if (*(_DWORD *)(LODWORD(v89) + 336) != LODWORD(v89)
+            if (*(_DWORD *)BO1_I2P((LODWORD(v89) + 336)) != LODWORD(v89)
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1394,9 +1396,9 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v86->m_ptr_list[2] = *(rigid_body_constraint_custom_path **)(LODWORD(v89) + 328);
+            v86->m_ptr_list[2] = *(rigid_body_constraint_custom_path **)BO1_I2P((LODWORD(v89) + 328));
             v50 = i;
-            *(_DWORD *)(LODWORD(v89) + 328) = (_DWORD)v86->m_ptr_list;
+            *(_DWORD *)BO1_I2P((LODWORD(v89) + 328)) = (_DWORD)BO1_P2I(v86->m_ptr_list);
             v86 = (phys_free_list<rigid_body_constraint_custom_path> *)v86->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_custom_path != v86);
     }
@@ -1406,14 +1408,14 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         do
         {
             v92 = v91->m_list_count;
-            if (v92 && (v93 = *(_DWORD *)(v92 + 336)) != 0)
+            if (v92 && (v93 = *(_DWORD *)BO1_I2P((v92 + 336))) != 0)
             {
                 v94 = v93;
             }
             else
             {
                 v95 = v91->m_list_count_high_water;
-                if ((!v95 || !*(_DWORD *)(v95 + 336))
+                if ((!v95 || !*(_DWORD *)BO1_I2P((v95 + 336)))
                     && _tlAssert(
                         "source/physics_system_internal.cpp",
                         229,
@@ -1422,9 +1424,9 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 {
                     __debugbreak();
                 }
-                v94 = *(_DWORD *)(v91->m_list_count_high_water + 336);
+                v94 = *(_DWORD *)BO1_I2P((v91->m_list_count_high_water + 336));
             }
-            if (*(_DWORD *)(v94 + 336) != v94
+            if (*(_DWORD *)BO1_I2P((v94 + 336)) != v94
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     163,
@@ -1433,8 +1435,8 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v91->m_ptr_list[0] = *(rigid_body_constraint_contact **)(v94 + 332);
-            *(_DWORD *)(v94 + 332) = (_DWORD)&v91->m_list_count;
+            v91->m_ptr_list[0] = *(rigid_body_constraint_contact **)BO1_I2P((v94 + 332));
+            *(_DWORD *)BO1_I2P((v94 + 332)) = (_DWORD)BO1_P2I(&v91->m_list_count);
             v91 = (phys_free_list<rigid_body_constraint_contact> *)v91->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_contact != v91);
     }
@@ -1458,10 +1460,10 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             "phys_transient_allocator out of memory.");
         v97 = i->m_list_rigid_body.m_dummy_head.m_next_T_internal;
         v98 = 0;
-        for (i7 = (int)v97; &i->m_list_rigid_body != (phys_free_list<rigid_body> *)v97; i7 = (int)v97)
+        for (i7 = (int)BO1_P2I(v97); &i->m_list_rigid_body != (phys_free_list<rigid_body> *)v97; i7 = (int)BO1_P2I(v97))
         {
             v99 = (rigid_body *)&v97[2];
-            if ((int)v97[45].m_next_T_internal > 0)
+            if ((int)BO1_P2I(v97[45].m_next_T_internal) > 0)
             {
                 IPN_verify_rigid_bodies((rigid_body *)&v97[2]);
                 if (v98 >= i->m_list_island_count
@@ -1473,7 +1475,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 {
                     __debugbreak();
                 }
-                v97 = (phys_free_list<rigid_body>::T_internal_base *)i7;
+                v97 = (phys_free_list<rigid_body>::T_internal_base *)BO1_I2P(i7);
                 i->m_list_island[v98++] = v99;
             }
             v97 = v97->m_next_T_internal;
@@ -1548,7 +1550,7 @@ void __thiscall physics_system::time_step(float outside_delta_t, bool last_step)
             goto LABEL_11;
         do
         {
-            v11 += (int)m_prev_T_internal[4].m_prev_T_internal;
+            v11 += (int)BO1_P2I(m_prev_T_internal[4].m_prev_T_internal);
             m_prev_T_internal = m_prev_T_internal[6].m_prev_T_internal;
         }
         while ( m_prev_T_internal );
@@ -2163,7 +2165,7 @@ void physics_system::validate_member(environment_rigid_body *rb)
             if ((m_flags & 0x20) != 0)
             {
                 using TI = phys_free_list<user_rigid_body>::T_internal;
-                static_assert(sizeof(TI) == 0x1D0, "size mismatch");
+                BO1_LAYOUT32_ASSERT(sizeof(TI) == 0x1D0, "size mismatch");
                 TI *ti = (TI *)((char *)rb - offsetof(TI, m_data));
                 PMM_VALIDATE((char *)ti, sizeof(TI), 16);
 
@@ -2172,7 +2174,7 @@ void physics_system::validate_member(environment_rigid_body *rb)
             else
             {
                 using TI = phys_free_list<rigid_body>::T_internal;
-                static_assert(sizeof(TI) == 0x180, "size mismatch");
+                BO1_LAYOUT32_ASSERT(sizeof(TI) == 0x180, "size mismatch");
                 TI *ti = (TI *)((char *)rb - offsetof(TI, m_data));
                 PMM_VALIDATE((char *)ti, sizeof(TI), 16);
 

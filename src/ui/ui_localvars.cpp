@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_localvars.h"
 #include <universal/com_memory.h>
 
@@ -183,7 +184,7 @@ char *__cdecl UILocalVar_GetString(const UILocalVar *var, char *stringBuf, unsig
             {
                 __debugbreak();
             }
-            return (char *)var->u.integer;
+            return (char *)BO1_I2P(var->u.integer);
         }
     }
     else
@@ -222,6 +223,6 @@ void __cdecl UILocalVar_SetString(UILocalVar *var, char *s)
     if ( var->type == UILOCALVAR_STRING )
         FreeString(var->u.string, 36, SCRIPTINSTANCE_SERVER);
     var->type = UILOCALVAR_STRING;
-    var->u.integer = (int)CopyString(s, "UILocalVar_SetString", 36, SCRIPTINSTANCE_SERVER);
+    var->u.integer = (int)BO1_P2I(CopyString(s, "UILocalVar_SetString", 36, SCRIPTINSTANCE_SERVER));
 }
 

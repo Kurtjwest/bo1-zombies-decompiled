@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "bdByteBuffer.h"
 #include <DemonWare/bdCore/bdMemory/bdMemory.h>
 #include <cstring>
@@ -569,10 +570,10 @@ bool bdByteBuffer::writeString(char *buf, unsigned int cnt)
     v14 = 0;
     v13 = 0;
     v16 = bdByteBuffer::writeDataType(BD_BB_SIGNED_CHAR8_STRING_TYPE);
-    v3 = (int)memchr((unsigned __int8 *)buf, 0, cnt);
+    v3 = (int)BO1_P2I(memchr((unsigned __int8 *)buf, 0, cnt));
     v10 = v3;
     if (v3)
-        v7 = v10 - (_DWORD)buf;
+        v7 = v10 - (_DWORD)BO1_P2I(buf);
     else
         v7 = cnt;
     v11 = v7;

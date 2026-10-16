@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_marks.h"
 #include "r_dpvs.h"
 #include "r_init.h"
@@ -77,17 +78,17 @@ void __cdecl R_BoxSurfaces_r(
         cellIndex = node->cellIndex;
         if ( cellIndex - cellCount < 0 )
             break;
-        side = (const cplane_s *)BoxOnPlaneSide(
+        side = (const cplane_s *)BO1_I2P(BoxOnPlaneSide(
                                                              mins,
                                                              maxs,
-                                                             &rgp.world->dpvsPlanes.planes[cellIndex - cellCount]);
-        if ( side == (const cplane_s *)1 )
+                                                             &rgp.world->dpvsPlanes.planes[cellIndex - cellCount]));
+        if ( side == (const cplane_s *)BO1_I2P(1) )
         {
             ++node;
         }
         else
         {
-            if ( side != (const cplane_s *)2 )
+            if ( side != (const cplane_s *)BO1_I2P(2) )
                 R_BoxSurfaces_r(
                     node + 1,
                     mins,
@@ -505,17 +506,17 @@ void __cdecl R_BoxStaticModels_r(
         cellIndex = node->cellIndex;
         if ( cellIndex - cellCount < 0 )
             break;
-        side = (const cplane_s *)BoxOnPlaneSide(
+        side = (const cplane_s *)BO1_I2P(BoxOnPlaneSide(
                                                              mins,
                                                              maxs,
-                                                             &rgp.world->dpvsPlanes.planes[cellIndex - cellCount]);
-        if ( side == (const cplane_s *)1 )
+                                                             &rgp.world->dpvsPlanes.planes[cellIndex - cellCount]));
+        if ( side == (const cplane_s *)BO1_I2P(1) )
         {
             ++node;
         }
         else
         {
-            if ( side != (const cplane_s *)2 )
+            if ( side != (const cplane_s *)BO1_I2P(2) )
                 R_BoxStaticModels_r(node + 1, mins, maxs, allowSModel, smodelList, smodelListSize, smodelCount, cellBits);
             node = (mnode_t *)((char *)node + 2 * node->rightChildOffset);
         }
@@ -1946,7 +1947,7 @@ char __cdecl R_MarkFragments_AnimatedXModel(
     int surfIndex; // [esp+3D0h] [ebp-18h]
     unsigned int vertListIndex; // [esp+3D4h] [ebp-14h]
     int surfCount; // [esp+3D8h] [ebp-10h]
-    Material **materials; // [esp+3DCh] [ebp-Ch]
+    Ptr32<Material> *materials; // [esp+3DCh] [ebp-Ch]
     XSurface *surfaces; // [esp+3E0h] [ebp-8h] BYREF
     XSurface *surface; // [esp+3E4h] [ebp-4h]
     int savedregs; // [esp+3E8h] [ebp+0h] BYREF
@@ -2534,7 +2535,7 @@ char __cdecl R_MarkFragments_EntirelyRigidXModel(
 {
     int surfIndex; // [esp+C0h] [ebp-10h]
     int surfCount; // [esp+C4h] [ebp-Ch]
-    Material **materials; // [esp+C8h] [ebp-8h]
+    Ptr32<Material> *materials; // [esp+C8h] [ebp-8h]
     XSurface *surfaces; // [esp+CCh] [ebp-4h] BYREF
 
     surfCount = XModelGetSurfaces(xmodel, &surfaces, 0);

@@ -870,7 +870,7 @@ void R_ToggleSmpFrame()
     {
         // mod (L43): per-frame special-model slot counter for BO1_SVPROF: slots this buffer's last frame wanted =
         // the ones it got + the ones refused at the limit; [3] = the window's peak ("ge_peak"), [5] = frames over 256
-        const long wanted = (long)frontEndDataOut->gfxEntCount + _InterlockedExchange(&g_modRendWarn[4], 0);
+        const bo1_ilong wanted = (bo1_ilong)frontEndDataOut->gfxEntCount + _InterlockedExchange(&g_modRendWarn[4], 0);
         if ( wanted > g_modRendWarn[3] )
             g_modRendWarn[3] = wanted;
         if ( wanted > 256 )

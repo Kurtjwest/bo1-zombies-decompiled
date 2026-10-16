@@ -2,7 +2,7 @@
 
 #ifdef BO1_DW
 
-#include <Windows.h>
+#include <windows.h>
 #include <DemonWare/bdCore/bdSingleton.h>
 #include <universal/dvar.h>
 

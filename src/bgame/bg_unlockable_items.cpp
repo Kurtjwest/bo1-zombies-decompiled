@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "bg_unlockable_items.h"
 #include <qcommon/com_gamemodes.h>
 #include <ddl/ddl_api.h>
@@ -722,7 +723,7 @@ int __cdecl BG_UnlockablesCompareItemsBySortKey(const void *arg0, const void *ar
 {
     int returnValue; // [esp+0h] [ebp-Ch]
 
-    returnValue = *(unsigned int *)(*(unsigned int *)arg0 + 264) - *(unsigned int *)(*(unsigned int *)arg1 + 264);
+    returnValue = *(unsigned int *)BO1_I2P((*(unsigned int *)arg0 + 264)) - *(unsigned int *)BO1_I2P((*(unsigned int *)arg1 + 264));
     if ( !returnValue )
         return **(unsigned int **)arg0 - **(unsigned int **)arg1;
     return returnValue;
@@ -2853,11 +2854,11 @@ bool __cdecl BG_UnlockablesIsItemEquippedInAnyCustomClass(int controllerIndex, i
         if ( customClassName && BG_UnlockablesIsItemEquipped(controllerIndex, customClassName, itemIndex) )
         {
             String = Dvar_GetString(customClassName);
-            v8 = (unsigned int)&String[strlen(String) + 1];
+            v8 = (unsigned int)BO1_P2I(&String[strlen(String) + 1]);
             p_isEquipped = &isEquipped;
             while ( *++p_isEquipped )
                 ;
-            memcpy(p_isEquipped, String, v8 - (unsigned int)String);
+            memcpy(p_isEquipped, String, v8 - (unsigned int)BO1_P2I(String));
             v4 = &isEquipped;
             while ( *++v4 )
                 ;

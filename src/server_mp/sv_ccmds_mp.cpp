@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "sv_ccmds_mp.h"
 #include <qcommon/files.h>
 #include <server/server.h>
@@ -486,7 +487,7 @@ void __cdecl SV_MapRotate_f()
         Playlist_SVMapRotate();
     }
     Com_Printf(0, "\"sv_mapRotation\" is:\"%s\"\n\n", sv_mapRotation->current.string);
-    if ( !*(_BYTE *)sv_mapRotationCurrent->current.integer )
+    if ( !*(_BYTE *)BO1_I2P(sv_mapRotationCurrent->current.integer) )
         Dvar_SetString((dvar_s *)sv_mapRotationCurrent, sv_mapRotation->current.string);
     Com_Printf(0, "\"sv_mapRotationCurrent\" is:\"%s\"\n\n", sv_mapRotationCurrent->current.string);
     token = UI_GetMapRotationToken();

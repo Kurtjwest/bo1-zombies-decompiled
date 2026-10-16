@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_sprite.h"
 #include <xanim/xanim.h>
 #include "fxprimitives.h"
@@ -351,7 +352,7 @@ void __cdecl R_GenerateQuadStampCodeMeshVertsArray(
         *(_QWORD *)prototype.v = *(_QWORD *)&prototypeVert.color.packed;
         *(_QWORD *)&prototype.unitVec[2].packed = __PAIR64__(v23.packed, v24.packed);
         verts = R_GetCodeMeshVerts(baseVertex);
-        if ( ((unsigned __int8)verts & 0x1F) != 0
+        if ( ((unsigned __int8)BO1_P2I(verts) & 0x1F) != 0
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_sprite.cpp",
                         364,

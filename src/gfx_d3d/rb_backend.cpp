@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "rb_backend.h"
 #include "rb_stats.h"
 #include "r_image.h"
@@ -5469,7 +5470,7 @@ void __cdecl RB_ExecuteRenderCommandsLoop(const void *cmds, int *ui3dTextureWind
         v3 = -1;
     while (1)
     {
-        if (((int)execState.cmd & 3) != 0
+        if (((int)BO1_P2I(execState.cmd) & 3) != 0
             && !Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_backend.cpp",
                 5999,
@@ -5847,7 +5848,7 @@ void     RB_RenderThread(unsigned int threadContext)
         // (SP 0x006EBFBB). KB waited 1 ms on the event, slept 0 ms when idle and checked the remote update after every branch.
         if ( Sys_WaitBackendEvent(0) )
         {
-            data = (GfxBackEndData *)Sys_RendererSleep();
+            data = (GfxBackEndData *)BO1_I2P(Sys_RendererSleep());
             if (data)
             {
                 RB_UpdateDynamicBuffers((GfxBackEndData*)data);

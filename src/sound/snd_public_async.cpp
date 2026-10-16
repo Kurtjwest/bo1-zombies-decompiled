@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "snd_public_async.h"
 #include <qcommon/common.h>
 #include "snd_dvar.h"
@@ -10,7 +11,7 @@
 #include <win32/win_common.h>
 #include <universal/com_workercmds.h>
 
-#include <Windows.h>
+#include <windows.h>
 #include "snd_local.h"
 #include "snd_bo1_trace.h"
 
@@ -190,7 +191,7 @@ void __cdecl SND_PlayInternal(
 
         if ( snd_assert_on_enqueue
             && snd_assert_on_enqueue->current.integer
-            && *(_BYTE *)snd_assert_on_enqueue->current.integer
+            && *(_BYTE *)BO1_I2P(snd_assert_on_enqueue->current.integer)
             && SND_HashName(snd_assert_on_enqueue->current.string) == id
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\sound\\snd_public_async.cpp",
@@ -1263,7 +1264,7 @@ void __cdecl SND_SubtitleNotify(const char *subtitle, unsigned int lengthMs)
     if ( cmd )
     {
         cmd->type = SND_NOTIFY_SUBTITLE;
-        cmd->context.length.ent = (unsigned int)subtitle;
+        cmd->context.length.ent = (unsigned int)BO1_P2I(subtitle);
         cmd->context.ent_update.handle.handle = lengthMs;
         SND_NotifyPush(cmd);
     }
@@ -1296,7 +1297,7 @@ void __cdecl SND_FreePlaybackNotify(snd_playback *playback)
     if ( cmd )
     {
         cmd->type = SND_NOTIFY_PLAYBACK_FREE;
-        cmd->context.ent_update.handle.handle = (int)playback;
+        cmd->context.ent_update.handle.handle = (int)BO1_P2I(playback);
         SND_NotifyPush(cmd);
     }
 }

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_viewer.h"
 #include <client_mp/cl_cgame_mp.h>
 #include <gfx_d3d/r_drawsurf.h>
@@ -301,7 +302,7 @@ void __thiscall UIViewer::Show()
                     this->bgs.GetDObj = (DObj *(__cdecl *)(unsigned int, int))UIViewer::GetDObj;
                     this->bgs.Rand = CG_rand;
                     this->bgs.animData = &this->bgsAnim;
-                    memset((unsigned __int8 *)this->bgs.animData, 0, 0x8D388u);
+                    memset((unsigned __int8 *)this->bgs.animData, 0, sizeof(animScriptData_t)); // 0x8D388 in the 32-bit exe
                     //*(unsigned int *)(*((unsigned int *)NtCurrentTeb()->ThreadLocalStoragePointer + _tls_index) + 8) = UIViewer::GetBGS();
                     ::bgs = UIViewer::GetBGS();
                     Scr_BeginLoadAnimTrees(SCRIPTINSTANCE_SERVER, 0);
@@ -915,7 +916,7 @@ void __thiscall UIViewer::DrawDobj::Set(
 {
     this->weaponOptions.i = weapParam->weaponOptions.i;
     this->weaponOptions.i = (playerParams->facePatternIndex << 26)
-                                                | ((unsigned int)&objBuf[1758][1] + 3) & this->weaponOptions.i;
+                                                | ((unsigned int)BO1_P2I(&objBuf[1758][1]) + 3) & this->weaponOptions.i;
     this->heroLighting = hero;
     this->startTime = cls.realtime;
     this->weaponVariantDef = wvd;
@@ -1064,11 +1065,11 @@ const WeaponVariantDef *__thiscall UIViewer::GetWeaponVariantDef(const UIViewer:
         if ( attachRefs[i] && I_strcmp(attachRefs[i], "none") )
         {
             v7 = va("_%s", attachRefs[i]);
-            v8 = (unsigned int)&v7[strlen(v7) + 1];
+            v8 = (unsigned int)BO1_P2I(&v7[strlen(v7) + 1]);
             v6 = (char *)&attachRefs[3] + 3;
             while ( *++v6 )
                 ;
-            memcpy(v6, v7, v8 - (unsigned int)v7);
+            memcpy(v6, v7, v8 - (unsigned int)BO1_P2I(v7));
         }
     }
     v4 = (char *)&attachRefs[3] + 3;
@@ -1473,15 +1474,15 @@ void __thiscall UIViewer::AddPlayerToScene(
     if (strcmp(this->playerCameraName, this->playerCameraDvar->current.string))
     {
         if (this->ingame)
-            v7 = UIViewer::SetCameraPos((char*)this->playerCameraDvar->current.integer, (char*)"ingame", animate);
+            v7 = UIViewer::SetCameraPos((char*)BO1_I2P(this->playerCameraDvar->current.integer), (char*)"ingame", animate);
         else
-            v7 = UIViewer::SetCameraPos((char *)this->playerCameraDvar->current.integer, (char *)"none", animate);
+            v7 = UIViewer::SetCameraPos((char *)BO1_I2P(this->playerCameraDvar->current.integer), (char *)"none", animate);
         if (!v7)
         {
             Dvar_SetString((dvar_s*)this->playerCameraDvar, "player");
-            UIViewer::SetCameraPos((char *)this->playerCameraDvar->current.integer, (char *)"none", animate);
+            UIViewer::SetCameraPos((char *)BO1_I2P(this->playerCameraDvar->current.integer), (char *)"none", animate);
         }
-        integer = (char*)this->playerCameraDvar->current.integer;
+        integer = (char*)BO1_I2P(this->playerCameraDvar->current.integer);
         playerCameraName = this->playerCameraName;
         do
         {

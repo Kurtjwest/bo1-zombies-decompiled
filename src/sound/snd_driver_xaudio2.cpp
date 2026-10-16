@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "snd_driver_xaudio2.h"
 #include <ui/ui_main.h>
 #include "snd_stream.h"
@@ -199,7 +200,7 @@ void __cdecl iSND_ReleaseStreamBuffer(unsigned int streamVoice, unsigned int buf
     iassert(streamVoice < SND_MAX_STREAM_VOICES);
     iassert(bufferIndex < StreamVoice::BUFFER_COUNT);
 
-    releaseWindow = (char *)InterlockedExchange((volatile unsigned int *)&g_sd.streamVoices[streamVoice].buffers[bufferIndex].pAudioData, 0);
+    releaseWindow = (char *)BO1_I2P(InterlockedExchange((volatile unsigned int *)&g_sd.streamVoices[streamVoice].buffers[bufferIndex].pAudioData, 0));
 
     if (releaseWindow)
     {
@@ -336,7 +337,7 @@ LABEL_11:
             buffer->AudioBytes = size;
             iassert(!buffer->pAudioData);
             buffer->pAudioData = (const unsigned __int8 *)data;
-            buffer->pContext = (void *)(bufferIndex | (streamVoice << 8));
+            buffer->pContext = (void *)BO1_I2P((bufferIndex | (streamVoice << 8)));
 
             err = g_sd.voices[voiceIndex]->SubmitSourceBuffer(buffer, header->format != SND_ASSET_FORMAT_WMA ? 0 : &bufferWMA);
             iassert(err == S_OK); // ADD

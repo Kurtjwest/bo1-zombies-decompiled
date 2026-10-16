@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_model_skin.h"
 #include "r_dvars.h"
 #include <win32/win_common.h>
@@ -416,7 +417,7 @@ void __cdecl R_SkinXSurfaceRigid(
     {
         __debugbreak();
     }
-    if ( ((unsigned __int8)vertices & 0xF) != 0
+    if ( ((unsigned __int8)BO1_P2I(vertices) & 0xF) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",
                     3907,
@@ -426,7 +427,7 @@ void __cdecl R_SkinXSurfaceRigid(
     {
         __debugbreak();
     }
-    if ( ((unsigned __int8)boneMatrix & 0xF) != 0
+    if ( ((unsigned __int8)BO1_P2I(boneMatrix) & 0xF) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model_skin.cpp",
                     3908,
@@ -470,7 +471,7 @@ void R_SkinXModelCmd(SkinXModelCmd *data)
     GfxPackedVertexNormal *normalIn; // [esp-28CCh] [ebp-28D8h]
     GfxPackedVertex *skinVerticesOut; // [esp-28C8h] [ebp-28D4h]
     const XSurface *xsurf; // [esp-28C4h] [ebp-28D0h]
-    DObjSkelMat alignas(16) boneSkelMats[DOBJ_MAX_PARTS]; // [esp-28C0h] [ebp-28CCh] BYREF
+    alignas(16) DObjSkelMat boneSkelMats[DOBJ_MAX_PARTS]; // [esp-28C0h] [ebp-28CCh] BYREF
     int j; // [esp-30h] [ebp-3Ch]
     GfxModelSkinnedSurface *skinnedSurf; // [esp-24h] [ebp-30h]
     unsigned int i; // [esp-20h] [ebp-2Ch]

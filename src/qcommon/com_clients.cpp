@@ -93,7 +93,7 @@ void __cdecl SwapClients(int clientA, int clientB)
     connstate_t uiActiveTemp_8; // [esp+1Ch] [ebp-14h]
     int uiActiveTemp_12; // [esp+20h] [ebp-10h]
     unsigned __int8 *clientConnectionTemp; // [esp+24h] [ebp-Ch]
-    LargeLocal clientConnectionTemp_large_local(720712); // [esp+28h] [ebp-8h] BYREF
+    LargeLocal clientConnectionTemp_large_local(sizeof(clientConnection_t)); // [esp+28h] [ebp-8h] BYREF (720712 in the 32-bit exe)
 
     //LargeLocal::LargeLocal(&clientConnectionTemp_large_local, 720712);
     //clientConnectionTemp = LargeLocal::GetBuf(&clientConnectionTemp_large_local);
@@ -134,7 +134,7 @@ void __cdecl SwapClients(int clientA, int clientB)
     clientGameStates[clientB].localClientNum = clientB;
     if (clientConnections)
     {
-        memcpy(clientConnectionTemp, (unsigned __int8 *)&clientConnections[clientA], 0xAFF48u);
+        memcpy(clientConnectionTemp, (unsigned __int8 *)&clientConnections[clientA], sizeof(clientConnection_t));
         memcpy(
             (unsigned __int8 *)&clientConnections[clientA],
             (unsigned __int8 *)&clientConnections[clientB],

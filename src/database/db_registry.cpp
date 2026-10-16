@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "db_registry.h"
 #include <universal/profile.h>
 #include <clientscript/cscr_parsetree.h>
@@ -611,7 +612,7 @@ void __cdecl DB_RemoveXModel(XAssetHeader header)
     XModelReleaseResources(header.model);
 }
 
-void __cdecl Load_MaterialAsset(Material **material)
+void __cdecl Load_MaterialAsset(Ptr32<Material> *material)
 {
     XAssetHeader asset;
     asset.material = *material;
@@ -876,7 +877,7 @@ void __cdecl Mark_WeaponVariantDefAsset(WeaponVariantDef *weapon)
     DB_GetXAsset(ASSET_TYPE_WEAPON, (XAssetHeader)weapon);
 }
 
-void __cdecl Load_SndDriverGlobalsAsset(SndDriverGlobals **sndDriverGlobals)
+void __cdecl Load_SndDriverGlobalsAsset(Ptr32<SndDriverGlobals> *sndDriverGlobals)
 {
     XAssetHeader header;
     header.sndDriverGlobals = *sndDriverGlobals;
@@ -917,7 +918,7 @@ void __cdecl Mark_FxEffectDefAsset(FxEffectDef *fx)
     DB_GetXAsset(ASSET_TYPE_FX, (XAssetHeader)fx);
 }
 
-void __cdecl Load_FxEffectDefFromName(const char **name)
+void __cdecl Load_FxEffectDefFromName(Ptr32<const char> *name)
 {
     if ( *name )
         *(XAssetHeader *)name = DB_FindXAssetHeader(ASSET_TYPE_FX, (char *)*name, 1, -1);
@@ -1633,7 +1634,7 @@ void DB_EndReorderZone()
         DeleteFileA(bakName);
         rename(csvName, bakName);
         file = CreateFileA(csvName, 0x40000000u, 0, 0, 2u, 0, 0);
-        if ( file != (HANDLE)-1 )
+        if ( file != (HANDLE)BO1_I2P(-1) )
         {
             wroteBlank = 0;
             DB_SetReorderIncludeSequence();
@@ -2053,7 +2054,7 @@ XAssetEntryPoolEntry *__cdecl DB_AllocXAssetEntry(XAssetType type, unsigned __in
     }
     if ( ++XAssetEntryHighCount > XAssetEntryHighWaterMark )
         XAssetEntryHighWaterMark = XAssetEntryHighCount;
-    g_freeAssetEntryHead = (XAssetEntryPoolEntry *)freeHead->entry.asset.type;
+    g_freeAssetEntryHead = (XAssetEntryPoolEntry *)BO1_I2P(freeHead->entry.asset.type);
     freeHead->entry.asset.type = type;
     freeHead->entry.asset.header = DB_AllocXAssetHeader(type);
     freeHead->entry.zoneIndex = zoneIndex;
@@ -3090,7 +3091,7 @@ void __cdecl DB_GetXAsset(XAssetType type, XAssetHeader header)
     XAssetEntry *assetEntry; // [esp+14h] [ebp-4h]
 
     if ( s_inuseCacheEnabled
-        && s_inuseCache[((unsigned int)header.xmodelPieces >> 2) & 0x1FFF] == HIWORD(header.physPreset) )
+        && s_inuseCache[(Ptr32_Raw(header.xmodelPieces) >> 2) & 0x1FFF] == HIWORD(Ptr32_Raw(header.physPreset)) )
     {
         ++s_inuseCacheHits;
     }
@@ -3109,7 +3110,7 @@ void __cdecl DB_GetXAsset(XAssetType type, XAssetHeader header)
             {
                 assetEntry->inuse = 1;
                 if ( s_inuseCacheEnabled )
-                    s_inuseCache[((unsigned int)header.xmodelPieces >> 2) & 0x1FFF] = HIWORD(header.physPreset);
+                    s_inuseCache[(Ptr32_Raw(header.xmodelPieces) >> 2) & 0x1FFF] = HIWORD(Ptr32_Raw(header.physPreset));
                 return;
             }
         }
@@ -4137,16 +4138,16 @@ int __cdecl DB_TryLoadXFileInternal(const char *zoneName, int zoneFlags)
     {
         __debugbreak();
     }
-    zoneFile = (void *)-1;
+    zoneFile = (void *)BO1_I2P(-1);
     if ((zoneFlags & 0x2AAAAAA) != 0
         || (DB_BuildOSPath_Unlocalized(zoneName, ".ff", 0x100u, filename), GetFileAttributesA(filename) == -1) )
     {
         DB_BuildOSPath(zoneName, ".ff", 0x100u, filename);
     }
     zoneFile = CreateFileA(filename, 0x80000000, 1u, 0, 3u, 0x60000000u, 0);
-    if ( zoneFile == (void *)-1 )
+    if ( zoneFile == (void *)BO1_I2P(-1) )
         DB_ModXFileHandle(zoneName, &zoneFile, &zoneDir);
-    if ( zoneFile == (void *)-1 )
+    if ( zoneFile == (void *)BO1_I2P(-1) )
     {
         v2 = strstr(filename, "_load");
         if ( v2
@@ -4353,7 +4354,7 @@ void __cdecl DB_BeginReorderZone(const char *zoneName)
     Sys_LockWrite(&s_dbReorder.critSect);
     Com_sprintf(csvName, 0x100u, "..\\share\\zone_source\\%s.csv", zoneName);
     file = CreateFileA(csvName, 0x80000000, 0, 0, 3u, 0, 0);
-    if ( file == (void *)-1 )
+    if ( file == (void *)BO1_I2P(-1) )
     {
         Sys_UnlockWrite(&s_dbReorder.critSect);
     }
@@ -4499,16 +4500,16 @@ void __cdecl DB_ModXFileHandle(const char *zoneName, void **zoneFile, FF_DIR *zo
     bool v6; // [esp+4h] [ebp-10Ch]
     char filename[260]; // [esp+8h] [ebp-108h] BYREF
 
-    v6 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+    v6 = fs_gameDirVar && *(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer);
     if ( !v6 || I_stricmp(zoneName, "mod") )
     {
-        if ( fs_usermapDir && *(_BYTE *)fs_usermapDir->current.integer )
+        if ( fs_usermapDir && *(_BYTE *)BO1_I2P(fs_usermapDir->current.integer) )
         {
             String = Dvar_GetString("fs_usermapDir");
             v4 = va("%s\\%s", String, zoneName);
             DB_BuildOSPath_ForUsermap(v4, 0x100u, filename);
             *zoneFile = CreateFileA(filename, 0x80000000, 1u, 0, 3u, 0x60000000u, 0);
-            if ( *zoneFile != (void *)-1 )
+            if ( *zoneFile != (void *)BO1_I2P(-1) )
                 *zoneDir = FFD_USER_MAP;
         }
     }
@@ -4516,7 +4517,7 @@ void __cdecl DB_ModXFileHandle(const char *zoneName, void **zoneFile, FF_DIR *zo
     {
         DB_BuildOSPath_FromSource(zoneName, FFD_MOD_DIR, 0x100u, filename);
         *zoneFile = CreateFileA(filename, 0x80000000, 1u, 0, 3u, 0x60000000u, 0);
-        if ( *zoneFile != (void *)-1 )
+        if ( *zoneFile != (void *)BO1_I2P(-1) )
             *zoneDir = FFD_MOD_DIR;
     }
 }
@@ -4529,7 +4530,7 @@ void __cdecl DB_BuildOSPath_FromSource(const char *zoneName, FF_DIR source, unsi
     {
         if ( source == FFD_MOD_DIR )
         {
-            v4 = fs_gameDirVar && *(_BYTE *)fs_gameDirVar->current.integer;
+            v4 = fs_gameDirVar && *(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer);
             if ( !v4
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_registry.cpp",
@@ -5366,7 +5367,7 @@ int __cdecl DB_FileSize(const char *zoneName, FF_DIR source)
     else
         DB_BuildOSPath_FromSource(zoneName, source, 0x100u, filename);
     zoneFile = CreateFileA(filename, 0x80000000, 1u, 0, 3u, 0x60000000u, 0);
-    if ( zoneFile == (void *)-1 )
+    if ( zoneFile == (void *)BO1_I2P(-1) )
         return 0;
     size = GetFileSize(zoneFile, 0);
     CloseHandle(zoneFile);
@@ -5380,7 +5381,7 @@ char __cdecl DB_FileExists(const char *zoneName, FF_DIR source)
 
     DB_BuildOSPath_FromSource(zoneName, source, 0x100u, filename);
     zoneFile = CreateFileA(filename, 0x80000000, 1u, 0, 3u, 0x60000000u, 0);
-    if ( zoneFile == (void *)-1 )
+    if ( zoneFile == (void *)BO1_I2P(-1) )
         return 0;
     CloseHandle(zoneFile);
     return 1;
@@ -5391,11 +5392,11 @@ char __cdecl DB_ModFileExists()
     char filename[256]; // [esp+4h] [ebp-108h] BYREF
     void *zoneFile; // [esp+108h] [ebp-4h]
 
-    if ( !fs_gameDirVar || !*(_BYTE *)fs_gameDirVar->current.integer )
+    if ( !fs_gameDirVar || !*(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer) )
         return 0;
     DB_BuildOSPath_FromSource("mod", FFD_MOD_DIR, 0x100u, filename);
     zoneFile = CreateFileA(filename, 0x80000000, 1u, 0, 3u, 0x60000000u, 0);
-    if ( zoneFile == (void *)-1 )
+    if ( zoneFile == (void *)BO1_I2P(-1) )
         return 0;
     CloseHandle(zoneFile);
     return 1;

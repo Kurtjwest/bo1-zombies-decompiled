@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Windows.h>
+#include <windows.h>
 #include <dsound.h>
 
 struct __declspec(align(4)) dsound_sample_t // sizeof=0x48

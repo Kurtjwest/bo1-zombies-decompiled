@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_spawn.h"
 #include <game/g_load_utils.h>
 #include "cg_scr_main.h"
@@ -682,7 +683,7 @@ LABEL_55:
                         {
                             __debugbreak();
                         }
-                        out[1] = (char *)(unsigned __int16)v15;
+                        out[1] = (char *)BO1_I2P((unsigned __int16)v15);
                         undertow_volumes[num_undertow_volumes] = (unsigned __int16)v15;
                         v8 = 0;
                         v9 = 0;

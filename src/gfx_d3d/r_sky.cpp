@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_sky.h"
 #include <universal/assertive.h>
 #include <universal/com_files.h>
@@ -272,9 +273,9 @@ void __cdecl R_SetSunFromDvars(sunflare_t *sun)
 {
     iassert(sun);
 
-    sun->spriteMaterial = Material_RegisterHandle((char *)r_sunsprite_shader->current.integer, 6);
+    sun->spriteMaterial = Material_RegisterHandle((char *)BO1_I2P(r_sunsprite_shader->current.integer), 6);
     sun->spriteSize = r_sunsprite_size->current.value;
-    sun->flareMaterial = Material_RegisterHandle((char *)r_sunflare_shader->current.integer, 6);
+    sun->flareMaterial = Material_RegisterHandle((char *)BO1_I2P(r_sunflare_shader->current.integer), 6);
     sun->flareMinSize = r_sunflare_min_size->current.value * 0.5f;
     sun->flareMinDot = cosf(r_sunflare_min_angle->current.value * 0.017453292f);
     sun->flareMaxSize = r_sunflare_max_size->current.value * 0.5f;

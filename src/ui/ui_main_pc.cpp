@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_main_pc.h"
 #include <universal/q_parse.h>
 #include <server_mp/sv_init_mp.h>
@@ -292,9 +293,9 @@ void __cdecl UI_UseAltColorPalette(char *buffer)
     {
         glyph = &buffer[i];
         letter = SEH_ReadCharFromString(&glyph, 0);
-        if ( buffer[i] != 94 || &buffer[i] == (char *)-1 || buffer[i + 1] == 94 || buffer[i + 1] < 48 || buffer[i + 1] > 64 )
+        if ( buffer[i] != 94 || &buffer[i] == (char *)BO1_I2P(-1) || buffer[i + 1] == 94 || buffer[i + 1] < 48 || buffer[i + 1] > 64 )
         {
-            if ( buffer[i] == 94 && &buffer[i] != (char *)-1 && buffer[i + 1] == 70 )
+            if ( buffer[i] == 94 && &buffer[i] != (char *)BO1_I2P(-1) && buffer[i + 1] == 70 )
             {
                 buffer[i + 1] = 55;
             }
@@ -984,12 +985,12 @@ int __cdecl UI_JoinMod_HandleKey(int flags, int key)
             nextJoinMod = ui_browserMod->current.string;
         else
             nextJoinMod = sharedUiInfo.modList[63].modDescr;
-        nextJoinModa = (int)(nextJoinMod - 1);
+        nextJoinModa = (int)BO1_P2I((nextJoinMod - 1));
     }
     else
     {
         nextJoinModa = ui_browserMod->current.integer + 1;
-        if ( (const char *)nextJoinModa == sharedUiInfo.modList[63].modDescr )
+        if ( (const char *)BO1_I2P(nextJoinModa) == sharedUiInfo.modList[63].modDescr )
             nextJoinModa = -2;
     }
     if ( (nextJoinModa < -2 || nextJoinModa > 64)
@@ -1268,10 +1269,10 @@ Material *__cdecl UI_GetLevelShot(int index)
     if ( index < 0 || index >= sharedUiInfo.mapCount )
         index = 0;
     if ( !sharedUiInfo.mapList[index].timeToBeat[31] )
-        sharedUiInfo.mapList[index].timeToBeat[31] = (int)Material_RegisterHandle(
+        sharedUiInfo.mapList[index].timeToBeat[31] = (int)BO1_P2I(Material_RegisterHandle(
                                                                                                                 (char *)&sharedUiInfo.mapList[index].mapPackTypeIndex,
-                                                                                                                3);
-    return (Material *)sharedUiInfo.mapList[index].timeToBeat[31];
+                                                                                                                3));
+    return (Material *)BO1_I2P(sharedUiInfo.mapList[index].timeToBeat[31]);
 }
 
 void __cdecl UI_DrawMapPreview(int contextIndex, const rectDef_s *rect, const float *color)

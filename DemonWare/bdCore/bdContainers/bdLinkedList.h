@@ -1,7 +1,9 @@
 #pragma once
+#include <universal/bo1_ptrcast.h>
+#include <universal/bo1_layout.h>
 
 #include <cstdint>
-#include <Windows.h>
+#include <windows.h>
 
 #include <DemonWare/bdCore/bdReference/bdReferencable.h>
 
@@ -157,8 +159,8 @@ struct bdLinkedList
 
         m_tail = nullptr;
         m_size = 0;
-        return reinterpret_cast<int>(this);
+        return reinterpret_cast<int>(BO1_P2I(this));
     }
 };
 
-static_assert(sizeof(bdLinkedList<void *>) == 0x0C, "bdLinkedList size mismatch");
+BO1_LAYOUT32_ASSERT(sizeof(bdLinkedList<void *>) == 0x0C, "bdLinkedList size mismatch");

@@ -1,17 +1,18 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <database/db_registry.h>
 #include <gfx_d3d/fxprimitives.h>
 
 struct FxImpactEntry // sizeof=0x8C
 {
-    const FxEffectDef *nonflesh[31];
-    const FxEffectDef *flesh[4];
+    Ptr32<const FxEffectDef> nonflesh[31];
+    Ptr32<const FxEffectDef> flesh[4];
 };
 
 struct FxImpactTable // sizeof=0x8
 {                                       // XREF: XAssetPoolEntry<FxImpactTable>/r
-    const char *name;
-    FxImpactEntry *table;
+    Ptr32<const char> name;
+    Ptr32<FxImpactEntry> table;
 };
 
 struct EffectFile // sizeof=0xB7C
@@ -25,11 +26,11 @@ FxImpactTable *__cdecl CG_RegisterImpactEffects_LoadObj(const char *mapname);
 int __cdecl CG_RegisterImpactEffects_NonFlesh(
                 const char **szEffectFile,
                 const char *pszTypeName,
-                const FxEffectDef **fx);
+                Ptr32<const FxEffectDef> *fx);
 int __cdecl CG_RegisterImpactEffects_Flesh(
                 const char **szEffectFile,
                 const char *pszTypeName,
-                const FxEffectDef **fx,
+                Ptr32<const FxEffectDef> *fx,
                 char *defaultEffectName);
 const char *__cdecl CG_FleshTypeToName(unsigned int fleshTypeId);
 void __cdecl CG_RegisterImpactEffectsForDir(char *dir, EffectFile *effectFile, char *listbuf);

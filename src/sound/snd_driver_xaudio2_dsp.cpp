@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "snd_driver_xaudio2_dsp.h"
 #include "snd_dsp.h"
 #include "snd.h"
@@ -357,7 +358,7 @@ void __thiscall SDXA2RadverbEffect::Process(
     SND_RvFrame(
         &this->params,
         &this->state,
-        (const float *)frameCount,
+        (const float *)BO1_I2P(frameCount),
         &data[3 * frameCount],
         &data[frameCount],
         data,

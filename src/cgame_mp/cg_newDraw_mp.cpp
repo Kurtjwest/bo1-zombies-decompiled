@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <cgame/cg_sp_hud.h>
 #include "cg_newDraw_mp.h"
 #include <client_mp/cl_main_mp.h>
@@ -3739,7 +3740,7 @@ void __cdecl CG_DrawPlayerTargetHighlights(int localClientNum, const rectDef_s *
     }
     clientNum = cgameGlob->clientNum;
     localClientInfo = &cgameGlob->bgs.clientinfo[clientNum];
-    if ( (cg_s *)((char *)cgameGlob + clientNum * 1480) == (cg_s *)-389096
+    if ( (cg_s *)((char *)cgameGlob + clientNum * 1480) == (cg_s *)BO1_I2P(-389096)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_newDraw_mp.cpp",
                     3728,
@@ -3761,7 +3762,7 @@ void __cdecl CG_DrawPlayerTargetHighlights(int localClientNum, const rectDef_s *
             {
                 v5 = cent->nextState.clientNum;
                 client = &cgameGlob->bgs.clientinfo[v5];
-                if ( (cg_s *)((char *)cgameGlob + v5 * 1480) == (cg_s *)-389096
+                if ( (cg_s *)((char *)cgameGlob + v5 * 1480) == (cg_s *)BO1_I2P(-389096)
                     && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_newDraw_mp.cpp",
                                 3753,
@@ -4609,9 +4610,9 @@ void    CG_DrawPlayerStance(
     v19 = hud_fade_stance->current.value * 1000.0;
     //fadeAlpha = DOUBLE_9_313225746154785eN10;
     fadeAlpha = 9.313225746154785e-10;
-    cgs = (const cgs_t *)(int)(v19 + 9.313225746154785e-10);
+    cgs = (const cgs_t *)BO1_I2P((int)(v19 + 9.313225746154785e-10));
     x = cgs;
-    y = CG_FadeHudMenu(localClientNum, hud_fade_stance, cgameGlob->stanceFadeTime, (int)cgs);
+    y = CG_FadeHudMenu(localClientNum, hud_fade_stance, cgameGlob->stanceFadeTime, (int)BO1_P2I(cgs));
     if ( y != 0.0 )
     {
         if ( cg_hudStanceHintPrints->current.enabled )
@@ -4632,7 +4633,7 @@ void    CG_DrawPlayerStance(
         //BLOPS_NULLSUB((jpeg_decompress_struct *)&drawColor[2]);
         deltaTime = *color;
         halfWidth = color[1];
-        proneStr = (const char *)*((unsigned int *)color + 2);
+        proneStr = (const char *)BO1_I2P(*((unsigned int *)color + 2));
         if ( (cgameGlob->predictedPlayerState.pm_flags & 0x1000) != 0 && cgameGlob->proneBlockedEndTime < cgameGlob->time )
             cgameGlob->proneBlockedEndTime = cgameGlob->time + 1500;
         if ( cgameGlob->proneBlockedEndTime > cgameGlob->time )
@@ -5690,7 +5691,7 @@ double __cdecl CG_GetClosestTargetToGuidedMissile(int localClientNum)
     }
     clientNum = cgameGlob->clientNum;
     localClientInfo = &cgameGlob->bgs.clientinfo[clientNum];
-    if ( (const cg_s *)((char *)cgameGlob + clientNum * 1480) == (const cg_s *)-389096
+    if ( (const cg_s *)((char *)cgameGlob + clientNum * 1480) == (const cg_s *)BO1_I2P(-389096)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_newDraw_mp.cpp",
                     2138,
@@ -5711,7 +5712,7 @@ double __cdecl CG_GetClosestTargetToGuidedMissile(int localClientNum)
         {
             v2 = cent->nextState.clientNum;
             client = &cgameGlob->bgs.clientinfo[v2];
-            if ( (const cg_s *)((char *)cgameGlob + v2 * 1480) == (const cg_s *)-389096
+            if ( (const cg_s *)((char *)cgameGlob + v2 * 1480) == (const cg_s *)BO1_I2P(-389096)
                 && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\cgame_mp\\cg_newDraw_mp.cpp", 2160, 0, "%s", "client") )
             {
                 __debugbreak();

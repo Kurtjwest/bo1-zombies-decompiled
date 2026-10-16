@@ -1,6 +1,8 @@
 #pragma once
 
 #include "cscr_main.h"
+#include <stddef.h>
+#include <string.h>
 #include <universal/mem_userhunk.h>
 
 #undef GetObject // windows aids
@@ -120,6 +122,24 @@ union VariableUnion // sizeof=0x4
     VariableStackBuffer *stackValue;
     unsigned int entityOffset;
 };
+
+// Archived VM stacks store `size` records after the VariableStackBuffer header: a type byte followed by an unaligned
+// VariableUnion. On x86 that is a 13-byte header and 5-byte records; VariableUnion holds pointers, so a 64-bit build has
+// a 17-byte header and 9-byte records. Code walking a stack buffer goes through these instead of hard-coded sizes.
+#define VARIABLE_STACK_ENTRY_SIZE ((int)(1 + sizeof(VariableUnion)))
+#define VARIABLE_STACK_HEADER_SIZE ((int)offsetof(VariableStackBuffer, buf))
+
+inline VariableUnion Scr_StackBufReadUnion(const char *buf)
+{
+    VariableUnion u;
+    memcpy(&u, buf, sizeof(u));
+    return u;
+}
+
+inline void Scr_StackBufWriteUnion(char *buf, VariableUnion u)
+{
+    memcpy(buf, &u, sizeof(u));
+}
 
 union VariableValueInternal_u // sizeof=0x8
 {                                                                             // XREF: VariableValueInternal/r

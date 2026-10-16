@@ -1,9 +1,10 @@
+#include <universal/bo1_ptrcast.h>
 #include "db_file_load.h"
 #include <universal/assertive.h>
 #include "db_auth.h"
 #include "db_registry.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include <win32/win_shared.h>
 #include <qcommon/common.h>
 #include <qcommon/threads.h>
@@ -91,7 +92,7 @@ void __cdecl DB_CancelLoadXFile()
         {
             __debugbreak();
         }
-        if ( g_load.f == (void *)-1
+        if ( g_load.f == (void *)BO1_I2P(-1)
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",
                         1179,
@@ -544,7 +545,7 @@ char __cdecl DB_LoadXFile(
                 int allocType,
                 int flags)
 {
-    if ( ((unsigned __int8)buf & 3) != 0
+    if ( ((unsigned __int8)BO1_P2I(buf) & 3) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_file_load.cpp",
                     1959,

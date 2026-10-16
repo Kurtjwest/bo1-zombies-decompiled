@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_anim_commands.h"
 #include "cg_local_mp.h"
 #include "cg_ents_mp.h"
@@ -87,7 +88,7 @@ namespace
         centity_s *cent = CG_GetEntity(localClientNum, command.entnum);
         // KB stores a RagdollBody pointer in the handle; SP 0x004A98D0 resolves an index.
         if (cent->pose.isRagdoll && cent->pose.ragdollHandle > 0
-            && ((RagdollBody *)cent->pose.ragdollHandle)->state >= BS_RUNNING)
+            && ((RagdollBody *)BO1_I2P(cent->pose.ragdollHandle))->state >= BS_RUNNING)
             return;
         XAnimClientNotifyList notifies;
         DObjSetClientNotifies(&notifies);

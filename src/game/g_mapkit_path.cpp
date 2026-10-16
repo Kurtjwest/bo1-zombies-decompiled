@@ -8,6 +8,7 @@
 //   G_Mapkit_LinkPathnodes: after G_UpdateTrackExtraNodes, before Path_InitPaths (which validates every node).
 // Node sources: "room" edits get a grid ("nodeSpacing", default 56; 0 = none) 24 units inside the walls; "node" edits
 // give one node at "origin".
+#include <universal/bo1_ptrcast.h>
 #include "pathnode.h"
 #include "pathnode_load_obj.h"
 #include "g_bsp.h"
@@ -230,7 +231,7 @@ void G_Mapkit_AppendPathnodes()
             // GScr_SetScriptsForPathNodes ran before this (GScr_LoadScripts): resolve the traverse script here, as
             // pathnode.cpp does for loaded nodes (a missing script makes the node bad)
             node->constant.animscript = (unsigned __int16)SL_GetString((char *)src->animscript, 1u, SCRIPTINSTANCE_SERVER);
-            node->constant.animscriptfunc = (int)Hunk_FindDataForFile(1, src->animscript);
+            node->constant.animscriptfunc = (int)BO1_P2I(Hunk_FindDataForFile(1, src->animscript));
             if (!node->constant.animscriptfunc)
             {
                 Com_PrintWarning(18, "mapkit: traverse node %d: animscript '%s' is not loaded\n", i, src->animscript);

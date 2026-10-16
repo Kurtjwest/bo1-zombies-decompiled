@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "stringed_ingame.h"
 #include <universal/q_shared.h>
 #include "stringed_interface.h"
@@ -209,7 +210,7 @@ int __thiscall CStringEdPackage::ReadLine(const char **psParsePos, char *psDest)
     v3 = strchr(*psParsePos, '\n');
     if ( v3 )
     {
-        iCharsToCopy = (int)v3 - (unsigned int)*psParsePos;
+        iCharsToCopy = (int)BO1_P2I(v3) - (unsigned int)BO1_P2I(*psParsePos);
         strncpy(psDest, *psParsePos, iCharsToCopy);
         psDest[iCharsToCopy] = 0;
         for ( *psParsePos += iCharsToCopy; **psParsePos; ++*psParsePos )

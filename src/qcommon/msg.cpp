@@ -11,6 +11,11 @@
 int __cdecl MSG_RoundFloatToInt(float value)
 {
     const double bias = 9.313225746154785e-10;
+#if !defined(_M_IX86)
+    // x87: value + bias in extended precision, then FISTP's round-to-nearest-even. Double precision keeps the bias
+    // for every float that still has a fractional part (|value| < 2^23), so this rounds identically.
+    return (int)lrint((double)value + bias);
+#else
     int result;
     __asm
     {
@@ -19,6 +24,7 @@ int __cdecl MSG_RoundFloatToInt(float value)
         fistp result
     }
     return result;
+#endif
 }
 
 int __cdecl MSG_ReadValueNoXor(msg_t *msg, int bits)

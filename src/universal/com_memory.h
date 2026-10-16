@@ -91,6 +91,15 @@ void __cdecl    Z_MallocFailed(int size);
 char *__cdecl Z_MallocGarbage(int size, const char *name, int type);
 char *__cdecl CopyString(char *in, const char *name, int type, scriptInstance_t inst);
 void __cdecl ReplaceString(const char **str, char *in, const char *name, int type, scriptInstance_t inst);
+#if BO1_PTR32_IS_CLASS
+// asset string fields (32-bit handles)
+inline void ReplaceString(Ptr32<const char> *str, char *in, const char *name, int type, scriptInstance_t inst)
+{
+    const char *s = *str;
+    ReplaceString(&s, in, name, type, inst);
+    *str = s;
+}
+#endif
 void __cdecl FreeString(const char *str, int type, scriptInstance_t inst);
 
 

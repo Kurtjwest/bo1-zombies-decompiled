@@ -3,13 +3,14 @@
 // sentients (SP 0x007EDCCE loop, reader loop 0x007ECFD0). SP actor is 0x3240 with a 0x2254-byte
 // image; KB keeps its 0x27B0 actor_s (MP layout, 16-byte aligned Physics), so the core image is KB's with a DERIVED table, the SP
 // fields KB keeps in actor_sp_ext_t follow as one DERIVED extension image, then the extras.
+#include <universal/bo1_layout.h>
 #include <new>
 #include <cfloat>
 #include <game/sentient.h>
 
 #define AF(member, type) { offsetof(actor_s, member), sizeof(((actor_s *)0)->member), type }
 #define REACQUIRE(n) AF(pPotentialReacquireNode[n], 13)
-#define KNOWN(n) AF(sentientInfo[n].pLastKnownNode, 13)
+#define KNOWN(n) AF(sentientInfo.inl[n].pLastKnownNode, 13)
 #define KNOWN8(n) KNOWN(n), KNOWN(n + 1), KNOWN(n + 2), KNOWN(n + 3), KNOWN(n + 4), KNOWN(n + 5), KNOWN(n + 6), KNOWN(n + 7)
 static const SPEntitySaveField s_actorFields[] = {
     // SP 0x00A53B58 order. SP +0xDC8 AnimScriptHandle (11), +0xDD4 AnimScriptSpecific.name,
@@ -47,7 +48,7 @@ static const SPEntitySaveField s_actorExtFields[] = {
 // sightTraceHitNum tail (SP +0x31F8); KB's image stops at the same member.
 static const unsigned SP_ACTOR_IMAGE_SIZE = offsetof(actor_s, pPotentialCoverNode);
 static const unsigned SP_ACTOR_EXT_IMAGE_SIZE = offsetof(actor_sp_ext_t, sightTraceHitNum);
-static_assert(sizeof(actor_s) == 0x27B0, "DERIVED actor image (KB: 16-byte aligned Physics, actor_fields.cpp)");
+BO1_LAYOUT32_ASSERT(sizeof(actor_s) == 0x27B0, "DERIVED actor image (KB: 16-byte aligned Physics, actor_fields.cpp)");
 static_assert(ARRAY_COUNT(((actor_s *)0)->sentientInfo.inl) == 48 && ARRAY_COUNT(((actor_s *)0)->pPotentialCoverNode) == 1000,
     "DERIVED actor arrays");
 static_assert(sizeof(scr_animscript_t) == 8, "SP 8-byte animscript entries");
@@ -62,7 +63,7 @@ static const SPEntitySaveField s_sentientFields[] = {
     SF(scriptOwner, 3), SF(scriptTargetTag, 1)
 };
 #undef SF
-static_assert(sizeof(sentient_s) == 0x90 && offsetof(sentient_s, inuse) == 0x84, "DERIVED sentient image");
+BO1_LAYOUT32_ASSERT(sizeof(sentient_s) == 0x90 && offsetof(sentient_s, inuse) == 0x84, "DERIVED sentient image");
 static_assert(ARRAY_COUNT(g_sentients) == MAX_SENTIENTS_CAP, "DERIVED sentient count");
 
 static void G_WriteActor(const actor_s *actor, const actor_sp_ext_t *ext, MemoryFile *memFile)

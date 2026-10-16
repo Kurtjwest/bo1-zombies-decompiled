@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_ptrcast.h>
 #include <xanim/dobj.h>
 #include <bgame/bg_local.h>
 #include <physics/rigid_body.h>
@@ -207,7 +208,7 @@ void __cdecl Ragdoll_Shutdown();
 
 inline RagdollBody *__cdecl Ragdoll_HandleBody(int handle)
 {
-    return (RagdollBody *)handle;
+    return (RagdollBody *)BO1_I2P(handle);
 }
 
 extern const dvar_t *ragdoll_enable;

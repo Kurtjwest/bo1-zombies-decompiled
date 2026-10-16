@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ragdoll.h"
 #include <cgame/cg_drawtools.h>
 #include <client/screen_placement.h>
@@ -171,7 +172,7 @@ const RagdollBody *__cdecl Ragdoll_CreateRagdollForDObj(
 
     if ( ragdoll )
     {
-        body = (RagdollBody *)Ragdoll_HandleBody((int)ragdoll);
+        body = (RagdollBody *)Ragdoll_HandleBody((int)BO1_P2I(ragdoll));
         if ( reset )
             Ragdoll_BodyNewState(body, BS_DEAD);
         if ( body->state == BS_DEAD )

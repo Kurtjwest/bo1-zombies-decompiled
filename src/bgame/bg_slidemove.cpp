@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "bg_slidemove.h"
 #include "bg_pmove.h"
 #include <cgame_mp/cg_predict_mp.h>
@@ -311,7 +312,7 @@ void __cdecl destroy_client_gjkcc_info(int localClientNum)
         __debugbreak();
     }
     //gjkcc_info_database_t::gjkcc_info_destroy(&g_gjkcc_info_client_database, (unsigned int)&cg_pmove[localClientNum], 0);
-    g_gjkcc_info_client_database.gjkcc_info_destroy((unsigned int)&cg_pmove[localClientNum], 0);
+    g_gjkcc_info_client_database.gjkcc_info_destroy((unsigned int)BO1_P2I(&cg_pmove[localClientNum]), 0);
 
 }
 

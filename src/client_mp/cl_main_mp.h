@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 
 #include <bgame/bg_local.h>
 #include <qcommon/bitarray.h>
@@ -370,7 +371,7 @@ struct clientActive_t // sizeof=0x1A6100
 };
 // mod (L43): bytes the parseEntities ring adds over retail (sizeof=0x1A6100 with 2048); cl_main_mp.cpp allocates them.
 #define CL_PARSE_ENTITIES_EXTRA_BYTES ((CL_PARSE_ENTITIES_COUNT - 2048) * (int)sizeof(entityState_s))
-static_assert(sizeof(clientActive_t) <= 0x1A6100 + CL_PARSE_ENTITIES_EXTRA_BYTES, "clientActive_t outgrew its allocation");
+BO1_LAYOUT32_ASSERT(sizeof(clientActive_t) <= 0x1A6100 + CL_PARSE_ENTITIES_EXTRA_BYTES, "clientActive_t outgrew its allocation");
 
 struct clientLogo_t // sizeof=0x18
 {                                                                             // XREF: clientStatic_t/r

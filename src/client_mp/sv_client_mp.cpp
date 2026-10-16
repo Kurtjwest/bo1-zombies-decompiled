@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <game_sp/g_sp_client.h>
 #include <cgame/cg_sp_nettrace.h>
 #include "sv_client_mp.h"
@@ -877,7 +878,7 @@ void __cdecl SV_DirectConnect(netadr_t from)
         svs.challenges[i].connected = 1;
         if (g_password)
         {
-            if (*(_BYTE *)g_password->current.integer)
+            if (*(_BYTE *)BO1_I2P(g_password->current.integer))
             {
                 string = g_password->current.string;
                 if (I_strcmp(Info_ValueForKey(userinfo, "password"), string))

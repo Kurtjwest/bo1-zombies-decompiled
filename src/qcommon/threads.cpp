@@ -1,6 +1,7 @@
+#include <universal/bo1_ptrcast.h>
 #include "threads.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include <universal/q_shared.h>
 #include "common.h"
 #include <tl/jobqueue/jobqueue_all.h>
@@ -241,7 +242,7 @@ void __cdecl Sys_CreateThread(void (__cdecl *function)(unsigned int), unsigned i
         0,
         0,
         Sys_ThreadMain,
-        (LPVOID)threadContext,
+        (LPVOID)BO1_I2P(threadContext),
         CREATE_SUSPENDED,
         &threadId[threadContext]);
 
@@ -270,17 +271,22 @@ void __cdecl SetThreadName(unsigned int dwThreadID, const char *szThreadName)
     if ( dwThreadID == 0xFFFFFFFF || dwThreadID == GetCurrentThreadId() )
         PROF_THREADNAME(szThreadName);
 
+#if defined(_WIN32)
     // this try/except needs to be here, otherwise it wont run without a debugger :D
     __try {
         RaiseException(0x406D1388, 0, sizeof(info) / sizeof(DWORD), (ULONG_PTR *)&info);
     }
     __except (EXCEPTION_EXECUTE_HANDLER) {
     }
+#else
+    // the compatibility layer's RaiseException names the thread (pthread_setname_np) and returns
+    RaiseException(0x406D1388, 0, sizeof(info) / sizeof(DWORD), (ULONG_PTR *)&info);
+#endif
 }
 
 DWORD WINAPI Sys_ThreadMain(LPVOID parameter)
 {
-    unsigned int threadContext = (unsigned int)parameter;
+    unsigned int threadContext = (unsigned int)BO1_P2I(parameter);
 
     bcassert(threadContext, THREAD_CONTEXT_COUNT);
     iassert(threadFunc[threadContext]);
@@ -527,7 +533,7 @@ bool __cdecl Sys_WaitForSingleObjectTimeout(void **event, unsigned int msec)
 void __cdecl Sys_WakeRenderer(void *data)
 {
     Sys_ResetEvent(&renderCompletedEvent);
-    smpData = (int)data;
+    smpData = (int)BO1_P2I(data);
     //PIXSetMarker(-1, "set smpData");
     Sys_SetEvent(&backendEvent[1]);
     Sys_SetWorkerCmdEvent();

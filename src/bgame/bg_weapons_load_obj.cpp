@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "bg_weapons_load_obj.h"
 #include "bg_weapons.h"
 #include "bg_animation.h"
@@ -1213,7 +1214,7 @@ void __cdecl InitFlameTable(flameTable *fTable)
     while ( iField < 119 )
     {
         if ( !pField->iFieldType )
-            *(unsigned int *)((char *)&fTable->flameVar_streamChunkGravityStart + pField->iOffset) = (unsigned int)"";
+            *(unsigned int *)((char *)&fTable->flameVar_streamChunkGravityStart + pField->iOffset) = (unsigned int)BO1_P2I("");
         ++iField;
         ++pField;
     }
@@ -1854,7 +1855,7 @@ int __cdecl BG_ParseWeaponDefSpecificFieldType(WeaponFullDef *pStruct, const cha
             weapDef->guidedMissileType = (guidedMissileType_t)arrayIndex;
             goto LABEL_104;
         case 27:
-            weapDef->bounceSound = (const char **)BG_RegisterSurfaceTypeSounds(pValue);
+            weapDef->bounceSound = BG_RegisterSurfaceTypeSounds(pValue);
             goto LABEL_104;
         case 28:
             arrayIndex = Weapon_GetStringArrayIndex(pValue, stickinessNames, 6);
@@ -2036,7 +2037,7 @@ int __cdecl Weapon_GetStringArrayIndex(const char *value, const char **stringArr
     return -1;
 }
 
-char **__cdecl BG_RegisterSurfaceTypeSounds(const char *surfaceSoundBase)
+Ptr32<const char> *__cdecl BG_RegisterSurfaceTypeSounds(const char *surfaceSoundBase)
 {
     const char *v2; // eax
     unsigned __int8 *v3; // eax
@@ -2046,7 +2047,7 @@ char **__cdecl BG_RegisterSurfaceTypeSounds(const char *surfaceSoundBase)
     char v7; // [esp+23h] [ebp-129h]
     char *v8; // [esp+28h] [ebp-124h]
     char *v9; // [esp+2Ch] [ebp-120h]
-    char **result; // [esp+40h] [ebp-10Ch]
+    Ptr32<const char> *result; // [esp+40h] [ebp-10Ch]
     char aliasName[256]; // [esp+44h] [ebp-108h] BYREF
     int i; // [esp+148h] [ebp-4h]
 
@@ -2069,15 +2070,16 @@ char **__cdecl BG_RegisterSurfaceTypeSounds(const char *surfaceSoundBase)
     }
     if (surfaceTypeSoundListCount == 16)
         Com_Error(ERR_DROP, "Exceeded MAX_SURFACE_TYPE_SOUND_LISTS (%d)", 16);
-    result = (char **)Hunk_AllocLow(0x7Cu, "BG_RegisterSurfaceTypeSounds", 17);
+    // one alias name per surface type, in the asset's 32-bit element layout (31 * 4 = 0x7C bytes)
+    result = (Ptr32<const char> *)Hunk_AllocLow(31 * sizeof(Ptr32<const char>), "BG_RegisterSurfaceTypeSounds", 17);
     for (i = 0; i < 31; ++i)
     {
         v2 = Com_SurfaceTypeToName(i);
         Com_sprintf(aliasName, 0x100u, "%s_%s", surfaceSoundBase, v2);
         v3 = Hunk_AllocLow(&aliasName[strlen(aliasName) + 1] - &aliasName[1] + 1, "BG_RegisterSurfaceTypeSounds", 17);
-        result[i] = (char *)v3;
+        result[i] = (const char *)v3;
         v9 = aliasName;
-        v8 = result[i];
+        v8 = (char *)v3;
         do
         {
             v7 = *v9;
@@ -2279,9 +2281,9 @@ bool __cdecl BG_FlameTableUpdateField(const char *flameTableName, char *keyValue
 WeaponVariantDef *__cdecl BG_LoadDefaultWeaponVariantDef()
 {
     if ( useFastFile->current.enabled )
-        return (WeaponVariantDef *)((int (__cdecl *)(WeaponVariantDef *(__cdecl *)()))BG_LoadDefaultWeaponVariantDef_FastFile)(BG_LoadDefaultWeaponVariantDef_FastFile);
+        return (WeaponVariantDef *)BO1_I2P(((int (__cdecl *)(WeaponVariantDef *(__cdecl *)()))BG_LoadDefaultWeaponVariantDef_FastFile)(BG_LoadDefaultWeaponVariantDef_FastFile));
     else
-        return (WeaponVariantDef *)((int (__cdecl *)(WeaponFullDef *(__cdecl *)()))BG_LoadDefaultWeaponVariantDef_LoadObj)(BG_LoadDefaultWeaponVariantDef_LoadObj);
+        return (WeaponVariantDef *)BO1_I2P(((int (__cdecl *)(WeaponFullDef *(__cdecl *)()))BG_LoadDefaultWeaponVariantDef_LoadObj)(BG_LoadDefaultWeaponVariantDef_LoadObj));
 }
 
 WeaponFullDef *__cdecl BG_LoadDefaultWeaponVariantDef_LoadObj()

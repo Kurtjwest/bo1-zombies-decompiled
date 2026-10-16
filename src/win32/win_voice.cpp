@@ -1,6 +1,6 @@
 #include "win_voice.h"
 #include <qcommon/common.h>
-#include <Windows.h>
+#include <windows.h>
 #include <cstring>
 #include <groupvoice/encode.h>
 #include <groupvoice/record.h>

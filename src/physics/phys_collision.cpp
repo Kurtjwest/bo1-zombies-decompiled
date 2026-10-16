@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "phys_collision.h"
 #include "phys_collision_multithreaded.h"
 #include "rigid_body.h"
@@ -319,7 +320,7 @@ contact_point_info *__cdecl contact_point_info::create_cpi(
         result->m_list_pulse_sum_cache_info = (contact_point_info::pulse_sum_cache_info *)((char *)result + v3);
         result->m_point_pair_count = point_pair_count;
         result->m_flags = 0;
-        result->m_rb2_entity = (const void *)-1;
+        result->m_rb2_entity = (const void *)BO1_I2P(-1);
     }
     else if ( !no_error )
     {
@@ -399,9 +400,9 @@ void __thiscall phys_contact_manifold::set_get_feature_params(
     this->m_feature_distance_eps = feature_distance_eps;
     this->m_sin_feautre_angular_eps_sq = sin_feautre_angular_eps_sq;
     v7 = g_contact_manifold_error_msg;
-    v8 = (int)(m_allocator->m_buffer_cur + 15) & 0xFFFFFFF0;
-    m_allocator->m_buffer_cur = (char *)v8;
-    if ( (char *)v8 >= m_allocator->m_buffer_end
+    v8 = (int)BO1_P2I((m_allocator->m_buffer_cur + 15)) & 0xFFFFFFF0;
+    m_allocator->m_buffer_cur = (char *)BO1_I2P(v8);
+    if ( (char *)BO1_I2P(v8) >= m_allocator->m_buffer_end
         && _tlAssert(
                  "C:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",
                  114,
@@ -1094,13 +1095,13 @@ const bpei_database_id *__cdecl get_database_id(bpei_database_id *result, gjk_ph
 {
     if (collision_visitor->cent)
     {
-        result->m_id1 = (unsigned int)collision_visitor->cent;
+        result->m_id1 = (unsigned int)BO1_P2I(collision_visitor->cent);
         result->m_id2 = 0;
         return result;
     }
     else if (collision_visitor->glass)
     {
-        result->m_id1 = (unsigned int)collision_visitor->glass;
+        result->m_id1 = (unsigned int)BO1_P2I(collision_visitor->glass);
         result->m_id2 = 0;
         return result;
     }
@@ -1116,7 +1117,7 @@ const bpei_database_id *__cdecl get_database_id(bpei_database_id *result, gjk_ph
         {
             __debugbreak();
         }
-        result->m_id1 = (unsigned int)collision_visitor->dynEntDef;
+        result->m_id1 = (unsigned int)BO1_P2I(collision_visitor->dynEntDef);
         result->m_id2 = 0;
         return result;
     }
@@ -1542,7 +1543,7 @@ PhysObjUserData *__cdecl Phys_GetUserData(int id)
 {
     iassert(id);
 
-    return (PhysObjUserData *)id;
+    return (PhysObjUserData *)BO1_I2P(id);
 }
 
 int __cdecl get_physics_contents_mask(char phys_env_collision_flags)
@@ -1571,18 +1572,18 @@ broad_phase_info *__cdecl allocate_bpi_env()
         0,
         "broad phase collision out of memory.");
     if (v2)
-        v1 = (signed __int32)v2;
+        v1 = (signed __int32)BO1_P2I(v2);
     else
         v1 = 0;
     do
     {
         first = G_BPM->m_list_bpi_env;
-        *(_DWORD *)(v1 + 56) = (DWORD)first;
-    } while ((broad_phase_info *)_InterlockedCompareExchange(
+        *(_DWORD *)BO1_I2P((v1 + 56)) = (DWORD)BO1_P2I(first);
+    } while ((broad_phase_info *)BO1_I2P(_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&G_BPM->m_list_bpi_env,
         v1,
-        (signed __int32)first) != first);
-    return (broad_phase_info *)v1;
+        (signed __int32)first)) != first);
+    return (broad_phase_info *)BO1_I2P(v1);
 }
 
 char are_intersecting(
@@ -1696,7 +1697,7 @@ void standard_query::query(
                 continue;
 
             broad_phase_environment_info *bpei_mt =
-                G_BPM->g_bpei_database.get_bpei_mt(bpei_database_id((unsigned int)brush));
+                G_BPM->g_bpei_database.get_bpei_mt(bpei_database_id((unsigned int)BO1_P2I(brush)));
 
             if (!bpei_mt->m_data)
             {
@@ -1762,7 +1763,7 @@ void standard_query::query(
                 continue;
 
             broad_phase_environment_info *bpei_mt =
-                G_BPM->g_bpei_database.get_bpei_mt(bpei_database_id((unsigned int)partition));
+                G_BPM->g_bpei_database.get_bpei_mt(bpei_database_id((unsigned int)BO1_P2I(partition)));
 
             if (!bpei_mt->m_data)
             {
@@ -1926,7 +1927,7 @@ void standard_query::query(
                 gjk_base_t *first_geom = userRb->m_gjk_geom_list.m_first_geom;
 
                 broad_phase_environment_info *bpei_mt =
-                    G_BPM->g_bpei_database.get_bpei_mt(bpei_database_id((unsigned int)userRb));
+                    G_BPM->g_bpei_database.get_bpei_mt(bpei_database_id((unsigned int)BO1_P2I(userRb)));
 
                 if (!bpei_mt->m_data)
                 {
@@ -2063,8 +2064,8 @@ bool gjk_physics_collision_visitor::query_create_prolog(const void *geom)
     {
         __debugbreak();
     }
-    this->m_local_database_id.m_id1 = (unsigned int)this->m_local_entity;
-    this->m_local_database_id.m_id2 = (unsigned int)geom;
+    this->m_local_database_id.m_id1 = (unsigned int)BO1_P2I(this->m_local_entity);
+    this->m_local_database_id.m_id2 = (unsigned int)BO1_P2I(geom);
     //this->m_local_bpei = bpei_database_t::get_bpei_mt(&G_BPM->g_bpei_database, this->m_local_database_id);
     this->m_local_bpei = G_BPM->g_bpei_database.get_bpei_mt(this->m_local_database_id);
 

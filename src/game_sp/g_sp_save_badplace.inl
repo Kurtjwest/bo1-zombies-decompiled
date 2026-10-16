@@ -1,3 +1,4 @@
+#include <universal/bo1_layout.h>
 // Included by g_sp_savegame.cpp after g_sp_save_entity.inl (uses its WriteStruct/ReadField port).
 // zombies: bad places (SP 0x007EA960 / 0x007EAA40), g_badplaces[256] (SP 0x01A4C088).
 // KB badplace_t has SP's 0x2C layout, so the DERIVED tables keep SP's offsets.
@@ -8,7 +9,7 @@ static const SPEntitySaveField s_badPlaceFields[] = {
 static const SPEntitySaveField s_badPlaceBrushFields[] = {
     { offsetof(badplace_parms_t, brush.volume), sizeof(((badplace_parms_t *)0)->brush.volume), 2 } // SP 0x00A5402C
 };
-static_assert(sizeof(badplace_t) == 0x2C && sizeof(badplace_parms_t) == 0x1C, "DERIVED bad place image");
+BO1_LAYOUT32_ASSERT(sizeof(badplace_t) == 0x2C && sizeof(badplace_parms_t) == 0x1C, "DERIVED bad place image");
 static_assert(offsetof(badplace_t, name) == 8 && offsetof(badplace_t, type) == 0xA
     && offsetof(badplace_t, parms) == 0x10, "DERIVED bad place fields");
 static_assert(ARRAY_COUNT(g_badplaces) == 256, "SP bad place count");

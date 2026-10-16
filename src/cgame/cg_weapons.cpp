@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_weapons.h"
 #include <bgame/bg_local.h>
 #include <cgame_mp/cg_local_mp.h>
@@ -4931,7 +4932,7 @@ void __cdecl CG_VehicleJolt(centity_s *cent, float *origin, float *dir)
         {
             __debugbreak();
         }
-        Phys_ObjAddForce((int)cent->nitrousVeh->m_phys_user_data, origin, dir, 0);
+        Phys_ObjAddForce((int)BO1_P2I(cent->nitrousVeh->m_phys_user_data), origin, dir, 0);
     }
 }
 
@@ -5172,7 +5173,7 @@ void __cdecl CG_FireWeapon(
             AnglesToAxis(cent->pose.angles, entMatrix);
             R_FoliageNofityWeaponFiring(
                 (int)localClientNum,
-                (unsigned int)cent,
+                (unsigned int)BO1_P2I(cent),
                 fireOrigin,
                 entMatrix[0],
                 weaponDef->weapClass == WEAPCLASS_GAS);

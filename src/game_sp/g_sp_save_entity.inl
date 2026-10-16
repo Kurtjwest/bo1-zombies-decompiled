@@ -2,6 +2,7 @@
 // zombies: entity images (SP 0x007EA5C0 / 0x007EC6C0), DERIVED KB field tables.
 // SP gentity is 0x34C with 31 attachments; KB stays 0x2F8 with 19. SP-only fields
 // follow the core image in a separate extension image, then the scripted-animation record.
+#include <universal/bo1_layout.h>
 #include <xanim/xanim.h>
 #include <game_mp/actor_mp.h>
 #include <game/actor_animapi.h>
@@ -35,10 +36,14 @@ static const SPEntitySaveField s_entityExtFields[] = {
     XF(script_linkname, 1), XF(activator, 3), XF(soundNotify, 1)
 };
 #undef XF
-static const SPEntitySaveField s_tagFields[] = { {0, 4, 2}, {4, 4, 2}, {8, 2, 1} };
-static_assert(sizeof(gentity_s) == 0x2F8, "DERIVED entity image");
+static const SPEntitySaveField s_tagFields[] = {
+    { offsetof(tagInfo_s, parent), sizeof(((tagInfo_s *)0)->parent), 2 },
+    { offsetof(tagInfo_s, next), sizeof(((tagInfo_s *)0)->next), 2 },
+    { offsetof(tagInfo_s, name), sizeof(((tagInfo_s *)0)->name), 1 },
+};
+BO1_LAYOUT32_ASSERT(sizeof(gentity_s) == 0x2F8, "DERIVED entity image");
 static_assert(sizeof(gentitySpExt) == 0x20, "DERIVED entity extension image");
-static_assert(sizeof(tagInfo_s) == 0x70 && offsetof(tagInfo_s, name) == 8, "DERIVED tag image");
+BO1_LAYOUT32_ASSERT(sizeof(tagInfo_s) == 0x70 && offsetof(tagInfo_s, name) == 8, "DERIVED tag image");
 static_assert(sizeof(scripted_anim_sp_t) == 0x64, "SP type 16 has no pointer fields");
 static_assert(sizeof(PathLinkInfo) == 8 && offsetof(PathLinkInfo, next) == 6, "DERIVED disconnected link");
 static_assert(ARRAY_COUNT(((gentity_s *)0)->attachModelNames) == 19, "DERIVED attachments");
@@ -46,9 +51,14 @@ static_assert(ARRAY_COUNT(((gentity_s *)0)->attachModelNames) == 19, "DERIVED at
 static void SP_CheckEntityFields(const SPEntitySaveField *fields, unsigned count, unsigned size)
 {
     // The EXE table is not sorted. Validate bounds and pairwise non-overlap without reordering it.
+    // Strings, script objects and short model indices are 2 bytes; entity/sentient handles and int model indices
+    // 4; every other type is a pointer (4 bytes in the exe, 8 on 64-bit targets), saved as a 4-byte index.
     for (unsigned i = 0; i < count; ++i)
     {
-        iassert(fields[i].size == (fields[i].type == 1 || fields[i].type == 11 || fields[i].type == 17 ? 2 : 4));
+        const int type = fields[i].type;
+        const unsigned expected = (type == 1 || type == 11 || type == 17) ? 2u
+            : (type == 3 || type == 7 || type == 18) ? 4u : (unsigned)sizeof(void *);
+        iassert(fields[i].size == expected);
         iassert(fields[i].type != 18 || fields[i].size == 4);
         iassert(fields[i].offset + fields[i].size <= size);
         for (unsigned j = 0; j < i; ++j)
@@ -81,10 +91,10 @@ static int SP_EntityReferenceIndex(int type, const void *pointer)
         return 0;
     unsigned stride, count;
     const unsigned char *base = (const unsigned char *)SP_EntityFieldBase(type, &stride, &count);
-    const unsigned delta = (unsigned)pointer - (unsigned)base;
+    const uintptr_t delta = (uintptr_t)pointer - (uintptr_t)base;
     if (!base || delta % stride || delta / stride >= count)
         Com_Error(ERR_DROP, "WriteField1: reference type %i out of range", type);
-    return delta / stride + 1;
+    return (int)(delta / stride) + 1;
 }
 
 static void *SP_EntityReference(int type, int index)
@@ -98,6 +108,15 @@ static void *SP_EntityReference(int type, int index)
 
 static void SP_WriteEntityStruct(const SPEntitySaveField *fields, unsigned count,
     const void *source, unsigned size, MemoryFile *memFile);
+
+// The image stores a reference as a 4-byte index in the field's slot; a pointer slot (8 bytes on 64-bit targets) is
+// cleared first so its upper half holds no address bits. ReadField reads the low 4 bytes back.
+static void SP_SetSlotIndex(unsigned char *at, unsigned size, int value)
+{
+    if (size > sizeof(value))
+        memset(at, 0, size);
+    memcpy(at, &value, sizeof(value));
+}
 
 static int Path_SaveNode(const pathnode_t *node)
 {
@@ -193,10 +212,10 @@ static void SP_WriteStruct(const SPEntitySaveField *fields, unsigned count,
         else if (field.type == 14)
         {
             XAnimTree_s *tree = *(XAnimTree_s **)at;
-            *(int *)at = tree ? Scr_GetAnimsIndex(XAnimGetAnims(tree), SCRIPTINSTANCE_SERVER) : 0;
+            SP_SetSlotIndex(at, field.size, tree ? Scr_GetAnimsIndex(XAnimGetAnims(tree), SCRIPTINSTANCE_SERVER) : 0);
         }
         else if (field.type == 15)
-            *(int *)at = *(void **)at != nullptr;
+            SP_SetSlotIndex(at, field.size, *(void **)at != nullptr);
         else if (field.type == 7)
         {
             // SP 0x007E9F0A: the one-based sentient number as an int (clears infoIndex).
@@ -208,11 +227,11 @@ static void SP_WriteStruct(const SPEntitySaveField *fields, unsigned count,
         else if (field.type == 11)
             *(unsigned short *)at = Scr_SaveObjectIndex(*(unsigned short *)at);
         else if (field.type == 12)
-            *(int *)at = SP_SaveAnimScript(*(scr_animscript_t **)at, (const unsigned char *)source);
+            SP_SetSlotIndex(at, field.size, SP_SaveAnimScript(*(scr_animscript_t **)at, (const unsigned char *)source));
         else if (field.type == 13)
-            *(int *)at = Path_SaveNode(*(pathnode_t **)at);
+            SP_SetSlotIndex(at, field.size, Path_SaveNode(*(pathnode_t **)at));
         else
-            *(int *)at = SP_EntityReferenceIndex(field.type, *(void **)at);
+            SP_SetSlotIndex(at, field.size, SP_EntityReferenceIndex(field.type, *(void **)at));
     }
     MemFile_WriteData(memFile, size, image);
     for (unsigned i = 0; i < count; ++i)

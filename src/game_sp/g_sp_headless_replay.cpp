@@ -17,7 +17,7 @@
 // the round-1 first spawn by a script-fixed 8250 ms (MEASURED: 4 of 4 KB runs, k1-c9-c1x, k1-c9-measure, k1-c10-a,
 // k1-c12-a). bo1_testclient_replay_align > 0 still forces a fixed value.
 #include "g_sp_headless_move.h"
-#include <Windows.h>
+#include <windows.h>
 #include "g_sp_levelstart.h"
 #include <client_mp/g_client_mp.h>
 #include <game_mp/g_main_mp.h>

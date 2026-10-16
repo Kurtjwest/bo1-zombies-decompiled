@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_groups_dw.h"
 #include <qcommon/cmd.h>
 
@@ -188,7 +189,7 @@ char __cdecl LiveGroups_GetGroupID(char *path, int *offset, GroupSet **gs)
     v3 = strchr(path, 0x2Fu);
     if ( v3 )
     {
-        setLen = (unsigned int)v3 - (unsigned int)path;
+        setLen = (unsigned int)BO1_P2I(v3) - (unsigned int)BO1_P2I(path);
         groupName = (const char *)(v3 + 1);
         if ( !*(_BYTE *)(v3 + 1) )
             groupName = 0;

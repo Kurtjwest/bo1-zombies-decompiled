@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "snd_local.h"
 #include "snd_log.h"
 
@@ -50,7 +51,7 @@ int __cdecl SNDL_Play(
         // zombies (L16): notify is SP 0x005BB9A0's 10th argument (force: skip the distReverbMax cull), SP 0x0057B224.
         pId = SND_PlaySoundAlias(list, attenuation, entHandle, position, 0, fadeTimeMs, direction, playback, &ocache, notify);
         if ( notify )
-            SND_AddLengthNotify(pId, (const char*)entHandle.field.entIndex, SND_LENGTH_NOTIFY_SCRIPT);
+            SND_AddLengthNotify(pId, (const char*)BO1_I2P(entHandle.field.entIndex), SND_LENGTH_NOTIFY_SCRIPT);
     }
     else
     {
@@ -59,7 +60,7 @@ int __cdecl SNDL_Play(
     if ( pId != -1 )
     {
         if ( notify )
-            SND_AddLengthNotify(pId, (const char *)entHandle.field.entIndex, SND_LENGTH_NOTIFY_SCRIPT);
+            SND_AddLengthNotify(pId, (const char *)BO1_I2P(entHandle.field.entIndex), SND_LENGTH_NOTIFY_SCRIPT);
         if ( playback
             && playback->id != pId
             && !Assert_MyHandler(

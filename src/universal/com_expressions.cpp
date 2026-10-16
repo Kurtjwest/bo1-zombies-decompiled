@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "com_expressions.h"
 #include "com_memory.h"
 #include "q_parse.h"
@@ -1026,9 +1027,9 @@ expressionEntry *__cdecl Expression_StringOperand(const char *str, ExpressionAll
     entry->next = 0;
     entry->type = 1;
     entry->data.op = OP_MULTIPLY;
-    entry->data.operand.internals.intVal = (int)&entry[1];
+    entry->data.operand.internals.intVal = (int)BO1_P2I(&entry[1]);
     v5 = str;
-    intVal = (_BYTE *)entry->data.operand.internals.intVal;
+    intVal = (_BYTE *)BO1_I2P(entry->data.operand.internals.intVal);
     do
     {
         v2 = *v5;

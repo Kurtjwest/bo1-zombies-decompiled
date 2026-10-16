@@ -1,3 +1,5 @@
+#include <universal/bo1_ptrcast.h>
+#include <universal/bo1_layout.h>
 #include "phys_broad_phase.h"
 #include "phys_main.h"
 #include <bgame/bg_slidemove.h>
@@ -416,19 +418,19 @@ void __thiscall axis_aligned_sweep_and_prune::sap_node::init(
 {
     this->m_bpb = bpb;
     this->m_updated = 0;
-    *(_QWORD *)&this->m_ae1[0][0].m_node = (unsigned int)this;
+    *(_QWORD *)&this->m_ae1[0][0].m_node = (unsigned int)BO1_P2I(this);
     this->m_ae1[0][1].m_node = this;
     this->m_ae1[0][1].m_min_max = 1;
     this->m_ae1[0][0].m_next = &this->m_ae1[0][1];
     this->m_ae1[0][1].m_next = *xlist;
     *xlist = this->m_ae1[0];
-    *(_QWORD *)&this->m_ae1[1][0].m_node = (unsigned int)this;
+    *(_QWORD *)&this->m_ae1[1][0].m_node = (unsigned int)BO1_P2I(this);
     this->m_ae1[1][1].m_node = this;
     this->m_ae1[1][1].m_min_max = 1;
     this->m_ae1[1][0].m_next = &this->m_ae1[1][1];
     this->m_ae1[1][1].m_next = *ylist;
     *ylist = this->m_ae1[1];
-    *(_QWORD *)&this->m_ae1[2][0].m_node = (unsigned int)this;
+    *(_QWORD *)&this->m_ae1[2][0].m_node = (unsigned int)BO1_P2I(this);
     this->m_ae1[2][1].m_node = this;
     this->m_ae1[2][1].m_min_max = 1;
     this->m_ae1[2][0].m_next = &this->m_ae1[2][1];
@@ -1862,7 +1864,7 @@ void __cdecl destroy_broad_phase_info(broad_phase_info *bpi)
     if (bpi)
     {
         using TI = phys_free_list<broad_phase_info>::T_internal;
-        static_assert(sizeof(TI) == 0x90, "size mismatch");
+        BO1_LAYOUT32_ASSERT(sizeof(TI) == 0x90, "size mismatch");
         TI *ti = (TI *)((char *)bpi - offsetof(TI, m_data));
         PMM_VALIDATE((char *)ti, sizeof(TI), 16);
         G_BPM->g_list_broad_phase_info.remove(ti);
@@ -1913,9 +1915,9 @@ void __cdecl destroy_broad_phase_info_list(broad_phase_info *list_bpi)
             --p_g_list_broad_phase_info->m_list_count;
             //phys_free_list<broad_phase_info>::debug_remove(p_g_list_broad_phase_info, (phys_free_list<broad_phase_info>::T_internal *)p_m_gjk_geom);
             p_g_list_broad_phase_info->debug_remove((phys_free_list<broad_phase_info>::T_internal *)p_m_gjk_geom);
-            v5 = (unsigned int *)*((unsigned int *)p_m_gjk_geom + 1);
+            v5 = (unsigned int *)BO1_I2P(*((unsigned int *)p_m_gjk_geom + 1));
             v6 = *(unsigned int *)p_m_gjk_geom;
-            *(unsigned int *)(v6 + 4) = (unsigned int)v5;
+            *(unsigned int *)BO1_I2P((v6 + 4)) = (unsigned int)BO1_P2I(v5);
             *v5 = v6;
             PMM_FREE((unsigned __int8 *)p_m_gjk_geom, 0x90u, 0x10u);
             v1 = m_list_bpb_next;
@@ -2446,10 +2448,10 @@ int    bp_env_jq_batch_function2(jqBatch *pBatch)
     bpeqr.m_list_bpi_env.m_list_cur = (broad_phase_base_list::node **)&bpeqr;
     for (bpeqr.m_thread_id = v1; g_bpb_list_cur; bpb = g_bpb_list_cur)
     {
-        if ((broad_phase_base *)_InterlockedCompareExchange(
+        if ((broad_phase_base *)BO1_I2P(_InterlockedCompareExchange(
             (volatile unsigned __int32 *)&g_bpb_list_cur,
             (signed __int32)bpb->m_list_bpb_next,
-            (signed __int32)bpb) == bpb)
+            (signed __int32)bpb)) == bpb)
         {
             check_terrain_query_params(bpb);
             bpeqr.m_list_bpi_env.m_list_cur = (broad_phase_base_list::node **)&bpeqr;
@@ -2646,7 +2648,7 @@ void    broad_phase_group::collision_prolog()
     //v83[1] = (_UNKNOWN *)vars0;
     v2 = this;
     v3 = this->m_list_bpi_head == 0;
-    wheel_count = (int)this;
+    wheel_count = (int)BO1_P2I(this);
     if (v3
         && _tlAssert(
             "c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\collision\\phys_broad_phase_inline.h",
@@ -2764,12 +2766,12 @@ void    broad_phase_group::collision_prolog()
     m_rbvm = v2->m_rbvm;
     if (m_rbvm)
     {
-        rb_mat = (const phys_mat44 *)m_rbvm->m_wheels.m_alloc_count;
+        rb_mat = (const phys_mat44 *)BO1_I2P(m_rbvm->m_wheels.m_alloc_count);
         //v34 = (phys_wheel_collide_info *)phys_transient_allocator::mt_allocate(&G_BPM->g_collision_memory_buffer, m_rbvm->m_wheels.m_alloc_count << 6, 16, 0, "broad phase collision out of memory.");
         v34 = (phys_wheel_collide_info *)G_BPM->g_collision_memory_buffer.mt_allocate(m_rbvm->m_wheels.m_alloc_count << 6, 16, 0, "broad phase collision out of memory.");
-        m_buffer = (int)v2->m_rbvm->m_wheels.m_buffer;
+        m_buffer = (int)BO1_P2I(v2->m_rbvm->m_wheels.m_buffer);
         v2->m_list_wci = v34;
-        if (*(int *)(m_buffer + 20) <= 0
+        if (*(int *)BO1_I2P((m_buffer + 20)) <= 0
             && _tlAssert(
                 "c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",
                 118,
@@ -2778,18 +2780,18 @@ void    broad_phase_group::collision_prolog()
         {
             __debugbreak();
         }
-        half_dims_12 = (const phys_mat44 *)(***(_DWORD ***)(m_buffer + 16) + 48);
+        half_dims_12 = (const phys_mat44 *)BO1_I2P((***(_DWORD ***)BO1_I2P((m_buffer + 16)) + 48));
         v36 = 0;
         *(float *)&i = 0.0;
-        if ((int)rb_mat > 0)
+        if ((int)BO1_P2I(rb_mat) > 0)
         {
             v80 = 0.0;
             while (1)
             {
                 v37 = (phys_vec3 *)((char *)&v2->m_list_wci->m_ray_pos + LODWORD(v80));
-                LODWORD(v38) = (unsigned int)v2->m_rbvm->m_wheels.m_buffer;
+                LODWORD(v38) = (unsigned int)BO1_P2I(v2->m_rbvm->m_wheels.m_buffer);
                 v79 = v38;
-                if ((v36 < 0 || v36 >= *(_DWORD *)(LODWORD(v38) + 20))
+                if ((v36 < 0 || v36 >= *(_DWORD *)BO1_I2P((LODWORD(v38) + 20)))
                     && _tlAssert(
                         "c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",
                         118,
@@ -2800,7 +2802,7 @@ void    broad_phase_group::collision_prolog()
                 }
                 p_x = &v37[1].x;
                 //rigid_body_constraint_wheel::get_wheel_collide_segment*(rigid_body_constraint_wheel **)(*(_DWORD *)(LODWORD(v79) + 16) + 4 * i), (int)v83, half_dims_12, v37, v37 + 1);
-                (*(rigid_body_constraint_wheel **)(*(_DWORD *)(LODWORD(v79) + 16) + 4 * i))->get_wheel_collide_segment(half_dims_12, v37, v37 + 1);
+                (*(rigid_body_constraint_wheel **)BO1_I2P((*(_DWORD *)BO1_I2P((LODWORD(v79) + 16)) + 4 * i)))->get_wheel_collide_segment(half_dims_12, v37, v37 + 1);
                 v37[1].x = v37[1].x - v37->x;
                 v37[1].y = v37[1].y - v37->y;
                 v37[1].z = v37[1].z - v37->z;
@@ -2870,9 +2872,9 @@ void    broad_phase_group::collision_prolog()
                     v51 = p1.x;
                 v79 = v51;
                 LODWORD(v80) += 64;
-                v2 = (broad_phase_group *)wheel_count;
+                v2 = (broad_phase_group *)BO1_I2P(wheel_count);
                 aabb2_max.x = v79;
-                v52 = i + 1 < (int)rb_mat;
+                v52 = i + 1 < (int)BO1_P2I(rb_mat);
                 aabb2_max.y = v78;
                 ++i;
                 aabb2_max.z = v82;
@@ -2938,8 +2940,8 @@ void __thiscall broad_phase_group::collision_epilog()
             while ( 1 )
             {
                 v3 = &v1->m_list_wci[v7];
-                m_buffer = (int)v1->m_rbvm->m_wheels.m_buffer;
-                if ( v2 < 0 || v2 >= *(unsigned int *)(m_buffer + 20) )
+                m_buffer = (int)BO1_P2I(v1->m_rbvm->m_wheels.m_buffer);
+                if ( v2 < 0 || v2 >= *(unsigned int *)BO1_I2P((m_buffer + 20)) )
                 {
                     if ( _tlAssert(
                                  "c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_array_base.inc",
@@ -2951,7 +2953,7 @@ void __thiscall broad_phase_group::collision_epilog()
                     }
                 }
                 //phys_wheel_collide_info::collision_epilog(v3,(int)&savedregs, *(rigid_body_constraint_wheel **)(*(unsigned int *)(m_buffer + 16) + 4 * v2));
-                v3->collision_epilog(*(rigid_body_constraint_wheel **)(*(unsigned int *)(m_buffer + 16) + 4 * v2));
+                v3->collision_epilog(*(rigid_body_constraint_wheel **)BO1_I2P((*(unsigned int *)BO1_I2P((m_buffer + 16)) + 4 * v2)));
                 ++v7;
                 if ( ++v2 >= wheel_count )
                     break;
@@ -3221,13 +3223,13 @@ void __thiscall axis_aligned_sweep_and_prune::remove(
     char *v4; // edi
     phys_heap_gjk_cache_system_avl_tree *p_g_phys_gjk_cache_system; // ebx
 
-    for ( i = (int)*list_ap; *list_ap; i = (int)*list_ap )
+    for ( i = (int)BO1_P2I(*list_ap); *list_ap; i = (int)BO1_P2I(*list_ap) )
     {
-        if ( *(axis_aligned_sweep_and_prune::sap_node **)i == node
-            || *(axis_aligned_sweep_and_prune::sap_node **)(i + 4) == node )
+        if ( *(axis_aligned_sweep_and_prune::sap_node **)BO1_I2P(i) == node
+            || *(axis_aligned_sweep_and_prune::sap_node **)BO1_I2P((i + 4)) == node )
         {
-            *list_ap = *(axis_aligned_sweep_and_prune::active_pair **)(i + 8);
-            v4 = *(char **)(i + 12);
+            *list_ap = *(axis_aligned_sweep_and_prune::active_pair **)BO1_I2P((i + 8));
+            v4 = *(char **)BO1_I2P((i + 12));
             p_g_phys_gjk_cache_system = &G_BPM->g_phys_gjk_cache_system;
             if ( v4 )
             {
@@ -3235,13 +3237,13 @@ void __thiscall axis_aligned_sweep_and_prune::remove(
                 --p_g_phys_gjk_cache_system->m_list_phys_gjk_cache_info_internal.m_count;
                 PMM_FREE((unsigned __int8 *)v4, 0x90u, 0x10u);
             }
-            PMM_VALIDATE((char *)i, 0x10u, 4u);
+            PMM_VALIDATE((char *)BO1_I2P(i), 0x10u, 4u);
             --this->m_active_pair_allocator.m_count;
-            PMM_FREE((unsigned __int8 *)i, 0x10u, 4u);
+            PMM_FREE((unsigned __int8 *)BO1_I2P(i), 0x10u, 4u);
         }
         else
         {
-            list_ap = (axis_aligned_sweep_and_prune::active_pair **)(i + 8);
+            list_ap = (axis_aligned_sweep_and_prune::active_pair **)BO1_I2P((i + 8));
         }
     }
 }
@@ -3668,7 +3670,7 @@ void    axis_aligned_sweep_and_prune::process_active_pair_list()
                     &v19->m_trace_aabb_max_whace,
                     &hit_time))
                 {
-                    for (i = (broad_phase_info *)LODWORD(v19[1].m_trace_aabb_min_whace.x);
+                    for (i = (broad_phase_info *)BO1_I2P(LODWORD(v19[1].m_trace_aabb_min_whace.x));
                         i;
                         i = (broad_phase_info *)i->m_list_bpb_next)
                     {
@@ -3751,7 +3753,7 @@ void    axis_aligned_sweep_and_prune::process_active_pair_list()
                 {
                     __debugbreak();
                 }
-                for (j = (broad_phase_info *)LODWORD(v26[1].m_trace_aabb_min_whace.x);
+                for (j = (broad_phase_info *)BO1_I2P(LODWORD(v26[1].m_trace_aabb_min_whace.x));
                     j;
                     j = (broad_phase_info *)j->m_list_bpb_next)
                 {

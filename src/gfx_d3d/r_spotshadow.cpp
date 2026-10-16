@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_spotshadow.h"
 #include "r_model_pose.h"
 #include <cgame/cg_pose_utils.h>
@@ -382,7 +383,7 @@ void __cdecl R_AddSpotShadowModelEntities(int localClientNum, unsigned int prima
             if ( entnuma != gfxCfg.entnumNone )
             {
                 if ( R_IsEntityVisibleToPrimaryLight(localClientNum, entnuma, primaryLightIndex) )
-                    *(_BYTE *)(scene.dynSModelVisBitsCamera[light->spotShadowIndex - 10] + entnuma) = 1;
+                    *(_BYTE *)BO1_I2P((scene.dynSModelVisBitsCamera[light->spotShadowIndex - 10] + entnuma)) = 1;
             }
         }
     }

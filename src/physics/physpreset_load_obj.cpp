@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "physpreset_load_obj.h"
 #include <universal/assertive.h>
 #include <universal/com_memory.h>
@@ -186,11 +187,11 @@ void __cdecl PhysPreset_Strcpy(unsigned __int8 *member, const char *keyValue)
             *v3++ = *v4++;
         }
         while ( v2 );
-        *(unsigned int *)member = (unsigned int)buf;
+        *(unsigned int *)member = (unsigned int)BO1_P2I(buf);
     }
     else
     {
-        *(unsigned int *)member = (unsigned int)"";
+        *(unsigned int *)member = (unsigned int)BO1_P2I("");
     }
 }
 

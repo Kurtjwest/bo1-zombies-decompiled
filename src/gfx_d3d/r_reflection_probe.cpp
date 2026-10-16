@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_reflection_probe.h"
 #include "r_bsp.h"
 #include "r_dvars.h"
@@ -451,7 +452,7 @@ void R_LoadColorCorrectionData()
     if ( fileSize >= 0 )
     {
         Hunk_CheckTempMemoryHighClear();
-        filebuf = (unsigned __int8 *)Hunk_AllocateTempMemoryHigh(fileSize + 1, "R_LoadColorCorrectionData");
+        filebuf = (unsigned __int8 *)BO1_I2P(Hunk_AllocateTempMemoryHigh(fileSize + 1, "R_LoadColorCorrectionData"));
         FS_Read(filebuf, fileSize, f);
         FS_FCloseFile(f);
         filebuf[fileSize] = 0;

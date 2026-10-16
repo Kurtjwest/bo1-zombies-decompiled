@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "dvar.h"
 #include <database/db_registry.h>
 
@@ -163,7 +164,7 @@ const char *__cdecl Dvar_EnumToString(const dvar_s *dvar)
         __debugbreak();
     }
     if ( dvar->domain.enumeration.stringCount )
-        return *(const char **)(dvar->domain.integer.max + 4 * dvar->current.integer);
+        return *(const char **)BO1_I2P((dvar->domain.integer.max + 4 * dvar->current.integer));
     else
         return "";
 }
@@ -224,7 +225,7 @@ const char *__cdecl Dvar_IndexStringToEnumString(const dvar_s *dvar, const char 
     }
     enumIndex = atoi(indexString);
     if ( enumIndex >= 0 && enumIndex < dvar->domain.enumeration.stringCount )
-        return *(const char **)(dvar->domain.integer.max + 4 * enumIndex);
+        return *(const char **)BO1_I2P((dvar->domain.integer.max + 4 * enumIndex));
     else
         return "";
 }
@@ -282,7 +283,7 @@ const char *__cdecl Dvar_ValueToString(const dvar_s *dvar, DvarValue value)
                 __debugbreak();
             }
             if ( dvar->domain.enumeration.stringCount )
-                result = *(const char **)(dvar->domain.integer.max + 4 * value.integer);
+                result = *(const char **)BO1_I2P((dvar->domain.integer.max + 4 * value.integer));
             else
                 result = "";
             break;
@@ -524,7 +525,7 @@ char *__cdecl Dvar_DomainToString_Internal(
                                                         outBufferEnd - outBufferWalk,
                                                         "\n    %2i: %s",
                                                         stringIndex,
-                                                        *(const char **)(domain.integer.max + 4 * stringIndex));
+                                                        *(const char **)BO1_I2P((domain.integer.max + 4 * stringIndex)));
                     if ( charsWrittena < 0 )
                         break;
                     if ( outLineCount )
@@ -815,7 +816,7 @@ void __cdecl Dvar_UpdateEnumDomain(dvar_s *dvar, const char **stringTable)
     }
     malleableDvar = dvar;
     dvar->domain.enumeration.stringCount = stringCount;
-    malleableDvar->domain.integer.max = (int)stringTable;
+    malleableDvar->domain.integer.max = (int)BO1_P2I(stringTable);
     v5 = *Dvar_ClampValueToDomain(&result, dvar->type, dvar->current, dvar->reset, dvar->domain);
     malleableDvar->current = v5;
     malleableDvar->latched = dvar->current;
@@ -1505,7 +1506,7 @@ void __cdecl Dvar_UpdateResetValue(dvar_s *dvar, DvarValue value)
                 shouldFree = Dvar_ShouldFreeResetString(dvar);
                 if ( shouldFree )
                     oldString.integer = dvar->reset.integer;
-                Dvar_AssignResetStringValue(dvar, &resetString, (char *)value.integer);
+                Dvar_AssignResetStringValue(dvar, &resetString, (char *)BO1_I2P(value.integer));
                 dvar->reset.integer = resetString.integer;
                 if ( shouldFree )
                     Dvar_FreeString(&oldString);
@@ -1521,11 +1522,11 @@ void __cdecl Dvar_AssignResetStringValue(dvar_s *dvar, DvarValue *dest, char *st
 {
     if ( !string && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp", 226, 0, "%s", "string") )
         __debugbreak();
-    if ( dvar->current.integer && (string == (char *)dvar->current.integer || !strcmp(string, dvar->current.string)) )
+    if ( dvar->current.integer && (string == (char *)BO1_I2P(dvar->current.integer) || !strcmp(string, dvar->current.string)) )
     {
         Dvar_WeakCopyString(dvar->current.string, dest);
     }
-    else if ( dvar->latched.integer && (string == (char *)dvar->latched.integer || !strcmp(string, dvar->latched.string)) )
+    else if ( dvar->latched.integer && (string == (char *)BO1_I2P(dvar->latched.integer) || !strcmp(string, dvar->latched.string)) )
     {
         Dvar_WeakCopyString(dvar->latched.string, dest);
     }
@@ -1539,14 +1540,14 @@ void __cdecl Dvar_CopyString(char *string, DvarValue *value)
 {
     if ( !string && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp", 163, 0, "%s", "string") )
         __debugbreak();
-    value->integer = (int)CopyString(string, "Dvar_CopyString", 11, SCRIPTINSTANCE_SERVER);
+    value->integer = (int)BO1_P2I(CopyString(string, "Dvar_CopyString", 11, SCRIPTINSTANCE_SERVER));
 }
 
 void __cdecl Dvar_WeakCopyString(const char *string, DvarValue *value)
 {
     if ( !string && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp", 171, 0, "%s", "string") )
         __debugbreak();
-    value->integer = (int)string;
+    value->integer = (int)BO1_P2I(string);
 }
 
 void __cdecl Dvar_MakeLatchedValueCurrent(dvar_s *dvar)
@@ -1672,11 +1673,11 @@ void __cdecl Dvar_AssignCurrentStringValue(dvar_s *dvar, DvarValue *dest, char *
 {
     if ( !string && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp", 202, 0, "%s", "string") )
         __debugbreak();
-    if ( dvar->latched.integer && (string == (char *)dvar->latched.integer || !strcmp(string, dvar->latched.string)) )
+    if ( dvar->latched.integer && (string == (char *)BO1_I2P(dvar->latched.integer) || !strcmp(string, dvar->latched.string)) )
     {
         Dvar_WeakCopyString(dvar->latched.string, dest);
     }
-    else if ( dvar->reset.integer && (string == (char *)dvar->reset.integer || !strcmp(string, dvar->reset.string)) )
+    else if ( dvar->reset.integer && (string == (char *)BO1_I2P(dvar->reset.integer) || !strcmp(string, dvar->reset.string)) )
     {
         Dvar_WeakCopyString(dvar->reset.string, dest);
     }
@@ -1712,7 +1713,7 @@ void __cdecl Dvar_SetLatchedValue(dvar_s *dvar, DvarValue value)
                 shouldFree = Dvar_ShouldFreeLatchedString(dvar);
                 if ( shouldFree )
                     oldString.integer = dvar->latched.integer;
-                Dvar_AssignLatchedStringValue(dvar, &latchedString, (char *)value.integer);
+                Dvar_AssignLatchedStringValue(dvar, &latchedString, (char *)BO1_I2P(value.integer));
                 dvar->latched.integer = latchedString.integer;
                 if ( shouldFree )
                     Dvar_FreeString(&oldString);
@@ -1728,11 +1729,11 @@ void __cdecl Dvar_AssignLatchedStringValue(dvar_s *dvar, DvarValue *dest, char *
 {
     if ( !string && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\universal\\dvar.cpp", 214, 0, "%s", "string") )
         __debugbreak();
-    if ( dvar->current.integer && (string == (char *)dvar->current.integer || !strcmp(string, dvar->current.string)) )
+    if ( dvar->current.integer && (string == (char *)BO1_I2P(dvar->current.integer) || !strcmp(string, dvar->current.string)) )
     {
         Dvar_WeakCopyString(dvar->current.string, dest);
     }
-    else if ( dvar->reset.integer && (string == (char *)dvar->reset.integer || !strcmp(string, dvar->reset.string)) )
+    else if ( dvar->reset.integer && (string == (char *)BO1_I2P(dvar->reset.integer) || !strcmp(string, dvar->reset.string)) )
     {
         Dvar_WeakCopyString(dvar->reset.string, dest);
     }
@@ -1950,7 +1951,7 @@ void __cdecl Dvar_MakeExplicitType(
     v6 = dvar->type == DVAR_TYPE_STRING && castValue.integer;
     wasString = v6;
     if (v6)
-        castValue.integer = (int)CopyString((char *)castValue.integer, "Dvar_MakeExplicitType", 11, SCRIPTINSTANCE_SERVER);
+        castValue.integer = (int)BO1_P2I(CopyString((char *)BO1_I2P(castValue.integer), "Dvar_MakeExplicitType", 11, SCRIPTINSTANCE_SERVER));
     if (dvar->type != DVAR_TYPE_STRING && Dvar_ShouldFreeCurrentString(dvar))
         Dvar_FreeString(&dvar->current);
     dvar->current.integer = 0;
@@ -2000,7 +2001,7 @@ DvarValue *__cdecl Dvar_StringToValue(DvarValue *result, dvarType_t type, DvarLi
             value.integer = Dvar_StringToEnum(&domain, string);
             break;
         case DVAR_TYPE_STRING:
-            value.integer = (int)string;
+            value.integer = (int)BO1_P2I(string);
             break;
         case DVAR_TYPE_COLOR:
             Dvar_StringToColor(string, (unsigned __int8 *)&value);
@@ -2066,7 +2067,7 @@ int __cdecl Dvar_StringToEnum(const DvarLimits *domain, const char *string)
         __debugbreak();
     for ( stringIndex = 0; stringIndex < domain->enumeration.stringCount; ++stringIndex )
     {
-        if ( !I_stricmp(string, *(const char **)(domain->integer.max + 4 * stringIndex)) )
+        if ( !I_stricmp(string, *(const char **)BO1_I2P((domain->integer.max + 4 * stringIndex))) )
             return stringIndex;
     }
     stringIndexa = 0;
@@ -2081,7 +2082,7 @@ int __cdecl Dvar_StringToEnum(const DvarLimits *domain, const char *string)
     v3 = strlen(string);
     for ( stringIndexb = 0; stringIndexb < domain->enumeration.stringCount; ++stringIndexb )
     {
-        if ( !I_strnicmp(string, *(const char **)(domain->integer.max + 4 * stringIndexb), v3) )
+        if ( !I_strnicmp(string, *(const char **)BO1_I2P((domain->integer.max + 4 * stringIndexb)), v3) )
             return stringIndexb;
     }
     return -1337;
@@ -2119,7 +2120,7 @@ void __cdecl Dvar_UpdateValue(dvar_s *dvar, DvarValue value)
                 shouldFree = Dvar_ShouldFreeCurrentString(dvar);
                 if ( shouldFree )
                     oldString.integer = dvar->current.integer;
-                Dvar_AssignCurrentStringValue(dvar, &currentString, (char *)value.integer);
+                Dvar_AssignCurrentStringValue(dvar, &currentString, (char *)BO1_I2P(value.integer));
                 dvar->current.integer = currentString.integer;
                 if ( Dvar_ShouldFreeLatchedString(dvar) )
                     Dvar_FreeString(&dvar->latched);
@@ -2252,7 +2253,7 @@ const dvar_s *__cdecl Dvar_RegisterNew(
             dvar->reset = value;
             break;
         case DVAR_TYPE_STRING:
-            Dvar_CopyString((char *)value.integer, &dvar->current);
+            Dvar_CopyString((char *)BO1_I2P(value.integer), &dvar->current);
             Dvar_WeakCopyString(dvar->current.string, &dvar->latched);
             Dvar_WeakCopyString(dvar->current.string, &dvar->reset);
             break;
@@ -2440,7 +2441,7 @@ const dvar_s *__cdecl _Dvar_RegisterString(
     {
         __debugbreak();
     }
-    dvarValue.integer = (int)value;
+    dvarValue.integer = (int)BO1_P2I(value);
     memset(&v5, 0, sizeof(v5));
     return Dvar_RegisterVariant((char*)dvarName, DVAR_TYPE_STRING, flags, dvarValue, v5, description);
 }
@@ -2597,7 +2598,7 @@ void __cdecl Dvar_SetBoolFromSource(dvar_s *dvar, bool value, DvarSetSource sour
                 v3 = "1";
             else
                 v3 = "0";
-            newValue.integer = (int)v3;
+            newValue.integer = (int)BO1_P2I(v3);
         }
         else
         {
@@ -2642,7 +2643,7 @@ void __cdecl Dvar_SetIntFromSource(dvar_s *dvar, int value, DvarSetSource source
         else
         {
             Com_sprintf(string, 0x20u, "%i", value);
-            newValue.integer = (int)string;
+            newValue.integer = (int)BO1_P2I(string);
         }
         Dvar_SetVariant(dvar, newValue, source);
     }
@@ -2681,7 +2682,7 @@ void __cdecl Dvar_SetInt64FromSource(dvar_s *dvar, __int64 value, DvarSetSource 
         else
         {
             Com_sprintf(string, 0x20u, "%lli", value);
-            newValue.integer = (int)string;
+            newValue.integer = (int)BO1_P2I(string);
         }
         Dvar_SetVariant(dvar, newValue, source);
     }
@@ -2720,7 +2721,7 @@ void __cdecl Dvar_SetFloatFromSource(dvar_s *dvar, float value, DvarSetSource so
         else
         {
             Com_sprintf(string, 0x20u, "%g", value);
-            newValue.integer = (int)string;
+            newValue.integer = (int)BO1_P2I(string);
         }
         Dvar_SetVariant(dvar, newValue, source);
     }
@@ -2885,7 +2886,7 @@ void __cdecl Dvar_SetColorFromSource(dvar_s *dvar, float r, float g, float b, fl
         else
         {
             Com_sprintf(string, 0x80u, "%g %g %g %g", r, g, b, a);
-            newValue.integer = (int)string;
+            newValue.integer = (int)BO1_P2I(string);
         }
         Dvar_SetVariant(dvar, newValue, source);
     }
@@ -2963,7 +2964,7 @@ void __cdecl Dvar_SetStringFromSource(dvar_s *dvar, const char *string, DvarSetS
         if ( dvar->type == DVAR_TYPE_STRING )
         {
             I_strncpyz(stringCopy, string, 1024);
-            newValue.integer = (int)stringCopy;
+            newValue.integer = (int)BO1_P2I(stringCopy);
         }
         else
         {

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "com_gamemodes.h"
 #include <universal/dvar.h>
 #include <game_mp/g_main_mp.h>
@@ -115,7 +116,7 @@ char ValidateGameModes()
             __debugbreak();
         }
         result = xblive_wagermatch->current.enabled || anySetb;
-        if ( xblive_privatematch && (result = (char)xblive_privatematch, xblive_privatematch->current.enabled) )
+        if ( xblive_privatematch && (result = (char)BO1_P2I(xblive_privatematch), xblive_privatematch->current.enabled) )
         {
             if ( !onlinegame || (result = onlinegame->current.enabled) == 0 )
             {
@@ -129,7 +130,7 @@ char ValidateGameModes()
                     __debugbreak();
             }
         }
-        else if ( xblive_basictraining && (result = (char)xblive_basictraining, xblive_basictraining->current.enabled) )
+        else if ( xblive_basictraining && (result = (char)BO1_P2I(xblive_basictraining), xblive_basictraining->current.enabled) )
         {
             if ( !onlinegame || (result = onlinegame->current.enabled) == 0 )
             {
@@ -143,7 +144,7 @@ char ValidateGameModes()
                     __debugbreak();
             }
         }
-        else if ( xblive_theater && (result = (char)xblive_theater, xblive_theater->current.enabled) )
+        else if ( xblive_theater && (result = (char)BO1_P2I(xblive_theater), xblive_theater->current.enabled) )
         {
             if ( !onlinegame || (result = onlinegame->current.enabled) == 0 )
             {
@@ -159,7 +160,7 @@ char ValidateGameModes()
         }
         else if ( xblive_wagermatch )
         {
-            result = (char)xblive_wagermatch;
+            result = (char)BO1_P2I(xblive_wagermatch);
             if ( xblive_wagermatch->current.enabled && (!onlinegame || (result = onlinegame->current.enabled) == 0) )
             {
                 result = Assert_MyHandler(

@@ -1027,7 +1027,7 @@ unsigned int __cdecl NET_TCPIPSocket(char *net_interface, int port, int type)
         if ( net_interface && *net_interface && I_stricmp(net_interface, "localhost") )
             Sys_StringToSockaddr(net_interface, (sockaddr *)&address);
         else
-            address.sin_addr.S_un.S_addr = 0;
+            address.sin_addr.s_addr = 0;
         if ( port == -1 )
             address.sin_port = 0;
         else
@@ -1072,13 +1072,13 @@ int __cdecl NET_Select(unsigned int socket)
     fd_set writefds; // [esp+110h] [ebp-110h] BYREF
     timeval time; // [esp+218h] [ebp-8h] BYREF
 
-    readfds.fd_count = 1;
-    readfds.fd_array[0] = socket;
-    writefds.fd_count = 1;
-    writefds.fd_array[0] = socket;
+    FD_ZERO(&readfds);
+    FD_SET(socket, &readfds);
+    FD_ZERO(&writefds);
+    FD_SET(socket, &writefds);
     time.tv_sec = 5;
     time.tv_usec = 0;
-    err = select(0, &readfds, &writefds, 0, &time);
+    err = select((int)socket + 1, &readfds, &writefds, 0, &time);
     if ( err )
     {
         if ( err == -1 )
@@ -1503,7 +1503,7 @@ int __cdecl Sys_UpdateDebugSocket()
         {
             if ( !ip_debugServerSocket[i] )
                 return 0;
-            ip_debugSocket[i] = accept(ip_debugServerSocket[i], 0, 0);
+            ip_debugSocket[i] = accept(ip_debugServerSocket[i], (sockaddr *)0, (int *)0);
             if ( ip_debugSocket[i] == -1 )
             {
                 ip_debugSocket[i] = 0;

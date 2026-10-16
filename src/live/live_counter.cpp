@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_counter.h"
 #include <DW/dwUtils.h>
 #include <universal/com_tasks.h>
@@ -164,7 +165,7 @@ void __cdecl LiveCounter_UploadAllCountersFailure(TaskRecord *task)
                 v2 = j;
                 LODWORD(s_localCounters[v2].m_counterValue) = LODWORD(s_uploadCounters[i].m_counterValue)
                                                                                                         + LODWORD(s_localCounters[j].m_counterValue);
-                *(unsigned int *)(v2 * 16 + 172779900) = HIDWORD(v1);
+                *(unsigned int *)BO1_I2P((v2 * 16 + 172779900)) = HIDWORD(v1);
                 break;
             }
         }
@@ -235,7 +236,7 @@ void __cdecl LiveCounter_IncrementCounterValue(int counterID, __int64 increment)
                 v2 = increment + __PAIR64__(HIDWORD(s_localCounters[i].m_counterValue), s_localCounters[i].m_counterValue);
                 v3 = i;
                 LODWORD(s_localCounters[v3].m_counterValue) = increment + LODWORD(s_localCounters[i].m_counterValue);
-                *(unsigned int *)(v3 * 16 + 172779900) = HIDWORD(v2);
+                *(unsigned int *)BO1_I2P((v3 * 16 + 172779900)) = HIDWORD(v2);
                 if ( !s_countersReadyForUpload )
                 {
                     s_countersReadyForUpload = 1;
@@ -327,13 +328,13 @@ void __cdecl LiveCounter_SetupCounters()
             s_serverCounters[i].m_counterID = counterID;
             v0 = i;
             LODWORD(s_localCounters[v0].m_counterValue) = 0;
-            *(unsigned int *)(v0 * 16 + 172779900) = 0;
+            *(unsigned int *)BO1_I2P((v0 * 16 + 172779900)) = 0;
             v1 = i;
             LODWORD(s_uploadCounters[v1].m_counterValue) = 0;
-            *(unsigned int *)(v1 * 16 + 172781500) = 0;
+            *(unsigned int *)BO1_I2P((v1 * 16 + 172781500)) = 0;
             v2 = i;
             LODWORD(s_serverCounters[v2].m_counterValue) = -1;
-            *(unsigned int *)(v2 * 16 + 172778300) = -1;
+            *(unsigned int *)BO1_I2P((v2 * 16 + 172778300)) = -1;
         }
         else
         {

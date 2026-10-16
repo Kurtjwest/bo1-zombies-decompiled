@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_meetplayer.h"
 #include "live_storage.h"
 #include <win32/win_shared.h>
@@ -261,9 +262,9 @@ char __cdecl LiveMeetPlayer_AddPlayerAtSlot(
     v5 = localControllerIndex;
     v6 = slot;
     LODWORD(metPlayersXuidinfo[v5].playersXuidInfo[v6].playerXuids) = playeruid;
-    *(unsigned int *)(v5 * 2416 + v6 * 48 + 173153028) = HIDWORD(playeruid);
-    I_strncpyz((char *)(2416 * localControllerIndex + 48 * slot + 173153032), playername, 32);
-    LiveMeetPlayer_SetCurrentTime((_FILETIME *)(2416 * localControllerIndex + 48 * slot + 173153064));
+    *(unsigned int *)BO1_I2P((v5 * 2416 + v6 * 48 + 173153028)) = HIDWORD(playeruid);
+    I_strncpyz((char *)BO1_I2P((2416 * localControllerIndex + 48 * slot + 173153032)), playername, 32);
+    LiveMeetPlayer_SetCurrentTime((_FILETIME *)BO1_I2P((2416 * localControllerIndex + 48 * slot + 173153064)));
     Live_RequestSessionsFromRecentPlayers();
     return 1;
 }

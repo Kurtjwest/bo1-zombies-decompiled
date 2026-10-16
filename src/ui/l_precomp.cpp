@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "l_precomp.h"
 #include <qcommon/common.h>
 #include "l_memory.h"
@@ -1013,9 +1014,9 @@ define_s *__cdecl PC_CopyDefine(source_s *source, define_s *define)
     token_s *lasttokena; // [esp+2Ch] [ebp-4h]
 
     newdefine = GetMemory(strlen(define->name) + 33);
-    *newdefine = (unsigned int)(newdefine + 8);
+    *newdefine = (unsigned int)BO1_P2I((newdefine + 8));
     name = define->name;
-    v4 = (_BYTE *)*newdefine;
+    v4 = (_BYTE *)BO1_I2P(*newdefine);
     do
     {
         v2 = *name;
@@ -1036,7 +1037,7 @@ define_s *__cdecl PC_CopyDefine(source_s *source, define_s *define)
         if ( lasttoken )
             lasttoken->next = newtoken;
         else
-            newdefine[5] = (unsigned int)newtoken;
+            newdefine[5] = (unsigned int)BO1_P2I(newtoken);
         lasttoken = newtoken;
     }
     newdefine[4] = 0;
@@ -1048,7 +1049,7 @@ define_s *__cdecl PC_CopyDefine(source_s *source, define_s *define)
         if ( lasttokena )
             lasttokena->next = newtokena;
         else
-            newdefine[4] = (unsigned int)newtokena;
+            newdefine[4] = (unsigned int)BO1_P2I(newtokena);
         lasttokena = newtokena;
     }
     return (define_s *)newdefine;

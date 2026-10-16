@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cscr_variable.h"
 #include <universal/com_memory.h>
 #include <qcommon/common.h>
@@ -100,8 +101,8 @@ void __cdecl Scr_DumpScriptThreads(scriptInstance_t inst)
                     {
                         --size;
                         type = *buf++;
-                        u.intValue = *(int *)buf;
-                        buf += 4;
+                        u = Scr_StackBufReadUnion(buf);
+                        buf += sizeof(VariableUnion);
                         if ( type == 7 )
                             info.pos[info.posSize++] = u.codePosValue;
                     }
@@ -198,8 +199,8 @@ int __cdecl ThreadInfoCompare(unsigned int *info1, unsigned int *info2)
     {
         if ( i >= info1[32] || i >= info2[32] )
             return info1[32] - info2[32];
-        pos1 = (const char *)info1[i];
-        pos2 = (const char *)info2[i];
+        pos1 = (const char *)BO1_I2P(info1[i]);
+        pos2 = (const char *)BO1_I2P(info2[i]);
         if ( pos1 != pos2 )
             break;
     }
@@ -377,8 +378,8 @@ int __cdecl VariableInfoFileNameCompare(unsigned int *info1, unsigned int *info2
     const char *fileName1; // [esp+0h] [ebp-8h]
     const char *fileName2; // [esp+4h] [ebp-4h]
 
-    fileName1 = (const char *)info1[1];
-    fileName2 = (const char *)info2[1];
+    fileName1 = (const char *)BO1_I2P(info1[1]);
+    fileName2 = (const char *)BO1_I2P(info2[1]);
     if ( !fileName1 )
         return 1;
     if ( fileName2 )
@@ -395,8 +396,8 @@ int __cdecl VariableInfoFunctionCompare(unsigned int *info1, unsigned int *info2
     fileNameCompare = VariableInfoFileNameCompare(info1, info2);
     if ( fileNameCompare )
         return fileNameCompare;
-    functionName1 = (const char *)info1[2];
-    functionName2 = (const char *)info2[2];
+    functionName1 = (const char *)BO1_I2P(info1[2]);
+    functionName2 = (const char *)BO1_I2P(info2[2]);
     if ( !functionName1 )
         return 1;
     if ( functionName2 )
@@ -4565,7 +4566,7 @@ char __cdecl Scr_CastString(scriptInstance_t inst, VariableValue *value)
         return 1;
     case 4:
         value->type = 2;
-        constTempVector = (const float *)value->u.intValue;
+        constTempVector = (const float *)BO1_I2P(value->u.intValue);
         value->u.intValue = SL_GetStringForVector(inst, value->u.vectorValue);
         RemoveRefToVector(inst, constTempVector);
         return 1;
@@ -4685,7 +4686,7 @@ void __cdecl Scr_CastVector(scriptInstance_t inst, VariableValue *value)
         }
     }
     value->type = 4;
-    value->u.intValue = (int)Scr_AllocVector(inst, vec);
+    value->u.intValue = (int)BO1_P2I(Scr_AllocVector(inst, vec));
 }
 
 unsigned int __cdecl Scr_EvalFieldObject(scriptInstance_t inst, unsigned int tempVariable, VariableValue *value)
@@ -4842,9 +4843,9 @@ void __cdecl Scr_EvalEquality(scriptInstance_t inst, VariableValue *value1, Vari
             break;
         case 4:
             value1->type = 6;
-            v3 = *(float *)value1->u.intValue == *(float *)value2->u.intValue
-                && *(float *)(value1->u.intValue + 4) == *(float *)(value2->u.intValue + 4)
-                && *(float *)(value1->u.intValue + 8) == *(float *)(value2->u.intValue + 8);
+            v3 = *(float *)BO1_I2P(value1->u.intValue) == *(float *)BO1_I2P(value2->u.intValue)
+                && *(float *)BO1_I2P((value1->u.intValue + 4)) == *(float *)BO1_I2P((value2->u.intValue + 4))
+                && *(float *)BO1_I2P((value1->u.intValue + 8)) == *(float *)BO1_I2P((value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
             value1->u.intValue = v3;
@@ -4904,7 +4905,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
                 *tempVector = value2->u.floatValue;
                 tempVector[1] = value2->u.floatValue;
                 tempVector[2] = value2->u.floatValue;
-                value2->u.intValue = (int)tempVector;
+                value2->u.intValue = (int)BO1_P2I(tempVector);
                 value2->type = 4;
                 return;
             }
@@ -4914,7 +4915,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
                 *v3 = (float)value2->u.intValue;
                 v3[1] = (float)value2->u.intValue;
                 v3[2] = (float)value2->u.intValue;
-                value2->u.intValue = (int)v3;
+                value2->u.intValue = (int)BO1_P2I(v3);
                 value2->type = 4;
                 return;
             }
@@ -4927,7 +4928,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
             *tempVectora = value1->u.floatValue;
             tempVectora[1] = value1->u.floatValue;
             tempVectora[2] = value1->u.floatValue;
-            value1->u.intValue = (int)tempVectora;
+            value1->u.intValue = (int)BO1_P2I(tempVectora);
             value1->type = 4;
             return;
         }
@@ -4937,7 +4938,7 @@ void __cdecl Scr_CastWeakerPair(scriptInstance_t inst, VariableValue *value1, Va
             *tempVectorb = (float)value1->u.intValue;
             tempVectorb[1] = (float)value1->u.intValue;
             tempVectorb[2] = (float)value1->u.intValue;
-            value1->u.intValue = (int)tempVectorb;
+            value1->u.intValue = (int)BO1_P2I(tempVectorb);
             value1->type = 4;
         }
         else
@@ -5147,12 +5148,12 @@ void __cdecl Scr_EvalPlus(scriptInstance_t inst, VariableValue *value1, Variable
             break;
         case 4:
             v12 = Scr_AllocVector(inst);
-            *v12 = *(float *)value1->u.intValue + *(float *)value2->u.intValue;
-            v12[1] = *(float *)(value1->u.intValue + 4) + *(float *)(value2->u.intValue + 4);
-            v12[2] = *(float *)(value1->u.intValue + 8) + *(float *)(value2->u.intValue + 8);
+            *v12 = *(float *)BO1_I2P(value1->u.intValue) + *(float *)BO1_I2P(value2->u.intValue);
+            v12[1] = *(float *)BO1_I2P((value1->u.intValue + 4)) + *(float *)BO1_I2P((value2->u.intValue + 4));
+            v12[2] = *(float *)BO1_I2P((value1->u.intValue + 8)) + *(float *)BO1_I2P((value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
-            value1->u.intValue = (int)v12;
+            value1->u.intValue = (int)BO1_P2I(v12);
             break;
         case 5:
             value1->u.floatValue = value1->u.floatValue + value2->u.floatValue;
@@ -5185,7 +5186,7 @@ void __cdecl Scr_CastWeakerStringPair(scriptInstance_t inst, VariableValue *valu
                 {
                     case 4:
                         value2->type = 2;
-                        constTempVector = (const float *)value2->u.intValue;
+                        constTempVector = (const float *)BO1_I2P(value2->u.intValue);
                         value2->u.intValue = SL_GetStringForVector(inst, value2->u.vectorValue);
                         RemoveRefToVector(inst, constTempVector);
                         return;
@@ -5219,7 +5220,7 @@ LABEL_28:
             {
                 case 4:
                     value1->type = 2;
-                    constTempVectora = (const float *)value1->u.intValue;
+                    constTempVectora = (const float *)BO1_I2P(value1->u.intValue);
                     value1->u.intValue = SL_GetStringForVector(inst, value1->u.vectorValue);
                     RemoveRefToVector(inst, constTempVectora);
                     return;
@@ -5268,12 +5269,12 @@ void __cdecl Scr_EvalMinus(scriptInstance_t inst, VariableValue *value1, Variabl
     {
         case 4:
             tempVector = Scr_AllocVector(inst);
-            *tempVector = *(float *)value1->u.intValue - *(float *)value2->u.intValue;
-            tempVector[1] = *(float *)(value1->u.intValue + 4) - *(float *)(value2->u.intValue + 4);
-            tempVector[2] = *(float *)(value1->u.intValue + 8) - *(float *)(value2->u.intValue + 8);
+            *tempVector = *(float *)BO1_I2P(value1->u.intValue) - *(float *)BO1_I2P(value2->u.intValue);
+            tempVector[1] = *(float *)BO1_I2P((value1->u.intValue + 4)) - *(float *)BO1_I2P((value2->u.intValue + 4));
+            tempVector[2] = *(float *)BO1_I2P((value1->u.intValue + 8)) - *(float *)BO1_I2P((value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
-            value1->u.intValue = (int)tempVector;
+            value1->u.intValue = (int)BO1_P2I(tempVector);
             break;
         case 5:
             value1->u.floatValue = value1->u.floatValue - value2->u.floatValue;
@@ -5308,12 +5309,12 @@ void __cdecl Scr_EvalMultiply(scriptInstance_t inst, VariableValue *value1, Vari
     {
         case 4:
             tempVector = Scr_AllocVector(inst);
-            *tempVector = *(float *)value1->u.intValue * *(float *)value2->u.intValue;
-            tempVector[1] = *(float *)(value1->u.intValue + 4) * *(float *)(value2->u.intValue + 4);
-            tempVector[2] = *(float *)(value1->u.intValue + 8) * *(float *)(value2->u.intValue + 8);
+            *tempVector = *(float *)BO1_I2P(value1->u.intValue) * *(float *)BO1_I2P(value2->u.intValue);
+            tempVector[1] = *(float *)BO1_I2P((value1->u.intValue + 4)) * *(float *)BO1_I2P((value2->u.intValue + 4));
+            tempVector[2] = *(float *)BO1_I2P((value1->u.intValue + 8)) * *(float *)BO1_I2P((value2->u.intValue + 8));
             RemoveRefToVector(inst, value1->u.vectorValue);
             RemoveRefToVector(inst, value2->u.vectorValue);
-            value1->u.intValue = (int)tempVector;
+            value1->u.intValue = (int)BO1_P2I(tempVector);
             break;
         case 5:
             value1->u.floatValue = value1->u.floatValue * value2->u.floatValue;
@@ -5348,26 +5349,26 @@ void __cdecl Scr_EvalDivide(scriptInstance_t inst, VariableValue *value1, Variab
     {
         case 4:
             tempVector = Scr_AllocVector(inst);
-            if ( *(float *)value2->u.intValue == 0.0
-                || *(float *)(value2->u.intValue + 4) == 0.0
-                || *(float *)(value2->u.intValue + 8) == 0.0 )
+            if ( *(float *)BO1_I2P(value2->u.intValue) == 0.0
+                || *(float *)BO1_I2P((value2->u.intValue + 4)) == 0.0
+                || *(float *)BO1_I2P((value2->u.intValue + 8)) == 0.0 )
             {
                 *tempVector = 0.0f;
                 tempVector[1] = 0.0f;
                 tempVector[2] = 0.0f;
                 RemoveRefToVector(inst, value1->u.vectorValue);
                 RemoveRefToVector(inst, value2->u.vectorValue);
-                value1->u.intValue = (int)tempVector;
+                value1->u.intValue = (int)BO1_P2I(tempVector);
                 Scr_Error(inst, "divide by 0", 0);
             }
             else
             {
-                *tempVector = *(float *)value1->u.intValue / *(float *)value2->u.intValue;
-                tempVector[1] = *(float *)(value1->u.intValue + 4) / *(float *)(value2->u.intValue + 4);
-                tempVector[2] = *(float *)(value1->u.intValue + 8) / *(float *)(value2->u.intValue + 8);
+                *tempVector = *(float *)BO1_I2P(value1->u.intValue) / *(float *)BO1_I2P(value2->u.intValue);
+                tempVector[1] = *(float *)BO1_I2P((value1->u.intValue + 4)) / *(float *)BO1_I2P((value2->u.intValue + 4));
+                tempVector[2] = *(float *)BO1_I2P((value1->u.intValue + 8)) / *(float *)BO1_I2P((value2->u.intValue + 8));
                 RemoveRefToVector(inst, value1->u.vectorValue);
                 RemoveRefToVector(inst, value2->u.vectorValue);
-                value1->u.intValue = (int)tempVector;
+                value1->u.intValue = (int)BO1_P2I(tempVector);
             }
             break;
         case 5:
@@ -6054,7 +6055,7 @@ void __cdecl Scr_EvalArray(scriptInstance_t inst, VariableValue *value, Variable
             else
             {
                 index->type = 5;
-                index->u.floatValue = *(float *)(value->u.intValue + 4 * index->u.intValue);
+                index->u.floatValue = *(float *)BO1_I2P((value->u.intValue + 4 * index->u.intValue));
                 RemoveRefToVector(inst, value->u.vectorValue);
             }
         }
@@ -7124,14 +7125,14 @@ double __cdecl Scr_GetThreadUsage(scriptInstance_t inst, const VariableStackBuff
     VariableUnion u; // [esp+10h] [ebp-8h]
 
     size = stackBuf->size;
-    buf = &stackBuf->buf[5 * size];
+    buf = &stackBuf->buf[VARIABLE_STACK_ENTRY_SIZE * size];
     usage = Scr_GetObjectUsage(inst, stackBuf->localId);
     *endonUsage = Scr_GetEndonUsage(inst, stackBuf->localId);
     localId = stackBuf->localId;
     while ( size )
     {
-        bufa = buf - 4;
-        u.intValue = *(int *)bufa;
+        bufa = buf - sizeof(VariableUnion);
+        u = Scr_StackBufReadUnion(bufa);
         buf = bufa - 1;
         --size;
         if ( *buf == 7 )
@@ -7375,7 +7376,7 @@ char *__cdecl Scr_GetSourceFile_LoadObj(char *filename)
         v1 = va("cannot find %s", filename);
         Com_Error(ERR_DROP, v1);
     }
-    sourceBuffer = (unsigned __int8 *)Hunk_AllocateTempMemoryHigh(len + 1, "Scr_LoadAnimTreeInternal");
+    sourceBuffer = (unsigned __int8 *)BO1_I2P(Hunk_AllocateTempMemoryHigh(len + 1, "Scr_LoadAnimTreeInternal"));
     FS_Read(sourceBuffer, len, f);
     sourceBuffer[len] = 0;
     FS_FCloseFile(f);
@@ -7669,7 +7670,7 @@ int __cdecl Scr_FindAllThreads(scriptInstance_t inst, unsigned int selfId, unsig
         entryValue = &gScrVarGlob[inst].variableList[id + VARIABLELIST_CHILD_BEGIN(inst)];
         if ( (entryValue->w.status & 0x60) != 0 && (entryValue->w.status & 0x1F) == 0xA )
         {
-            for ( threadId = *(unsigned int *)(entryValue->u.next + 8); threadId; threadId = GetSafeParentLocalId(inst, threadId) )
+            for ( threadId = *(unsigned int *)BO1_I2P((entryValue->u.next + 8)); threadId; threadId = GetSafeParentLocalId(inst, threadId) )
             {
                 if ( selfId == Scr_GetSelf(inst, threadId) )
                 {
@@ -7704,7 +7705,7 @@ int __cdecl Scr_FindAllThreads(scriptInstance_t inst, unsigned int selfId, unsig
             {
                 if ( GetValueType(inst, stackId) == 10 )
                 {
-                    for ( threadIda = *(unsigned int *)(GetVariableValueAddress(inst, stackId)->next + 8);
+                    for ( threadIda = *(unsigned int *)BO1_I2P((GetVariableValueAddress(inst, stackId)->next + 8));
                                 threadIda;
                                 threadIda = GetSafeParentLocalId(inst, threadIda) )
                     {

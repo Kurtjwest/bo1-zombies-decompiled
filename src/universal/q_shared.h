@@ -19,7 +19,8 @@
 #include <cmath>
 
 //======================= WIN32 DEFINES =================================
-#ifdef WIN32
+// (the macOS arm64 build shares these: same compiler model, MSVC extensions enabled with -fms-extensions)
+#if defined(WIN32) || defined(__APPLE__)
 
 #define	MAC_STATIC
 
@@ -32,12 +33,16 @@
 #define	CPUSTRING	"win-x86"
 #elif defined _M_ALPHA
 #define	CPUSTRING	"win-AXP"
+#elif defined(__APPLE__) && defined(__aarch64__)
+#define	CPUSTRING	"macos-arm64"
 #endif
 #else
 #ifdef _M_IX86
 #define	CPUSTRING	"win-x86-debug"
 #elif defined _M_ALPHA
 #define	CPUSTRING	"win-AXP-debug"
+#elif defined(__APPLE__) && defined(__aarch64__)
+#define	CPUSTRING	"macos-arm64-debug"
 #endif
 #endif
 
@@ -170,7 +175,11 @@ typedef unsigned __int64 ull;
 typedef unsigned int uint;
 typedef unsigned char uchar;
 typedef unsigned short ushort;
+#if defined(_WIN32)
 typedef unsigned long ulong;
+#else
+typedef unsigned int ulong; // 32-bit, as on Windows
+#endif
 
 typedef     signed char     int8; // slight changes here made to conform with steam api...
 typedef     signed char     sint8;
@@ -180,7 +189,7 @@ typedef     signed short    sint16;
 typedef unsigned short    uint16;
 typedef __int32				int32;
 typedef unsigned __int32 uint32;
-typedef signed long			sint32;
+typedef signed int			sint32; // 32-bit everywhere (long is 64-bit on LP64 targets)
 typedef ll                            int64;
 typedef ll                            sint64;
 typedef ull                         uint64;

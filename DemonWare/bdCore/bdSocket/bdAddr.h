@@ -1,6 +1,6 @@
 #pragma once
 #include <DemonWare/bdCore/bdReference/bdReferencable.h>
-#include <DemonWare//bdCore/bdContainers/bdArray.h>
+#include <DemonWare/bdCore/bdContainers/bdArray.h>
 #include <cstdint>
 #include <DemonWare/bdCore/bdUtilities/bdBytePacker.h>
 //#include <winsock2.h>   // inet_addr, inet_ntoa

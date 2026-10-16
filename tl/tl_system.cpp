@@ -4,8 +4,8 @@
 
 #include <cstring>
 #include <corecrt_malloc.h>
-#include <Windows.h>
-#include <Psapi.h>
+#include <windows.h>
+#include <psapi.h>
 
 tlSystemCallbacks tlCurSystemCallbacks;
 char tlHostPrefix[256];

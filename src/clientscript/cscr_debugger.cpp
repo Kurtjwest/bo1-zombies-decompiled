@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cscr_debugger.h"
 #include <universal/assertive.h>
 #include "cscr_compiler.h"
@@ -2336,7 +2337,7 @@ void __cdecl Scr_SortElementChildren(scriptInstance_t inst, Scr_WatchElement_s *
     newElements = parentElement->childArrayHead;
     elementList = Scr_AllocDebugMem(inst, 4 * count, "Scr_SortElementChildren");
     for ( newIndex = 0; newIndex < count; ++newIndex )
-        elementList[newIndex] = (unsigned int)&newElements[newIndex];
+        elementList[newIndex] = (unsigned int)BO1_P2I(&newElements[newIndex]);
     Sys_EnterCriticalSection(CRITSECT_SCRIPT_DEBUGGER_SORT);
     sortInst = inst;
     qsort(elementList, count, 4u, (int (__cdecl *)(const void *, const void *))CompareThreadElements);
@@ -2347,9 +2348,9 @@ void __cdecl Scr_SortElementChildren(scriptInstance_t inst, Scr_WatchElement_s *
             v2 = 0;
         else
             v2 = elementList[newIndexa + 1];
-        *(unsigned int *)(elementList[newIndexa] + 96) = v2;
+        *(unsigned int *)BO1_I2P((elementList[newIndexa] + 96)) = v2;
     }
-    parentElement->childHead = (Scr_WatchElement_s *)*elementList;
+    parentElement->childHead = (Scr_WatchElement_s *)BO1_I2P(*elementList);
     Scr_FreeDebugMem(inst, (char *)elementList);
 }
 
@@ -2360,12 +2361,12 @@ int __cdecl CompareThreadElements(int *arg1, int *arg2)
 
     elements = *arg1;
     elements_4 = *arg2;
-    if ( gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)(*arg1 + 72)].sortedIndex != gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)(*arg2 + 72)].sortedIndex )
-        return gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)(*arg1 + 72)].sortedIndex
-                 - gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)(*arg2 + 72)].sortedIndex;
-    if ( *(unsigned int *)(elements + 76) == *(unsigned int *)(elements_4 + 76) )
-        return *(unsigned int *)(elements + 48) - *(unsigned int *)(elements_4 + 48);
-    return *(unsigned int *)(elements + 76) - *(unsigned int *)(elements_4 + 76);
+    if ( gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)BO1_I2P((*arg1 + 72))].sortedIndex != gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)BO1_I2P((*arg2 + 72))].sortedIndex )
+        return gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)BO1_I2P((*arg1 + 72))].sortedIndex
+                 - gScrParserPub[sortInst].sourceBufferLookup[*(unsigned int *)BO1_I2P((*arg2 + 72))].sortedIndex;
+    if ( *(unsigned int *)BO1_I2P((elements + 76)) == *(unsigned int *)BO1_I2P((elements_4 + 76)) )
+        return *(unsigned int *)BO1_I2P((elements + 48)) - *(unsigned int *)BO1_I2P((elements_4 + 48));
+    return *(unsigned int *)BO1_I2P((elements + 76)) - *(unsigned int *)BO1_I2P((elements_4 + 76));
 }
 
 char __thiscall Scr_ScriptWatch::PostEvaluateWatchElement(
@@ -2639,8 +2640,8 @@ void __thiscall Scr_ScriptWatch::AddElement(
     {
         scriptExpr.exprHead = 0;
         Scr_CompileText(inst, text, &scriptExpr);
-        v4 = *(_BYTE *)scriptExpr.parseData.stringValue;
-        if (*(_BYTE *)scriptExpr.parseData.stringValue == 85)
+        v4 = *(_BYTE *)BO1_I2P(scriptExpr.parseData.stringValue);
+        if (*(_BYTE *)BO1_I2P(scriptExpr.parseData.stringValue) == 85)
         {
             if (!gScrVarPub[inst].evaluate
                 && !Assert_MyHandler(
@@ -2653,7 +2654,7 @@ void __thiscall Scr_ScriptWatch::AddElement(
                 __debugbreak();
             }
             gScrVarPub[inst].evaluate = 0;
-            Scr_ExecCode(inst, *(char **)(scriptExpr.parseData.stringValue + 4), this->localId);
+            Scr_ExecCode(inst, *(char **)BO1_I2P((scriptExpr.parseData.stringValue + 4)), this->localId);
             gScrVarPub[inst].evaluate = 1;
             SL_ShutdownSystem(inst, 2u);
             Scr_FreeDebugExpr(inst, &scriptExpr);
@@ -3062,8 +3063,8 @@ bool __cdecl Scr_RefToVariable(scriptInstance_t inst, unsigned int id, int isObj
         if (*pElementNode)
             return 0;
         elementNodec = Scr_AllocDebugMem(inst, 8, "Scr_RefToVariable2");
-        *elementNodec = (unsigned int)gScrDebuggerGlob[inst].currentElement;
-        elementNodec[1] = (unsigned int)breakpoints->list;
+        *elementNodec = (unsigned int)BO1_P2I(gScrDebuggerGlob[inst].currentElement);
+        elementNodec[1] = (unsigned int)BO1_P2I(breakpoints->list);
         breakpoints->list = (Scr_WatchElementNode_s *)elementNodec;
     }
     else

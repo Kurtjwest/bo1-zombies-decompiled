@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_pcache.h"
 #include <ctime>
 #include "live_pcache_profile.h"
@@ -433,7 +434,7 @@ void __cdecl PCache_ReleasePlayerEmblem(PCacheComponent *comp)
     if ( LODWORD(comp[13].xuid) )
         CL_CompositePushCancel(comp[13].xuid);
     if ( HIDWORD(comp[13].xuid) )
-        CL_CompositeReleaseImage((GfxImage *)HIDWORD(comp[13].xuid));
+        CL_CompositeReleaseImage((GfxImage *)BO1_I2P(HIDWORD(comp[13].xuid)));
     HIDWORD(comp[13].xuid) = 0;
     comp[13].type = 0;
     LODWORD(comp[13].xuid) = 0;

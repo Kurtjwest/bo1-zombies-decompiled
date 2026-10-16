@@ -1,6 +1,6 @@
 #include "win_shared.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 int sys_timeBase;
 
@@ -33,6 +33,12 @@ unsigned int __cdecl Sys_MillisecondsRaw()
 // https://github.com/id-Software/Quake-III-Arena/blob/master/code/win32/win_shared.c
 void Sys_SnapVector(float *v)
 {
+#if !defined(_M_IX86)
+    // FISTP rounds with the FPU's mode, round-to-nearest-even by default: lrintf does the same
+    v[0] = (float)(int)lrintf(v[0]);
+    v[1] = (float)(int)lrintf(v[1]);
+    v[2] = (float)(int)lrintf(v[2]);
+#else
     int i;
     float f;
 
@@ -50,4 +56,5 @@ void Sys_SnapVector(float *v)
     __asm	fld		f;
     __asm	fistp	i;
     *v = i;
+#endif
 }

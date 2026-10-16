@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_visionsets.h"
 #include <universal/com_memory.h>
 #include <universal/dvar.h>
@@ -848,7 +849,7 @@ bool __cdecl ApplyTokenToField(unsigned int fieldNum, char *token, visionSetVars
             break;
         case 6:
             matField = (Material **)voidField;
-            *(unsigned int *)voidField = (unsigned int)Material_Register(token, 6);
+            *(unsigned int *)voidField = (unsigned int)BO1_P2I(Material_Register(token, 6));
             if ( *matField )
                 goto LABEL_32;
             result = 0;

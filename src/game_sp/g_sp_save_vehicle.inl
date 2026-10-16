@@ -2,6 +2,7 @@
 // zombies: script vehicles (SP 0x007EDD58 loop -> 0x007ED410, reader loop 0x007ED030 -> 0x007EC930).
 // SP scr_vehicle_s is 0xE10 with 64 slots; KB keeps its 0xE60 MP struct (0xE2C in the MP exe; KB aligns the visitor to 16) with 16 (s_vehicles), so the
 // image is KB's with a DERIVED table.
+#include <universal/bo1_layout.h>
 #include <game/g_vehicle_path.h>
 #include <vehicle/nitrous_vehicle.h>
 
@@ -19,7 +20,7 @@ static const SPEntitySaveField s_vehicleFields[] = {
 };
 #undef NODE
 #undef VF
-static_assert(sizeof(scr_vehicle_s) == 0xE60, "DERIVED vehicle image (KB: 16-byte aligned collision visitor)");
+BO1_LAYOUT32_ASSERT(sizeof(scr_vehicle_s) == 0xE60, "DERIVED vehicle image (KB: 16-byte aligned collision visitor)");
 static_assert(sizeof(vehicle_node_t) == 0x44 && offsetof(vehicle_pathpos_t, switchNode) == 0x3C, "SP vehicle node layout");
 static const int SP_VEHICLE_COUNT = 16; // KB s_vehicles (SP 64)
 

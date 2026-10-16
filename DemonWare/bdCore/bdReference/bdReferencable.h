@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Windows.h>
+#include <windows.h>
 
 template <typename T>
 struct bdReference//<bdByteBuffer> // sizeof=0x4

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_model.h"
 #include <xanim/xmodel.h>
 #include <universal/com_memory.h>
@@ -132,7 +133,7 @@ bool __cdecl R_ModelSort(const XModel *model1, const XModel *model2)
 
 void __cdecl R_GetModelList(XAssetHeader header, XAssetHeader *data)
 {
-    if ( data->xmodelPieces >= (XModelPieces *)0x800
+    if ( data->xmodelPieces >= (XModelPieces *)BO1_I2P(0x800)
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",
                     96,
@@ -142,7 +143,7 @@ void __cdecl R_GetModelList(XAssetHeader header, XAssetHeader *data)
     {
         __debugbreak();
     }
-    data[(int)data->xmodelPieces++ + 1] = header;
+    data[(int)BO1_P2I(data->xmodelPieces++) + 1] = header;
 }
 
 XModel *__cdecl R_RegisterModel(char *name)
@@ -394,7 +395,7 @@ LABEL_42:
             else
                 v11 = -1;
             *(unsigned int *)v17 = v11;
-            *((unsigned int *)v17 + 1) = (unsigned int)v15;
+            *((unsigned int *)v17 + 1) = (unsigned int)BO1_P2I(v15);
             *((_WORD *)v17 + 7) = gfxEntIndex;
             *((_WORD *)v17 + 8) = 0;
             memcpy(v17 + 24, placement, 0x1Cu);

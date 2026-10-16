@@ -185,6 +185,30 @@ int __cdecl ItemParse_onFocus(itemDef_s *item, int handle);
 int __cdecl ItemParse_leaveFocus(itemDef_s *item, int handle);
 int __cdecl ItemParse_mouseEnter(itemDef_s *item, int handle);
 int __cdecl PC_Script_Parse(int handle, const char **out);
+#if BO1_PTR32_IS_CLASS
+// Menu asset fields hold 32-bit handles; the parsers fill a native pointer that is stored back on return.
+inline int PC_String_Parse(int handle, Ptr32<const char> *out)
+{
+    const char *s = *out;
+    int r = PC_String_Parse(handle, &s);
+    *out = s;
+    return r;
+}
+inline int PC_Script_Parse(int handle, Ptr32<const char> *out)
+{
+    const char *s = *out;
+    int r = PC_Script_Parse(handle, &s);
+    *out = s;
+    return r;
+}
+inline int PC_EventScript_Parse(int handle, Ptr32<GenericEventScript> *baseScript)
+{
+    GenericEventScript *s = *baseScript;
+    int r = PC_EventScript_Parse(handle, &s);
+    *baseScript = s;
+    return r;
+}
+#endif
 int __cdecl ItemParse_mouseExit(itemDef_s *item, int handle);
 int __cdecl ItemParse_mouseEnterText(itemDef_s *item, int handle);
 int __cdecl ItemParse_mouseExitText(itemDef_s *item, int handle);

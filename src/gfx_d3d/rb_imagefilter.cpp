@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "rb_imagefilter.h"
 #include "rb_backend.h"
 #include "rb_shade.h"
@@ -217,7 +218,7 @@ int __cdecl RB_PickSymmetricFilterMaterial(int halfTapCount, const Material **ma
     {
         __debugbreak();
     }
-    *material = (const Material *)*((unsigned int *)&rgp.poisonFXMaterial + halfTapCount);
+    *material = (const Material *)BO1_I2P(*((unsigned int *)&rgp.poisonFXMaterial + halfTapCount));
     return halfTapCount;
 }
 

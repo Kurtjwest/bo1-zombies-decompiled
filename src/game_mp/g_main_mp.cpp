@@ -1,3 +1,5 @@
+#include <universal/bo1_ptrcast.h>
+#include <universal/bo1_layout.h>
 #include <qcommon/cm_mapkit.h>
 #include <universal/profile.h>
 #include <algorithm>
@@ -907,12 +909,12 @@ void __cdecl    G_InitGame(int levelTime, int randomSeed, int restart, int regis
         Com_Printf(15, "loadgame: G_InitGame loaded saved weapons\n");
     }
 
-    if (*(_BYTE *)g_log->current.integer)
+    if (*(_BYTE *)BO1_I2P(g_log->current.integer))
     {
         if (g_logSync->current.enabled)
-            FS_FOpenFileByMode((char *)g_log->current.integer, &level.logFile, FS_APPEND_SYNC);
+            FS_FOpenFileByMode((char *)BO1_I2P(g_log->current.integer), &level.logFile, FS_APPEND_SYNC);
         else
-            FS_FOpenFileByMode((char *)g_log->current.integer, &level.logFile, FS_APPEND);
+            FS_FOpenFileByMode((char *)BO1_I2P(g_log->current.integer), &level.logFile, FS_APPEND);
         if (level.logFile)
         {
             char serverinfo[1024];
@@ -980,7 +982,7 @@ void __cdecl    G_InitGame(int levelTime, int randomSeed, int restart, int regis
     if (!restart)
     {
         memset(&bgs->animData->animScriptData, 0, sizeof(animScriptData_t)/*0x8D388u*/);
-        static_assert(sizeof(animScriptData_t) == 0x8D388);
+        BO1_LAYOUT32_ASSERT(sizeof(animScriptData_t) == 0x8D388);
 
         bgs->animData->animScriptData.soundAlias = SND_FindAlias;
         bgs->animData->animScriptData.playSoundAlias = G_AnimScriptSound;
@@ -2398,7 +2400,7 @@ void G_PrintAllFastFileErrors()
     // zombies: the SP front end loads no common zone (SP 0x004C8940..0x004C8966): nothing to report there.
     if ( !Com_IsSPFrontEndRunning() )
         G_PrintFastFileErrors(G_SP_IsSPLevel() ? (char*)"common_zombie" : (char*)"common_mp");
-    G_PrintFastFileErrors((char *)sv_mapname->current.integer);
+    G_PrintFastFileErrors((char *)BO1_I2P(sv_mapname->current.integer));
 }
 
 void __cdecl G_PrintFastFileErrors(char *fastfile)
@@ -4386,7 +4388,7 @@ void G_ModSvProfEnd(long long frameQpcTicks)
                     best = i;
             if (best < 0)
                 break;
-            const void *fn = gScrCompilePub[SCRIPTINSTANCE_SERVER].func_table ? (const void *)gScrCompilePub[SCRIPTINSTANCE_SERVER].func_table[best] : 0;
+            const void *fn = gScrCompilePub[SCRIPTINSTANCE_SERVER].func_table ? (const void *)BO1_I2P(gScrCompilePub[SCRIPTINSTANCE_SERVER].func_table[best]) : 0;
             char name[64];
             _snprintf(name, sizeof(name), "b%d", best);
             struct { SYMBOL_INFO info; char more[256]; } sym;

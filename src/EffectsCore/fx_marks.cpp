@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "fx_marks.h"
 #include <cstddef>
 #include <qcommon/cm_mapkit.h>
@@ -535,10 +536,10 @@ void __cdecl FX_ImpactMark_Generate(
     else
     {
         callbackContext[0] = localClientNum;
-        callbackContext[1] = (unsigned int)material;
+        callbackContext[1] = (unsigned int)BO1_P2I(material);
         *(float *)&callbackContext[2] = radius;
-        callbackContext[3] = (unsigned int)nativeColor;
-        callbackContext[4] = (unsigned int)markAlpha;
+        callbackContext[3] = (unsigned int)BO1_P2I(nativeColor);
+        callbackContext[4] = (unsigned int)BO1_P2I(markAlpha);
         markInfo.isSeeThruDecal = isSeeThruDecal;
         if ( fx_marks->current.enabled
             && (markAgainst != MARK_FRAGMENTS_AGAINST_MODELS
@@ -1991,7 +1992,7 @@ void __cdecl FX_EmitMarkTri(
     if ( marksSystem->hasCarryIndex )
     {
         pIndexa = (r_double_index_t *)&outSurf->indices[outSurf->indexCount - 1];
-        if ( ((unsigned __int8)pIndexa & 3) != 0
+        if ( ((unsigned __int8)BO1_P2I(pIndexa) & 3) != 0
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                         1684,
@@ -2010,7 +2011,7 @@ void __cdecl FX_EmitMarkTri(
     else
     {
         pIndex = (r_double_index_t *)&outSurf->indices[outSurf->indexCount];
-        if ( ((unsigned __int8)pIndex & 3) != 0
+        if ( ((unsigned __int8)BO1_P2I(pIndex) & 3) != 0
             && !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\EffectsCore\\fx_marks.cpp",
                         1670,

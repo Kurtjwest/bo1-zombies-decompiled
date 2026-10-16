@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "rb_pixelcost.h"
 #include "r_init.h"
 #include "rb_corona.h"
@@ -255,9 +256,9 @@ unsigned __int64 __cdecl R_PixelCost_PackedKeyForMaterial(const Material *materi
 
 bool __cdecl RB_PixelCost_DoesPrimMatch(unsigned __int64 packedKey)
 {
-    return __PAIR64__(
+    return BO1_P2I(__PAIR64__(
                      HIDWORD(pixelCostGlob.records[pixelCostGlob.recordCount].key.packed),
-                     pixelCostGlob.records[pixelCostGlob.recordCount].key.mtl.material) == packedKey;
+                     pixelCostGlob.records[pixelCostGlob.recordCount].key.mtl.material)) == packedKey;
 }
 
 void __cdecl RB_PixelCost_ResetPrim(unsigned __int64 packedKey)

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_colltree.h"
 #include <universal/assertive.h>
 #include <cstring>
@@ -107,7 +108,7 @@ static void CG_CollTreeOp(int localClientNum, unsigned int entIndex, int op, uns
     o->before = o->after = cgEntCollNodes[localClientNum][entIndex].sector;
     o->eType = (unsigned char)cent->nextState.eType;
     o->number = cent->nextState.number;
-    o->caller = caller - (unsigned int)GetModuleHandleA(0);
+    o->caller = caller - (unsigned int)BO1_P2I(GetModuleHandleA(0));
 }
 
 
@@ -158,7 +159,7 @@ void __cdecl CG_UnlinkEntityColl(int localClientNum, unsigned int entIndex)
     unsigned __int16 sectorIndex; // [esp+28h] [ebp-8h]
     CgEntCollWorld *world; // [esp+2Ch] [ebp-4h]
 
-    CG_CollTreeOp(localClientNum, entIndex, 0, (unsigned int)_ReturnAddress()); // mod (L43)
+    CG_CollTreeOp(localClientNum, entIndex, 0, (unsigned int)BO1_P2I(_ReturnAddress())); // mod (L43)
     if ( localClientNum
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",
@@ -351,7 +352,7 @@ void __cdecl CG_LinkEntityColl(int localClientNum, unsigned int entIndex, const 
     CgEntCollWorld *world; // [esp+38h] [ebp-8h]
     int axis; // [esp+3Ch] [ebp-4h]
 
-    CG_CollTreeOp(localClientNum, entIndex, 1, (unsigned int)_ReturnAddress()); // mod (L43)
+    CG_CollTreeOp(localClientNum, entIndex, 1, (unsigned int)BO1_P2I(_ReturnAddress())); // mod (L43)
     if ( localClientNum
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_colltree.cpp",

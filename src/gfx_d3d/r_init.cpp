@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_init.h"
 #include <win32/win_main.h>
 #include <qcommon/common.h>
@@ -603,9 +604,9 @@ static void R_BorderlessMakeDpiAware()
     setContext = user32 ? (SetProcessDpiAwarenessContextFn)GetProcAddress(user32, "SetProcessDpiAwarenessContext") : 0;
     setAware = user32 ? (SetProcessDPIAwareFn)GetProcAddress(user32, "SetProcessDPIAware") : 0;
     // DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2 = -4, DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE = -3 (Windows 10 1607+)
-    if ( setContext && setContext((HANDLE)-4) )
+    if ( setContext && setContext((HANDLE)BO1_I2P(-4)) )
         how = "per-monitor v2";
-    else if ( setContext && setContext((HANDLE)-3) )
+    else if ( setContext && setContext((HANDLE)BO1_I2P(-3)) )
         how = "per-monitor";
     else if ( setAware && setAware() )
         how = "system";
@@ -803,7 +804,7 @@ void __cdecl R_ResizeWindow()
     SetWindowLongA(hwnd, -16, style);
     SetWindowPos(
         hwnd,
-        (HWND)(wndParms.fullscreen - 2),
+        (HWND)BO1_I2P((wndParms.fullscreen - 2)),
         wndParms.x,
         wndParms.y,
         rc.right - rc.left,
@@ -963,7 +964,7 @@ void __cdecl R_SetWndParms(GfxWindowParms *wndParms)
     {
         refreshRateString = Dvar_EnumToString(r_displayRefresh);
         sscanf(refreshRateString, "%i Hz", &refreshRate);
-        wndParms->hz = (int)R_ClosestRefreshRateForMode(wndParms->displayWidth, wndParms->displayHeight, refreshRate);
+        wndParms->hz = (int)BO1_P2I(R_ClosestRefreshRateForMode(wndParms->displayWidth, wndParms->displayHeight, refreshRate));
     }
     else
     {
@@ -988,7 +989,7 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
     while ( bot <= top )
     {
         mid = (bot + top) / 2;
-        comparison = (const char *)(dx.displayModes[mid].Width - width);
+        comparison = (const char *)BO1_I2P((dx.displayModes[mid].Width - width));
         if ( !comparison )
         {
             comparison = &dx.resolutionNameTable[4 * mid - 1023][-(int)height];
@@ -996,10 +997,10 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
             {
                 comparison = &dx.resolutionNameTable[4 * mid - 1022][-refreshRate];
                 if ( !comparison )
-                    return (const char *)refreshRate;
+                    return (const char *)BO1_I2P(refreshRate);
             }
         }
-        if ( (int)comparison >= 0 )
+        if ( (int)BO1_P2I(comparison) >= 0 )
             top = mid - 1;
         else
             bot = mid + 1;
@@ -1020,9 +1021,9 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
     {
         __debugbreak();
     }
-    if ( dx.displayModes[top].Width == width && dx.resolutionNameTable[4 * top - 1023] == (const char *)height )
+    if ( dx.displayModes[top].Width == width && dx.resolutionNameTable[4 * top - 1023] == (const char *)BO1_I2P(height) )
         return dx.resolutionNameTable[4 * top - 1022];
-    if ( dx.displayModes[bot].Width != width || dx.resolutionNameTable[4 * bot - 1023] != (const char *)height )
+    if ( dx.displayModes[bot].Width != width || dx.resolutionNameTable[4 * bot - 1023] != (const char *)BO1_I2P(height) )
     {
         v4 = va(
                      "%i = (%i %i), %i = (%i %i), want (%i %i)",
@@ -1366,7 +1367,7 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
         if ( hr >= 0 )
         {
             if ( !dx.resolutionNameTable[4 * dx.displayModeCount - 1022] )
-                dx.resolutionNameTable[4 * dx.displayModeCount - 1022] = (const char *)60;
+                dx.resolutionNameTable[4 * dx.displayModeCount - 1022] = (const char *)BO1_I2P(60);
             ++dx.displayModeCount;
         }
     }
@@ -1377,11 +1378,11 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
     {
         resolutionCount = R_AddValidResolution(
                                                 dx.displayModes[modeIndex].Width,
-                                                (int)dx.resolutionNameTable[4 * modeIndex - 1023],
+                                                (int)BO1_P2I(dx.resolutionNameTable[4 * modeIndex - 1023]),
                                                 resolutionCount,
                                                 availableResolutions);
         refreshRateCount = R_AddValidRefreshRate(
-                                                 (int)dx.resolutionNameTable[4 * modeIndex - 1022],
+                                                 (int)BO1_P2I(dx.resolutionNameTable[4 * modeIndex - 1022]),
                                                  refreshRateCount,
                                                  availableRefreshRates);
     }
@@ -1547,7 +1548,7 @@ int __stdcall R_MonitorEnumCallback(HMONITOR__ *monitorHandle, HDC__ *hdc, tagRE
     }
     else
     {
-        userData[1] = (unsigned int)monitorHandle;
+        userData[1] = (unsigned int)BO1_P2I(monitorHandle);
         return 0;
     }
 }
@@ -1816,7 +1817,7 @@ char __cdecl R_CreateWindow(GfxWindowParms *wndParms)
     {
         if (!wndParms->fullscreen)
         {
-            SetWindowPos(wndParms->hwnd, (HWND)0xFFFFFFFE, 0, 0, 0, 0, 3u);
+            SetWindowPos(wndParms->hwnd, (HWND)BO1_I2P(0xFFFFFFFE), 0, 0, 0, 0, 3u);
             if ( !Sys_IsHeadlessClient() ) // zombies: a headless client never changes focus
                 SetFocus(wndParms->hwnd);
         }
@@ -2189,12 +2190,12 @@ char __cdecl R_ResetDevice()
         return 0;
     if (wndParms.fullscreen)
     {
-        SetWindowPos(wndParms.hwnd, (HWND)(/*HWND_MESSAGE*/-3 | 0x2), 0, 0, 0, 0, 3u);
+        SetWindowPos(wndParms.hwnd, (HWND)BO1_I2P((/*HWND_MESSAGE*/-3 | 0x2)), 0, 0, 0, 0, 3u);
     }
     else if (wndParms.borderless)
     {
         // borderless: no frame to add - the window stays exactly the back buffer's (the monitor's) size, not topmost
-        SetWindowPos(wndParms.hwnd, HWND_NOTOPMOST, 0, 0, wndParms.displayWidth, wndParms.displayHeight, 0x62u);
+        SetWindowPos(wndParms.hwnd, BO1_I2P(HWND_NOTOPMOST), 0, 0, wndParms.displayWidth, wndParms.displayHeight, 0x62u);
     }
     else
     {
@@ -2203,7 +2204,7 @@ char __cdecl R_ResetDevice()
         rc.top = 0;
         rc.bottom = wndParms.displayHeight;
         AdjustWindowRectEx(&rc, 0xC80000u, 0, 0);
-        SetWindowPos(wndParms.hwnd, (HWND)0xFFFFFFFE, wndParms.x, wndParms.y, rc.right - rc.left, rc.bottom - rc.top, 0x62u);
+        SetWindowPos(wndParms.hwnd, (HWND)BO1_I2P(0xFFFFFFFE), wndParms.x, wndParms.y, rc.right - rc.left, rc.bottom - rc.top, 0x62u);
     }
     if (!R_CreateForInitOrReset())
         R_FatalInitError("Couldn't reinitialize after a lost Direct3D device");

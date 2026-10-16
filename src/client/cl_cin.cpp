@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cl_cin.h"
 #include <gfx_d3d/r_cinematic.h>
 #include <universal/dvar.h>
@@ -41,7 +42,7 @@ void __cdecl SCR_StopCinematic()
                 CL_SetLocalClientConnectionState(clientNum, CA_DISCONNECTED);
             }
         }
-        if ( oneClientWasChanged && *(_BYTE *)nextmap->current.integer )
+        if ( oneClientWasChanged && *(_BYTE *)BO1_I2P(nextmap->current.integer) )
         {
             v0 = va("%s\n", nextmap->current.string);
             Cbuf_AddText(0, v0);

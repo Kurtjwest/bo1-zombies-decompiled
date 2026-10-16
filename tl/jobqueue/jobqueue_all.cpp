@@ -1,6 +1,8 @@
+#include <universal/bo1_ptrcast.h>
+#include <universal/bo1_layout.h>
 #include "jobqueue_all.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include "../tl_system.h"
 #include <universal/q_shared.h>
 #include <qcommon/threads.h>
@@ -847,7 +849,7 @@ bool __cdecl jqPoll(jqBatchGroup *GroupID)
     p_group = GroupID;
     if (!GroupID)
         p_group = &jqPool.group;
-    if (((unsigned __int8)p_group & 7) != 0
+    if (((unsigned __int8)BO1_P2I(p_group) & 7) != 0
         && _tlAssert(
             "c:\\projects_pc\\cod\\codsrc\\tl\\jobqueue\\jobqueue.cpp",
             390,
@@ -945,11 +947,11 @@ void __cdecl jqCheckDMALS(const void *addr)
 {
   if ( !addr )
     tlFatal("%s (LS) is NULL.", jqCheckContext);
-  if ( ((unsigned __int8)addr & 0xF) != 0 )
+  if ( ((unsigned __int8)BO1_P2I(addr) & 0xF) != 0 )
     tlFatal("%s 0x%x (LS) not 16byte aligned.", jqCheckContext, addr);
-  if ( (unsigned int)addr > 0x40000 )
+  if ( (unsigned int)BO1_P2I(addr) > 0x40000 )
     tlFatal("%s 0x%x (LS) is > 256k.", jqCheckContext, addr);
-  if ( (unsigned int)addr < 0x4000 )
+  if ( (unsigned int)BO1_P2I(addr) < 0x4000 )
     tlFatal("%s 0x%x (LS) is in kernel memory.", jqCheckContext, addr);
 }
 
@@ -957,9 +959,9 @@ void __cdecl jqCheckDMAMain(const void *addr)
 {
   if ( !addr )
     tlFatal("%s (Main) is NULL.", jqCheckContext);
-  if ( ((unsigned __int8)addr & 0xF) != 0 )
+  if ( ((unsigned __int8)BO1_P2I(addr) & 0xF) != 0 )
     tlFatal("%s 0x%x (Main) not 16byte aligned.", jqCheckContext, addr);
-  if ( (unsigned int)addr < 0x40000 )
+  if ( (unsigned int)BO1_P2I(addr) < 0x40000 )
     tlFatal("%s 0x%x (Main) is < 256k.", jqCheckContext, addr);
 }
 
@@ -1585,7 +1587,7 @@ void __cdecl jqWorkerLoop(jqWorker *Worker, jqBatchGroup *GroupID, bool BreakWhe
                     if (!freeList)
                     {
                         block = (jqAtomicQueue<jqBatch,32>::NodeType *)tlMemAlloc(sizeof(jqAtomicQueue<jqBatch, 32>::NodeType) * 32 + 8, 4, 0);
-                        static_assert(sizeof(jqAtomicQueue<jqBatch, 32>::NodeType) * 32 + 8 == 0x1008);
+                        BO1_LAYOUT32_ASSERT(sizeof(jqAtomicQueue<jqBatch, 32>::NodeType) * 32 + 8 == 0x1008);
 
                         //v17 = block;
                         //v18 = 31;
@@ -1748,7 +1750,7 @@ void __cdecl jqTempWorkerLoop(jqWorker *Worker, jqBatchGroup *GroupID, bool (__c
         {
 
           block = (jqAtomicQueue<jqBatch, 32>::NodeType *)tlMemAlloc(sizeof(jqAtomicQueue<jqBatch, 32>::NodeType) * 32 + 8, 4u, 0);
-          static_assert(sizeof(jqAtomicQueue<jqBatch, 32>::NodeType) * 32 + 8 == 0x1008);
+          BO1_LAYOUT32_ASSERT(sizeof(jqAtomicQueue<jqBatch, 32>::NodeType) * 32 + 8 == 0x1008);
 
           //v12 = block;
           //v13 = 31;
@@ -2472,7 +2474,7 @@ void jqAtomicHeap::Init(
     p_CellAvailable = &this->Levels[0].CellAvailable;
     do
     {
-      v15 = ((unsigned int)*(p_CellAvailable - 2) + 1023) & 0xFFFFFC00;
+      v15 = ((unsigned int)BO1_P2I(*(p_CellAvailable - 2)) + 1023) & 0xFFFFFC00;
       *p_CellAvailable = (unsigned __int64 *)LevelData;
       p_CellAvailable[1] = v13;
       LevelData += v15 / 8;
@@ -2482,7 +2484,7 @@ void jqAtomicHeap::Init(
     }
     while ( ia < this->NLevels );
   }
-  v16 = (unsigned int *)*((unsigned int *)&this->TotalBlocks + 5 * this->NLevels);
+  v16 = (unsigned int *)BO1_I2P(*((unsigned int *)&this->TotalBlocks + 5 * this->NLevels));
   *v16 = 1;
   v16[1] = 0;
 }

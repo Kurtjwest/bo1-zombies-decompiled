@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_fileshare_search.h"
 #include <win32/win_shared.h>
 #include <cgame/cg_compass.h>
@@ -611,8 +612,8 @@ void __cdecl Live_FileShareSearch_MarkItemCorrupt(int controllerIndex, int itemI
         {
             v2 = 21056 * i;
             v3 = 2104 * (itemIndex - s_fshSearch.pages[i].startIndex);
-            *(unsigned int *)(v2 + v3 + 172815704) = 0;
-            *(unsigned int *)(v2 + v3 + 172815708) = 0;
+            *(unsigned int *)BO1_I2P((v2 + v3 + 172815704)) = 0;
+            *(unsigned int *)BO1_I2P((v2 + v3 + 172815708)) = 0;
             return;
         }
     }

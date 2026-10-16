@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_event.h"
 #include "cg_scr_main.h"
 #include "cg_sp_client_ext.h"
@@ -1928,7 +1929,7 @@ void __cdecl CG_EntityEvent(int localClientNum, centity_s *cent, int event)
                     }
                     else if (v98->pose.physObjId && v98->pose.physObjId != -1)
                     {
-                        userData = (PhysObjUserData *)v98->pose.physObjId;
+                        userData = (PhysObjUserData *)BO1_I2P(v98->pose.physObjId);
                     }
                     if (userData)
                         userData->m_flags |= 8u;
@@ -1943,7 +1944,7 @@ void __cdecl CG_EntityEvent(int localClientNum, centity_s *cent, int event)
                     }
                     else if (v95->pose.physObjId && v95->pose.physObjId != -1)
                     {
-                        m_phys_user_data = (PhysObjUserData *)v95->pose.physObjId;
+                        m_phys_user_data = (PhysObjUserData *)BO1_I2P(v95->pose.physObjId);
                     }
                     if (m_phys_user_data)
                         m_phys_user_data->buoyancy = (int)(float)((float)m_phys_user_data->buoyancy * buoyancy_scale);

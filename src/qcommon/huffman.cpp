@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "huffman.h"
 #include <universal/com_shared.h>
 #include <cstdlib>
@@ -91,7 +92,7 @@ nodetype *__cdecl Huff_initNode(huff_t *huff, int ch, int weight)
 
 int __cdecl nodeCmp(const void *left, const void *right)
 {
-    return *(unsigned int *)(*(unsigned int *)left + 12) - *(unsigned int *)(*(unsigned int *)right + 12);
+    return *(unsigned int *)BO1_I2P((*(unsigned int *)left + 12)) - *(unsigned int *)BO1_I2P((*(unsigned int *)right + 12));
 }
 
 void __cdecl Huff_BuildFromData(huff_t *huff, const int *msg_hData)

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_effects_load_obj.h"
 #include <universal/com_memory.h>
 #include <qcommon/common.h>
@@ -101,7 +102,7 @@ FxImpactTable *__cdecl CG_RegisterImpactEffects_LoadObj(const char *mapname)
 int __cdecl CG_RegisterImpactEffects_Generic_31_char_const_____cdecl_int__(
     const char **szEffectFile,
     const char *pszTypeName,
-    const FxEffectDef **fx,
+    Ptr32<const FxEffectDef> *fx,
     const char *(__cdecl *typeToNameFunc)(int),
     const char *defaultEffectName)
 {
@@ -139,7 +140,7 @@ int __cdecl CG_RegisterImpactEffects_Generic_31_char_const_____cdecl_int__(
 int __cdecl CG_RegisterImpactEffects_NonFlesh(
                 const char **szEffectFile,
                 const char *pszTypeName,
-                const FxEffectDef **fx)
+                Ptr32<const FxEffectDef> *fx)
 {
     return CG_RegisterImpactEffects_Generic_31_char_const_____cdecl_int__(
                      szEffectFile,
@@ -152,7 +153,7 @@ int __cdecl CG_RegisterImpactEffects_NonFlesh(
 int __cdecl CG_RegisterImpactEffects_Generic_4_char_const_____cdecl_int__(
     const char **szEffectFile,
     const char *pszTypeName,
-    const FxEffectDef **fx,
+    Ptr32<const FxEffectDef> *fx,
     const char *(__cdecl *typeToNameFunc)(int),
     const char *defaultEffectName)
 {
@@ -190,7 +191,7 @@ int __cdecl CG_RegisterImpactEffects_Generic_4_char_const_____cdecl_int__(
 int __cdecl CG_RegisterImpactEffects_Flesh(
                 const char **szEffectFile,
                 const char *pszTypeName,
-                const FxEffectDef **fx,
+                Ptr32<const FxEffectDef> *fx,
                 char *defaultEffectName)
 {
     return CG_RegisterImpactEffects_Generic_4_char_const_____cdecl_int__(
@@ -248,7 +249,7 @@ void __cdecl CG_RegisterImpactEffectsForDir(char *dir, EffectFile *effectFile, c
             if ( len >= 0 )
             {
                 Hunk_CheckTempMemoryHighClear();
-                buffer = (void *)Hunk_AllocateTempMemoryHigh(len + 1, "CG_RegisterImpactEffects");
+                buffer = (void *)BO1_I2P(Hunk_AllocateTempMemoryHigh(len + 1, "CG_RegisterImpactEffects"));
                 FS_Read((unsigned __int8 *)buffer, len, f);
                 FS_FCloseFile(f);
                 *((_BYTE *)buffer + len) = 0;

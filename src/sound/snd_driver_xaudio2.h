@@ -1,7 +1,8 @@
 #pragma once
+#include <universal/bo1_ptrcast.h>
 
-#include <XAPOBase.h>
-#include <XAudio2.h>
+#include <xapobase.h>
+#include <xaudio2.h>
 #include <gfx_d3d/r_font.h>
 #include "snd.h"
 #include "snd_driver_xaudio2_dsp.h"
@@ -79,7 +80,7 @@ struct StreamVoice : IXAudio2VoiceCallback // sizeof=0x50
     // The buffer can now be reused or destroyed.
     STDMETHOD_(void, OnBufferEnd) (THIS_ void *pBufferContext)
     {
-        iSND_ReleaseStreamBuffer((unsigned int)pBufferContext >> 8, (unsigned __int8)pBufferContext);
+        iSND_ReleaseStreamBuffer((unsigned int)BO1_P2I(pBufferContext) >> 8, (unsigned __int8)BO1_P2I(pBufferContext));
     }
 
     // Called when this voice has just reached the end position of a loop.

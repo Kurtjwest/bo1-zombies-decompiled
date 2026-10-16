@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 
 #pragma once
 
@@ -56,4 +57,4 @@ struct bdQueue
     }
 };
 
-static_assert(sizeof(bdQueue<void *>) == 0x0C, "bdQueue size mismatch");
+BO1_LAYOUT32_ASSERT(sizeof(bdQueue<void *>) == 0x0C, "bdQueue size mismatch");

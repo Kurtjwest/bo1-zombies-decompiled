@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "physconstraints_load_obj.h"
 #include <cstring>
 #include <universal/q_shared.h>
@@ -129,9 +130,9 @@ PhysConstraints *__cdecl PhysConstraintsLoadFile(const char *name, void *(__cdec
                         memset(dst, 0, 0xA88u);
                         for ( i = 0; i < 16; ++i )
                         {
-                            *(unsigned int *)&dst[168 * i + 28] = (unsigned int)"";
+                            *(unsigned int *)&dst[168 * i + 28] = (unsigned int)BO1_P2I("");
                             *(unsigned int *)&dst[168 * i + 16] = 3;
-                            *(unsigned int *)&dst[168 * i + 44] = (unsigned int)"";
+                            *(unsigned int *)&dst[168 * i + 44] = (unsigned int)BO1_P2I("");
                             *(unsigned int *)&dst[168 * i + 32] = 3;
                         }
                         if ( ParseConfigStringToStruct(
@@ -202,11 +203,11 @@ void __cdecl PhysConstraints_Strcpy(unsigned __int8 *member, const char *keyValu
             *v3++ = *v4++;
         }
         while ( v2 );
-        *(unsigned int *)member = (unsigned int)buf;
+        *(unsigned int *)member = (unsigned int)BO1_P2I(buf);
     }
     else
     {
-        *(unsigned int *)member = (unsigned int)"";
+        *(unsigned int *)member = (unsigned int)BO1_P2I("");
     }
 }
 

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "fx_sprite.h"
 #include <gfx_d3d/r_drawsurf.h>
 #include <xanim/xanim.h>
@@ -24,7 +25,7 @@ void __cdecl FX_SpriteGenerateVerts(FxGenerateVertsCmd *cmd)
     }
     // zombies: SP's &spriteInfo[2 * i + 1] is info + 0x10 + 0x20 * i, where SP keeps the sprites (g_sprites here)
     iassert(spriteInfo == &g_spriteInfo);
-    for ( i = 0; i < (int)spriteInfo->indices; ++i )
+    for ( i = 0; i < (int)BO1_P2I(spriteInfo->indices); ++i )
         FX_GenerateSpriteCodeMeshVerts(&g_sprites[i], cmd);
 }
 
@@ -447,11 +448,11 @@ void __cdecl FX_SpriteBegin()
 void __cdecl FX_SpriteAdd(FxSprite *sprite)
 {
     // zombies: SP 0x00485D10 - the count is the first field (the one FX_SpriteBegin clears and FX_SpriteGenerateVerts reads)
-    const int count = (int)g_spriteInfo.indices;
+    const int count = (int)BO1_P2I(g_spriteInfo.indices);
     if ( count != (int)arr_cnt(g_sprites) )
     {
         memcpy(&g_sprites[count], sprite, sizeof(FxSprite));
-        g_spriteInfo.indices = (r_double_index_t *)(count + 1);
+        g_spriteInfo.indices = (r_double_index_t *)BO1_I2P((count + 1));
     }
 }
 

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_main.h"
 #include <universal/assertive.h>
 #include <qcommon/com_clients.h>
@@ -125,7 +126,7 @@ const dvar_t *emblem_scroll_delay_first;
 const dvar_t *emblem_scroll_delay_rest;
 
 uiInfo_s uiInfoArray[1];
-const serverFilter_s serverFilters[1];
+const serverFilter_s serverFilters[1] = {};
 
 bool g_ingameMenusLoaded[1];
 
@@ -774,7 +775,7 @@ void __cdecl UI_Refresh(int localClientNum)
                             &uiInfo->uiDC,
                             0,
                             toastPopupMenu,
-                            (const ScreenPlacement *)0xFFFFFFFF);
+                            (const ScreenPlacement *)BO1_I2P(0xFFFFFFFF));
                         if ( (Window_GetDynamicFlags(contextIndex, &toastPopupMenu->window) & 0x42000) == 0 )
                         {
                             Window_RemoveDynamicFlags(contextIndex, &toastPopupMenu->window, 4);
@@ -790,7 +791,7 @@ void __cdecl UI_Refresh(int localClientNum)
                         &uiInfo->uiDC,
                         0,
                         toastPopupMenu,
-                        (const ScreenPlacement *)0xFFFFFFFF);
+                        (const ScreenPlacement *)BO1_I2P(0xFFFFFFFF));
                     if ( toastPopupMenu->closeSlideSpeed <= 0 || toastPopupMenu->closeSlideDirection >= 4u )
                     {
                         if ( toastPopupMenu->closeFadingTime > 0 )
@@ -829,7 +830,7 @@ void __cdecl UI_Refresh(int localClientNum)
                     &uiInfo->uiDC,
                     0,
                     toastPopupMenu,
-                    (const ScreenPlacement *)0xFFFFFFFF);
+                    (const ScreenPlacement *)BO1_I2P(0xFFFFFFFF));
             }
         }
         UI_BuildFindPlayerList();
@@ -1231,7 +1232,7 @@ void __cdecl UI_RunMenuScript(int localClientNum, int contextIndex, __int64 args
                                                                                                                                                                     contextIndex,
                                                                                                                                                                     out,
                                                                                                                                                                     (const char **)args,
-                                                                                                                                                                    (const char *)HIDWORD(args));
+                                                                                                                                                                    (const char *)BO1_I2P(HIDWORD(args)));
                                                                                                                                                             else
                                                                                                                                                                 LB_OnSelect(localClientNum);
                                                                                                                                                         }
@@ -3699,7 +3700,7 @@ LABEL_24:
                 }
                 else if ( connstate >= CA_CONNECTING )
                 {
-                    Com_DPrintf(13, "PC ONLY: No menu has focus and %s, what should I do?", (const char *)connstate);
+                    Com_DPrintf(13, "PC ONLY: No menu has focus and %s, what should I do?", (const char *)BO1_I2P(connstate));
                 }
                 else
                 {
@@ -3879,7 +3880,7 @@ void __cdecl UI_DrawMapLevelshot(int localClientNum)
                 &uiInfo->uiDC,
                 0,
                 menua,
-                (const ScreenPlacement *)0xFFFFFFFF);
+                (const ScreenPlacement *)BO1_I2P(0xFFFFFFFF));
         }
         else
         {

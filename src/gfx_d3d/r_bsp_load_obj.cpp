@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_bsp_load_obj.h"
 #include <universal/q_shared.h>
 #include "r_dvars.h"
@@ -700,7 +701,7 @@ void __cdecl R_LoadLightmaps(GfxBspLoad *load)
                 __debugbreak();
             }
             if ( newLmapIndex
-                && groupInfo[newLmapIndex].highCount > (int)(&buf_p)[2 * newLmapIndex]
+                && groupInfo[newLmapIndex].highCount > (int)BO1_P2I((&buf_p)[2 * newLmapIndex])
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp_load_obj.cpp",
                             1015,
@@ -2517,18 +2518,18 @@ unsigned __int8 *R_LoadWorldLodData()
         s_world.worldLodChains[i].lastDist = *((float *)v2 + 3);
         s_world.worldLodChains[i].firstLodInfo = *((unsigned int *)v2 + 4);
         s_world.worldLodChains[i].lodInfoCount = *((_WORD *)v2 + 10);
-        result = (unsigned __int8 *)(i + 1);
+        result = (unsigned __int8 *)BO1_I2P((i + 1));
     }
     for ( j = 0; j < s_world.worldLodInfoCount; ++j )
     {
         s_world.worldLodInfos[j].dist = *(float *)&lodInfos[12 * j];
         s_world.worldLodInfos[j].firstSurf = *(unsigned int *)&lodInfos[12 * j + 4];
         s_world.worldLodInfos[j].surfCount = *(_WORD *)&lodInfos[12 * j + 8];
-        result = (unsigned __int8 *)(j + 1);
+        result = (unsigned __int8 *)BO1_I2P((j + 1));
     }
     for ( k = 0; k < s_world.worldLodSurfaceCount; ++k )
     {
-        result = (unsigned __int8 *)k;
+        result = (unsigned __int8 *)BO1_I2P(k);
         s_world.worldLodSurfaces[k] = *(unsigned int *)&lodSurfs[4 * k];
     }
     return result;
@@ -2601,7 +2602,10 @@ signed int R_SortSurfaces()
     //    80 * surfaceCount / 80,
     //    (unsigned __int8 (*)(void))R_CompareSurfaces);
 
-    std::sort(s_world.dpvs.surfaces, s_world.dpvs.surfaces + surfaceCount, R_CompareSurfaces);
+    {
+        GfxSurface *surfaces = s_world.dpvs.surfaces;
+        std::sort(surfaces, surfaces + surfaceCount, R_CompareSurfaces);
+    }
 
     for ( surfIndexa = 0; surfIndexa < surfaceCount; ++surfIndexa )
     {
@@ -2829,7 +2833,7 @@ unsigned int R_CalculateVertexStream2Usage()
             {
                 if ( vertexCount > existingUse->vertexCount )
                     existingUse->vertexCount = vertexCount;
-                tris->stream2ByteOffset = (int)existingUse;
+                tris->stream2ByteOffset = (int)BO1_P2I(existingUse);
             }
             else
             {
@@ -2838,7 +2842,7 @@ unsigned int R_CalculateVertexStream2Usage()
                 newUsage.vertexCount = vertexCount;
                 newUsage.next = 0;
                 inserted = InsertNewUsage(&usageList, &newUsage);
-                tris->stream2ByteOffset = (int)inserted;
+                tris->stream2ByteOffset = (int)BO1_P2I(inserted);
             }
         }
         else
@@ -2856,7 +2860,7 @@ unsigned int R_CalculateVertexStream2Usage()
     {
         v2 = &s_world.dpvs.surfaces[i];
         if ( v2->tris.stream2ByteOffset )
-            v2->tris.stream2ByteOffset = *(unsigned int *)(v2->tris.stream2ByteOffset + 4);
+            v2->tris.stream2ByteOffset = *(unsigned int *)BO1_I2P((v2->tris.stream2ByteOffset + 4));
         else
             v2->tris.stream2ByteOffset = -1;
     }
@@ -3616,7 +3620,7 @@ void __cdecl R_MaterialUsage(Material *material, unsigned int firstVertex, int v
         }
         v4 = Z_Malloc(8, "R_MaterialUsage", 0);
         *v4 = firstVertex;
-        v4[1] = (unsigned int)materialUsage->verts;
+        v4[1] = (unsigned int)BO1_P2I(materialUsage->verts);
         materialUsage->verts = (VertUsage *)v4;
         materialUsage->memory += 44 * vertexCount;
     }
@@ -3687,7 +3691,7 @@ GfxBrushModel *R_LoadSubmodels()
     in = (const DiskBrushModel *)Com_GetBspLump(LUMP_MODELS, 0x2Cu, &modelCount);
     out = (GfxBrushModel *)Hunk_Alloc(60 * modelCount, "R_LoadSubmodels", 21);
     s_world.models = out;
-    result = (GfxBrushModel *)modelCount;
+    result = (GfxBrushModel *)BO1_I2P(modelCount);
     s_world.modelCount = modelCount;
     for ( modelIndex = 0; modelIndex < modelCount; ++modelIndex )
     {
@@ -4047,7 +4051,7 @@ bool __cdecl IsDynamicModel(const XModel *const xm)
     const MaterialTechnique *tech; // [esp+0h] [ebp-28h]
     int techIdx; // [esp+4h] [ebp-24h]
     int surfIdx; // [esp+Ch] [ebp-1Ch]
-    Material **materialForSurf; // [esp+10h] [ebp-18h]
+    Ptr32<Material> *materialForSurf; // [esp+10h] [ebp-18h]
     int surfaceCount; // [esp+14h] [ebp-14h]
     XSurface *surfaces; // [esp+20h] [ebp-8h] BYREF
     bool hasDynModelTech; // [esp+27h] [ebp-1h]
@@ -4813,7 +4817,7 @@ void __cdecl R_LoadCells(unsigned int bspVersion)
         out->maxs[1] = *((float *)in + 4);
         out->maxs[2] = *((float *)in + 5);
         out->aabbTree = &rgl.aabbTrees[*((unsigned __int16 *)in + 12)];
-        out->portals = (GfxPortal *)(68 * *((unsigned int *)in + 7));
+        out->portals = (GfxPortal *)BO1_I2P((68 * *((unsigned int *)in + 7)));
         out->portalCount = *((unsigned int *)in + 8);
         cullGroupCount = *((unsigned int *)in + 10);
         if ( cullGroupCount )
@@ -4941,7 +4945,7 @@ int R_LoadPortals()
         if ( cellIndex >= s_world.dpvsPlanes.cellCount )
             break;
         if ( s_world.cells[cellIndex].portalCount )
-            v1 = &out[(int)s_world.cells[cellIndex].portals / 68];
+            v1 = &out[(int)Ptr32_Raw(s_world.cells[cellIndex].portals) / (int)sizeof(GfxPortal)];
         else
             v1 = 0;
         s_world.cells[cellIndex].portals = v1;

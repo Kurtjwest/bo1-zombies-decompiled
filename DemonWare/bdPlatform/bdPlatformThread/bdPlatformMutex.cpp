@@ -1,6 +1,6 @@
 #include "bdPlatformMutex.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 MutexHandle bdPlatformMutex::createMutex()
 {

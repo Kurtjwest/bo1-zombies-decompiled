@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_hudelem.h"
 #include <stringed/stringed_hooks.h>
 #include <ui/ui_shared.h>
@@ -863,7 +864,7 @@ int __cdecl compare_hudelems(const void *pe0, const void *pe1)
 {
     float delta; // [esp+0h] [ebp-Ch]
 
-    delta = *(float *)(*(unsigned int *)pe0 + 56) - *(float *)(*(unsigned int *)pe1 + 56);
+    delta = *(float *)BO1_I2P((*(unsigned int *)pe0 + 56)) - *(float *)BO1_I2P((*(unsigned int *)pe1 + 56));
     if ( delta >= 0.0 )
         return delta > 0.0;
     else
@@ -1412,7 +1413,7 @@ double __cdecl HudElemHeight(const ScreenPlacement *scrPlace, const hudelem_s *e
         case 0xFu:
             height = (float)elem->height;
 LABEL_10:
-            if ( cghe != (const cg_hudelem_t *)-20 && cghe->fontHeight > height )
+            if ( cghe != (const cg_hudelem_t *)BO1_I2P(-20) && cghe->fontHeight > height )
                 height = cghe->fontHeight;
             result = height;
             break;

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "fx_system.h"
 #include "fx_random.h"
 #include "fx_marks.h"
@@ -491,7 +492,7 @@ void __cdecl FX_RunGarbageCollectionAndPrioritySort(FxSystem *system)
                 {
                     effectHandle = system->shared->allEffectHandles[--activeIndex & 0x3FF];
                     effect = (FxEffect *)FX_EffectFromHandle(system, effectHandle);
-                    if ( ((int)effect[1].def & 0x3FFF) != 0 )
+                    if ( ((int)BO1_P2I(effect[1].def) & 0x3FFF) != 0 )
                     {
                         system->shared->allEffectHandles[((_WORD)freedCount + (_WORD)activeIndex) & 0x3FF] = effectHandle;
                     }
@@ -2310,7 +2311,7 @@ int __cdecl FX_MakePhysId(const FxElemDef *elemDef, const float *origin, const f
     return sequence
              + (((int)vel[2] + (int)vel[1] + (int)*vel + (int)origin[2] + (int)origin[1] + (int)*origin)
                 ^ time
-                ^ (unsigned int)elemDef);
+                ^ (unsigned int)BO1_P2I(elemDef));
 }
 
 void __cdecl FX_SpawnTrailElem_NoCull(
@@ -3292,7 +3293,7 @@ bool __cdecl FX_SpawnModelPhysics(
     {
         __debugbreak();
     }
-    elem->physObjId = (int)Phys_ObjCreate(
+    elem->physObjId = (int)BO1_P2I(Phys_ObjCreate(
         1,
         worldOrigin,
         quat,
@@ -3300,7 +3301,7 @@ bool __cdecl FX_SpawnModelPhysics(
         *((const PhysPreset **)visuals.anonymous + 59),
         &gjk_geom_list,
         1,
-        id);
+        id));
     if (elem->physObjId)
         Phys_ObjSetAngularVelocity(elem->physObjId, angularVelocity);
     Sys_LeaveCriticalSection(CRITSECT_PHYSICS);

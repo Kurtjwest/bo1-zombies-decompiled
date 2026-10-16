@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 #include "rigid_body.h"
 #include <gfx_d3d/r_workercmds.h>
 #include <tl/base/tl_thread.h>
@@ -181,7 +182,9 @@ struct broad_phase_terrain_query_callback // sizeof=0x4
     //{
     //    void (__thiscall *query)(broad_phase_terrain_query_callback *this, const broad_phase_environment_query_input *, broad_phase_environement_query_results *);
     //};
-    virtual void query(const broad_phase_environment_query_input *, broad_phase_environement_query_results *);
+    // Defined inline: the base is never used on its own (standard_query overrides it), but the Itanium ABI emits the
+    // vtable and typeinfo alongside the first non-inline virtual function, which never had a definition.
+    virtual void query(const broad_phase_environment_query_input *, broad_phase_environement_query_results *) {}
 };
 
 struct broad_phase_collision_pair // sizeof=0xC
@@ -221,7 +224,7 @@ struct broad_phase_memory // sizeof=0xCD8
     void list_bpb_remove(broad_phase_base *bpb_to_remove);
     static broad_phase_memory *allocate_buffer(const broad_phase_memory_info *bpmi);
 };
-static_assert(sizeof(broad_phase_memory) == 0xCD8);
+BO1_LAYOUT32_ASSERT(sizeof(broad_phase_memory) == 0xCD8);
 
 struct bpi_environment_collision_info // sizeof=0x10
 {                                       // XREF: ?broad_phase_process_object_environment_collision@@YAXXZ/r
@@ -324,7 +327,7 @@ struct axis_aligned_sweep_and_prune // sizeof=0x28
     void process_active_pair_list();
     void process();
 };
-static_assert(sizeof(axis_aligned_sweep_and_prune) == 40);
+BO1_LAYOUT32_ASSERT(sizeof(axis_aligned_sweep_and_prune) == 40);
 
 struct __declspec(align(8)) broad_phase_info : broad_phase_base // sizeof=0x70
 {                                                                             // XREF: phys_free_list<broad_phase_info>::T_internal/r

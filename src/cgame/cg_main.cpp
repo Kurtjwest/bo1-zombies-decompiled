@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_main.h"
 #include "cg_local.h"
 #include <bgame/bg_weapons_def.h>
@@ -108,7 +109,7 @@ void __cdecl CG_RegisterVehicle(const char *name, __int16 index)
         memset(dst, 0, 0x1DD8u);
         v6 = name;
         v5 = dst;
-        HIDWORD(v4) = (int)dst;
+        HIDWORD(v4) = (int)BO1_P2I(dst);
         do
         {
             BYTE3(v4) = *v6;

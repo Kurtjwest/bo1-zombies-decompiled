@@ -1,8 +1,9 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_steam.h"
 #include <win32/win_splash.h>
 #include <qcommon/common.h>
 #include <win32/win_localize.h>
-#include <Windows.h>
+#include <windows.h>
 #include <win32/win_main.h>
 #include <steam/steamclientpublic.h>
 #include <steam/steam_api.h>
@@ -150,7 +151,7 @@ unsigned int __stdcall ShellExecuteThredProc(const char *lpParam)
     char currentDirectory[268]; // [esp+0h] [ebp-110h] BYREF
 
     GetCurrentDirectoryA(0x104u, currentDirectory);
-    g_ShellExecuteErr = (int)ShellExecuteA(0, "open", lpParam, 0, 0, 1);
+    g_ShellExecuteErr = (int)BO1_P2I(ShellExecuteA(0, "open", lpParam, 0, 0, 1));
     _InterlockedExchange(&g_ShellExecuteInProgress, 0);
     return 0;
 }
@@ -287,7 +288,7 @@ _iobuf *LiveSteam_CreateSteamAppIdFile()
         if ( result )
         {
             fprintf(result, "42710");
-            return (_iobuf *)fclose(f);
+            return (_iobuf *)BO1_I2P(fclose(f));
         }
     }
     return result;

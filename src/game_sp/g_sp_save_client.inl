@@ -2,6 +2,7 @@
 // zombies: clients (SP 0x007EA2A0 / 0x007EC530). SP gclient is 0x1D28; KB keeps its 0x29E0 MP
 // gclient_s, so the core image is KB's with a DERIVED table, and the SP-only client fields KB keeps
 // in side tables follow it as one DERIVED extension image. Extras follow in SP order.
+#include <universal/bo1_layout.h>
 #include "g_scr_sp_players_x1.h"
 #include "g_sp_player_state.h"
 #include <client_mp/g_client_mp.h>
@@ -28,7 +29,7 @@ static const SPEntitySaveField s_clientFields[] = {
 static const SPEntitySaveField s_clientExtFields[] = {
     { offsetof(SPClientSaveExt, ext.lookatent), sizeof(EntHandle), 3 }
 };
-static_assert(sizeof(gclient_s) == 0x29E0, "DERIVED client image");
+BO1_LAYOUT32_ASSERT(sizeof(gclient_s) == 0x29E0, "DERIVED client image");
 static_assert(sizeof(gclientSpExt) == 0x10 && sizeof(SPPlayerX1State) == 0xC
     && sizeof(SPPlayerBuiltinState) == 0x10 && sizeof(SPClientSaveExt) == 0x30, "DERIVED client extension image");
 static_assert(sizeof(((usercmd_s *)0)->button_bits) == 8, "SP writes 8 button bytes");

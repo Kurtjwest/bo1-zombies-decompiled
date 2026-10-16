@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ui_shared.h"
 #include "ui_shared_obj.h"
 #include "ui_localvars.h"
@@ -314,7 +315,7 @@ itemDef_s *__cdecl Menu_GetMatchingItemByNumber(menuDef_t *menu, int index, char
     wildcard = -1;
     v3 = strstr(name, "*");
     if ( v3 )
-        wildcard = (unsigned int)v3 - (unsigned int)name;
+        wildcard = (unsigned int)BO1_P2I(v3) - (unsigned int)BO1_P2I(name);
     for ( i = 0; i < menu->itemCount; ++i )
     {
         if ( wildcard == -1 )
@@ -888,8 +889,8 @@ void __cdecl Item_LerpAnimationParameters(int localClientNum, int contextIndex, 
         {
             listPtr = Item_GetListBoxDef(item);
             maxScroll = Item_ListBox_MaxScroll(localClientNum, contextIndex, item);
-            if ( listPtr->startPos[contextIndex] > (int)maxScroll )
-                listPtr->startPos[contextIndex] = (int)maxScroll;
+            if ( listPtr->startPos[contextIndex] > (int)BO1_P2I(maxScroll) )
+                listPtr->startPos[contextIndex] = (int)BO1_P2I(maxScroll);
         }
     }
 }
@@ -988,7 +989,7 @@ int __cdecl Menu_ItemsMatchingGroup(menuDef_t *menu, char *name)
     wildcard = -1;
     v2 = strstr(name, "*");
     if ( v2 )
-        wildcard = (unsigned int)v2 - (unsigned int)name;
+        wildcard = (unsigned int)BO1_P2I(v2) - (unsigned int)BO1_P2I(name);
     for ( i = 0; i < menu->itemCount; ++i )
     {
         if ( wildcard == -1 )
@@ -2683,18 +2684,18 @@ void __cdecl Script_FeederBottom(int localClientNum, UiContext *dc, itemDef_s *i
     {
         if ( listPtr->notselectable )
         {
-            listPtr->startPos[dc->contextIndex] = (int)Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, item);
+            listPtr->startPos[dc->contextIndex] = (int)BO1_P2I(Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, item));
         }
         else
         {
             max = Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, item);
             viewmax = Item_ListBox_Viewmax(localClientNum, dc->contextIndex, item);
-            v4 = (const char *)UI_FeederCount(localClientNum, dc->contextIndex, listPtr->special, listPtr) - 1;
-            if ( (int)v4 > 0 )
-                v3 = (int)v4;
+            v4 = (const char *)BO1_I2P(UI_FeederCount(localClientNum, dc->contextIndex, listPtr->special, listPtr)) - 1;
+            if ( (int)BO1_P2I(v4) > 0 )
+                v3 = (int)BO1_P2I(v4);
             else
                 v3 = 0;
-            Item_ListBox_SetCursorPos(localClientNum, dc->contextIndex, item, (int)max, viewmax, v3, 1);
+            Item_ListBox_SetCursorPos(localClientNum, dc->contextIndex, item, (int)BO1_P2I(max), viewmax, v3, 1);
         }
     }
 }
@@ -3033,8 +3034,8 @@ void __cdecl Item_RunScript(int localClientNum, UiContext *dc, itemDef_s *item, 
                 }
                 if ( !bRan )
                 {
-                    HIDWORD(v4) = (DWORD)s;
-                    LODWORD(v4) = (DWORD)&p;
+                    HIDWORD(v4) = (DWORD)BO1_P2I(s);
+                    LODWORD(v4) = (DWORD)BO1_P2I(&p);
                     UI_RunMenuScript(localClientNum, dc->contextIndex, v4);
                 }
             }
@@ -3641,23 +3642,23 @@ void __cdecl UI_MoveFeeder_f()
                                 v8 = 0;
                             v4 = Cmd_Argv(1);
                             v5 = atoi(v4);
-                            Item_ListBox_Scroll(0, contextIndex, feederItem, v8, (int)max, viewmax, v5);
+                            Item_ListBox_Scroll(0, contextIndex, feederItem, v8, (int)BO1_P2I(max), viewmax, v5);
                         }
                         else
                         {
                             v6 = Cmd_Argv(1);
                             v7 = atoi(v6);
-                            Item_ListBox_SetCursorPos(0, contextIndex, feederItem, (int)max, viewmax, v7, 1);
+                            Item_ListBox_SetCursorPos(0, contextIndex, feederItem, (int)BO1_P2I(max), viewmax, v7, 1);
                         }
                     }
                 }
                 else if ( listPtr->notselectable )
                 {
-                    listPtr->startPos[contextIndex] = (int)max;
+                    listPtr->startPos[contextIndex] = (int)BO1_P2I(max);
                 }
                 else
                 {
-                    Item_ListBox_SetCursorPos(0, contextIndex, feederItem, (int)max, viewmax, v10, 1);
+                    Item_ListBox_SetCursorPos(0, contextIndex, feederItem, (int)BO1_P2I(max), viewmax, v10, 1);
                 }
             }
             else
@@ -4069,7 +4070,7 @@ const char *__cdecl Item_ListBox_MaxScroll(int localClientNum, int contextIndex,
     v3 = Item_ListBox_Viewmax(localClientNum, contextIndex, item);
     v6 = UI_FeederCount(localClientNum, contextIndex, listPtr->special, listPtr) - v3;
     if (v6 > 0)
-        return (const char *)v6;
+        return (const char *)BO1_I2P(v6);
     else
         return 0;
 }
@@ -4988,7 +4989,7 @@ int __cdecl Item_ListBox_HandleKey(int localClientNum, UiContext *dc, itemDef_s 
     if ( !force && (!validMousePosition || (flags & 2) == 0) )
         return 0;
     UI_OverrideCursorPos(localClientNum, dc->contextIndex, item);
-    max = (int)Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, item);
+    max = (int)BO1_P2I(Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, item));
     viewmax = Item_ListBox_Viewmax(localClientNum, dc->contextIndex, item);
     if ( Window_IsHorizontal(&item->window) )
     {
@@ -5999,7 +6000,7 @@ int __cdecl Item_DvarEnum_EnumIndex(itemDef_s *item)
     }
     for ( enumIndexa = 0; enumIndexa < enumDvar->domain.enumeration.stringCount; ++enumIndexa )
     {
-        if ( !I_stricmp(enumString, *(const char **)(enumDvar->domain.integer.max + 4 * enumIndexa)) )
+        if ( !I_stricmp(enumString, *(const char **)BO1_I2P((enumDvar->domain.integer.max + 4 * enumIndexa))) )
             return enumIndexa;
     }
     return 0;
@@ -6212,19 +6213,19 @@ double __cdecl Item_ListBox_ThumbPosition(int localClientNum, int contextIndex, 
     rect = Window_GetRect(&item->window);
     if ( Window_IsHorizontal(&item->window) )
     {
-        if ( (int)max <= 0 )
+        if ( (int)BO1_P2I(max) <= 0 )
             pos = 0.0f;
         else
-            pos = (float)((float)((float)(rect->w - 32.0) - 2.0) - 16.0) / (float)(int)max;
+            pos = (float)((float)((float)(rect->w - 32.0) - 2.0) - 16.0) / (float)(int)BO1_P2I(max);
         return rect->x + 1.0 + 16.0 + (float)((float)listPtr->startPos[contextIndex] * pos);
     }
     else
     {
         scrollHeight = Item_ListBox_ScrollHeight(localClientNum, contextIndex, item);
-        if ( (int)max <= 0 )
+        if ( (int)BO1_P2I(max) <= 0 )
             posa = 0.0f;
         else
-            posa = (float)((float)(scrollHeight - 32.0) - 16.0) / (float)(int)max;
+            posa = (float)((float)(scrollHeight - 32.0) - 16.0) / (float)(int)BO1_P2I(max);
         return rect->y + 3.0 + 16.0 + (float)((float)listPtr->startPos[contextIndex] * posa);
     }
 }
@@ -6280,11 +6281,11 @@ void __cdecl Scroll_ListBox_ThumbFunc(int localClientNum, UiContext *dc, scrollI
                 r.h = 16.0f;
                 r.w = (float)(r.w - 32.0) - 2.0;
                 max = Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, v8->item);
-                pos = (int)(float)((float)((float)(x - r.x) / r.w) * (float)(int)max);
+                pos = (int)(float)((float)((float)(x - r.x) / r.w) * (float)(int)BO1_P2I(max));
                 if ( pos >= 0 )
                 {
-                    if ( pos > (int)max )
-                        pos = (int)max;
+                    if ( pos > (int)BO1_P2I(max) )
+                        pos = (int)BO1_P2I(max);
                 }
                 else
                 {
@@ -6308,11 +6309,11 @@ void __cdecl Scroll_ListBox_ThumbFunc(int localClientNum, UiContext *dc, scrollI
                 r.h = (float)(r.h - 32.0) - 2.0;
                 r.w = 16.0f;
                 maxa = Item_ListBox_MaxScroll(localClientNum, dc->contextIndex, v8->item);
-                posa = (int)(float)((float)((float)(y - r.y) / r.h) * (float)(int)maxa);
+                posa = (int)(float)((float)((float)(y - r.y) / r.h) * (float)(int)BO1_P2I(maxa));
                 if ( posa >= 0 )
                 {
-                    if ( posa > (int)maxa )
-                        posa = (int)maxa;
+                    if ( posa > (int)BO1_P2I(maxa) )
+                        posa = (int)BO1_P2I(maxa);
                 }
                 else
                 {
@@ -7742,7 +7743,7 @@ void __cdecl Item_ListBox_ModalSelection(int localClientNum, int contextIndex, i
                 }
                 else
                 {
-                    Item_ListBox_SetCursorPos(localClientNum, contextIndex, item, (int)max, viewmax, newPos, 0);
+                    Item_ListBox_SetCursorPos(localClientNum, contextIndex, item, (int)BO1_P2I(max), viewmax, newPos, 0);
                 }
             }
         }
@@ -8114,8 +8115,8 @@ char    Menu_Paint(
     else
         ui3dWindowId = menu->ui3dWindowId;
     ui3dWindow = ui3dWindowId;
-    if (ui3dWindowId == -1 && (int)UI3DOverrideId >= 0)
-        ui3dWindow = (int)UI3DOverrideId;
+    if (ui3dWindowId == -1 && (int)BO1_P2I(UI3DOverrideId) >= 0)
+        ui3dWindow = (int)BO1_P2I(UI3DOverrideId);
     if (ui3dWindow < 0)
         scrPlace = &scrPlaceView[dc->contextIndex];
     else
@@ -8128,7 +8129,7 @@ char    Menu_Paint(
 
     ScopedScrPlaceViewStack scopedScrPlaceStack(scrPlaceViewStack, scrPlace); // [esp+B4h] [ebp-138h] BYREF
     //ScopedScrPlaceViewStack::ScopedScrPlaceViewStack(&scopedScrPlaceStack, scrPlaceViewStack, scrPlace);
-    if (*(_BYTE *)ui_showMenuOnly->current.integer
+    if (*(_BYTE *)BO1_I2P(ui_showMenuOnly->current.integer)
         && menu->window.name
         && I_stricmp(menu->window.name, ui_showMenuOnly->current.string))
     {
@@ -9454,7 +9455,7 @@ const char *__cdecl Item_DvarEnum_Setting(itemDef_s *item)
                         v2) )
             __debugbreak();
     }
-    return *(const char **)(enumDvar->domain.integer.max + 4 * enumIndex);
+    return *(const char **)BO1_I2P((enumDvar->domain.integer.max + 4 * enumIndex));
 }
 
 void __cdecl Item_Slider_Paint(UiContext *dc, itemDef_s *item)
@@ -10777,7 +10778,7 @@ void __cdecl Menu_PaintAll(int localClientNum, UiContext *dc)
                         dc,
                         scrPlaceStackPtr,
                         menu,
-                        (const ScreenPlacement *)0xFFFFFFFF);
+                        (const ScreenPlacement *)BO1_I2P(0xFFFFFFFF));
                 }
 
                 if (drew)
@@ -10814,7 +10815,7 @@ void __cdecl Menu_PaintAll(int localClientNum, UiContext *dc)
                 dc,
                 scrPlaceStackPtr,
                 blurMenu,
-                (const ScreenPlacement *)0xFFFFFFFF);
+                (const ScreenPlacement *)BO1_I2P(0xFFFFFFFF));
         }
     }
 
@@ -10861,7 +10862,7 @@ void __cdecl Menu_PaintAll(int localClientNum, UiContext *dc)
                 dc,
                 scrPlaceStackPtr,
                 menuc,
-                (const ScreenPlacement *)UI3DOverrideId);
+                (const ScreenPlacement *)BO1_I2P(UI3DOverrideId));
             if (drewa && showVisibleList)
                 Menu_PaintAll_AppendToVisibleList(visibleList, 0x400u, menuc->window.name);
             if (drewa && g_debugMode && menuIndexc == dc->openMenuCount - 1)

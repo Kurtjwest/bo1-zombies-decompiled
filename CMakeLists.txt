@@ -1,16 +1,40 @@
 cmake_minimum_required(VERSION 3.16)
-project(BO1Zombies)
+
+# APPLE is only known after project(); before it, a Mac host (or a Darwin cross toolchain) is detected like this.
+if(CMAKE_HOST_APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
+    # Native macOS build for Apple silicon (arm64). See cmake/macos.cmake and src/platform/README.md.
+    if(NOT CMAKE_OSX_ARCHITECTURES)
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Target architecture" FORCE)
+    endif()
+    if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+        set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" CACHE STRING "Minimum macOS version" FORCE)
+    endif()
+endif()
+
+project(BO1Zombies C CXX)
+if(APPLE)
+    enable_language(OBJC OBJCXX)
+endif()
 
 set(BIN_NAME "BO1Zombies")
 
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_GENERATOR_PLATFORM "WIN32")
+if(NOT APPLE)
+    set(CMAKE_GENERATOR_PLATFORM "WIN32")
+endif()
 
 set(SRC_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(TL_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/tl")
 set(DW_DIR  "${CMAKE_CURRENT_SOURCE_DIR}/DemonWare")
 
 include(cmake_files.cmake)
+
+if(APPLE)
+    include(cmake/macos.cmake)
+    return()
+endif()
+
+# ===================== Windows (MSVC, x86) =====================
 
 # phys_gjk.cpp specific flag (experimental)
 set_source_files_properties(

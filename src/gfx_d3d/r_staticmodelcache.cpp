@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_staticmodelcache.h"
 #include <xanim/xmodel_utils.h>
 #include "r_model_lighting.h"
@@ -786,7 +787,7 @@ unsigned int SMC_ClearCache()
             v1->freenode.prev = &s_cache.freelist[smcIter][0];
             v1->freenode.next = s_cache.freelist[smcIter][0].next;
             s_cache.freelist[smcIter][0].next = &v1->freenode;
-            result = (unsigned int)v1;
+            result = (unsigned int)BO1_P2I(v1);
             v1->freenode.next->prev = &v1->freenode;
         }
     }

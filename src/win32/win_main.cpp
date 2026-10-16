@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "win_main.h"
 #include "win_net.h"
 #include <game_mp/g_main_mp.h>
@@ -22,8 +23,8 @@
 #include <mjpeg/avi.h>
 #include <universal/com_buildinfo.h>
 #undef UNICODE // Module32First ascii version in below Tlhelp32.h
-#include <TlHelp32.h>
-#include <DbgHelp.h>
+#include <tlhelp32.h>
+#include <dbghelp.h>
 #include "win_mini_dumper.h"
 #include <universal/physicalmemory.h>
 #include <universal/q_parse.h>
@@ -251,16 +252,16 @@ static LONG __stdcall Sys_HeadlessExceptionFilter(_EXCEPTION_POINTERS *info)
     Sys_HeadlessEmergencyLog(
         "BO1_HEADLESS CRASH: exception 0x%08X at 0x%08X (%s+0x%X), thread %u\n",
         (unsigned int)rec->ExceptionCode,
-        (unsigned int)rec->ExceptionAddress,
+        (unsigned int)BO1_P2I(rec->ExceptionAddress),
         moduleName,
-        (unsigned int)rec->ExceptionAddress - (unsigned int)module,
+        (unsigned int)BO1_P2I(rec->ExceptionAddress) - (unsigned int)BO1_P2I(module),
         (unsigned int)GetCurrentThreadId());
     // the return addresses on the faulting stack that point into this module, innermost first (a stack scan, so
     // stale words can appear): feed the offsets to llvm-symbolizer for a call stack
     if (module && module == GetModuleHandleA(NULL))
     {
         const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const char *)module + ((const IMAGE_DOS_HEADER *)module)->e_lfanew);
-        unsigned int base = (unsigned int)module;
+        unsigned int base = (unsigned int)BO1_P2I(module);
         unsigned int end = base + nt->OptionalHeader.SizeOfImage;
         const unsigned int *sp = (const unsigned int *)info->ContextRecord->Esp;
         char line[1024];
@@ -285,14 +286,14 @@ static LONG __stdcall Sys_HeadlessExceptionFilter(_EXCEPTION_POINTERS *info)
         len = _snprintf(line, sizeof(line), "BO1_HEADLESS FRAMES:");
         for (int i = 0; i < 40 && len < (int)sizeof(line) - 16; ++i)
         {
-            if ((unsigned int)fp < info->ContextRecord->Esp || ((unsigned int)fp & 3) || IsBadReadPtr(fp, 8))
+            if ((unsigned int)BO1_P2I(fp) < info->ContextRecord->Esp || ((unsigned int)BO1_P2I(fp) & 3) || IsBadReadPtr(fp, 8))
                 break;
             const unsigned int ret = fp[1];
             if (ret > base + 0x1000 && ret < end)
                 len += _snprintf(line + len, sizeof(line) - len, " +0x%X", ret - base);
-            if (fp[0] <= (unsigned int)fp)
+            if (fp[0] <= (unsigned int)BO1_P2I(fp))
                 break;
-            fp = (const unsigned int *)fp[0];
+            fp = (const unsigned int *)BO1_I2P(fp[0]);
         }
         Sys_HeadlessEmergencyLog("%s\n", line);
     }
@@ -324,7 +325,7 @@ static bool Sys_IsCallReturn(unsigned int base, unsigned int end, unsigned int v
     // a return address follows a call: E8 rel32 (5 bytes back) or FF /2 (2, 3, 6 or 7 bytes back)
     if (v < base + 0x1000 + 7 || v >= end)
         return false;
-    const unsigned char *p = (const unsigned char *)v;
+    const unsigned char *p = (const unsigned char *)BO1_I2P(v);
     if (p[-5] == 0xE8)
         return true;
     if (p[-2] == 0xFF && (p[-1] & 0x38) == 0x10)
@@ -363,7 +364,7 @@ static BOOL __stdcall Sys_HeadlessWalkRead(HANDLE, DWORD64 addr, PVOID buffer, D
         return TRUE;
     }
     SIZE_T got = 0;
-    const BOOL ok = ReadProcessMemory(GetCurrentProcess(), (const void *)a, buffer, size, &got);
+    const BOOL ok = ReadProcessMemory(GetCurrentProcess(), (const void *)BO1_I2P(a), buffer, size, &got);
     *read = (DWORD)got;
     return ok;
 }
@@ -401,7 +402,7 @@ static void Sys_HeadlessDumpThreads(int pass)
 {
     HMODULE module = GetModuleHandleA(NULL);
     const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const char *)module + ((const IMAGE_DOS_HEADER *)module)->e_lfanew);
-    unsigned int base = (unsigned int)module;
+    unsigned int base = (unsigned int)BO1_P2I(module);
     unsigned int end = base + nt->OptionalHeader.SizeOfImage;
     static unsigned int stack[8192];
     static char line[4096];
@@ -676,12 +677,7 @@ static const char *Sys_HeadlessExpToString(const ExpressionStatement *exp)
             if (r->type == 1)
                 fn = Expression_GetFunctionForOp(r->data.cmdIdx);
             else
-                for (int k = 0; k < 480; ++k)
-                    if ((void *)rpnFunctions[k] == r->data.cmd)
-                    {
-                        fn = k;
-                        break;
-                    }
+                fn = r->data.cmdIdx; // resolved rpnFunctions index (Expression_EvaluateRpn)
             tok = fn < 0 ? "?fn" : fn < 24 ? g_expOperatorNames[fn] : (fn - 24 < 457 && g_expFunctionNames[fn - 24] ? g_expFunctionNames[fn - 24] : "?f");
         }
         I_strncpyz(buf, tok, sizeof(buf));
@@ -2052,7 +2048,7 @@ int __cdecl Sys_IsGameProcess(unsigned int id)
         return 0;
     CloseHandle(process);
     snapshot = CreateToolhelp32Snapshot(8u, id);
-    if ( snapshot == (void *)-1 )
+    if ( snapshot == (void *)BO1_I2P(-1) )
         return 0;
     isGame = 0;
     me.dwSize = 548;
@@ -2477,8 +2473,8 @@ void Win_RegisterClass()
     wce.cbSize = 48;
     wce.lpfnWndProc = (WNDPROC)MainWndProc;
     wce.hInstance = g_wv.hInstance;
-    wce.hIcon = LoadIconA(g_wv.hInstance, (LPCSTR)1);
-    wce.hCursor = LoadCursorA(0, (LPCSTR)0x7F00);
+    wce.hIcon = LoadIconA(g_wv.hInstance, (LPCSTR)BO1_I2P(1));
+    wce.hCursor = LoadCursorA(0, (LPCSTR)BO1_I2P(0x7F00));
     wce.hbrBackground = CreateSolidBrush(0);
     wce.lpszClassName = "CoDBlackOps";
     if ( !RegisterClassExA(&wce) )

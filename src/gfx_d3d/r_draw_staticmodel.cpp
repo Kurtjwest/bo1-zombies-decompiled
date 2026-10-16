@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_draw_staticmodel.h"
 #include "r_shade.h"
 #include "r_foliage.h"
@@ -54,7 +55,7 @@ int __cdecl R_GetNextStaticModelSurf(GfxStaticModelDrawStream *drawStream, XSurf
         return 0;
     primDrawSurfPos = drawStream->primDrawSurfPos;
     drawStream->primDrawSurfPos += ((drawStream->smodelCount + 1) >> 1) + 1;
-    xsurf = (XSurface *)*primDrawSurfPos;
+    xsurf = (XSurface *)BO1_I2P(*primDrawSurfPos);
     drawStream->smodelList = (const unsigned __int16 *)(primDrawSurfPos + 1);
     drawStream->localSurf = xsurf;
     if ( drawStream->primStats )
@@ -513,7 +514,7 @@ int __cdecl R_GetNextStaticModelCachedSurf(GfxStaticModelDrawStream *drawStream)
     ++drawStream->primDrawSurfPos;
     if ( !drawStream->smodelCount )
         return 0;
-    xsurf = (XSurface *)*drawStream->primDrawSurfPos++;
+    xsurf = (XSurface *)BO1_I2P(*drawStream->primDrawSurfPos++);
     drawStream->smodelList = (const unsigned __int16 *)drawStream->primDrawSurfPos;
     drawStream->primDrawSurfPos += (drawStream->smodelCount + 1) >> 1;
     smodelDrawInst = &rgp.world->dpvs.smodelDrawInsts[R_GetCachedSModelSurf(*drawStream->smodelList)->cachedSurf.smodelIndex];

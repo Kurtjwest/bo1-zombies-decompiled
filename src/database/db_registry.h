@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include <win32/win_common.h>
 #include <cstddef>
 #include "database.h"
@@ -24,9 +25,9 @@ enum DBCloneMethod : __int32
 
 struct RawFile // sizeof=0xC
 {                                       // XREF: XAssetPoolEntry<RawFile>/r
-    const char *name;
+    Ptr32<const char> name;
     int len;
-    const char *buffer;
+    Ptr32<const char> buffer;
 };
 
 struct XZoneInfoInternal // sizeof=0x44
@@ -44,14 +45,14 @@ struct XAsset // sizeof=0x8
 struct ScriptStringList // sizeof=0x8
 {                                       // XREF: XAssetList/r
     int count;
-    const char **strings;
+    Ptr32<Ptr32<const char>> strings;
 };
 
 struct XAssetList // sizeof=0x10
 {                                       // XREF: .data:g_varXAssetList/r
     ScriptStringList stringList;
     int assetCount;
-    XAsset *assets;
+    Ptr32<XAsset> assets;
 };
 
 struct PhysConstraints;
@@ -170,7 +171,7 @@ void __cdecl Mark_XAnimPartsAsset(XAnimParts *parts);
 void __cdecl Load_XModelAsset(XAssetHeader *model);
 void __cdecl Mark_XModelAsset(XModel *model);
 void __cdecl DB_RemoveXModel(XAssetHeader header);
-void __cdecl Load_MaterialAsset(Material **material);
+void __cdecl Load_MaterialAsset(Ptr32<Material> *material);
 void __cdecl Mark_MaterialAsset(Material *material);
 void __cdecl Load_MaterialTechniqueSetAsset(XAssetHeader *techniqueSet);
 void __cdecl Mark_MaterialTechniqueSetAsset(MaterialTechniqueSet *techniqueSet);
@@ -214,11 +215,11 @@ void __cdecl Load_LocalizeEntryAsset(XAssetHeader *localize);
 void __cdecl Mark_LocalizeEntryAsset(LocalizeEntry *localize);
 void __cdecl Load_WeaponVariantDefAsset(XAssetHeader *weapon);
 void __cdecl Mark_WeaponVariantDefAsset(WeaponVariantDef *weapon);
-void __cdecl Load_SndDriverGlobalsAsset(SndDriverGlobals **sndDriverGlobals);
+void __cdecl Load_SndDriverGlobalsAsset(Ptr32<SndDriverGlobals> *sndDriverGlobals);
 void __cdecl Mark_SndDriverGlobalsAsset(SndDriverGlobals *sndDriverGlobals);
 void __cdecl Load_FxEffectDefAsset(XAssetHeader *fx);
 void __cdecl Mark_FxEffectDefAsset(FxEffectDef *fx);
-void __cdecl Load_FxEffectDefFromName(const char **name);
+void __cdecl Load_FxEffectDefFromName(Ptr32<const char> *name);
 void __cdecl Load_FxImpactTableAsset(XAssetHeader *impactFx);
 void __cdecl Mark_FxImpactTableAsset(FxImpactTable *impactFx);
 void __cdecl Load_RawFileAsset(XAssetHeader *rawfile);

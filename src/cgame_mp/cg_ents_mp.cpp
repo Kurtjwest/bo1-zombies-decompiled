@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "cg_ents_mp.h"
 #include <game_sp/g_sp_levelstart.h>
 #include <qcommon/cm_mapkit.h>
@@ -128,7 +129,7 @@ void __cdecl CG_Player_PreControllers(DObj *obj, centity_s *cent)
         BG_Player_DoControllersSetup(&cent->nextState, ci, cgameGlob->frametime);
         for ( i = 0; i < 6; ++i )
             DObjGetBoneIndex(obj, *controller_names[i], &cent->pose.player.tag[i], -1);
-        cent->pose.fx.triggerTime = (int)&ci->control;
+        cent->pose.fx.triggerTime = (int)BO1_P2I(&ci->control);
     }
     else
     {
@@ -210,7 +211,7 @@ void __cdecl CG_mg42_PreControllers(DObj *obj, centity_s *cent)
     }
     if ( cent->pose.turret.playerUsing )
     {
-        cent->pose.fx.triggerTime = (int)cgameGlob->predictedPlayerState.viewangles;
+        cent->pose.fx.triggerTime = (int)BO1_P2I(cgameGlob->predictedPlayerState.viewangles);
         cent->pose.cullIn = 0;
         cent->pose.turret.barrelPitch = 0.0f;
     }
@@ -2801,14 +2802,14 @@ void __cdecl CG_CreateRagdollObject(int localClientNum, centity_s *cent)
                                              1);
     }
     if ( shareRagdoll )
-        cent->pose.ragdollHandle = (int)RagdollForDObj;
+        cent->pose.ragdollHandle = (int)BO1_P2I(RagdollForDObj);
     else
-        cent->pose.killcamRagdollHandle = (int)RagdollForDObj;
+        cent->pose.killcamRagdollHandle = (int)BO1_P2I(RagdollForDObj);
     cent->pose.isRagdoll = 1;
     // zombies: SP CG_CreateRagdollObject (SP 0x0046ada4..0x0046ae1c) hands the entity's SetPhysicsGravity slot to the new
     // ragdoll body (moon: zombies killed in low gravity).
     if ( zombiemode && zombiemode->current.enabled )
-        CG_SP_ApplyPhysicsGravity(cent, (int)RagdollForDObj);
+        CG_SP_ApplyPhysicsGravity(cent, (int)BO1_P2I(RagdollForDObj));
 }
 
 void __cdecl CG_CalcEntityLerpPositions(int localClientNum, centity_s *cent)

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <game_sp/g_sp_measure.h>
 #include <qcommon/actor_model_state.h>
 #include <cgame_mp/cg_anim_commands.h>
@@ -1279,7 +1280,7 @@ void __cdecl CL_FirstSnapshot(int localClientNum)
         if ( zombiemode && zombiemode->current.enabled )
             CG_SP_ScreenFadeIn(localClientNum, clc->serverAddress.type == NA_LOOPBACK ? 500 : 1000, 750);
         Con_TimeJumped(localClientNum, LocalClientGlobals->serverTime);
-        if ( *(_BYTE *)cl_activeAction->current.integer )
+        if ( *(_BYTE *)BO1_I2P(cl_activeAction->current.integer) )
         {
             Cbuf_AddText(localClientNum, cl_activeAction->current.string);
             Cbuf_AddText(localClientNum, "\n");

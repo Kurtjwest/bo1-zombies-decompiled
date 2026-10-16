@@ -1,6 +1,7 @@
+#include <universal/bo1_ptrcast.h>
 #include "com_profilemapload.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include "threads.h"
 #include <universal/assertive.h>
 #include <universal/dvar.h>
@@ -131,7 +132,7 @@ void __cdecl ProfLoad_Deactivate()
     {
         __debugbreak();
     }
-    v0 = (MapProfileEntry *)QueryPerformanceCounter(&PerformanceCount);
+    v0 = (MapProfileEntry *)BO1_I2P(QueryPerformanceCounter(&PerformanceCount));
     mapLoadProfile.ticksFinish = PerformanceCount.QuadPart;
     mapLoadProfile.isLoading = 0;
     ProfLoad_Print();

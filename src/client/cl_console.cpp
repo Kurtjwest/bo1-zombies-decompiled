@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <qcommon/common.h>
 #include "screen_placement.h"
 #include "cl_console.h"
@@ -1796,7 +1797,7 @@ unsigned int __cdecl CL_AddMessageIcon(
     {
         __debugbreak();
     }
-    *(unsigned int *)&msg[msgLenc] = (unsigned int)iconShader;
+    *(unsigned int *)&msg[msgLenc] = (unsigned int)BO1_P2I(iconShader);
     msgLend = msgLenc + 4;
     if ( msgLend - msgLen != 8
         && !Assert_MyHandler(

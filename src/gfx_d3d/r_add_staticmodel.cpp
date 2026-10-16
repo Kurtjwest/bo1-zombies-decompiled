@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_add_staticmodel.h"
 #include "r_gfx.h"
 #include <xanim/xanim.h>
@@ -50,7 +51,7 @@ void __cdecl R_AddDelayedStaticModelDrawSurf(
         __debugbreak();
     }
     R_WritePrimDrawSurfInt(delayedCmdBuf, count | (which_lod << 28));
-    R_WritePrimDrawSurfInt(delayedCmdBuf, (unsigned int)xsurf);
+    R_WritePrimDrawSurfInt(delayedCmdBuf, (unsigned int)BO1_P2I(xsurf));
     R_WritePrimDrawSurfData(delayedCmdBuf, list, (count + 1) >> 1);
 }
 
@@ -111,7 +112,7 @@ void __cdecl R_WritePrimDrawSurfData(GfxDelayedCmdBuf *delayedCmdBuf, unsigned _
 
 GfxStaticModelId __cdecl R_GetStaticModelId(unsigned int smodelIndex, int lod)
 {
-    Material **Skins; // eax
+    Ptr32<Material> *Skins; // eax
     const MaterialTechnique *technique; // [esp+10h] [ebp-24h]
     const XModelLodInfo *lodInfo; // [esp+14h] [ebp-20h]
     XModel *model; // [esp+1Ch] [ebp-18h]
@@ -342,11 +343,11 @@ void __cdecl R_AddAllStaticModelSurfacesCamera(
                     }
                 }
             }
-            v17[0] = (unsigned int)mins;
-            v17[1] = (unsigned int)(mins + 3);
-            v18 = *(float *)v17[v51];
-            v19 = *(float *)(v17[v52] + 4);
-            v20 = *(float *)(v17[v56] + 8);
+            v17[0] = (unsigned int)BO1_P2I(mins);
+            v17[1] = (unsigned int)BO1_P2I((mins + 3));
+            v18 = *(float *)BO1_I2P(v17[v51]);
+            v19 = *(float *)BO1_I2P((v17[v52] + 4));
+            v20 = *(float *)BO1_I2P((v17[v56] + 8));
             v65 = (float)((float)((float)((float)(v18 * p_sunShadow->viewDir[0]) + (float)(v19 * p_sunShadow->viewDir[1]))
                                                     + (float)(v20 * p_sunShadow->viewDir[2]))
                                     - p_sunShadow->viewDirDist) > p_sunShadow->sunShadowDrawDist;
@@ -605,7 +606,7 @@ void __cdecl R_SkinStaticModelsCameraForLod_Internal(
 {
     __int64 v12; // rax
     bool enabled; // [esp+Eh] [ebp-2Eh]
-    Material **materialForSurf; // [esp+10h] [ebp-2Ch]
+    Ptr32<Material> *materialForSurf; // [esp+10h] [ebp-2Ch]
     GfxDrawSurf drawSurf; // [esp+14h] [ebp-28h]
     const Material *material; // [esp+24h] [ebp-18h]
     unsigned int surfaceIndex; // [esp+28h] [ebp-14h]
@@ -1255,7 +1256,7 @@ void __cdecl R_SkinStaticModelsShadowForLod(
     bool v6; // zf
     const char *v7; // eax
     bool enabled; // [esp+Fh] [ebp-2Dh]
-    Material **materialForSurf; // [esp+18h] [ebp-24h]
+    Ptr32<Material> *materialForSurf; // [esp+18h] [ebp-24h]
     GfxDrawSurf drawSurf; // [esp+1Ch] [ebp-20h]
     unsigned __int8 shadowmapBuildTechType; // [esp+27h] [ebp-15h]
     const Material *material; // [esp+28h] [ebp-14h]

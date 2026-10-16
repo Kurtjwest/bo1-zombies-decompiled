@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "ik_import.h"
 #include <clientscript/cscr_stringlist.h>
 #include <xanim/dobj_utils.h>
@@ -486,7 +487,7 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
     obj = ikState->model;
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 672, 0, "%s", "obj") )
         __debugbreak();
-    matArray = (DObjAnimMat *)*((unsigned int *)obj + 21);
+    matArray = (DObjAnimMat *)BO1_I2P(*((unsigned int *)obj + 21));
     if ( !matArray && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 675, 0, "%s", "matArray") )
         __debugbreak();
     ikState->rootOffset[0] = matArray->trans[0];
@@ -504,7 +505,7 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
     matArray->quat[2] = 0.0f;
     matArray->quat[3] = 1.0f;
     thisMat = matArray;
-    for ( objBoneIndex = 0; objBoneIndex < *(unsigned __int8 *)(**((unsigned int **)obj + 30) + 4); ++objBoneIndex )
+    for ( objBoneIndex = 0; objBoneIndex < *(unsigned __int8 *)BO1_I2P((**((unsigned int **)obj + 30) + 4)); ++objBoneIndex )
     {
         if ( (*(unsigned int *)&obj[4 * (objBoneIndex >> 5) + 20] & (0x80000000 >> (objBoneIndex & 0x1F))) != 0 )
         {
@@ -557,9 +558,9 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
             memcpy(&localMat, thisMata, sizeof(localMat));
             IKImport_AccumulateParentObjBones(
                 ikState,
-                *(const unsigned __int8 **)(**((unsigned int **)obj + 30) + 12),
-                *(unsigned __int8 *)(**((unsigned int **)obj + 30) + 5),
-                *(float **)(**((unsigned int **)obj + 30) + 20),
+                *(const unsigned __int8 **)BO1_I2P((**((unsigned int **)obj + 30) + 12)),
+                *(unsigned __int8 *)BO1_I2P((**((unsigned int **)obj + 30) + 5)),
+                *(float **)BO1_I2P((**((unsigned int **)obj + 30) + 20)),
                 objBoneIndexa,
                 matArray,
                 &localMat);
@@ -1096,7 +1097,7 @@ void    IKImport_GetEntityXform(IKState *ikState)
                 {
                     entityNum = ikState->entityNum;
                     ci = &cgameGlob->bgs.clientinfo[entityNum];
-                    if ((cg_s *)((char *)cgameGlob + entityNum * 1480) == (cg_s *)-389096
+                    if ((cg_s *)((char *)cgameGlob + entityNum * 1480) == (cg_s *)BO1_I2P(-389096)
                         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\ik\\ik_import.cpp", 1601, 0, "%s", "ci"))
                     {
                         __debugbreak();
@@ -2234,7 +2235,7 @@ double __cdecl IKImport_GetGunnerCrouch(IKState *ikState)
         __debugbreak();
     }
     if ( cgameGlob
-        && (entityNum = ikState->entityNum, (cg_s *)((char *)cgameGlob + entityNum * 1480) != (cg_s *)-389096)
+        && (entityNum = ikState->entityNum, (cg_s *)((char *)cgameGlob + entityNum * 1480) != (cg_s *)BO1_I2P(-389096))
         && cgameGlob->bgs.clientinfo[entityNum].infoValid )
     {
         return cgameGlob->bgs.clientinfo[entityNum].lerpLean;

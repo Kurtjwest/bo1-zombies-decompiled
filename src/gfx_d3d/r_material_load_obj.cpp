@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_material_load_obj.h"
 #include <universal/q_shared.h>
 #include <qcommon/common.h>
@@ -1393,7 +1394,7 @@ MaterialTechnique *__cdecl Material_LoadTechnique(char *name)
             nameSize = strlen(name) + 1;
             technique = Material_Alloc(nameSize + 24 * passCount + 8);
             stateMapForPass = (MaterialStateMap **)&technique[20 * passCount + 8];
-            *(unsigned int *)technique = (unsigned int)&stateMapForPass[passCount];
+            *(unsigned int *)technique = (unsigned int)BO1_P2I(&stateMapForPass[passCount]);
             memcpy(*(unsigned __int8 **)technique, (unsigned __int8 *)name, nameSize);
 
             *((_WORD *)technique + 2) = techFlags;
@@ -2606,8 +2607,12 @@ MaterialVertexShader *__cdecl Material_LoadVertexShader(char *shaderName)
     v4 = shader;
     v2 = (unsigned __int8 *)shader->GetBufferPointer();
     //v2 = (unsigned __int8 *)((int (__thiscall *)(ID3DXBuffer *))shader->GetBufferPointer)(shader);
-    memcpy((unsigned __int8 *)program, v2, (unsigned int)v4);
-    hr = dx.device->CreateVertexShader((const DWORD*)program, &mtlShader->prog.vs);
+    memcpy((unsigned __int8 *)program, v2, programSize);
+    {
+        IDirect3DVertexShader9 *vs = nullptr;
+        hr = dx.device->CreateVertexShader((const DWORD*)program, &vs);
+        mtlShader->prog.vs = vs; // 32-bit handle in the material asset
+    }
     //hr = ((int (__stdcall *)(IDirect3DDevice9 *, unsigned int *, MaterialVertexShaderProgram *, unsigned int))dx.device->CreateVertexShader)(
     //             dx.device,
     //             program,
@@ -2696,12 +2701,12 @@ LABEL_22:
     if ( v22[0] )
     {
         v13 = 0;
-        v6 = (const char *)(*(int (__stdcall **)(unsigned int))(*(unsigned int *)v22[0] + 12))(v22[0]);
+        v6 = (const char *)BO1_I2P((*(int (__stdcall **)(unsigned int))BO1_I2P((*(unsigned int *)BO1_I2P(v22[0]) + 12)))(v22[0]));
         if ( I_stristr(v6, "error") )
             v12 = Com_ScriptError;
         else
             v12 = Com_ScriptWarning;
-        errorMessage = (char *)(*(int (__stdcall **)(unsigned int))(*(unsigned int *)v22[0] + 12))(v22[0]);
+        errorMessage = (char *)BO1_I2P((*(int (__stdcall **)(unsigned int))BO1_I2P((*(unsigned int *)BO1_I2P(v22[0]) + 12)))(v22[0]));
         Material_FileIncludeFileAndLineNumber(&prog, errorMessage, &fileName, lineNumber);
         if ( v12 )
         {
@@ -2722,7 +2727,7 @@ LABEL_22:
             Com_SetScriptWarningPrefix(prefix);
             Com_SetScriptErrorPrefix(ScriptErrorPrefix);
         }
-        (*(void (__thiscall **)(unsigned int, unsigned int))(*(unsigned int *)v22[0] + 8))(v22[0], v22[0]);
+        (*(void (__thiscall **)(unsigned int, unsigned int))BO1_I2P((*(unsigned int *)BO1_I2P(v22[0]) + 8)))(v22[0], v22[0]);
     }
     if ( hr < 0 )
     {
@@ -2740,12 +2745,12 @@ LABEL_22:
             Hunk_FreeTempMemory(shaderString);
             return 0;
         }
-        (*(void (__stdcall **)(int))(*(unsigned int *)v18 + 8))(v18);
+        (*(void (__stdcall **)(int))BO1_I2P((*(unsigned int *)BO1_I2P(v18) + 8)))(v18);
         Material_CacheShaderDX(shaderString, shaderTextLen, entryPoint, target, shader, 0);
         goto LABEL_22;
     }
     if ( v18 )
-        (*(void (__stdcall **)(int))(*(unsigned int *)v18 + 8))(v18);
+        (*(void (__stdcall **)(int))BO1_I2P((*(unsigned int *)BO1_I2P(v18) + 8)))(v18);
     Com_ScriptError("%s compilation failed - NULL shader\n", dest);
     Hunk_FreeTempMemory(shaderString);
     return 0;
@@ -3242,7 +3247,7 @@ void __cdecl Material_DeleteOldFilesInDirectory(const char *dirname, unsigned __
     SystemTimeToFileTime(&sysTime, &fileTime);
     Com_sprintf(fulldirname, 0x104u, "%s/*", dirname);
     handle = FindFirstFileA(fulldirname, &findData);
-    if ( handle != (HANDLE)-1 )
+    if ( handle != (HANDLE)BO1_I2P(-1) )
     {
         do
         {
@@ -3302,7 +3307,7 @@ void __cdecl Material_DeleteDirectory(const char *dirname)
 
     Com_sprintf(fulldirname, 0x104u, "%s/*", dirname);
     handle = FindFirstFileA(fulldirname, &findData);
-    if ( handle != (HANDLE)-1 )
+    if ( handle != (HANDLE)BO1_I2P(-1) )
     {
         do
         {
@@ -4948,7 +4953,7 @@ char __cdecl Material_AddShaderArgumentFromLiteral(
     {
         __debugbreak();
     }
-    arg->u.codeSampler = (unsigned int)literal;
+    arg->u.codeSampler = (unsigned int)BO1_P2I(literal);
     return MaterialAddShaderArgument(shaderName, paramName, arg, registerUsage);
 }
 
@@ -5247,7 +5252,11 @@ MaterialPixelShader *__cdecl Material_LoadPixelShader(char *shaderName)
     //memcpy((unsigned __int8 *)program, v2, (unsigned int)v4);
     memcpy(program, shader->GetBufferPointer(), programSize);
 
-    hr = dx.device->CreatePixelShader(program, &mtlShader->prog.ps);
+    {
+        IDirect3DPixelShader9 *ps = nullptr;
+        hr = dx.device->CreatePixelShader(program, &ps);
+        mtlShader->prog.ps = ps; // 32-bit handle in the material asset
+    }
     //hr = ((int (__stdcall *)(IDirect3DDevice9 *, unsigned int *, MaterialPixelShaderProgram *, unsigned int))dx.device->CreatePixelShader)(
     //             dx.device,
     //             program,
@@ -7184,12 +7193,12 @@ void __cdecl Material_BuildStateBitsTable(Material *material, __int16 toolFlags,
         v3 = material->localTechniqueSet->techniques[i];
         if ( v3 )
         {
-            v5 = (int)&v3->passArray[v3->passCount];
+            v5 = (int)BO1_P2I(&v3->passArray[v3->passCount]);
             for ( j = 0; j < v3->passCount; ++j )
                 Material_RemapStateBits(
                     material,
                     toolFlags,
-                    *(const MaterialStateMap **)(v5 + 4 * j),
+                    *(const MaterialStateMap **)BO1_I2P((v5 + 4 * j)),
                     refStateBits,
                     (unsigned int *)&stateBitsOut[j]);
             material->stateBitsEntry[i] = Material_AddStateBitsArrayToTable(

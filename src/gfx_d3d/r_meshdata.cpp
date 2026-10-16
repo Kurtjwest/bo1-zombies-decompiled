@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_meshdata.h"
 #include "rb_backend.h"
 #include "rb_tess.h"
@@ -82,7 +83,7 @@ char __cdecl R_ReserveMeshIndices(GfxMeshData *mesh, int indexCount, r_double_in
         return 0;
     mesh->indexCount = indexCount + usedCodeMeshIndexCount;
     *indicesOut = (r_double_index_t *)&mesh->indices[usedCodeMeshIndexCount];
-    if ( ((unsigned int)*indicesOut & 3) != 0
+    if ( ((unsigned int)BO1_P2I(*indicesOut) & 3) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_meshdata.cpp",
                     84,

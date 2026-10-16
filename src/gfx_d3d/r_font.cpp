@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_font.h"
 #include <universal/assertive.h>
 #include <universal/com_math.h>
@@ -137,7 +138,7 @@ unsigned int __cdecl R_FontGetRandomNumberCharacter(Font_s *font, int seed)
 Font_s *__cdecl R_RegisterFont(const char *name, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (Font_s *)((int (__cdecl *)(const char *, int))R_RegisterFont_FastFile)(name, imageTrack);
+        return (Font_s *)BO1_I2P(((int (__cdecl *)(const char *, int))R_RegisterFont_FastFile)(name, imageTrack));
     else
         return R_RegisterFont_LoadObj(name, imageTrack);
 }
@@ -245,7 +246,7 @@ int __cdecl R_TextWidth(const char *text, int maxChars, Font_s *font)
         {
             ++text;
         }
-        else if ( letter != 94 || *text != 67 || text == (const char *)-1 || text[1] == 94 || text[1] < 48 || text[1] > 64 )
+        else if ( letter != 94 || *text != 67 || text == (const char *)BO1_I2P(-1) || text[1] == 94 || text[1] < 48 || text[1] > 64 )
         {
             if ( letter == 94 && *text == 76 )
             {

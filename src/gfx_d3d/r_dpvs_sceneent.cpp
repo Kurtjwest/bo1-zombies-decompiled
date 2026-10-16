@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "r_dpvs_sceneent.h"
 #include <universal/com_workercmds.h>
 #include "r_dpvs_entity.h"
@@ -334,7 +335,7 @@ void R_AddCellSceneEntSurfacesInFrustumCmd(GfxWorldDpvsPlanes *data)
     {
         __debugbreak();
     }
-    entInfo = (GfxEntCellRefInfo *)scene.dynSModelVisBitsCamera[localClientNum - 4];
+    entInfo = (GfxEntCellRefInfo *)BO1_I2P(scene.dynSModelVisBitsCamera[localClientNum - 4]);
     sceneXModelIndex = scene.dpvs.sceneXModelIndex;
     sceneDObjIndex = scene.dpvs.sceneDObjIndex;
     viewIndex = dpvsCell->viewIndex;

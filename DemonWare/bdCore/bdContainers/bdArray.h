@@ -1,6 +1,8 @@
 #pragma once
+#include <universal/bo1_ptrcast.h>
 
 #include <cstdint>
+#include <new>
 
 #include <DemonWare/bdCore/bdMemory/bdMemory.h>
 
@@ -55,7 +57,7 @@ struct bdArray
         m_data = nullptr;
         m_capacity = 0;
         m_size = 0;
-        return (int)this;
+        return (int)BO1_P2I(this);
     }
 
     // ---------------------------------------------------------------------
@@ -65,7 +67,7 @@ struct bdArray
     inline int decreaseCapacity(unsigned int a2)
     {
         if (m_capacity <= 4 * m_size)
-            return (int)this;
+            return (int)BO1_P2I(this);
 
         unsigned int reduce;
         if (a2 <= m_capacity - m_size)
@@ -94,7 +96,7 @@ struct bdArray
 
         bdMemory::deallocate(m_data);
         m_data = newData;
-        return (int)this;
+        return (int)BO1_P2I(this);
     }
 
     // ---------------------------------------------------------------------
@@ -121,7 +123,7 @@ struct bdArray
 
         m_data = newData;
         m_capacity = newCap;
-        return (int)this;
+        return (int)BO1_P2I(this);
     }
 
     // ---------------------------------------------------------------------
@@ -131,7 +133,7 @@ struct bdArray
     inline int operator=(const bdArray &rhs)
     {
         if (this == &rhs)
-            return (int)this;
+            return (int)BO1_P2I(this);
 
         unsigned int rhsSize = rhs.m_size;
 

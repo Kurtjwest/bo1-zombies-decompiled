@@ -13,7 +13,7 @@
 #include <ui/keycodes.h>
 #include <qcommon/common.h>
 #include <gfx_d3d/r_dvars.h>
-#include <Windows.h>
+#include <windows.h>
 #include <algorithm>
 #include <cstdio>
 #include <game_sp/g_sp_measure.h>

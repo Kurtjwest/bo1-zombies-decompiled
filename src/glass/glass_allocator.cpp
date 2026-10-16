@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "glass_allocator.h"
 #include "glass_client.h"
 #include <universal/assertive.h>
@@ -16,7 +17,7 @@ void __thiscall SmallAllocator::Init(void *buffer, unsigned int bs, unsigned int
     ptr = (char *)this->memory;
     for ( i = 0; i < this->numBlocks - 1; ++i )
     {
-        *(unsigned int *)ptr = (unsigned int)&ptr[this->blockSize];
+        *(unsigned int *)ptr = (unsigned int)BO1_P2I(&ptr[this->blockSize]);
         ptr += this->blockSize;
     }
     *(unsigned int *)ptr = 0;
@@ -82,8 +83,8 @@ void __thiscall SmallAllocator::Free(void **ptr, unsigned int num)
 bool __thiscall SmallAllocator::IsValidPointer(void *ptr)
 {
     return ptr >= this->memory
-            && !(((unsigned int)ptr - (unsigned int)this->memory) % this->blockSize)
-            && (unsigned int)ptr - (unsigned int)this->memory < this->numBlocks * this->blockSize;
+            && !(((unsigned int)BO1_P2I(ptr) - (unsigned int)BO1_P2I(this->memory)) % this->blockSize)
+            && (unsigned int)BO1_P2I(ptr) - (unsigned int)BO1_P2I(this->memory) < this->numBlocks * this->blockSize;
 }
 
 void __thiscall Allocator::Memory::Init()
@@ -131,8 +132,8 @@ void __thiscall Allocator::Init(void *buf, int size)
     Allocator::Memory *end; // [esp+Ch] [ebp-4h]
 
     this->buffer = buf;
-    end = (Allocator::Memory *)(((int)this->buffer + size - 21) & 0xFFFFFFF0);
-    this->head = (Allocator::Memory *)(((int)this->buffer + 15) & 0xFFFFFFF0);
+    end = (Allocator::Memory *)BO1_I2P((((int)BO1_P2I(this->buffer) + size - 21) & 0xFFFFFFF0));
+    this->head = (Allocator::Memory *)BO1_I2P((((int)BO1_P2I(this->buffer) + 15) & 0xFFFFFFF0));
     //Allocator::Memory::Init(this->head);
     this->head->Init();
     this->tail = end;
@@ -281,7 +282,7 @@ unsigned int __thiscall Allocator::GetMemorySize(unsigned int *ptr)
     if ( !ptr )
         return -1;
     if ( *(ptr - 4) )
-        return *(ptr - 4) - (unsigned int)(ptr - 4);
+        return *(ptr - 4) - (unsigned int)BO1_P2I((ptr - 4));
     else
         return 0;
 }

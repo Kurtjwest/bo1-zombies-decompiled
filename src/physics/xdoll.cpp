@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "xdoll.h"
 #include "phys_main.h"
 #include <qcommon/threads.h>
@@ -35,7 +36,7 @@ void __cdecl XDoll_SetCollides(XDollBone *bone, bool collides)
 
     if ( bone->rigidBody )
     {
-        userData = (PhysObjUserData *)bone->rigidBody;
+        userData = (PhysObjUserData *)BO1_I2P(bone->rigidBody);
         if ( userData->m_bpb->is_bpi() )
         {
             //bpi = broad_phase_base::get_bpi(userData->m_bpb);
@@ -422,7 +423,7 @@ char __cdecl XDoll_CreatePhysObj(
             if ( model->collSurfs )
                 surfFlags = model->collSurfs->surfFlags;
             else
-                surfFlags = (int)"t";
+                surfFlags = (int)BO1_P2I("t");
             aabb_gjk_geom = create_aabb_gjk_geom(
                                                 model->mins,
                                                 model->maxs,
@@ -433,8 +434,8 @@ char __cdecl XDoll_CreatePhysObj(
         }
         Sys_EnterCriticalSection(CRITSECT_PHYSICS);
         bone->physPreset = physPreset;
-        bone->rigidBody = (int)Phys_ObjCreate(0, origin, quat, vec3_origin, physPreset, &gjk_geom_list, 1, -1);
-        userData = (PhysObjUserData *)bone->rigidBody;
+        bone->rigidBody = (int)BO1_P2I(Phys_ObjCreate(0, origin, quat, vec3_origin, physPreset, &gjk_geom_list, 1, -1));
+        userData = (PhysObjUserData *)BO1_I2P(bone->rigidBody);
         if ( !userData->m_bpb
             && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp", 327, 0, "%s", "userData->m_bpb") )
         {
@@ -575,7 +576,7 @@ int __cdecl XDoll_CreateXDollForConstraints(
         if ( CG_DObjGetWorldTagMatrix(&cent->pose, obj, body->userBodyBoneHash, mat, origin) )
         {
             UserBody = Phys_CreateUserBody(origin, entity_index, PHYS_GEOM_CAPSULE);
-            body->userBody = (int)UserBody;
+            body->userBody = (int)BO1_P2I(UserBody);
             if ( body->userBody )
                 Phys_SetUserBody(body->userBody, origin);
         }
@@ -698,7 +699,7 @@ void    XDoll_CreateConstraint(
     {
         if (rb2 == phys_sys::get_environment_rigid_body() && body->userBody)
         {
-            userData = (PhysObjUserData *)body->userBody;
+            userData = (PhysObjUserData *)BO1_I2P(body->userBody);
             rb2 = userData->body;
         }
         if (!rb2 && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\physics\\xdoll.cpp", 489, 0, "%s", "rb2"))
@@ -887,7 +888,7 @@ environment_rigid_body *__cdecl XDoll_GetRigidBody(XDollBody *body, const char *
         {
             if ( !body->bones[bi].rigidBody )
                 return 0;
-            return *(environment_rigid_body **)body->bones[bi].rigidBody;
+            return *(environment_rigid_body **)BO1_I2P(body->bones[bi].rigidBody);
         }
     }
     return (environment_rigid_body *)rb;

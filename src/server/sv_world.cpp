@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include <universal/profile.h>
 #include "sv_world.h"
 
@@ -139,8 +140,8 @@ void    SV_LinkEntity(gentity_s *gEnt)
     }
     currentAngles = gEnt->r.currentAngles;
     currentOrigin = gEnt->r.currentOrigin;
-    angles = (float *)LODWORD(gEnt->r.currentAngles[0]);
-    if (((unsigned int)angles & 0x7F800000) == 0x7F800000
+    angles = (float *)BO1_I2P(LODWORD(gEnt->r.currentAngles[0]));
+    if (((unsigned int)BO1_P2I(angles) & 0x7F800000) == 0x7F800000
         || (v55 = *((_DWORD *)currentAngles + 1), (v55 & 0x7F800000) == 0x7F800000)
         || (v54 = *((_DWORD *)currentAngles + 2), (v54 & 0x7F800000) == 0x7F800000))
     {

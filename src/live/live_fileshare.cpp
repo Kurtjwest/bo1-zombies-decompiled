@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "live_fileshare.h"
 #include <ui/ui_shared.h>
 #include "live_win.h"
@@ -928,7 +929,7 @@ char __cdecl Live_FileShare_Theater_SetFile(unsigned __int64 fileID, bool isUser
             result = Live_FileShare_FindFileInPrivateData(fileID, FILESHARE_BUFFER_SECONDARY);
     }
     if ( !result )
-        result = (bdFileMetaData *)RETURN_ZERO32();
+        result = (bdFileMetaData *)BO1_I2P(RETURN_ZERO32());
     if ( result )
     {
         memcpy(&s_theaterFileMetaData, result, sizeof(s_theaterFileMetaData));
@@ -4286,7 +4287,7 @@ void __cdecl Live_FileShare_EditInfo_f()
         ClientName = Live_ControllerIndex_GetClientName(0);
         I_strncpyz(s_gamerTag, ClientName, 32);
         desc = &data->descriptors[index];
-        if ( (fileSharePrivateData *)((char *)data + 2104 * index) == (fileSharePrivateData *)-16
+        if ( (fileSharePrivateData *)((char *)data + 2104 * index) == (fileSharePrivateData *)BO1_I2P(-16)
             && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_fileshare.cpp", 3313, 0, "%s", "desc") )
         {
             __debugbreak();

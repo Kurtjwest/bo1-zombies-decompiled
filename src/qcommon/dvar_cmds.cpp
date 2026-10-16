@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "dvar_cmds.h"
 #include "cmd.h"
 #include "common.h"
@@ -699,7 +700,7 @@ char *__cdecl Dvar_InfoString(int localClientNum, int bit)
         index = localClientNum;
         Username = CL_ControllerIndex_GetUsername();
         Info_SetValueForKey(info1, (char*)"name", Username);
-        if ( clanName && *(_BYTE *)clanName->current.integer )
+        if ( clanName && *(_BYTE *)BO1_I2P(clanName->current.integer) )
         {
             I_strncpyz(tempbuf, clanName->current.string, 5);
             I_CleanStr(tempbuf);

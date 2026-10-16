@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 #include "phys_local.h"
 #include <tl/tl_system.h>
 
@@ -46,7 +47,7 @@ struct alignas(8) phys_slot_pool // sizeof=0x18
     void  free_slot(unsigned __int8 *slot);
     char *allocate_slot();
 };
-static_assert(sizeof(phys_slot_pool) == 0x18);
+BO1_LAYOUT32_ASSERT(sizeof(phys_slot_pool) == 0x18);
 
 struct phys_memory_manager // sizeof=0x3D0
 {
@@ -75,7 +76,7 @@ struct phys_memory_manager // sizeof=0x3D0
     phys_slot_pool *get_slot_pool(unsigned int slot_size, unsigned int slot_alignment);
 };
 
-static_assert(sizeof(phys_memory_manager) == 0x3D0);
+BO1_LAYOUT32_ASSERT(sizeof(phys_memory_manager) == 0x3D0);
 
 void __cdecl phys_memory_manager_term();
 void __cdecl ppu_pmm_get_linear_buffer(char ***linear_buffer_cur, char **linear_buffer_end);

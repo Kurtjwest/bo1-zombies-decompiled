@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "snd_debug.h"
 #include <qcommon/cmd.h>
 #include "snd_dvar.h"
@@ -57,12 +58,12 @@ void __cdecl SND_DebugDrawWorldSounds(int debugDrawStyle)
                 if ((g_snd.voice[idx].alias->flags & 2) >> 1)
                 {
                     if (!snd_solo_alias_substring->current.integer
-                        || !*(_BYTE *)snd_solo_alias_substring->current.integer
+                        || !*(_BYTE *)BO1_I2P(snd_solo_alias_substring->current.integer)
                         || (v2 = strstr(g_snd.voice[idx].alias->name, snd_solo_alias_substring->current.string),
                             v2))
                     {
                         if (!snd_mute_alias_substring->current.integer
-                            || !*(_BYTE *)snd_mute_alias_substring->current.integer
+                            || !*(_BYTE *)BO1_I2P(snd_mute_alias_substring->current.integer)
                             || (v3 = strstr(g_snd.voice[idx].alias->name, snd_mute_alias_substring->current.string),
                                 !v3))
                         {

@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "g_scr_vehicle.h"
 #include <universal/q_shared.h>
 #include <clientscript/cscr_vm.h>
@@ -4956,7 +4957,7 @@ void __cdecl PushAttachedStickyMissile(gentity_s *vehicle, gentity_s *missile)
     }
     scr_vehicle = vehicle->scr_vehicle;
     phys = &scr_vehicle->phys;
-    if ( scr_vehicle == (scr_vehicle_s *)-220
+    if ( scr_vehicle == (scr_vehicle_s *)BO1_I2P(-220)
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\game\\g_scr_vehicle.cpp", 2242, 0, "%s", "phys") )
     {
         __debugbreak();
@@ -5125,8 +5126,8 @@ void __cdecl VEH_UpdateNitrousPosition(gentity_s *pSelf)
     nitrousVeh = veh->nitrousVehicle;
     memset(zero, 0, sizeof(zero));
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
-    Phys_ObjGetPosition((int)nitrousVeh->m_phys_user_data, absPos, absAxis);
-    Phys_ObjGetVelocities((int)nitrousVeh->m_phys_user_data, tvel, avel);
+    Phys_ObjGetPosition((int)BO1_P2I(nitrousVeh->m_phys_user_data), absPos, absAxis);
+    Phys_ObjGetVelocities((int)BO1_P2I(nitrousVeh->m_phys_user_data), tvel, avel);
     notifyFlags = nitrousVeh->m_server_notify_flags;
     nitrousVeh->m_server_notify_flags = 0;
     intensity = nitrousVeh->m_collision_intensity;
@@ -6887,7 +6888,7 @@ void    VEH_UpdatePath(gentity_s *ent)
             }
             G_VehUpdatePathPos(&nextVpp, -1);
         }
-        if (*(_BYTE *)g_vehicleDrawPath->current.integer && *(_BYTE *)g_vehicleDrawPath->current.integer == 49)
+        if (*(_BYTE *)BO1_I2P(g_vehicleDrawPath->current.integer) && *(_BYTE *)BO1_I2P(g_vehicleDrawPath->current.integer) == 49)
             VP_DrawPath(&nextVpp);
         if (veh->pathPos.endOfPath && (veh->flags & 0x100) == 0)
             veh->speed = 0.0f;
@@ -10068,9 +10069,9 @@ void __cdecl CMD_VEH_SetGunnerTargetEnt(scr_entref_t entref)
     v3[1] = targetOffset[1];
     v3[2] = targetOffset[2];
     veh->gunnerTargets[gunnerIndex].targetOrigin[0] = 0.0f;
-    targetOrigin = (int)veh->gunnerTargets[gunnerIndex].targetOrigin;
-    *(unsigned int *)(targetOrigin + 4) = 0;
-    *(unsigned int *)(targetOrigin + 8) = 0;
+    targetOrigin = (int)BO1_P2I(veh->gunnerTargets[gunnerIndex].targetOrigin);
+    *(unsigned int *)BO1_I2P((targetOrigin + 4)) = 0;
+    *(unsigned int *)BO1_I2P((targetOrigin + 8)) = 0;
 }
 
 void __cdecl CMD_VEH_ClearGunnerTarget(scr_entref_t entref)

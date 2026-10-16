@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/bo1_layout.h>
 #include <physics/phys_local.h>
 #include <game/teams.h>
 #include <gfx_d3d/r_material.h>
@@ -482,7 +483,7 @@ struct alignas(16) NitrousVehicle // sizeof=0x440
     // padding byte
     // padding byte
 };
-static_assert(sizeof(NitrousVehicle) == 0x440);
+BO1_LAYOUT32_ASSERT(sizeof(NitrousVehicle) == 0x440);
 
 struct PhysObjUserData *__cdecl Phys_ObjCreateNitrousVehicle(
                 const float *position,

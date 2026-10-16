@@ -1,3 +1,4 @@
+#include <universal/bo1_ptrcast.h>
 #include "xmodel.h"
 #include <universal/assertive.h>
 #include <universal/q_shared.h>
@@ -12,7 +13,7 @@
 #include "dobj_utils.h"
 #include <cgame/cg_drawtools.h>
 
-Material *g_materials[1];
+Ptr32<Material> g_materials[1];
 XModelDefault g_default;
 
 bool __cdecl XModelBad(const XModel *model)
@@ -74,10 +75,10 @@ void __cdecl XModelSurfsSetData(const char *name, XModelSurfs *modelSurfs, void 
 XModel *__cdecl XModelPrecache(char *name, void *(__cdecl *Alloc)(int), void *(__cdecl *AllocColl)(int))
 {
     if ( useFastFile->current.enabled )
-        return (XModel *)((int (__cdecl *)(char *, void *(__cdecl *)(int), void *(__cdecl *)(int)))XModelPrecache_FastFile)(
+        return (XModel *)BO1_I2P(((int (__cdecl *)(char *, void *(__cdecl *)(int), void *(__cdecl *)(int)))XModelPrecache_FastFile)(
                                              name,
                                              Alloc,
-                                             AllocColl);
+                                             AllocColl));
     else
         return XModelPrecache_LoadObj(name, Alloc, AllocColl);
 }
@@ -783,14 +784,14 @@ void __cdecl PrefetchArrayIndexed(char *mem, unsigned int elementCount, unsigned
     unsigned int umem; // [esp+4h] [ebp-Ch]
     const unsigned __int8 *memIter; // [esp+8h] [ebp-8h]
 
-    umem = (unsigned int)&mem[elementSize * index];
+    umem = (unsigned int)BO1_P2I(&mem[elementSize * index]);
     if ( !elementCount
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\xmodel.cpp", 1095, 0, "%s", "elementCount") )
     {
         __debugbreak();
     }
-    for ( memIter = (const unsigned __int8 *)(umem & 0xFFFFFF80);
-                (unsigned int)memIter <= ((umem + elementSize * elementCount - 1) & 0xFFFFFF80);
+    for ( memIter = (const unsigned __int8 *)BO1_I2P((umem & 0xFFFFFF80));
+                (unsigned int)BO1_P2I(memIter) <= ((umem + elementSize * elementCount - 1) & 0xFFFFFF80);
                 memIter += 128 )
     {
         _mm_prefetch((const char *)memIter, 1);

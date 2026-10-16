@@ -1,8 +1,9 @@
+#include <universal/bo1_ptrcast.h>
 #include <qcommon/cm_mapkit.h>
 #include <cgame/cg_sp_client_ext.h>
 #include "r_scene.h"
 
-#include <Windows.h>
+#include <windows.h>
 #include "r_dvars.h"
 #include <universal/profile.h> // mod (L43): g_modRendWarn
 #include "r_warn.h"
@@ -456,7 +457,7 @@ void __cdecl R_AddDObjToScene(
                 sceneModel->entnum = entnum;
                 scene.dpvs.sceneXModelIndex[entnum] = sceneEntIndex;
                 //sceneModel->cachedLightingHandle = (unsigned __int16 *)Ragdoll_HandleBody((int)pose);
-                sceneModel->cachedLightingHandle = (unsigned __int16 *)((int)pose);
+                sceneModel->cachedLightingHandle = (unsigned __int16 *)BO1_I2P(((int)BO1_P2I(pose)));
                 sceneModel->lightingOriginToleranceSq = lightingOriginToleranceSq;
                 radius = XModelGetRadius(model);
                 CG_GetPoseOrigin(pose, sceneModel->placement.base.origin);
@@ -1361,7 +1362,7 @@ void R_AddXModelSurfacesCamera(
     int totalVertCount; // [esp+14h] [ebp-34h]
     GfxDrawSurf drawSurf; // [esp+18h] [ebp-30h] BYREF
     int totalTriCount; // [esp+24h] [ebp-24h]
-    Material *const *material; // [esp+28h] [ebp-20h]
+    const Ptr32<Material> *material; // [esp+28h] [ebp-20h]
     unsigned int subMatIndex; // [esp+2Ch] [ebp-1Ch]
     int skinnedCachedOffset; // [esp+30h] [ebp-18h]
     int lod; // [esp+34h] [ebp-14h]
@@ -1528,7 +1529,7 @@ const XSurface *__cdecl R_GetXSurface(unsigned int *modelSurf, surfaceType_t sur
     {
         __debugbreak();
     }
-    return (const XSurface *)modelSurf[1];
+    return (const XSurface *)BO1_I2P(modelSurf[1]);
 }
 
 GfxDrawSurf *__cdecl R_AddXModelSurfaces(
@@ -1539,7 +1540,7 @@ GfxDrawSurf *__cdecl R_AddXModelSurfaces(
                 GfxDrawSurf *lastDrawSurf)
 {
     unsigned int surfId; // [esp+10h] [ebp-2Ch]
-    Material **material; // [esp+14h] [ebp-28h]
+    Ptr32<Material> *material; // [esp+14h] [ebp-28h]
     unsigned int subMatIndex; // [esp+18h] [ebp-24h]
     unsigned __int64 newDrawSurf; // [esp+1Ch] [ebp-20h]
     int skinnedCachedOffset; // [esp+28h] [ebp-14h]
@@ -1671,7 +1672,8 @@ void __cdecl R_AddDObjSurfacesCamera(
     const DObj *obj; // [esp+48h] [ebp-6Ch]
     GfxDrawSurf drawSurf; // [esp+4Ch] [ebp-68h] BYREF
     int totalTriCount; // [esp+58h] [ebp-5Ch]
-    Material *const *material; // [esp+5Ch] [ebp-58h]
+    const Ptr32<Material> *material; // [esp+5Ch] [ebp-58h]
+    Ptr32<Material> infraredWhiteHandle; // what 'material' points at for infrared draws
     XModel *model; // [esp+60h] [ebp-54h]
     unsigned int subMatIndex; // [esp+64h] [ebp-50h]
     unsigned int surfSize; // [esp+68h] [ebp-4Ch]
@@ -1777,7 +1779,10 @@ void __cdecl R_AddDObjSurfacesCamera(
                 while ( subMatIndex < numsurfs )
                 {
                     if ( infraredDraw )
-                        material = &rgp.infraredWhite;
+                    {
+                        infraredWhiteHandle = rgp.infraredWhite;
+                        material = &infraredWhiteHandle;
+                    }
                     skinnedSurf = (GfxModelSkinnedSurface *)modelSurf;
                     skinnedCachedOffset = *(unsigned int *)modelSurf;
                     if ( skinnedCachedOffset == -2 )
@@ -1822,7 +1827,7 @@ void __cdecl R_AddDObjSurfacesCamera(
                         skinnedSurf->info.lightingHandle = lightingHandle;
                         skinnedSurf->info.dobjModelIndex = modelIndex;
                         surfId = (_BYTE *)modelSurf - (_BYTE *)frontEndDataOut;
-                        if ( (((_BYTE)modelSurf - (_BYTE)frontEndDataOut) & 3) != 0
+                        if ( (((_BYTE)BO1_P2I(modelSurf) - (_BYTE)BO1_P2I(frontEndDataOut)) & 3) != 0
                             && !Assert_MyHandler(
                                         "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
                                         1588,
@@ -1920,7 +1925,7 @@ GfxDrawSurf *__cdecl R_AddDObjSurfaces(
     unsigned int surfId; // [esp+1Ch] [ebp-58h]
     unsigned int surfIda; // [esp+1Ch] [ebp-58h]
     DObj *obj; // [esp+20h] [ebp-54h]
-    Material **material; // [esp+24h] [ebp-50h]
+    Ptr32<Material> *material; // [esp+24h] [ebp-50h]
     XModel *model; // [esp+28h] [ebp-4Ch]
     unsigned int subMatIndex; // [esp+2Ch] [ebp-48h]
     unsigned int surfSize; // [esp+30h] [ebp-44h]
@@ -2036,7 +2041,7 @@ LABEL_24:
                     HIDWORD(newDrawSurf.packed) = HIDWORD(newDrawSurf.packed) & 0xFE7FFFFF | 0x1000000;
                 }
                 surfId = (_BYTE *)modelSurf - (_BYTE *)frontEndDataOut;
-                if ( (((_BYTE)modelSurf - (_BYTE)frontEndDataOut) & 3) != 0
+                if ( (((_BYTE)BO1_P2I(modelSurf) - (_BYTE)BO1_P2I(frontEndDataOut)) & 3) != 0
                     && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_scene.cpp",
                                 1779,

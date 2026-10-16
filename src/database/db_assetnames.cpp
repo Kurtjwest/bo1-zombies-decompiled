@@ -1,3 +1,5 @@
+#include <universal/bo1_ptrcast.h>
+#include <universal/bo1_layout.h>
 #include "db_assetnames.h"
 #include "db_registry.h"
 
@@ -268,7 +270,7 @@ int __cdecl DB_SizeofXAsset_menuDef_t_()
     return 400;
 }
 
-static_assert(sizeof(XAnimTree_s) == 8);
+BO1_LAYOUT32_ASSERT(sizeof(XAnimTree_s) == 8);
 //int __cdecl XAnimTreeSize()
 //{
 //    return 8;
@@ -363,12 +365,12 @@ void __cdecl DB_ImageSetName(XAssetHeader *header, const char *name)
 
 const char *__cdecl DB_LocalizeEntryGetName(const XAssetHeader *header)
 {
-    return (const char *)header->xmodelPieces->numpieces;
+    return (const char *)BO1_I2P(header->xmodelPieces->numpieces);
 }
 
 void __cdecl DB_LocalizeEntrySetName(XAssetHeader *header, const char *name)
 {
-    header->xmodelPieces->numpieces = (int)name;
+    header->xmodelPieces->numpieces = (int)BO1_P2I(name);
 }
 
 void __cdecl DB_DDLSetname(XAssetHeader *header, const char *name)
