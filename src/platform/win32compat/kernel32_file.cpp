@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <vector>
 
 namespace w32
 {
@@ -734,6 +735,63 @@ const char *bo1_hostpath(const char *path, char *buf, size_t size)
     buf[n] = 0;
     return buf;
 }
+// MSVC's text mode for reading: "\r\n" reads as "\n", and Ctrl-Z (0x1A) ends the file. The game's text files have
+// Windows line endings (localization.txt starts "english\r\n", and the language name read from it goes into every
+// localized path: zone\english\...), so a file opened for reading in text mode is converted into an anonymous
+// temporary file, which then behaves as the CRT's text stream did (sizes and positions are those of the converted
+// text). If no temporary file can be made, the file is read as it is.
+static FILE *OpenTextForReading(const std::string &path)
+{
+    FILE *raw = fopen(path.c_str(), "rb");
+    if (!raw)
+        return nullptr;
+    FILE *out = tmpfile();
+    if (!out)
+        return raw;
+    static const size_t kChunk = 64 * 1024;
+    std::vector<char> in(kChunk), conv(kChunk + 2);
+    bool cr = false; // a '\r' not yet written: dropped if a '\n' follows
+    bool end = false;
+    size_t n;
+    while (!end && (n = fread(in.data(), 1, kChunk, raw)) > 0)
+    {
+        size_t o = 0;
+        for (size_t i = 0; i < n; ++i)
+        {
+            const char c = in[i];
+            if (c == 0x1A)
+            {
+                end = true;
+                break;
+            }
+            if (cr)
+            {
+                cr = false;
+                if (c != '\n')
+                    conv[o++] = '\r';
+            }
+            if (c == '\r')
+            {
+                cr = true;
+                continue;
+            }
+            conv[o++] = c;
+        }
+        if (o && fwrite(conv.data(), 1, o, out) != o)
+        {
+            // (out of temporary space) the file as it is, from the start
+            fclose(out);
+            rewind(raw);
+            return raw;
+        }
+    }
+    if (cr)
+        fputc('\r', out);
+    fclose(raw);
+    rewind(out);
+    return out;
+}
+
 FILE *bo1_fopen(const char *path, const char *mode)
 {
     if (!path || !mode)
@@ -753,6 +811,9 @@ FILE *bo1_fopen(const char *path, const char *mode)
     }
     m[j] = 0;
     std::string p = HostPath(path);
+    // without 'b' the CRT opens in text mode (its default _fmode); reading is where that changes the bytes
+    if (m[0] == 'r' && !strchr(m, '+') && !strchr(m, 'b'))
+        return OpenTextForReading(p);
     return fopen(p.c_str(), m);
 }
 FILE *bo1_freopen(const char *path, const char *mode, FILE *f)
