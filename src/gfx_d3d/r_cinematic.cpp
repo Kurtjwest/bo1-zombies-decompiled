@@ -275,12 +275,22 @@ void R_Cinematic_RelinquishIO()
 const char *R_Cinematic_CheckBinkError()
 {
     const char *result; // eax
-    const char *v1; // eax
 
     result = (const char *)BinkGetError();
     if ( result && *result )
     {
-        v1 = va("BinkGetError(): \"%s\"", result);
+#if defined(BO1_MACOS)
+        // zombies (port): the exe asserts here (an assert-enabled build of it). Bink's error is the last one set and
+        // stays set, so one movie that cannot be opened (a file missing from main/video, say) would end the game at
+        // the next Bink call; the retail exe, built without asserts, goes on. Print each new error once instead.
+        static char lastError[256];
+        if ( strncmp(lastError, result, sizeof(lastError) - 1) )
+        {
+            I_strncpyz(lastError, result, sizeof(lastError));
+            Com_PrintError(8, "BinkGetError(): \"%s\"\n", result);
+        }
+#else
+        const char *v1 = va("BinkGetError(): \"%s\"", result);
         result = (const char *)BO1_I2P(Assert_MyHandler(
                                                          "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_cinematic.cpp",
                                                          504,
@@ -290,6 +300,7 @@ const char *R_Cinematic_CheckBinkError()
                                                          v1));
         if ( !(_BYTE)BO1_P2I(result) )
             __debugbreak();
+#endif
     }
     return result;
 }

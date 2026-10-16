@@ -1780,7 +1780,12 @@ void __cdecl EmitGetInteger(scriptInstance_t inst, int value, sval_u sourcePos)
     }
     EmitOpcode(inst, 8u, 1, 0);
     AddOpcodePos(inst, sourcePos.stringValue, 1);
-    EmitCodepos(inst, (const char *)BO1_I2P(value));
+    // zombies (port): the exe stores the operand through EmitCodepos, a pointer slot. Here that went through
+    // BO1_I2P / BO1_P2I, which only round-trips handles that are addresses: integers in 0xD0000000..0xFFFEFFFF
+    // (window and escape handles) came back as 0. Among them a fifth of all #"..." hashes, so for example the front
+    // end's ChangeLevel(GetDvar(#"ui_load_level")) got "" and disconnected instead of starting the zombies map.
+    gScrCompileGlob[inst].codePos = (unsigned __int8 *)TempMallocAlignStrict(4);
+    *(int *)gScrCompileGlob[inst].codePos = value; // OP_GetInteger reads it back raw (Scr_ReadInt)
 }
 
 void __cdecl EmitCodepos(scriptInstance_t inst, const char *pos)
