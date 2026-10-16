@@ -214,6 +214,7 @@ enum
     MAX_VERTEX_ATTRIBUTES = 16,
     MAX_VERTEX_BUFFERS = 31,
     VERTEX_BUFFER_BASE = 1,  // vertex streams 0..15 use buffer indices 1..16; shader uniforms use 0
+    VERTEX_FIXUP = 29,       // per-draw values for the vertex shaders (bo1_vsfix: the constant depth bias)
     VERTEX_BUFFER_ZERO = 30, // a constant (0,0,0,1) source for attributes the vertex declaration lacks
 };
 struct BlendDesc

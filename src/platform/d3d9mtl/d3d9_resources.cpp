@@ -1206,8 +1206,10 @@ HRESULT Query::GetData(void *pData, DWORD dwSize, DWORD dwGetDataFlags)
         return S_OK;
     }
     case D3DQUERYTYPE_TIMESTAMPDISJOINT:
+        // the timestamps are CPU times taken when the work is seen complete, not GPU times: report every interval
+        // as disjoint so a profiler shows no GPU time rather than polling intervals
         if (pData && dwSize >= sizeof(BOOL))
-            *(BOOL *)pData = FALSE;
+            *(BOOL *)pData = TRUE;
         return S_OK;
     case D3DQUERYTYPE_TIMESTAMPFREQ:
         if (pData && dwSize >= sizeof(UINT64))

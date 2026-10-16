@@ -568,6 +568,7 @@ void Device::ResetState()
     m_vp = {0, 0, m_pp.BackBufferWidth, m_pp.BackBufferHeight, 0.0f, 1.0f};
     m_scissor = {0, 0, (LONG)m_pp.BackBufferWidth, (LONG)m_pp.BackBufferHeight};
     m_dirty = DIRTY_ALL;
+    m_vsfixValid = false;
     m_curVsVariant = m_curPsVariant = nullptr;
     m_curPipeline = nullptr;
 }
@@ -2540,6 +2541,11 @@ void Device::UploadUniforms()
             const int n = std::min(r.count, maxF - r.reg);
             memcpy(p + (size_t)r.slot * 16, F[r.reg], (size_t)n * 16);
         }
+        // the shader's own def values win inside relative-addressed arrays too (direct reads use them compiled in)
+        for (const ShaderInfo::FloatDef &d : info.floatDefs)
+            for (const ShaderInfo::Range &r : info.floatRanges)
+                if (r.count > 1 && d.reg >= r.reg && d.reg < r.reg + r.count)
+                    memcpy(p + (size_t)(r.slot + d.reg - r.reg) * 16, d.v, 16);
         uint8_t *ip = p + (size_t)info.floatSlots * 16;
         for (const ShaderInfo::Range &r : info.intRanges)
             if (r.reg >= 0 && r.reg < 16)
@@ -2606,12 +2612,31 @@ void Device::ApplyRasterState()
     const uint8_t winding = FrontIsCounterClockwise() ? 1 : 0; // MTLWindingClockwise
     const uint8_t fill = m_rs[D3DRS_FILLMODE] == D3DFILL_WIREFRAME ? 1 : 0;
     rhi::SetRasterState(cull, winding, fill);
-    // D3DRS_DEPTHBIAS is in depth-buffer units ([0, 1]); Metal's constant bias counts the minimum resolvable depth
-    // difference, 2^-24 for the 24-bit buffers the engine's values were made for
-    const float bias = DwordAsFloat(m_rs[D3DRS_DEPTHBIAS]) * 16777216.0f;
+    // D3DRS_DEPTHBIAS is a constant in depth-buffer units, the same at every depth of the 24-bit buffers the engine
+    // made its values for. Metal's constant bias on the 32-bit float buffers used here (Apple GPUs have no D24) is
+    // scaled by the exponent of each primitive's depth, so the constant goes into the vertex shader instead
+    // (bo1_vsfix, see ApplyDepthBiasFixup) and Metal only gets the slope term, which is the same for both.
     const float slope = DwordAsFloat(m_rs[D3DRS_SLOPESCALEDEPTHBIAS]);
-    rhi::SetDepthBias(bias, slope, 0.0f);
+    rhi::SetDepthBias(0.0f, slope, 0.0f);
     m_dirty &= ~DIRTY_RASTER;
+    ApplyDepthBiasFixup();
+}
+
+// The vertex shaders add bo1_vsfix.x * w to the clip-space z (mojoshader_profile_metal.c): D3DRS_DEPTHBIAS added to
+// the window-space depth is that much in normalized depth once divided by the viewport's depth range.
+void Device::ApplyDepthBiasFixup()
+{
+    const float bias = DwordAsFloat(m_rs[D3DRS_DEPTHBIAS]);
+    const float range = m_vp.MaxZ - m_vp.MinZ;
+    float fix[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    if (bias != 0.0f)
+        fix[0] = bias / (std::fabs(range) > 1e-6f ? range : 1e-6f);
+    if (!m_vsfixValid || memcmp(fix, m_vsfix, sizeof(fix)) != 0)
+    {
+        memcpy(m_vsfix, fix, sizeof(fix));
+        m_vsfixValid = true;
+        rhi::SetVertexBytes(rhi::VERTEX_FIXUP, fix, sizeof(fix));
+    }
 }
 
 bool Device::PrepareDraw(D3DPRIMITIVETYPE pt)
@@ -2653,6 +2678,7 @@ bool Device::PrepareDraw(D3DPRIMITIVETYPE pt)
         rhi::SetViewport((double)m_vp.X + 0.5, (double)m_vp.Y + 0.5, (double)m_vp.Width, (double)m_vp.Height,
                          (double)m_vp.MinZ, (double)m_vp.MaxZ);
         m_dirty &= ~DIRTY_VIEWPORT;
+        ApplyDepthBiasFixup(); // in units of the viewport's depth range
     }
     if (m_dirty & DIRTY_SCISSOR)
     {
@@ -2728,8 +2754,35 @@ HRESULT Device::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, 
     return D3D_OK;
 }
 
-HRESULT Device::DrawIndexedPrimitive(D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT, UINT, UINT startIndex,
-                                     UINT primCount)
+// Metal always treats the largest index (0xFFFF for 16-bit indices) as a primitive restart, Direct3D 9 as vertex
+// 65535 of the draw: true if any of the n indices is 0xFFFF.
+static bool HasRestartIndex16(const uint16_t *p, uint32_t n)
+{
+    uint32_t i = 0;
+    for (; i + 64 <= n; i += 64)
+    {
+        unsigned hit = 0;
+        for (uint32_t k = 0; k < 64; ++k)
+            hit |= p[i + k] == 0xFFFF;
+        if (hit)
+            return true;
+    }
+    for (; i < n; ++i)
+        if (p[i] == 0xFFFF)
+            return true;
+    return false;
+}
+
+// 16-bit indices widened to 32 bits in transient memory; returns the buffer and offset to draw from
+static void WidenIndices16(const uint16_t *src, uint32_t n, rhi::Buffer **buf, uint32_t *off)
+{
+    uint32_t *dst = (uint32_t *)rhi::AllocTransient(std::max<size_t>((size_t)n * 4, 16), 16, buf, off);
+    for (uint32_t i = 0; i < n; ++i)
+        dst[i] = src[i];
+}
+
+HRESULT Device::DrawIndexedPrimitive(D3DPRIMITIVETYPE PrimitiveType, INT BaseVertexIndex, UINT MinVertexIndex,
+                                     UINT NumVertices, UINT startIndex, UINT primCount)
 {
     DeviceLock lock;
     if (!m_ib)
@@ -2743,8 +2796,22 @@ HRESULT Device::DrawIndexedPrimitive(D3DPRIMITIVETYPE PrimitiveType, INT BaseVer
         return D3D_OK;
     const bool index32 = m_ib->m_format == D3DFMT_INDEX32;
     const uint32_t isize = index32 ? 4 : 2;
-    rhi::DrawIndexed(PrimType(PrimitiveType), count, index32, m_ib->m_buf.cur.buffer,
-                     m_ib->m_buf.cur.offset + startIndex * isize, BaseVertexIndex);
+    // a draw over 65536 vertices can use index 0xFFFF (the static model cache's 64K-vertex windows do), which Metal
+    // would take for a restart: those draws read 32-bit copies of their indices
+    const uint16_t *idx16 = (const uint16_t *)(m_ib->m_buf.cur.ptr + (size_t)startIndex * 2);
+    if (!index32 && (uint64_t)MinVertexIndex + NumVertices > 0xFFFF && m_ib->m_buf.cur.ptr &&
+        HasRestartIndex16(idx16, count))
+    {
+        rhi::Buffer *wbuf;
+        uint32_t woff;
+        WidenIndices16(idx16, count, &wbuf, &woff);
+        rhi::DrawIndexed(PrimType(PrimitiveType), count, true, wbuf, woff, BaseVertexIndex);
+    }
+    else
+    {
+        rhi::DrawIndexed(PrimType(PrimitiveType), count, index32, m_ib->m_buf.cur.buffer,
+                         m_ib->m_buf.cur.offset + startIndex * isize, BaseVertexIndex);
+    }
     m_ib->m_buf.lastUse = rhi::CurrentSerial();
     AfterDraw();
     return D3D_OK;
@@ -2819,12 +2886,22 @@ HRESULT Device::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinV
         else if (PrepareDraw(PrimitiveType))
         {
             const bool index32 = IndexDataFormat == D3DFMT_INDEX32;
-            const size_t ibytes = (size_t)count * (index32 ? 4 : 2);
             rhi::Buffer *ibuf;
             uint32_t ioff;
-            void *ip = rhi::AllocTransient(std::max<size_t>(ibytes, 16), 16, &ibuf, &ioff);
-            memcpy(ip, pIndexData, ibytes);
-            rhi::DrawIndexed(PrimType(PrimitiveType), count, index32, ibuf, ioff, 0);
+            if (!index32 && (uint64_t)MinVertexIndex + NumVertices > 0xFFFF &&
+                HasRestartIndex16((const uint16_t *)pIndexData, count))
+            {
+                // index 0xFFFF is a vertex here, a restart to Metal (see DrawIndexedPrimitive)
+                WidenIndices16((const uint16_t *)pIndexData, count, &ibuf, &ioff);
+                rhi::DrawIndexed(PrimType(PrimitiveType), count, true, ibuf, ioff, 0);
+            }
+            else
+            {
+                const size_t ibytes = (size_t)count * (index32 ? 4 : 2);
+                void *ip = rhi::AllocTransient(std::max<size_t>(ibytes, 16), 16, &ibuf, &ioff);
+                memcpy(ip, pIndexData, ibytes);
+                rhi::DrawIndexed(PrimType(PrimitiveType), count, index32, ibuf, ioff, 0);
+            }
             AfterDraw();
         }
         m_upActive = false;

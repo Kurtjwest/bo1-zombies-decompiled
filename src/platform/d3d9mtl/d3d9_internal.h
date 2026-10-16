@@ -471,6 +471,14 @@ struct ShaderInfo
     std::vector<Range> floatRanges, intRanges, boolRanges;
     uint32_t floatSlots = 0, intSlots = 0, boolSlots = 0;
     uint32_t uniformBytes = 0;
+    // float registers the shader defines itself (def) that lie in a relative-addressed range: Direct3D 9 reads the
+    // defined value there too, so it is written over the application's value in the uploaded array
+    struct FloatDef
+    {
+        int reg;
+        float v[4];
+    };
+    std::vector<FloatDef> floatDefs;
 };
 
 class ShaderBase
@@ -818,6 +826,7 @@ private:
     void UploadUniforms();
     void BindStreams();
     void ApplyRasterState();
+    void ApplyDepthBiasFixup();
     VertexDecl *DeclForFVF(DWORD fvf);
     HRESULT DrawConverted(D3DPRIMITIVETYPE prim, UINT primCount, UINT startVertex, int baseVertex, UINT startIndex,
                           bool indexed, const void *upIndices, D3DFORMAT upIndexFormat);
@@ -854,6 +863,8 @@ private:
     Surface *m_rt[4] = {};
     Surface *m_ds = nullptr;
     D3DVIEWPORT9 m_vp{};
+    float m_vsfix[4] = {}; // bound at rhi::VERTEX_FIXUP (ApplyDepthBiasFixup)
+    bool m_vsfixValid = false;
     RECT m_scissor{};
     float m_clipPlanes[6][4] = {};
 

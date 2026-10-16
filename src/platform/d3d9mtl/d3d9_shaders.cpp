@@ -153,6 +153,18 @@ bool ShaderBase::Init(Device *dev, const DWORD *code, bool pixel)
     m_info.floatSlots = fslot;
     m_info.intSlots = islot;
     m_info.boolSlots = bslot;
+    for (int i = 0; i < pd->constant_count; ++i)
+    {
+        const MOJOSHADER_constant &c = pd->constants[i];
+        if (c.type != MOJOSHADER_UNIFORM_FLOAT)
+            continue;
+        for (const ShaderInfo::Range &r : m_info.floatRanges)
+            if (r.count > 1 && c.index >= r.reg && c.index < r.reg + r.count)
+            {
+                m_info.floatDefs.push_back({c.index, {c.value.f[0], c.value.f[1], c.value.f[2], c.value.f[3]}});
+                break;
+            }
+    }
     uint32_t bytes = fslot * 16 + islot * 16 + bslot;
     if (fslot || islot)
         bytes = (bytes + 15) & ~15u;

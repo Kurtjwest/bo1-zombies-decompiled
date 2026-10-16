@@ -802,10 +802,19 @@ static int parse_source_token(Context *ctx, SourceArgInfo *info)
                     const int reltarget = info->regnum;
                     for (var = ctx->variables; var != NULL; var = var->next)
                     {
+                        // BO1: only float entries: int and bool registers (i2, b2) share their numbers with the
+                        //  float ones (c2), and an int/bool entry matched here bound c[aL + 2] to a 1-slot array
+                        if (var->type != MOJOSHADER_UNIFORM_FLOAT)
+                            continue;
                         const int lo = var->index;
                         if ( (reltarget >= lo) && (reltarget < (lo + var->count)) )
                             break;  // match!
                     } // for
+
+                    // BO1: a base outside every float entry (c[a0.x + 9] reaching an array at c10) may read any float
+                    //  constant: the whole register file becomes one array, as for shaders without a CTAB
+                    if (var == NULL)
+                        var = bo1_whole_float_file(ctx);
 
                     if (var == NULL)
                         fail(ctx, "relative addressing of indeterminate array");

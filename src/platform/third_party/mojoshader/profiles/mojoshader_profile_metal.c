@@ -649,7 +649,7 @@ void emit_METAL_finalize(Context *ctx)
     {
         output_line(ctx, "static inline float4 bo1_vtex2d(texture2d<float> t, sampler s, float4 c, int mode) { return t.sample(s, c.xy, level(c.w)); }");
         output_line(ctx, "static inline float4 bo1_vtex2d(depth2d<float> t, sampler s, float4 c, int mode) {");
-        output_line(ctx, "    if (mode == 1) return float4(t.sample_compare(s, c.xy, c.z, level(0)));");
+        output_line(ctx, "    if (mode == 1) return float4(t.sample_compare(s, c.xy, saturate(c.z), level(0)));");
         output_line(ctx, "    return float4(t.sample(s, c.xy, level(c.w)));");
         output_line(ctx, "}");
         output_line(ctx, "static inline float4 bo1_vtexcube(texturecube<float> t, sampler s, float4 c, int mode) { return t.sample(s, c.xyz, level(c.w)); }");
@@ -665,9 +665,11 @@ void emit_METAL_finalize(Context *ctx)
         output_line(ctx, "}");
         output_line(ctx, "static inline float4 bo1_tex2d(depth2d<float> t, sampler s, float4 c, int kind, int mode) {");
         output_line(ctx, "    if (mode == 1) {");
-        output_line(ctx, "        if (kind == 1) return float4(t.sample_compare(s, c.xy / c.w, c.z / c.w));");
-        output_line(ctx, "        if (kind == 3) return float4(t.sample_compare(s, c.xy, c.z, level(0)));");
-        output_line(ctx, "        return float4(t.sample_compare(s, c.xy, c.z));");
+        // BO1: the reference is clamped to [0, 1] as Direct3D 9's fixed-point (D24) compare does; the maps are
+        //  32-bit float here, and a receiver beyond the far plane must still compare as lit against a cleared map
+        output_line(ctx, "        if (kind == 1) return float4(t.sample_compare(s, c.xy / c.w, saturate(c.z / c.w)));");
+        output_line(ctx, "        if (kind == 3) return float4(t.sample_compare(s, c.xy, saturate(c.z), level(0)));");
+        output_line(ctx, "        return float4(t.sample_compare(s, c.xy, saturate(c.z)));");
         output_line(ctx, "    }");
         output_line(ctx, "    if (kind == 1) return float4(t.sample(s, c.xy / c.w));");
         output_line(ctx, "    if (kind == 2) return float4(t.sample(s, c.xy, bias(c.w)));");
@@ -678,7 +680,7 @@ void emit_METAL_finalize(Context *ctx)
         output_line(ctx, "    return t.sample(s, c.xy, gradient2d(dx.xy, dy.xy));");
         output_line(ctx, "}");
         output_line(ctx, "static inline float4 bo1_tex2dgrad(depth2d<float> t, sampler s, float4 c, float4 dx, float4 dy, int mode) {");
-        output_line(ctx, "    if (mode == 1) return float4(t.sample_compare(s, c.xy, c.z, gradient2d(dx.xy, dy.xy)));");
+        output_line(ctx, "    if (mode == 1) return float4(t.sample_compare(s, c.xy, saturate(c.z), gradient2d(dx.xy, dy.xy)));");
         output_line(ctx, "    return float4(t.sample(s, c.xy, gradient2d(dx.xy, dy.xy)));");
         output_line(ctx, "}");
         output_line(ctx, "static inline float4 bo1_texcube(texturecube<float> t, sampler s, float4 c, int kind, int mode) {");
@@ -722,9 +724,13 @@ void emit_METAL_finalize(Context *ctx)
     ctx->indent++;
 
     const int uniform_count = ctx->uniform_float4_count + ctx->uniform_int4_count + ctx->uniform_bool_count;
+    // BO1: every argument but the last ends with a comma. The sampler arguments, emitted earlier, always do, so a
+    //  shader with samplers but no uniforms and no inputs needs a last argument of its own (see the end).
+    const int had_arguments = (buffer_size(ctx->mainline_arguments) > 0);
     int commas = 0;
     if (uniform_count) commas++;
     if (ctx->inputs) commas++;
+    if (shader_is_vertex(ctx)) commas++;  // BO1: bo1_vsfix
     if (commas) commas--;
 
     if (uniform_count > 0)
@@ -753,6 +759,14 @@ void emit_METAL_finalize(Context *ctx)
         commas--;
     } // if
 
+    // BO1: per-draw values of the Direct3D 9 layer for vertex shaders: .x is D3DRS_DEPTHBIAS in clip-space units,
+    //  added to the position's depth below (Metal's own constant depth bias scales with the depth of a 32-bit float
+    //  buffer, Direct3D 9's 24-bit one does not)
+    if (shader_is_vertex(ctx))
+        output_line(ctx, "constant float4 &bo1_vsfix [[buffer(29)]]");
+    else if (!uniform_count && !ctx->inputs && had_arguments)
+        output_line(ctx, "float4 bo1_unused_position [[position]]");  // BO1: ends the sampler arguments' commas
+
     ctx->indent--;
     output_line(ctx, ") {");
     if (ctx->outputs)
@@ -767,6 +781,13 @@ void emit_METAL_finalize(Context *ctx)
         // BO1: D3DRS_ALPHATESTENABLE (no-op unless the pipeline variant defines it)
         if (shader_is_pixel(ctx) && (reglist_find(&ctx->used_registers, REG_TYPE_COLOROUT, 0) != NULL))
             output_line(ctx, "BO1_ALPHA_TEST(output.oC0);");
+        // BO1: D3DRS_DEPTHBIAS (bo1_vsfix above)
+        if (shader_is_vertex(ctx))
+        {
+            output_line(ctx, "#ifdef BO1_VS_POS");
+            output_line(ctx, "BO1_VS_POS.z += bo1_vsfix.x * BO1_VS_POS.w;");
+            output_line(ctx, "#endif");
+        } // if
         output_line(ctx, "return output;");
         pop_output(ctx);
     } // if
@@ -1136,7 +1157,15 @@ void emit_METAL_attribute(Context *ctx, RegisterType regtype, int regnum,
             // BO1: every usage becomes a member (the original covered only a few); position1+ is a varying
             char vname[32];
             if ((usage == MOJOSHADER_USAGE_POSITION) && (index == 0))
-                output_line(ctx, "float4 %s [[position]];", var);
+            {
+                // BO1: invariant, so that every vertex shader transforming the same vertex the same way produces the
+                //  same depth (the depth prepass, then LESSEQUAL/EQUAL passes with other shaders, as Direct3D 9
+                //  guarantees); the library is compiled with preserveInvariance (mtl_rhi.mm)
+                output_line(ctx, "float4 %s [[position, invariant]];", var);
+                push_output(ctx, &ctx->preflight);
+                output_line(ctx, "#define BO1_VS_POS output.%s", var);
+                pop_output(ctx);
+            } // if
             else if (usage == MOJOSHADER_USAGE_POINTSIZE)
                 output_line(ctx, "float %s [[point_size]];", var);
             else
@@ -1503,27 +1532,49 @@ void emit_METAL_LIT_helper(Context *ctx)
     pop_output(ctx);
 } // emit_METAL_LIT_helper
 
+// BO1: the destination write mask as a swizzle (".yz"; "" for .xyzw), for instructions whose result is a float4
+//  whatever the mask (lit, dst, crs): the assignment's two sides must have the same width
+static const char *bo1_dest_mask_swizzle(Context *ctx, char *buf, const size_t buflen)
+{
+    const DestArgInfo *arg = &ctx->dest_arg;
+    size_t i = 0;
+    if (isscalar(ctx, ctx->shader_type, arg->regtype, arg->regnum))
+        buf[i++] = '.', buf[i++] = 'x';
+    else if (!writemask_xyzw(arg->writemask))
+    {
+        buf[i++] = '.';
+        if (arg->writemask0) buf[i++] = 'x';
+        if (arg->writemask1) buf[i++] = 'y';
+        if (arg->writemask2) buf[i++] = 'z';
+        if (arg->writemask3) buf[i++] = 'w';
+    } // else if
+    assert(i < buflen);
+    buf[i] = '\0';
+    return buf;
+} // bo1_dest_mask_swizzle
+
 void emit_METAL_LIT(Context *ctx)
 {
     char src0[512]; make_METAL_srcarg_string_full(ctx, 0, src0, sizeof (src0));
+    char mask[8]; bo1_dest_mask_swizzle(ctx, mask, sizeof (mask));
     char code[4096];
     emit_METAL_LIT_helper(ctx);
-    make_METAL_destarg_assign(ctx, code, sizeof (code), "LIT(%s)", src0);
+    make_METAL_destarg_assign(ctx, code, sizeof (code), "LIT(%s)%s", src0, mask);
     output_line(ctx, "%s", code);
 } // emit_METAL_LIT
 
 void emit_METAL_DST(Context *ctx)
 {
-    // !!! FIXME: needs to take ctx->dst_arg.writemask into account.
     char src0_y[512]; make_METAL_srcarg_string_y(ctx, 0, src0_y, sizeof (src0_y));
     char src1_y[512]; make_METAL_srcarg_string_y(ctx, 1, src1_y, sizeof (src1_y));
     char src0_z[512]; make_METAL_srcarg_string_z(ctx, 0, src0_z, sizeof (src0_z));
     char src1_w[512]; make_METAL_srcarg_string_w(ctx, 1, src1_w, sizeof (src1_w));
+    char mask[8]; bo1_dest_mask_swizzle(ctx, mask, sizeof (mask));
 
     char code[4096];
     make_METAL_destarg_assign(ctx, code, sizeof (code),
-                             "float4(1.0, %s * %s, %s, %s)",
-                             src0_y, src1_y, src0_z, src1_w);
+                             "float4(1.0, %s * %s, %s, %s)%s",
+                             src0_y, src1_y, src0_z, src1_w, mask);
     output_line(ctx, "%s", code);
 } // emit_METAL_DST
 
@@ -1736,13 +1787,14 @@ void emit_METAL_POW(Context *ctx)
 
 void emit_METAL_CRS(Context *ctx)
 {
-    // !!! FIXME: needs to take ctx->dst_arg.writemask into account.
     char src0[512]; make_METAL_srcarg_string_vec3(ctx, 0, src0, sizeof (src0));
     char src1[512]; make_METAL_srcarg_string_vec3(ctx, 1, src1, sizeof (src1));
+    char mask[8]; bo1_dest_mask_swizzle(ctx, mask, sizeof (mask));
     char code[4096];
     ctx->metal_need_header_geometric = 1;
+    // BO1: crs writes any of .x/.y/.z (.w is left alone: Direct3D 9 doesn't allow it in the mask)
     make_METAL_destarg_assign(ctx, code, sizeof (code),
-                             "cross(%s, %s)", src0, src1);
+                             "float4(cross(%s, %s), 0.0)%s", src0, src1, mask);
     output_line(ctx, "%s", code);
 } // emit_METAL_CRS
 
@@ -2019,9 +2071,9 @@ static void metal_texld(Context *ctx, const int texldd, const int texldl)
             kind = 3;
         else if (ctx->instruction_controls == CONTROL_TEXLDP)
         {
-            if (sreg->index == TEXTURE_TYPE_CUBE)
-                fail(ctx, "TEXLDP on a cubemap");  // !!! FIXME: is this legal?
-            kind = 1;
+            // BO1: texCUBEproj compiles to texldp on a cube map; dividing a direction by w doesn't change where it
+            //  points (for w > 0), so it is a plain lookup
+            kind = (sreg->index == TEXTURE_TYPE_CUBE) ? 0 : 1;
         } // else if
         else if (ctx->instruction_controls == CONTROL_TEXLDB)
             kind = 2;
@@ -2360,58 +2412,18 @@ void emit_METAL_LOGP(Context *ctx)
 } // emit_METAL_LOGP
 
 // common code between CMP and CND.
+// BO1: one select() for the whole write mask. The original emitted a statement per group of components, and when
+//  the destination was also a source (cmp r0.xy, r0.yx, ...) the later statements read the components already
+//  written by the earlier ones.
 void emit_METAL_comparison_operations(Context *ctx, const char *cmp)
 {
-    int i, j;
-    DestArgInfo *dst = &ctx->dest_arg;
-    const SourceArgInfo *srcarg0 = &ctx->source_args[0];
-    const int origmask = dst->writemask;
-    int used_swiz[4] = { 0, 0, 0, 0 };
-    const int writemask[4] = { dst->writemask0, dst->writemask1,
-                               dst->writemask2, dst->writemask3 };
-    const int src0swiz[4] = { srcarg0->swizzle_x, srcarg0->swizzle_y,
-                              srcarg0->swizzle_z, srcarg0->swizzle_w };
-
-    for (i = 0; i < 4; i++)
-    {
-        int mask = (1 << i);
-
-        if (!writemask[i]) continue;
-        if (used_swiz[i]) continue;
-
-        // This is a swizzle we haven't checked yet.
-        used_swiz[i] = 1;
-
-        // see if there are any other elements swizzled to match (.yyyy)
-        for (j = i + 1; j < 4; j++)
-        {
-            if (!writemask[j]) continue;
-            if (src0swiz[i] != src0swiz[j]) continue;
-            mask |= (1 << j);
-            used_swiz[j] = 1;
-        } // for
-
-        // okay, (mask) should be the writemask of swizzles we like.
-
-        //return make_METAL_srcarg_string(ctx, idx, (1 << 0));
-
-        char src0[512];
-        char src1[512];
-        char src2[512];
-        make_METAL_srcarg_string(ctx, 0, (1 << i), src0, sizeof (src0));
-        make_METAL_srcarg_string(ctx, 1, mask, src1, sizeof (src1));
-        make_METAL_srcarg_string(ctx, 2, mask, src2, sizeof (src2));
-
-        set_dstarg_writemask(dst, mask);
-
-        char code[4096];
-        make_METAL_destarg_assign(ctx, code, sizeof (code),
-                                 "((%s %s) ? %s : %s)",
-                                 src0, cmp, src1, src2);
-        output_line(ctx, "%s", code);
-    } // for
-
-    set_dstarg_writemask(dst, origmask);
+    char src0[512]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
+    char src1[512]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
+    char src2[512]; make_METAL_srcarg_string_masked(ctx, 2, src2, sizeof (src2));
+    char code[4096];
+    ctx->metal_need_header_relational = 1;
+    make_METAL_destarg_assign(ctx, code, sizeof (code), "select(%s, %s, (%s %s))", src2, src1, src0, cmp);
+    output_line(ctx, "%s", code);
 } // emit_METAL_comparison_operations
 
 void emit_METAL_CND(Context *ctx)

@@ -1709,6 +1709,10 @@ Library *CompileLibrary(const char *source, char *err, size_t errSize)
         MTLCompileOptions *opt = [MTLCompileOptions new];
         if (@available(macOS 13.0, *))
             opt.languageVersion = MTLLanguageVersion2_4;
+        // the vertex shaders' [[position, invariant]] (mojoshader_profile_metal.c): passes drawn with different
+        // shaders compute the same depth for the same vertices, as the depth prepass needs
+        if (@available(macOS 11.0, *))
+            opt.preserveInvariance = YES;
         id<MTLLibrary> lib = [G->device newLibraryWithSource:[NSString stringWithUTF8String:source] options:opt error:&e];
         if (!lib)
         {
