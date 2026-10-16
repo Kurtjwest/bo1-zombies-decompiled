@@ -5076,7 +5076,12 @@ void R_SetDLightsConstants(
     }
 
     // ===== DLIGHT_ATTENUATION (slot 0x95) — actually the spot direction =====
-    R_SetInputCodeConstantFromVec4(input, CONST_SRC_CODE_DLIGHT_ATTENUATION, lightDir);
+    // zombies (port): the exe uploads the vec4 at lightDir, and in its stack frame lightDir[0..2],
+    // lightAttentuation[0..3] and lightOrigin[0..3] are one run of floats (lightAttentuation[0] is written only to
+    // be this W; lightOrigin[0] = 1 only to be the W of the spot position below). Separate locals here, so the
+    // vectors are put together explicitly instead of reading past lightDir.
+    const float spotAttenuation[4] = { lightDir[0], lightDir[1], lightDir[2], lightAttentuation[0] };
+    R_SetInputCodeConstantFromVec4(input, CONST_SRC_CODE_DLIGHT_ATTENUATION, spotAttenuation);
 
     // ===== DLIGHT_FALLOFF (slot 0x96) — outer/inner slope+bias =====
     // Outer edge spans falloff[0] -> falloff[2]; inner edge spans falloff[3] -> falloff[1].
@@ -5101,7 +5106,9 @@ void R_SetDLightsConstants(
     // ===== DLIGHT_SPOT_MATRIX_0..3 (slots 0x97-0x9A) — spot view*proj =====
     // 1. Transform light position through the spot's view matrix; the result replaces the
     //    view matrix's translation row (row 3).
-    MatrixTransformVector44(&lightAttentuation[1],
+    //    (zombies (port): the position with W = lightOrigin[0] (1), see DLIGHT_ATTENUATION above)
+    const float spotPosition[4] = { lightAttentuation[1], lightAttentuation[2], lightAttentuation[3], lightOrigin[0] };
+    MatrixTransformVector44(spotPosition,
                             (const float (*)[4])viewMatrix,
                             viewMatrix[3]);
     // 2. Negate the xyz of that translation row (leave w alone).

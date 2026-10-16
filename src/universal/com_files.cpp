@@ -850,7 +850,12 @@ unsigned int __cdecl FS_FOpenFileReadForThread(const char *filename, int *file, 
                                     filetemp = zfi->file;
                                     ziptemp = zfi->pfile_in_zip_read;
                                     unzSetCurrentFileInfoPosition(v14->handle, i->pos);
-                                    Com_Memcpy(zfi, v14->handle, 128);
+                                    // zombies (port): the exe copies 128 bytes, its unz_s up to tmpFile. unz_s keeps
+                                    // its counters in unsigned long, 8 bytes on LP64, so 128 bytes stopped inside
+                                    // cur_file_info: a second open file in the same iwd (a clone) kept the sizes of
+                                    // whatever file the iwd's handle had been at when it was cloned, and streamed
+                                    // sounds read the wrong length ("could not read file").
+                                    Com_Memcpy(zfi, v14->handle, offsetof(unz_s, tmpFile));
                                     zfi->file = filetemp;
                                     zfi->pfile_in_zip_read = ziptemp;
                                     unzOpenCurrentFile(fsh[*file].handleFiles.file.z);

@@ -590,7 +590,7 @@ NET_GetLocalAddress
 int NET_GetLocalAddress()
 {
     int result; // eax
-    u_long v1; // [esp+0h] [ebp-114h]
+    uint32_t v1; // [esp+0h] [ebp-114h] (zombies (port): Windows' 4-byte u_long; HIBYTE below is its byte 3)
     char hostname[256]; // [esp+4h] [ebp-110h] BYREF
     hostent *hostInfo; // [esp+108h] [ebp-Ch]
     int n; // [esp+10Ch] [ebp-8h]

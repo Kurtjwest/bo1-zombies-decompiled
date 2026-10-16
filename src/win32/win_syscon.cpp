@@ -156,10 +156,11 @@ LRESULT __stdcall ConWndProc(HWND__ *hWnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     switch ( uMsg )
     {
         case WM_SIZE:
-            SetWindowPos(s_wcd.hwndBuffer, 0, 5, 70, (unsigned __int16)lParam - 15, HIWORD(lParam) - 100, 0);
-            SetWindowPos(s_wcd.hwndInputLine, 0, 5, HIWORD(lParam) - 100 + 78, (unsigned __int16)lParam - 15, 20, 0);
+            // zombies (port): the height is bits 16-31 of the 32-bit lParam (IDA's HIWORD of the 8-byte LPARAM is bits 48-63)
+            SetWindowPos(s_wcd.hwndBuffer, 0, 5, 70, (unsigned __int16)lParam - 15, (unsigned __int16)((DWORD)lParam >> 16) - 100, 0);
+            SetWindowPos(s_wcd.hwndInputLine, 0, 5, (unsigned __int16)((DWORD)lParam >> 16) - 100 + 78, (unsigned __int16)lParam - 15, 20, 0);
             s_wcd.windowWidth = (unsigned __int16)lParam;
-            s_wcd.windowHeight = HIWORD(lParam);
+            s_wcd.windowHeight = (unsigned __int16)((DWORD)lParam >> 16);
             return DefWindowProcA(hWnd, uMsg, wParam, lParam);
         case WM_ACTIVATE:
             if ( (_WORD)wParam )

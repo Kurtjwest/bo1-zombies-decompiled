@@ -3283,6 +3283,7 @@ void R_DrawCall(
 
         callback(userData, context, prepassContext);
         memcpy(&gfxCmdBufState, &prepassCmdBuf, sizeof(gfxCmdBufState));
+        R_RebaseCmdBufStats(&gfxCmdBufState, &prepassCmdBuf);
     }
     else
     {
@@ -3291,4 +3292,7 @@ void R_DrawCall(
         callback(userData, context, prepassContext);
     }
     memcpy(gfxCmdBufState.refSamplerState, cmdBuf.refSamplerState, sizeof(gfxCmdBufState));
+    // zombies (port): the locals die here; gfxCmdBufState must not keep pointing into their frameStats
+    R_RebaseCmdBufStats(&gfxCmdBufState, &cmdBuf);
+    R_RebaseCmdBufStats(&gfxCmdBufState, &prepassCmdBuf);
 }

@@ -45,10 +45,11 @@ struct __declspec(align(8)) broad_phase_base // sizeof=0x50
     Ptr32<void> m_user_data;
     unsigned int m_env_collision_flags;
     unsigned int m_my_collision_type_flags;
-    // padding byte
-    // padding byte
-    // padding byte
-    // padding byte
+    // zombies (port): the exe's 4 padding bytes, as a member. Itanium C++ ABI targets place a derived class's first
+    // members in a non-POD base's tail padding, MSVC never does: without this broad_phase_info::m_rb sat at 0x4C
+    // instead of 0x50, and the decompiled container math (&bpi[-1].m_gjk_geom: the phys_free_list node of a
+    // broad_phase_info) pointed 4 bytes before the node (physics slot pool assert when a ragdoll's bodies were freed).
+    unsigned int m_msvc_tail_padding;
 
     int get_flag(int flag)
     {
@@ -140,6 +141,10 @@ struct broad_phase_group : broad_phase_base // sizeof=0x60
     void collision_prolog();
     void collision_epilog();
 };
+// zombies (port): the exe's layout (see broad_phase_base::m_msvc_tail_padding)
+static_assert(sizeof(broad_phase_base) == 0x50, "broad_phase_base: the exe's size");
+static_assert(offsetof(broad_phase_group, m_list_bpi_head) == 0x50 && sizeof(broad_phase_group) == 0x60,
+              "broad_phase_group: the exe's layout");
 
 const struct __declspec(align(16)) broad_phase_environment_query_input // sizeof=0x40
 {                                       // XREF: ?bp_env_jq_batch_function2@@YAHPAUjqBatch@@@Z/r
@@ -360,6 +365,10 @@ struct __declspec(align(8)) broad_phase_info : broad_phase_base // sizeof=0x70
 
     void collision_prolog();
 };
+// zombies (port): the exe's layout, which destroy_broad_phase_info(_list)'s &bpi[-1].m_gjk_geom relies on
+static_assert(offsetof(broad_phase_info, m_rb) == 0x50 && offsetof(broad_phase_info, m_gjk_geom) == 0x60
+                  && sizeof(broad_phase_info) == 0x70,
+              "broad_phase_info: the exe's layout");
 
 // "environement". for an authentic decompilation experience. (fixed in blops2!!).
 struct broad_phase_environement_query_results // sizeof=0x14

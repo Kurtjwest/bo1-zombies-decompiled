@@ -1731,17 +1731,21 @@ void GScr_GetAnimLength()
     Scr_AddFloat(value, SCRIPTINSTANCE_SERVER);
 }
 
+// zombies (port): both took the scr_anim_s as a const char * and split it with HIWORD / a 16-bit cast, which is the
+// tree and the index only while a pointer is the 4-byte value itself. A 64-bit pointer's HIWORD is its top 16 bits
+// (0 on macOS): Scr_GetAnims(0) asserted in the zombies' death animscript (animhasnotetrack) at the first kill.
+// The two halves are read from the scr_anim_s directly.
 void GScr_AnimHasNotetrack()
 {
     const XAnim_s *Anims; // eax
     unsigned __int8 v1; // al
     unsigned __int16 name; // [esp+4h] [ebp-8h]
-    const char *anim; // [esp+8h] [ebp-4h]
+    scr_anim_s anim; // [esp+8h] [ebp-4h]
 
-    anim = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER).linkPointer;
+    anim = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER);
     name = (unsigned __int16)Scr_GetConstString(1u, SCRIPTINSTANCE_SERVER);
-    Anims = Scr_GetAnims(HIWORD(anim), SCRIPTINSTANCE_SERVER);
-    v1 = XAnimNotetrackExists(Anims, (unsigned __int16)BO1_P2I(anim), name);
+    Anims = Scr_GetAnims(anim.tree, SCRIPTINSTANCE_SERVER);
+    v1 = XAnimNotetrackExists(Anims, anim.index, name);
     Scr_AddBool(v1, SCRIPTINSTANCE_SERVER);
 }
 
@@ -1749,13 +1753,13 @@ void GScr_GetNotetrackTimes()
 {
     const XAnim_s *Anims; // eax
     VariableUnion name; // [esp+4h] [ebp-8h]
-    const char *anim; // [esp+8h] [ebp-4h]
+    scr_anim_s anim; // [esp+8h] [ebp-4h]
 
-    anim = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER).linkPointer;
+    anim = Scr_GetAnim(0, 0, SCRIPTINSTANCE_SERVER);
     name.intValue = Scr_GetConstString(1u, SCRIPTINSTANCE_SERVER);
     Scr_MakeArray(SCRIPTINSTANCE_SERVER);
-    Anims = Scr_GetAnims(HIWORD(anim), SCRIPTINSTANCE_SERVER);
-    XAnimAddNotetrackTimesToScriptArray(Anims, (unsigned __int16)BO1_P2I(anim), name.stringValue);
+    Anims = Scr_GetAnims(anim.tree, SCRIPTINSTANCE_SERVER);
+    XAnimAddNotetrackTimesToScriptArray(Anims, anim.index, name.stringValue);
 }
 
 void GScr_GetBrushModelCenter()

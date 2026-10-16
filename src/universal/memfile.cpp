@@ -183,12 +183,16 @@ void __cdecl MemFile_EndSegment(MemoryFile *memFile)
                 out_len = (unsigned int *)&memFile->buffer[memFile->bytesUsed];
                 memFile->bytesUsed += 4;
                 //lzopro_lzo1x_1_11_compress(
+                // zombies (port): lzo_uint is 64 bits on LP64 targets; writing it through the 4-byte length slot would
+                // zero the first 4 bytes of the compressed block that follows it
+                lzo_uint compressedLen = 0;
                 lzo1x_1_compress(
                     memFile->cacheBuffer,
                     memFile->cacheBufferUsed,
                     &memFile->buffer[memFile->bytesUsed],
-                    (lzo_uint*)out_len,
+                    &compressedLen,
                     workmem);
+                *out_len = (unsigned int)compressedLen;
                 memFile->cacheBufferUsed = 0;
                 memFile->bytesUsed += *out_len;
                 //LargeLocal::~LargeLocal(&workmem_large_local);
@@ -358,12 +362,15 @@ LABEL_14:
         len = (unsigned int *)&memFile->buffer[memFile->bytesUsed];
         memFile->bytesUsed += 4;
         //lzopro_lzo1x_1_11_compress(
+        // zombies (port): a 64-bit lzo_uint, not the 4-byte length slot (see MemFile_EndSegment)
+        lzo_uint compressedLen = 0;
         lzo1x_1_compress(
             memFile->cacheBuffer,
             memFile->cacheBufferUsed,
             &memFile->buffer[memFile->bytesUsed],
-            (lzo_uint*)len,
+            &compressedLen,
             workmem);
+        *len = (unsigned int)compressedLen;
         memFile->cacheBufferUsed = 0;
         memFile->bytesUsed += *len;
         //LargeLocal::~LargeLocal(&workmem_large_local);
@@ -516,7 +523,10 @@ void __cdecl MemFile_ReadData(MemoryFile *memFile, int byteCount, unsigned __int
                     in_len = *(unsigned int *)&memFile->buffer[memFile->bytesUsed];
                     memFile->bytesUsed += 4;
                     //lzopro_lzo1x_decompress(&memFile->buffer[memFile->bytesUsed], 0, memFile->cacheBuffer, &len);
-                    lzo1x_decompress(&memFile->buffer[memFile->bytesUsed], 0, memFile->cacheBuffer, (lzo_uint*)&len, NULL);
+                    // zombies (port): lzo_uint is 64 bits on LP64 targets, twice the size of len
+                    lzo_uint decompressedLen = 0;
+                    lzo1x_decompress(&memFile->buffer[memFile->bytesUsed], 0, memFile->cacheBuffer, &decompressedLen, NULL);
+                    len = (unsigned int)decompressedLen;
                     memFile->cacheBufferAvail = len;
                     memFile->cacheBufferUsed = 0;
                     memFile->bytesUsed += in_len;

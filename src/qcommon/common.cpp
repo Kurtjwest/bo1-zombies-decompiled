@@ -354,8 +354,17 @@ bool __cdecl Com_IsSPFrontEndRunning()
     return sv_mapname && Com_IsSPFrontEndLevel(sv_mapname->current.string);
 }
 
+// zombies (port): -1 normally; 0 / 1 while G_ShutdownGame tears a level down: whether that level was an SP level
+// when it started (G_InitGame). Leaving a zombies map for the front end runs Com_LoadFrontEnd_SP first, which
+// clears zombiemode, and only then "map frontend" shuts the old level down, with sv_mapname still the zombies map:
+// the live test said MP, so the SP teardown (threat bias groups, gettagorigin's cached tag) was skipped, their
+// script strings leaked ('allies', 'axis', 'tag_camera') and SL_CheckLeaks asserted when the game quit.
+int com_spLevelLatch = -1;
+
 bool __cdecl Com_IsSPLevel()
 {
+    if ( com_spLevelLatch >= 0 )
+        return com_spLevelLatch != 0;
     if ( zombiemode && zombiemode->current.enabled )
         return true;
     return Com_IsSPFrontEndRunning();

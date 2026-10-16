@@ -355,6 +355,7 @@ int g_entNumBits = 10; // mod (L25): networked entity number bits (q_shared.h)
 int g_entNumCscEnd = ENTNUM_CSC_END; // mod (L55): q_shared.h; 1280 with bo1_mod_netents 2
 int g_scrEntNumLimit = MAX_GENTITIES; // mod (L25): q_shared.h
 int g_maxActors = MAX_ACTORS_RETAIL; // mod: bo1_mod_maxactors, set once per map in G_InitGame
+static bool g_levelStartedAsSP; // zombies (port): Com_IsSPLevel() when G_InitGame started the running level
 int g_maxSentients = MAX_SENTIENTS_RETAIL;
 static const dvar_t *g_modMaxActors;
 gclient_s g_clients[32];
@@ -738,6 +739,9 @@ void __cdecl    G_InitGame(int levelTime, int randomSeed, int restart, int regis
     }
     
     PROF_SCOPED("G_InitGame");
+
+    com_spLevelLatch = -1; // (an error inside the last G_ShutdownGame could have left it set)
+    g_levelStartedAsSP = Com_IsSPLevel(); // zombies (port): for G_ShutdownGame, see com_spLevelLatch
 
     Com_Printf(15, "------- Game Initialization -------\n");
     Com_Printf(15, "gamename: %s\n", "Call of Duty�");
@@ -2543,6 +2547,9 @@ void __cdecl G_ShutdownGame(int freeScripts)
     int i; // [esp+Ch] [ebp-8h]
     int file; // [esp+10h] [ebp-4h]
 
+    // zombies (port): the level is torn down as what it was started as (see com_spLevelLatch)
+    com_spLevelLatch = g_levelStartedAsSP ? 1 : 0;
+
     for ( i = 0; i < 32; ++i )
     {
         p_proximity_data = &g_pmove[i].proximity_data;
@@ -2605,6 +2612,7 @@ void __cdecl G_ShutdownGame(int freeScripts)
     }
     EntHandle::Shutdown();
     SV_track_shutdown();
+    com_spLevelLatch = -1;
 }
 
 void __cdecl CalculateRanks()

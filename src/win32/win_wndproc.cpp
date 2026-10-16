@@ -422,7 +422,7 @@ LABEL_60:
                 else
                 {
                     xPos = (__int16)lParam;
-                    yPos = SHIWORD(lParam);
+                    yPos = (__int16)((DWORD)lParam >> 16); // zombies (port): bits 16-31 of the 32-bit lParam (IDA's SHIWORD of the 8-byte LPARAM is bits 48-63)
                     r.left = 0;
                     r.top = 0;
                     r.right = 1;

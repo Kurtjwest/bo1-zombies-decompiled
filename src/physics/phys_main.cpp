@@ -3632,7 +3632,10 @@ void __thiscall cdl_proftimer::reset()
         do
         {
             swap = 0;
-            for (i = 0; i < 5; ++i)
+            // zombies (port): the exe runs i to 4, so it compares and swaps mx[5], the 8 bytes after the timer (the
+            // next global: here physGlob). Captures start once enough physics objects exist (ragdolls); the sort
+            // stays within the five slots.
+            for (i = 0; i < 4; ++i)
             {
                 if (this->mx[i] > this->mx[i + 1])
                 {

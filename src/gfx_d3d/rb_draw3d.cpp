@@ -185,9 +185,36 @@ void __cdecl R_DrawReflectedCallback(const void *userData, GfxCmdBufContext cont
     R_HW_DisableScissor(context.state->prim.device);
 }
 
+// zombies (port): a GfxCmdBufPrimState's stats pointers (viewStats, primStats, backupPrimStats) point into that
+// state's own frameStats (R_InitCmdBufState, R_UpdateStatsTarget, RB_TrackPrims). R_DrawCall draws with
+// GfxCmdBufState locals copied from gfxCmdBufState and back into it, and a plain copy keeps pointing into the state it
+// came from: once R_DrawCall returns, gfxCmdBufState's pointers lead into its dead frame, and the next lists' stats
+// increments (RB_TrackDrawPrimCall) land in whatever that stack memory holds by then. The 32-bit exe gets away with
+// it because every R_DrawCall frame sits at the same depth there, so the stale pointer meets the new local's own
+// frameStats; here frame layouts differ, and on the SP front end one increment hit a saved register of the render
+// thread (crash in R_DrawIndexedPrimitive). After a copy, a pointer into the source's frameStats is moved to the same
+// place in the destination's.
+template <typename T, typename Field> static void R_RebaseStatsPtr(Field &field, uintptr_t base, uintptr_t newBase)
+{
+    const uintptr_t p = (uintptr_t)(T *)field;
+    if (p - base < sizeof(GfxFrameStats))
+        field = (T *)(newBase + (p - base));
+}
+
+void R_RebaseCmdBufStats(GfxCmdBufState *dst, const GfxCmdBufState *src)
+{
+    const uintptr_t base = (uintptr_t)&src->prim.frameStats;
+    const uintptr_t newBase = (uintptr_t)&dst->prim.frameStats;
+    R_RebaseStatsPtr<GfxViewStats>(dst->prim.viewStats, base, newBase);
+    R_RebaseStatsPtr<GfxPrimStats>(dst->prim.primStats, base, newBase);
+    R_RebaseStatsPtr<GfxPrimStats>(dst->prim.backupPrimStats, base, newBase);
+}
+
 void __cdecl R_InitLocalCmdBufState(GfxCmdBufState *state)
 {
     memcpy(state->refSamplerState, gfxCmdBufState.refSamplerState, sizeof(GfxCmdBufState));
+    if (state != &gfxCmdBufState)
+        R_RebaseCmdBufStats(state, &gfxCmdBufState);
     memset(state->vertexShaderConstState, 0, sizeof(state->vertexShaderConstState));
     memset(state->pixelShaderConstState, 0, sizeof(state->pixelShaderConstState));
 }
