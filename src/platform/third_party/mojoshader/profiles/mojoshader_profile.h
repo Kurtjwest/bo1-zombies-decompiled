@@ -207,6 +207,8 @@ typedef struct Context
     int metal_need_header_geometric;
     int metal_need_header_graphics;
     int metal_need_header_texture;
+    Buffer *metal_label_bodies[16];  // BO1: subroutine bodies, inlined at their call sites
+    int metal_main_returned;         // BO1: the main function's RET was seen (later RETs end subroutines)
 #endif
 
 #if SUPPORT_PROFILE_SPIRV

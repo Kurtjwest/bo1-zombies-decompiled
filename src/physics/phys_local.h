@@ -476,10 +476,11 @@ struct phys_link_list // sizeof=0xC
 
         InterlockedIncrement(reinterpret_cast<volatile LONG *>(&m_alloc_count));
 
-        T **prev = (T **)InterlockedExchangePointer(
-            (PVOID *)&m_last_next_ptr,
-            &p->m_next_link
-        );
+        // the tail slot is a 32-bit pointer field: exchange its 32-bit value (a pointer-sized exchange would also
+        // overwrite m_alloc_count on 64-bit targets)
+        const uint32_t prevSlot = (uint32_t)InterlockedExchange(reinterpret_cast<volatile LONG *>(&m_last_next_ptr),
+                                                                (LONG)Ptr32_Encode(&p->m_next_link));
+        Ptr32<T> *prev = (Ptr32<T> *)Ptr32_Decode(prevSlot);
 
         *prev = p;
     }

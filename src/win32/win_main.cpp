@@ -2471,7 +2471,7 @@ void Win_RegisterClass()
 
     memset((unsigned __int8 *)&wce, 0, sizeof(wce));
     wce.cbSize = 48;
-    wce.lpfnWndProc = (WNDPROC)MainWndProc;
+    wce.lpfnWndProc = MainWndProc;
     wce.hInstance = g_wv.hInstance;
     wce.hIcon = LoadIconA(g_wv.hInstance, (LPCSTR)BO1_I2P(1));
     wce.hCursor = LoadCursorA(0, (LPCSTR)BO1_I2P(0x7F00));

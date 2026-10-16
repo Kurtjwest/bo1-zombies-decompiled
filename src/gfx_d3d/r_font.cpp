@@ -138,7 +138,7 @@ unsigned int __cdecl R_FontGetRandomNumberCharacter(Font_s *font, int seed)
 Font_s *__cdecl R_RegisterFont(const char *name, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (Font_s *)BO1_I2P(((int (__cdecl *)(const char *, int))R_RegisterFont_FastFile)(name, imageTrack));
+        return R_RegisterFont_FastFile(name);
     else
         return R_RegisterFont_LoadObj(name, imageTrack);
 }

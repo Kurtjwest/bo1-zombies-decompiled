@@ -55,7 +55,7 @@ static HINSTANCE__ *__cdecl GetModuleBase(char *name)
         return GetModuleHandleA(moduleName);
 }
 
-static int __stdcall HideWindowCallback(HWND__ *hwnd, int lParam)
+static BOOL __stdcall HideWindowCallback(HWND__ *hwnd, LPARAM lParam)
 {
         int styleEx; // [esp+14h] [ebp-40Ch]
         char caption[1024]; // [esp+18h] [ebp-408h] BYREF
@@ -84,7 +84,7 @@ void __cdecl FixWindowsDesktop()
 
     ChangeDisplaySettingsA(0, 0);
     CurrentThreadId = GetCurrentThreadId();
-    EnumThreadWindows(CurrentThreadId, (WNDENUMPROC)HideWindowCallback, 0);
+    EnumThreadWindows(CurrentThreadId, HideWindowCallback, 0);
     hwndDesktop = GetDesktopWindow();
     hdc = GetDC(hwndDesktop);
     for (i = 0; i < 0x100u; ++i)

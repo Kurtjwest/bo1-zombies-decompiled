@@ -3112,6 +3112,13 @@ static void destroy_context(Context *ctx)
         buffer_destroy(ctx->mainline);
         buffer_destroy(ctx->postflight);
         buffer_destroy(ctx->ignore);
+#if SUPPORT_PROFILE_METAL
+        {
+            size_t label;
+            for (label = 0; label < STATICARRAYLEN(ctx->metal_label_bodies); label++)
+                buffer_destroy(ctx->metal_label_bodies[label]);
+        }
+#endif
         free_constants_list(f, d, ctx->constants);
         free_reglist(f, d, ctx->used_registers.next);
         free_reglist(f, d, ctx->defined_registers.next);

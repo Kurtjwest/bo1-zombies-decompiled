@@ -72,6 +72,8 @@ bool TexStorage::Init(Device *, D3DRESOURCETYPE rtype, UINT w, UINT h, UINT d, U
     td.usage = rhi::USAGE_SHADER_READ;
     if ((use & (D3DUSAGE_RENDERTARGET | D3DUSAGE_DEPTHSTENCIL | D3DUSAGE_AUTOGENMIPMAP)) || fi->depth)
         td.usage |= rhi::USAGE_RENDER_TARGET;
+    if (fi->swizzled && samples == 1)
+        td.usage |= rhi::USAGE_PIXEL_FORMAT_VIEW; // the sampling view (format swizzle) is made from it
     td.label = label;
     tex = rhi::CreateTexture(td);
     if (!tex)

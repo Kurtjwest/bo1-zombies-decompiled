@@ -302,10 +302,12 @@ void __cdecl UI_LoadModsMap(FF_DIR source)
 
 int UI_LoadArenasFromFile()
 {
+    // (the 32-bit build returned whatever the loader left in eax; no caller reads it)
     if ( useFastFile->current.enabled )
-        return ((int (__cdecl *)(void (*)()))UI_LoadArenasFromFile_FastFile)(UI_LoadArenasFromFile_FastFile);
+        UI_LoadArenasFromFile_FastFile();
     else
-        return ((int (__cdecl *)(const char *(*)()))UI_LoadArenasFromFile_LoadObj)(UI_LoadArenasFromFile_LoadObj);
+        UI_LoadArenasFromFile_LoadObj();
+    return 0;
 }
 
 const char *UI_LoadArenasFromFile_LoadObj()

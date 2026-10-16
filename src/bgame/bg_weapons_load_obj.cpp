@@ -2281,9 +2281,9 @@ bool __cdecl BG_FlameTableUpdateField(const char *flameTableName, char *keyValue
 WeaponVariantDef *__cdecl BG_LoadDefaultWeaponVariantDef()
 {
     if ( useFastFile->current.enabled )
-        return (WeaponVariantDef *)BO1_I2P(((int (__cdecl *)(WeaponVariantDef *(__cdecl *)()))BG_LoadDefaultWeaponVariantDef_FastFile)(BG_LoadDefaultWeaponVariantDef_FastFile));
+        return BG_LoadDefaultWeaponVariantDef_FastFile();
     else
-        return (WeaponVariantDef *)BO1_I2P(((int (__cdecl *)(WeaponFullDef *(__cdecl *)()))BG_LoadDefaultWeaponVariantDef_LoadObj)(BG_LoadDefaultWeaponVariantDef_LoadObj));
+        return (WeaponVariantDef *)BG_LoadDefaultWeaponVariantDef_LoadObj(); // the full def starts with the variant def
 }
 
 WeaponFullDef *__cdecl BG_LoadDefaultWeaponVariantDef_LoadObj()

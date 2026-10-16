@@ -98,9 +98,7 @@ XAnimParts *__cdecl XAnimPrecache(char *name, void *(__cdecl *Alloc)(int))
     XAnimParts *parts; // [esp+10h] [ebp-4h]
 
     if ( useFastFile->current.enabled )
-        result = (XAnimParts *)BO1_I2P(((int (__cdecl *)(char *, unsigned __int8 *(__cdecl *)(unsigned int)))XAnimFindData_FastFile)(
-                                                         name,
-                                                         (unsigned char*(*)(unsigned int))Hunk_AllocXAnimPrecache));
+        result = XAnimFindData_FastFile(name);
     else
         result = XAnimFindData_LoadObj(name, (void *(__cdecl *)(int))Hunk_AllocXAnimPrecache);
     if ( !result )
@@ -110,7 +108,7 @@ XAnimParts *__cdecl XAnimPrecache(char *name, void *(__cdecl *Alloc)(int))
         {
             Com_PrintWarning(19, "WARNING: Couldn't find xanim '%s', using default xanim '%s' instead\n", name, "void");
             if ( useFastFile->current.enabled )
-                Data_LoadObj = (XAnimParts *)BO1_I2P(((int (__cdecl *)(const char *, unsigned __int8 *(__cdecl *)(unsigned int)))XAnimFindData_FastFile)("void",(unsigned char *(*)(unsigned int))Hunk_AllocXAnimPrecache));
+                Data_LoadObj = XAnimFindData_FastFile("void");
             else
                 Data_LoadObj = XAnimFindData_LoadObj((char *)"void", (void *(__cdecl *)(int))Hunk_AllocXAnimPrecache);
             defaultParts = Data_LoadObj;
@@ -189,9 +187,7 @@ void __cdecl XAnimCreate(XAnim_s *anims, unsigned int animIndex, char *name)
     XAnimParts *parts; // [esp+30h] [ebp-4h]
 
     if ( useFastFile->current.enabled )
-        Data_LoadObj = (XAnimParts *)BO1_I2P(((int (__cdecl *)(char *, unsigned __int8 *(__cdecl *)(unsigned int)))XAnimFindData_FastFile)(
-                                                                     name,
-                                                                     (unsigned char *(*)(unsigned int))Hunk_AllocXAnimPrecache));
+        Data_LoadObj = XAnimFindData_FastFile(name);
     else
         Data_LoadObj = XAnimFindData_LoadObj(name, (void *(__cdecl *)(int))Hunk_AllocXAnimPrecache);
     parts = Data_LoadObj;
@@ -4303,9 +4299,7 @@ void __cdecl XAnimSetupSyncNodes_r(XAnim_s *anims, unsigned int animIndex, int p
                     if ( !useFastFile->current.enabled )
                         XAnimPrecache((char *)"void_loop", (void *(__cdecl *)(int))Hunk_AllocXAnimPrecache);
                     if ( useFastFile->current.enabled )
-                        Data_LoadObj = (XAnimParts *)BO1_I2P(((int (__cdecl *)(const char *, unsigned __int8 *(__cdecl *)(unsigned int)))XAnimFindData_FastFile)(
-                                                                                     "void_loop",
-                                                                                     (unsigned char*(*)(unsigned int))Hunk_AllocXAnimPrecache));
+                        Data_LoadObj = XAnimFindData_FastFile("void_loop");
                     else
                         Data_LoadObj = XAnimFindData_LoadObj((char*)"void_loop", (void *(__cdecl *)(int))Hunk_AllocXAnimPrecache);
                     anims->entries[animIndex].parts = Data_LoadObj;

@@ -36,8 +36,8 @@ Glasses *__cdecl GetGlasses()
 
     v1 = fs_gameDirVar && *(_BYTE *)BO1_I2P(fs_gameDirVar->current.integer);
     if ( v1 || !useFastFile->current.enabled )
-        return (Glasses *)BO1_I2P(((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_LoadObj)(GetGlasses_LoadObj));
+        return GetGlasses_LoadObj();
     else
-        return (Glasses *)BO1_I2P(((int (__cdecl *)(Glasses *(__cdecl *)()))GetGlasses_FastFile)(GetGlasses_FastFile));
+        return GetGlasses_FastFile();
 }
 

@@ -93,6 +93,8 @@ set(BO1_MAC_COMMON_FLAGS
     # (an unspecified value) instead of treating those paths as unreachable.
     -fno-strict-return
     -fno-delete-null-pointer-checks
+    # ... and newer Clang releases turn the warning about those paths into an error by default
+    -Wno-return-type
     # Every engine translation unit sees the MSVC CRT names, as MSVC's headers provide them (C/C++ only: the
     # Objective-C++ Cocoa/Metal files must not see the Windows names, Cocoa's BOOL is not Win32's BOOL).
     "$<$<COMPILE_LANGUAGE:C,CXX>:SHELL:-include ${PLATFORM_DIR}/win32compat/include/bo1_platform_prefix.h>"

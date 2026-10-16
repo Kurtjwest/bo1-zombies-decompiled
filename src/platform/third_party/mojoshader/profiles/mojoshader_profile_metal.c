@@ -540,8 +540,74 @@ void emit_METAL_phase(Context *ctx)
     // no-op in Metal.
 } // emit_METAL_phase
 
+// BO1: copies text to out with every "/*BO1_CALL_n*/" marker replaced by subroutine n's body, itself expanded.
+static int metal_expand_calls(Context *ctx, Buffer *out, const char *text, char **bodies, const int depth)
+{
+    static const char marker[] = "/*BO1_CALL_";
+    const char *p = text;
+    for (;;)
+    {
+        const char *m = strstr(p, marker);
+        if (m == NULL)
+            return buffer_append(out, p, strlen(p));
+        if (!buffer_append(out, p, (size_t) (m - p)))
+            return 0;
+        const int label = atoi(m + sizeof (marker) - 1);
+        const char *end = strstr(m, "*/");
+        if ((end == NULL) || (label < 0) || (label >= 16) || (bodies[label] == NULL))
+        {
+            failf(ctx, "CALL to undefined label l%d", label);
+            return 0;
+        } // if
+        if (depth >= 8)
+        {
+            fail(ctx, "subroutine calls nested too deeply (recursion?)");
+            return 0;
+        } // if
+        if (!metal_expand_calls(ctx, out, bodies[label], bodies, depth + 1))
+            return 0;
+        p = end + 2;
+    } // for
+} // metal_expand_calls
+
+static void metal_inline_subroutines(Context *ctx)
+{
+    char *bodies[STATICARRAYLEN(ctx->metal_label_bodies)];
+    int have = 0;
+    size_t i;
+    for (i = 0; i < STATICARRAYLEN(bodies); i++)
+    {
+        bodies[i] = NULL;
+        if (ctx->metal_label_bodies[i] != NULL)
+        {
+            bodies[i] = buffer_flatten(ctx->metal_label_bodies[i]);
+            if (bodies[i] == NULL)
+                ctx->out_of_memory = ctx->isfail = 1;
+            have = 1;
+        } // if
+    } // for
+    if (have && !ctx->isfail && (ctx->mainline != NULL))
+    {
+        char *text = buffer_flatten(ctx->mainline);  // leaves mainline empty
+        if (text == NULL)
+            ctx->out_of_memory = ctx->isfail = 1;
+        else
+        {
+            metal_expand_calls(ctx, ctx->mainline, text, bodies, 0);
+            Free(ctx, text);
+        } // else
+    } // if
+    for (i = 0; i < STATICARRAYLEN(bodies); i++)
+    {
+        if (bodies[i] != NULL)
+            Free(ctx, bodies[i]);
+    } // for
+} // metal_inline_subroutines
+
 void emit_METAL_finalize(Context *ctx)
 {
+    metal_inline_subroutines(ctx);  // BO1
+
     // If we had a relative addressing of REG_TYPE_INPUT, we need to build
     //  an array for it at the start of main(). GLSL doesn't let you specify
     //  arrays of attributes.
@@ -1546,26 +1612,30 @@ void emit_METAL_M3X2(Context *ctx)
     output_line(ctx, "%s", code);
 } // emit_METAL_M3X2
 
+// BO1: subroutines (CALL/CALLNZ/LABEL) are inlined at their call sites. A separate Metal function could not reach
+//  the registers, inputs, outputs and uniforms, which are locals of the shader's main function; D3D9 has no
+//  recursion and a call depth of at most 4, so the expansion (emit_METAL_finalize) terminates. A call inside a
+//  LOOP sees that loop's aL, as D3D9 requires.
+static void metal_emit_call_marker(Context *ctx, const int label)
+{
+    output_line(ctx, "{");
+    output_line(ctx, "/*BO1_CALL_%d*/", label);
+    output_line(ctx, "}");
+} // metal_emit_call_marker
+
 void emit_METAL_CALL(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
-    if (ctx->loops > 0)
-        output_line(ctx, "%s(aL);", src0);
-    else
-        output_line(ctx, "%s();", src0);
+    metal_emit_call_marker(ctx, ctx->source_args[0].regnum);
 } // emit_METAL_CALL
 
 void emit_METAL_CALLNZ(Context *ctx)
 {
-    // !!! FIXME: if src1 is a constbool that's true, we can remove the
-    // !!! FIXME:  if. If it's false, we can make this a no-op.
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
     char src1[64]; make_METAL_srcarg_string_masked(ctx, 1, src1, sizeof (src1));
-
-    if (ctx->loops > 0)
-        output_line(ctx, "if (%s) { %s(aL); }", src1, src0);
-    else
-        output_line(ctx, "if (%s) { %s(); }", src1, src0);
+    output_line(ctx, "if (%s) {", src1);
+    ctx->indent++;
+    metal_emit_call_marker(ctx, ctx->source_args[0].regnum);
+    ctx->indent--;
+    output_line(ctx, "}");
 } // emit_METAL_CALLNZ
 
 void emit_METAL_LOOP(Context *ctx)
@@ -1587,9 +1657,19 @@ void emit_METAL_RET(Context *ctx)
     // thankfully, the MSDN specs say a RET _has_ to end a function...no
     //  early returns. So if you hit one, you know you can safely close
     //  a high-level function.
+    if (ctx->metal_main_returned)
+    {
+        // BO1: the end of a subroutine body (kept for inlining, see metal_emit_call_marker)
+        ctx->indent = 0;
+        set_output(ctx, &ctx->subroutines);
+        return;
+    } // if
+    ctx->metal_main_returned = 1;
     push_output(ctx, &ctx->postflight);
     output_line(ctx, "}");
     output_blank_line(ctx);
+    pop_output(ctx);  // BO1: balanced (parse_token asserts an empty output stack between instructions)
+    ctx->indent = 0;
     set_output(ctx, &ctx->subroutines);  // !!! FIXME: is this for LABEL? Maybe set it there so we don't allocate unnecessarily.
 } // emit_METAL_RET
 
@@ -1603,28 +1683,22 @@ void emit_METAL_ENDLOOP(Context *ctx)
 
 void emit_METAL_LABEL(Context *ctx)
 {
-    char src0[64]; make_METAL_srcarg_string_masked(ctx, 0, src0, sizeof (src0));
     const int label = ctx->source_args[0].regnum;
     RegisterList *reg = reglist_find(&ctx->used_registers, REG_TYPE_LABEL, label);
-    assert(ctx->output == ctx->subroutines);  // not mainline, etc.
-    assert(ctx->indent == 0);  // we shouldn't be in the middle of a function.
 
     // MSDN specs say CALL* has to come before the LABEL, so we know if we
     //  can ditch the entire function here as unused.
-    if (reg == NULL)
+    // BO1: the body of a called one is collected on its own and inlined at the call sites (emit_METAL_finalize).
+    if ((reg == NULL) || (label < 0) || (label >= (int) STATICARRAYLEN(ctx->metal_label_bodies)))
         set_output(ctx, &ctx->ignore);  // Func not used. Parse, but don't output.
-
-    // !!! FIXME: it would be nice if we could determine if a function is
-    // !!! FIXME:  only called once and, if so, forcibly inline it.
-
-    // !!! FIXME: this worked in GLSL because all our state is global to the shader,
-    // !!! FIXME:  but in metal we kept it local to the shader mainline.
-    // !!! FIXME:  Can we do C++11 lambdas in Metal to have nested functions?  :)
-
-    const char *uses_loopreg = ((reg) && (reg->misc == 1)) ? "int aL" : "";
-    output_line(ctx, "void %s(%s)", src0, uses_loopreg);
-    output_line(ctx, "{");
-    ctx->indent++;
+    else if (ctx->metal_label_bodies[label] != NULL)
+    {
+        failf(ctx, "label l%d defined twice", label);
+        set_output(ctx, &ctx->ignore);
+    } // else if
+    else
+        set_output(ctx, &ctx->metal_label_bodies[label]);
+    ctx->indent = 1;
 } // emit_METAL_LABEL
 
 void emit_METAL_DCL(Context *ctx)

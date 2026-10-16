@@ -22,35 +22,77 @@ struct ALLOCATION_SCHEME_FUNCTIONS // sizeof=0x14
     Ptr32<void __cdecl(HunkUser *, void *)> Free;
 };
 
-// BO1TODO: remove casts and fix prototypes
+// The allocators return their blocks as 32-bit integers (addresses kept in ints, as the decompiled code does: on
+// 64-bit targets those are ptr32.h handles) and Hunk_FixedInit takes its scheme and type as pointers. Calling them
+// through the table's types would hand back the integer itself as the block address and read the scheme and type
+// from registers the caller never set, so the table holds these adapters, which convert.
+static void *__cdecl Hunk_UserDefaultAllocAdapter(HunkUser *user, int size, int alignment, const char *name)
+{
+    return (void *)BO1_I2P(Hunk_UserDefaultAlloc((HunkUserDefault *)user, (unsigned int)size, alignment, name));
+}
+
+static void *__cdecl Hunk_UserDebugAllocAdapter(HunkUser *user, int size, int alignment, const char *)
+{
+    return (void *)BO1_I2P(Hunk_UserDebugAlloc(user, size, alignment));
+}
+
+static void *__cdecl Hunk_FirstFitAllocAdapter(HunkUser *user, int size, int alignment, const char *)
+{
+    return (void *)BO1_I2P(Hunk_FirstFitAlloc(user, size, alignment));
+}
+
+static HunkUser *__cdecl Hunk_FixedInitAdapter(
+    void *buffer,
+    int size,
+    HU_ALLOCATION_SCHEME scheme,
+    unsigned int flags,
+    void *scheme_specific_data,
+    const char *name,
+    int type)
+{
+    return (HunkUser *)Hunk_FixedInit(
+        (_fixed_heapnode *)buffer,
+        (unsigned int)size,
+        (_fixed_heapnode *)BO1_I2P((int)scheme),
+        flags,
+        (int *)scheme_specific_data,
+        (_fixed_heapnode *)name,
+        (_fixed_heapnode *)BO1_I2P(type));
+}
+
+static void *__cdecl Hunk_FixedAllocAdapter(HunkUser *user, int, int, const char *)
+{
+    return Hunk_FixedAlloc(user);
+}
+
 ALLOCATION_SCHEME_FUNCTIONS g_HunkUserAllocationSchemeMap[4] =
 {
   {
     (HunkUser *(*)(void*, int, HU_ALLOCATION_SCHEME, unsigned int, void*, const char *, int))Hunk_UserDefaultInit,
     (void(*)(HunkUser*))Hunk_UserDefaultReset,
-     (void(*)(HunkUser *))Hunk_UserDefaultDestroy,
-    (void *(*)(HunkUser *, int, int, const char *))Hunk_UserDefaultAlloc,
+    (void(*)(HunkUser *))Hunk_UserDefaultDestroy,
+    Hunk_UserDefaultAllocAdapter,
     Hunk_UserDefaultFree
   },
   {
     (HunkUser *(*)(void *, int, HU_ALLOCATION_SCHEME, unsigned int, void *, const char *, int))Hunk_UserDebugInit,
     Hunk_UserDebugReset,
     Hunk_UserDebugDestroy,
-    (void *(*)(HunkUser *, int, int, const char *))Hunk_UserDebugAlloc,
+    Hunk_UserDebugAllocAdapter,
     (void(__cdecl *)(HunkUser *, void *))Hunk_UserDebugFree
   },
   {
     (HunkUser *(*)(void *, int, HU_ALLOCATION_SCHEME, unsigned int, void *, const char *, int))Hunk_FirstFitInit,
     Hunk_FirstFitReset,
     Hunk_FirstFitDestroy,
-    (void *(*)(HunkUser *, int, int, const char *))Hunk_FirstFitAlloc,
+    Hunk_FirstFitAllocAdapter,
     (void(__cdecl *)(HunkUser *, void *))Hunk_FirstFitFree
   },
   {
-    (HunkUser *(*)(void *, int, HU_ALLOCATION_SCHEME, unsigned int, void *, const char *, int))Hunk_FixedInit,
+    Hunk_FixedInitAdapter,
     Hunk_FixedReset,
     Hunk_FixedDestroy,
-    (void *(*)(HunkUser *, int, int, const char *))Hunk_FixedAlloc,
+    Hunk_FixedAllocAdapter,
     (void(__cdecl *)(HunkUser *, void *))Hunk_FixedFree
   }
 };

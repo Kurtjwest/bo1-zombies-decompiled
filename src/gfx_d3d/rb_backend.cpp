@@ -1711,10 +1711,12 @@ unsigned int __cdecl R_RenderDrawSurfListMaterial(const GfxDrawSurfListArgs *lis
                 R_SetupPass(prepassContext, 0);
                 passPrepassContext_4 = prepassContext.state;
             }
-            subListCount = ((int (__cdecl *)(const GfxDrawSurfListArgs *, GfxCmdBufSourceState *, GfxCmdBufState *))rb_tessTable[(drawSurf.packed >> 51) & 0xF])(
-                                             listArgs,
-                                             passPrepassContext,
-                                             passPrepassContext_4);
+            // the tess functions take the prepass context by value (one GfxCmdBufContext, not two pointers: the
+            // 64-bit calling convention passes the two differently)
+            GfxCmdBufContext passPrepass;
+            passPrepass.source = passPrepassContext;
+            passPrepass.state = passPrepassContext_4;
+            subListCount = rb_tessTable[(drawSurf.packed >> 51) & 0xF](listArgs, passPrepass);
         }
 
         if ( isPixelCostEnabled )

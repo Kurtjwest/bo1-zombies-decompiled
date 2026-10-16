@@ -242,8 +242,10 @@ void __cdecl Sys_UpdateHotkeyBlock()
     Sys_SetBlockSystemHotkeys(block);
 }
 
-int __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, signed int wParam, LPARAM lParam)
+LRESULT __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, WPARAM wParamNative, LPARAM lParam)
 {
+    // (the full-width wParam goes on to DefWindowProcA; the handlers read the 32-bit value)
+    signed int wParam = (signed int)wParamNative;
     int result; // eax
     HANDLE v5; // eax
     HANDLE CurrentProcess; // eax
@@ -271,7 +273,7 @@ int __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, signed int wParam, LPARAM lPa
             Sys_QueEvent(g_msgTime, SE_KEY, 206, 1, 0, 0);
             Sys_QueEvent(g_msgTime, SE_KEY, 206, 0, 0, 0);
         }
-        return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+        return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
     }
     else if ( uMsg > 0x100 )
     {
@@ -298,7 +300,7 @@ int __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, signed int wParam, LPARAM lPa
                     if ( (wParam & 0x40) != 0 )
                         buttons |= 0x10u;
                     IN_MouseEvent(buttons);
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
                 case 0x20Au:
                     if ( SHIWORD(wParam) <= 0 )
                     {
@@ -310,14 +312,14 @@ int __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, signed int wParam, LPARAM lPa
                         Sys_QueEvent(g_msgTime, SE_KEY, 206, 1, 0, 0);
                         Sys_QueEvent(g_msgTime, SE_KEY, 206, 0, 0, 0);
                     }
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
                 case 0x218u:
                     if ( (unsigned int)wParam > 1 )
-                        return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                        return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
                     result = 1112363332;
                     break;
                 default:
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             }
         }
         else if ( uMsg == 274 )
@@ -325,7 +327,7 @@ int __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, signed int wParam, LPARAM lPa
             if ( wParam == 61760 )
                 return 0;
             else
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
         }
         else
         {
@@ -340,7 +342,7 @@ int __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, signed int wParam, LPARAM lPa
                     break;
                 case 0x102u:
                     Sys_QueEvent(g_msgTime, SE_CHAR, wParam, 0, 0, 0);
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
                 case 0x104u:
                     if ( wParam != 13 )
                         goto LABEL_60;
@@ -359,7 +361,7 @@ int __stdcall MainWndProc(HWND__ *hWnd, UINT uMsg, signed int wParam, LPARAM lPa
                     }
                     break;
                 default:
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             }
         }
     }
@@ -408,10 +410,10 @@ LABEL_60:
                                                      1u,
                                                      "Automatically set the priority of the windows process when the game is minimized");
                 MSH_MOUSEWHEEL = RegisterWindowMessageA("MSWHEEL_ROLLMSG");
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             case 2u:
                 g_wv.hWnd = 0;
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             case 3u:
                 if ( r_fullscreen->current.enabled )
                 {
@@ -434,20 +436,20 @@ LABEL_60:
                     if ( g_wv.activeApp )
                         IN_Activate(1);
                 }
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             case 6u:
                 VID_AppActivate((unsigned __int16)wParam, HIWORD(wParam));
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             case 7u:
                 if ( !r_autopriority->current.enabled )
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
                 CurrentProcess = GetCurrentProcess();
                 SetPriorityClass(CurrentProcess, 0x20u);
                 result = 0;
                 break;
             case 8u:
                 if ( !r_autopriority->current.enabled )
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
                 v5 = GetCurrentProcess();
                 SetPriorityClass(v5, 0x40u);
                 result = 0;
@@ -459,13 +461,13 @@ LABEL_60:
                 break;
             case 0x11u:
                 if ( lParam != 1 )
-                    return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                    return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
                 result = 1;
                 break;
             case 0x16u:
                 if ( lParam == 1 )
                     Com_Quit_f();
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             case 0x7Eu:
                 monitorHandle = MonitorFromWindow(hWnd, 2u);
                 monitorInfo.cbSize = 40;
@@ -483,9 +485,9 @@ LABEL_60:
                         1);
                 }
                 IN_RecenterMouse();
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             default:
-                return DefWindowProcA(hWnd, uMsg, wParam, lParam);
+                return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
         }
     }
     return result;
