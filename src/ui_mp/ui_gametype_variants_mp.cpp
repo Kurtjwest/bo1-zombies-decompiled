@@ -1719,8 +1719,8 @@ void __cdecl UI_GameVariants_ArchiveRule(MemoryFile *memFile, GVRule *rule)
 
 void __cdecl MemFile_ArchiveByte(MemoryFile *memFile, unsigned __int8 *value)
 {
-    unsigned __int8 p; // [esp+2h] [ebp-2h] BYREF
-    unsigned __int8 v3; // [esp+3h] [ebp-1h]
+    unsigned __int8 p_adj[2]; // p, v3: adjacent in the 32-bit stack frame (code takes &p and reads past it)
+    unsigned __int8 &p = p_adj[0], &v3 = p_adj[1];
 
     if ( memFile->is_writing )
     {

@@ -1388,8 +1388,8 @@ bool __thiscall dwRawInterceptor::acceptPacket(
     char v44[24]; // [esp+D0h] [ebp-208h] BYREF
     bdSecurityID v45; // [esp+E8h] [ebp-1F0h] BYREF
     unsigned __int8 *v46; // [esp+F0h] [ebp-1E8h]
-    int v47; // [esp+F4h] [ebp-1E4h]
-    int v48; // [esp+F8h] [ebp-1E0h]
+    int v47_adj[2]; // v47, v48: adjacent in the 32-bit stack frame (code takes &v47 and reads past it)
+    int &v47 = v47_adj[0], &v48 = v47_adj[1];
     const char *v49; // [esp+FCh] [ebp-1DCh]
     int v50; // [esp+100h] [ebp-1D8h]
     int v51; // [esp+104h] [ebp-1D4h]
@@ -1399,8 +1399,8 @@ bool __thiscall dwRawInterceptor::acceptPacket(
     char v55[24]; // [esp+144h] [ebp-194h] BYREF
     bdSecurityID v56; // [esp+15Ch] [ebp-17Ch] BYREF
     unsigned __int8 *v57; // [esp+164h] [ebp-174h]
-    int v58; // [esp+168h] [ebp-170h]
-    int v59; // [esp+16Ch] [ebp-16Ch]
+    int v58_adj[2]; // v58, v59: adjacent in the 32-bit stack frame (code takes &v58 and reads past it)
+    int &v58 = v58_adj[0], &v59 = v58_adj[1];
     const char *v60; // [esp+170h] [ebp-168h]
     int v61; // [esp+174h] [ebp-164h]
     int v62; // [esp+178h] [ebp-160h]
@@ -1410,8 +1410,8 @@ bool __thiscall dwRawInterceptor::acceptPacket(
     char v66[24]; // [esp+1B8h] [ebp-120h] BYREF
     bdSecurityID v67; // [esp+1D0h] [ebp-108h] BYREF
     unsigned __int8 *v68; // [esp+1D8h] [ebp-100h]
-    int length; // [esp+1DCh] [ebp-FCh]
-    int v70; // [esp+1E0h] [ebp-F8h]
+    int length_adj[2]; // length, v70: adjacent in the 32-bit stack frame (code takes &length and reads past it)
+    int &length = length_adj[0], &v70 = length_adj[1];
     const char *v71; // [esp+1E4h] [ebp-F4h]
     int v72; // [esp+1E8h] [ebp-F0h]
     int v73; // [esp+1ECh] [ebp-ECh]
@@ -1421,8 +1421,8 @@ bool __thiscall dwRawInterceptor::acceptPacket(
     char dst[24]; // [esp+22Ch] [ebp-ACh] BYREF
     bdSecurityID secID; // [esp+244h] [ebp-94h] BYREF
     unsigned __int8 *serverinfo_p; // [esp+24Ch] [ebp-8Ch]
-    int serverinfo_size; // [esp+250h] [ebp-88h]
-    int v81; // [esp+254h] [ebp-84h]
+    int serverinfo_size_adj[2]; // serverinfo_size, v81: adjacent in the 32-bit stack frame (code takes &serverinfo_size and reads past it)
+    int &serverinfo_size = serverinfo_size_adj[0], &v81 = serverinfo_size_adj[1];
     const char *v82; // [esp+258h] [ebp-80h]
     int v83; // [esp+25Ch] [ebp-7Ch]
     int v84; // [esp+260h] [ebp-78h]

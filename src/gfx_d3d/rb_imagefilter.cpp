@@ -236,8 +236,8 @@ int __cdecl RB_GaussianFilterPoints1D(
     float v10; // [esp+Ch] [ebp-54h]
     float v11; // [esp+10h] [ebp-50h]
     float v12; // [esp+14h] [ebp-4Ch]
-    float v13; // [esp+20h] [ebp-40h]
-    float v14; // [esp+24h] [ebp-3Ch]
+    float v13_adj[2]; // v13, v14: adjacent in the 32-bit stack frame (code takes &v13 and reads past it)
+    float &v13 = v13_adj[0], &v14 = v13_adj[1];
     int tapHalfCount; // [esp+34h] [ebp-2Ch]
     int tapIndex; // [esp+38h] [ebp-28h]
     int tapIndexa; // [esp+38h] [ebp-28h]

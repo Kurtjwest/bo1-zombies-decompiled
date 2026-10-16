@@ -85,7 +85,7 @@ adjacencyWinding_t *__cdecl BuildBrushdAdjacencyWindingForSide(
             v23 = TestConvexWithoutNearPoints((const SimplePlaneIntersection **)cycle[1], cycleCount[1]);
             if ( CycleLess(v22, v23, perimiter1, perimiter2, cycleCount[0], cycleCount[1]) )
             {
-                memcpy((unsigned __int8 *)cycle, (unsigned __int8 *)cycle[1], 4 * cycleCount[1]);
+                memcpy((unsigned __int8 *)cycle, (unsigned __int8 *)cycle[1], sizeof(cycle[1][0]) * cycleCount[1]); // pointers: 4 bytes each only on 32-bit
                 cycleCount[0] = cycleCount[1];
             }
         }
@@ -552,16 +552,15 @@ int __cdecl ReduceToACycle(int basePlane, SimplePlaneIntersection **pts, int pts
 #if 0
     int v4; // eax
     int v5; // eax
-    int partition[1024]; // [esp+10h] [ebp-5040h] BYREF
-    int v7; // [esp+1010h] [ebp-4040h]
-    int listCount; // [esp+1014h] [ebp-403Ch]
+    struct { int a[1024]; int m0; int m1; } partition_adj; // partition[1024], v7, listCount: adjacent in the 32-bit stack frame (code reads past partition)
+    int (&partition)[1024] = partition_adj.a; int &v7 = partition_adj.m0, &listCount = partition_adj.m1;
     char CycleBFS; // [esp+1018h] [ebp-4038h]
     char v10; // [esp+1019h] [ebp-4037h]
     int v11; // [esp+101Ch] [ebp-4034h]
     SimplePlaneIntersection *resultCycle[1024]; // [esp+1020h] [ebp-4030h] BYREF
     SimplePlaneIntersection *v13[1024]; // [esp+2020h] [ebp-3030h] BYREF
-    int list[1024]; // [esp+3020h] [ebp-2030h] BYREF
-    int v15; // [esp+4020h] [ebp-1030h]
+    struct { int a[1024]; int m0; } list_adj; // list[1024], v15: adjacent in the 32-bit stack frame (code reads past list)
+    int (&list)[1024] = list_adj.a; int &v15 = list_adj.m0;
     char v16; // [esp+4024h] [ebp-102Ch]
     char v17; // [esp+4025h] [ebp-102Bh]
     int i; // [esp+4028h] [ebp-1028h]
@@ -1168,8 +1167,8 @@ int __cdecl ChooseEdgeToRemove(
     char v14; // [esp+3021h] [ebp-1Bh]
     char v15; // [esp+3022h] [ebp-1Ah]
     int resultCycleCount; // [esp+3024h] [ebp-18h] BYREF
-    unsigned int ptCount; // [esp+3028h] [ebp-14h] BYREF
-    unsigned int v18; // [esp+302Ch] [ebp-10h] BYREF
+    unsigned int ptCount_adj[2]; // ptCount, v18: adjacent in the 32-bit stack frame (code takes &ptCount and reads past it)
+    unsigned int &ptCount = ptCount_adj[0], &v18 = ptCount_adj[1];
     float perimiter1; // [esp+3030h] [ebp-Ch]
     float perimiter2; // [esp+3034h] [ebp-8h]
     float v21; // [esp+3038h] [ebp-4h]
@@ -1240,11 +1239,8 @@ int __cdecl PartitionEdges(
 {
     const SimplePlaneIntersection *v8; // [esp+0h] [ebp-1020h]
     SimplePlaneIntersection *resultCycle[1024]; // [esp+8h] [ebp-1018h] BYREF
-    int v10; // [esp+100Ch] [ebp-14h]
-    int i; // [esp+1010h] [ebp-10h]
-    int resultCycleCount; // [esp+1014h] [ebp-Ch] BYREF
-    int j; // [esp+1018h] [ebp-8h]
-    int v14; // [esp+101Ch] [ebp-4h]
+    int v10_adj[5]; // v10, i, resultCycleCount, j, v14: adjacent in the 32-bit stack frame (code takes &resultCycleCount and reads past it)
+    int &v10 = v10_adj[0], &i = v10_adj[1], &resultCycleCount = v10_adj[2], &j = v10_adj[3], &v14 = v10_adj[4];
 
     v10 = 1;
     *partition = 1;

@@ -782,9 +782,8 @@ void __cdecl AddBurnCell(float *pos)
     int v4; // [esp+Ch] [ebp-5Ch]
     int v5; // [esp+10h] [ebp-58h]
     int v6; // [esp+14h] [ebp-54h]
-    int ipos; // [esp+4Ch] [ebp-1Ch]
-    int ipos_4; // [esp+50h] [ebp-18h]
-    int ipos_8; // [esp+54h] [ebp-14h]
+    int ipos_adj[3]; // ipos, ipos_4, ipos_8: adjacent in the 32-bit stack frame (code takes &ipos and reads past it)
+    int &ipos = ipos_adj[0], &ipos_4 = ipos_adj[1], &ipos_8 = ipos_adj[2];
     int i; // [esp+64h] [ebp-4h]
     int ia; // [esp+64h] [ebp-4h]
 

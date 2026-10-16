@@ -6720,8 +6720,8 @@ void __cdecl CG_BulletHitEvent(
                 __int16 hitContents,
                 unsigned __int8 boneIndex)
 {
-    float v[2]; // [esp+30h] [ebp-1Ch] BYREF
-    float v15; // [esp+38h] [ebp-14h]
+    struct { float a[2]; float m0; } v_adj; // v[2], v15: adjacent in the 32-bit stack frame (code reads past v)
+    float (&v)[2] = v_adj.a; float &v15 = v_adj.m0;
     const cg_s *cgameGlob; // [esp+3Ch] [ebp-10h]
     float exitDir[3]; // [esp+40h] [ebp-Ch] BYREF
 

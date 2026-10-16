@@ -34,10 +34,8 @@ void    IK_GenerateIKXformMatrices(IKState *ikState, bool isLocalBones)
     float *v18; // [esp+B4h] [ebp-150h]
     float preModelInverseMat[19]; // [esp+B8h] [ebp-14Ch] BYREF
     float v20[5]; // [esp+104h] [ebp-100h] BYREF
-    float v21[4]; // [esp+118h] [ebp-ECh] BYREF
-    float v22; // [esp+128h] [ebp-DCh]
-    float v23; // [esp+12Ch] [ebp-D8h]
-    float v24; // [esp+130h] [ebp-D4h]
+    struct { float a[4]; float m0; float m1; float m2; } v21_adj; // v21[4], v22, v23, v24: adjacent in the 32-bit stack frame (code reads past v21)
+    float (&v21)[4] = v21_adj.a; float &v22 = v21_adj.m0, &v23 = v21_adj.m1, &v24 = v21_adj.m2;
     int v25; // [esp+134h] [ebp-D0h]
     float v26; // [esp+138h] [ebp-CCh]
     float v27; // [esp+13Ch] [ebp-C8h]

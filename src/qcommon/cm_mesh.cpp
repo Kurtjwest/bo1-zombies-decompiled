@@ -987,13 +987,11 @@ void __cdecl CM_TraceThroughAabbTree(const traceWork_t *tw, const CollisionAabbT
 void __cdecl CM_TraceThroughAabbTree_r(const traceWork_t *tw, const CollisionAabbTree *aabbTree, trace_t *trace)
 {
     bool v3; // [esp+3h] [ebp-3A5h]
-    float v4; // [esp+4h] [ebp-3A4h] BYREF
-    float v5; // [esp+8h] [ebp-3A0h]
-    float v6; // [esp+Ch] [ebp-39Ch]
+    float v4_adj[3]; // v4, v5, v6: adjacent in the 32-bit stack frame (code takes &v4 and reads past it)
+    float &v4 = v4_adj[0], &v5 = v4_adj[1], &v6 = v4_adj[2];
     int v7; // [esp+10h] [ebp-398h]
-    float v8; // [esp+14h] [ebp-394h] BYREF
-    float v9; // [esp+18h] [ebp-390h]
-    float v10; // [esp+1Ch] [ebp-38Ch]
+    float v8_adj[3]; // v8, v9, v10: adjacent in the 32-bit stack frame (code takes &v8 and reads past it)
+    float &v8 = v8_adj[0], &v9 = v8_adj[1], &v10 = v8_adj[2];
     int v11; // [esp+20h] [ebp-388h]
     __int64 v12; // [esp+24h] [ebp-384h]
     int v13; // [esp+2Ch] [ebp-37Ch]
@@ -1032,9 +1030,8 @@ void __cdecl CM_TraceThroughAabbTree_r(const traceWork_t *tw, const CollisionAab
     float *v46; // [esp+B8h] [ebp-2F0h]
     float *v47; // [esp+BCh] [ebp-2ECh]
     bool v48; // [esp+C3h] [ebp-2E5h]
-    float v49; // [esp+C4h] [ebp-2E4h] BYREF
-    float v50; // [esp+C8h] [ebp-2E0h]
-    float v51; // [esp+CCh] [ebp-2DCh]
+    float v49_adj[3]; // v49, v50, v51: adjacent in the 32-bit stack frame (code takes &v49 and reads past it)
+    float &v49 = v49_adj[0], &v50 = v49_adj[1], &v51 = v49_adj[2];
     int v52; // [esp+D0h] [ebp-2D8h]
     float a[4]; // [esp+D4h] [ebp-2D4h] BYREF
     __int64 v54; // [esp+E4h] [ebp-2C4h]
@@ -1429,13 +1426,11 @@ void __cdecl CM_MeshTestInLeaf(const traceWork_t *tw, cLeaf_s *leaf, trace_t *tr
 void __cdecl CM_PositionTestInAabbTree_r(const traceWork_t *tw, CollisionAabbTree *aabbTree, trace_t *trace)
 {
     bool v3; // [esp+3h] [ebp-E5h]
-    float v4; // [esp+4h] [ebp-E4h] BYREF
-    float v5; // [esp+8h] [ebp-E0h]
-    float v6; // [esp+Ch] [ebp-DCh]
+    float v4_adj[3]; // v4, v5, v6: adjacent in the 32-bit stack frame (code takes &v4 and reads past it)
+    float &v4 = v4_adj[0], &v5 = v4_adj[1], &v6 = v4_adj[2];
     int v7; // [esp+10h] [ebp-D8h]
-    float v8; // [esp+14h] [ebp-D4h] BYREF
-    float v9; // [esp+18h] [ebp-D0h]
-    float v10; // [esp+1Ch] [ebp-CCh]
+    float v8_adj[3]; // v8, v9, v10: adjacent in the 32-bit stack frame (code takes &v8 and reads past it)
+    float &v8 = v8_adj[0], &v9 = v8_adj[1], &v10 = v8_adj[2];
     int v11; // [esp+20h] [ebp-C8h]
     __int64 v12; // [esp+24h] [ebp-C4h]
     int v13; // [esp+2Ch] [ebp-BCh]

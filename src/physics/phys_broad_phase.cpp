@@ -318,9 +318,8 @@ void __userpurge phys_wheel_collide_info::collision_epilog(
     const phys_mat44 *m_rb_to_world_xform; // [esp-30h] [ebp-70h]
     _BYTE v10[12]; // [esp-Ch] [ebp-4Ch] BYREF
     phys_vec3 b2_hitn_loc; // [esp+0h] [ebp-40h] BYREF
-    float v12; // [esp+14h] [ebp-2Ch] BYREF
-    float v13; // [esp+18h] [ebp-28h]
-    float v14; // [esp+1Ch] [ebp-24h]
+    float v12_adj[3]; // v12, v13, v14: adjacent in the 32-bit stack frame (code takes &v12 and reads past it)
+    float &v12 = v12_adj[0], &v13 = v12_adj[1], &v14 = v12_adj[2];
     float m_hit_t; // [esp+30h] [ebp-10h]
     unsigned int v16[2]; // [esp+34h] [ebp-Ch] BYREF
     _UNKNOWN *retaddr; // [esp+40h] [ebp+0h]
@@ -570,9 +569,8 @@ void    calc_largest_vel_sq(broad_phase_info *bpi)
     float z; // [esp+28h] [ebp-48h]
     float t_vel_sq; // [esp+2Ch] [ebp-44h]
     phys_vec3 dir; // [esp+30h] [ebp-40h] BYREF
-    float v24; // [esp+44h] [ebp-2Ch] BYREF
-    float v25; // [esp+48h] [ebp-28h]
-    float v26; // [esp+4Ch] [ebp-24h]
+    float v24_adj[3]; // v24, v25, v26: adjacent in the 32-bit stack frame (code takes &v24 and reads past it)
+    float &v24 = v24_adj[0], &v25 = v24_adj[1], &v26 = v24_adj[2];
     signed __int32 p_w; // [esp+5Ch] [ebp-14h]
     float v28; // [esp+60h] [ebp-10h]
     int v29; // [esp+64h] [ebp-Ch] BYREF
@@ -991,10 +989,8 @@ void broad_phase_process_object_environment_collision(bpi_environment_collision_
     int v82; // [esp+108h] [ebp-38h]
     broad_phase_base *bpb_cluster_head; // [esp+10Ch] [ebp-34h]
     unsigned int env_collision_flags; // [esp+110h] [ebp-30h]
-    float v85; // [esp+114h] [ebp-2Ch]
-    float v86; // [esp+118h] [ebp-28h]
-    float v87; // [esp+11Ch] [ebp-24h]
-    float v88; // [esp+120h] [ebp-20h]
+    float v85_adj[4]; // v85, v86, v87, v88: adjacent in the 32-bit stack frame (code takes &v85 and reads past it)
+    float &v85 = v85_adj[0], &v86 = v85_adj[1], &v87 = v85_adj[2], &v88 = v85_adj[3];
     int *v89; // [esp+124h] [ebp-1Ch]
 
     iassert(eci->m_bpb_count > 0);

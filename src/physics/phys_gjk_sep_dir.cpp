@@ -126,9 +126,8 @@ const phys_vec3 * gjk_sep_dir::comp_sep_dir(
     phys_vec3 m_vert_list[12]; // [esp+140h] [ebp-1A0h] BYREF
     phys_vec3 v42; // [esp+204h] [ebp-DCh] BYREF
     int v43; // [esp+214h] [ebp-CCh] BYREF
-    float v44; // [esp+224h] [ebp-BCh] BYREF
-    float v45; // [esp+228h] [ebp-B8h]
-    float v46; // [esp+22Ch] [ebp-B4h]
+    float v44_adj[3]; // v44, v45, v46: adjacent in the 32-bit stack frame (code takes &v44 and reads past it)
+    float &v44 = v44_adj[0], &v45 = v44_adj[1], &v46 = v44_adj[2];
     phys_vec3 m_b_loc_vert; // [esp+234h] [ebp-ACh] BYREF
     float v48; // [esp+244h] [ebp-9Ch]
     float v49; // [esp+248h] [ebp-98h]

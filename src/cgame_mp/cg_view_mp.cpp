@@ -2405,16 +2405,15 @@ void    CG_OffsetChaseCamView(int localClientNum, CameraMode camMode)
     long double v3; // [esp+4h] [ebp-9Ch]
     long double v4; // [esp+Ch] [ebp-94h] BYREF
     float right[3]; // [esp+1Ch] [ebp-84h] BYREF
-    float up[3]; // [esp+28h] [ebp-78h]
-    float v7; // [esp+34h] [ebp-6Ch]
+    struct { float a[3]; float m0; } up_adj; // up[3], v7: adjacent in the 32-bit stack frame (code reads past up)
+    float (&up)[3] = up_adj.a; float &v7 = up_adj.m0;
     float *vieworg; // [esp+38h] [ebp-68h]
-    float focusDist; // [esp+3Ch] [ebp-64h] BYREF
-    float v10; // [esp+40h] [ebp-60h]
-    float v11; // [esp+44h] [ebp-5Ch]
-    float view[3]; // [esp+48h] [ebp-58h]
-    float v13; // [esp+54h] [ebp-4Ch]
-    float focusPoint[3]; // [esp+58h] [ebp-48h] BYREF
-    float v15; // [esp+64h] [ebp-3Ch]
+    float focusDist_adj[3]; // focusDist, v10, v11: adjacent in the 32-bit stack frame (code takes &focusDist and reads past it)
+    float &focusDist = focusDist_adj[0], &v10 = focusDist_adj[1], &v11 = focusDist_adj[2];
+    struct { float a[3]; float m0; } view_adj; // view[3], v13: adjacent in the 32-bit stack frame (code reads past view)
+    float (&view)[3] = view_adj.a; float &v13 = view_adj.m0;
+    struct { float a[3]; float m0; } focusPoint_adj; // focusPoint[3], v15: adjacent in the 32-bit stack frame (code reads past focusPoint)
+    float (&focusPoint)[3] = focusPoint_adj.a; float &v15 = focusPoint_adj.m0;
     float forward[3]; // [esp+68h] [ebp-38h] BYREF
     float viewAngles[4]; // [esp+74h] [ebp-2Ch] BYREF
     float focusAngles[3]; // [esp+84h] [ebp-1Ch]
@@ -2603,10 +2602,10 @@ void    CG_OffsetThirdPersonView(int localClientNum)
     float focusDist; // [esp+0h] [ebp-A8h]
     __int64 v7; // [esp+4h] [ebp-A4h] BYREF
     float v8; // [esp+Ch] [ebp-9Ch]
-    float view[3]; // [esp+10h] [ebp-98h]
-    float v10; // [esp+1Ch] [ebp-8Ch]
-    float focusPoint[3]; // [esp+20h] [ebp-88h] BYREF
-    float v12; // [esp+2Ch] [ebp-7Ch]
+    struct { float a[3]; float m0; } view_adj; // view[3], v10: adjacent in the 32-bit stack frame (code reads past view)
+    float (&view)[3] = view_adj.a; float &v10 = view_adj.m0;
+    struct { float a[3]; float m0; } focusPoint_adj; // focusPoint[3], v12: adjacent in the 32-bit stack frame (code reads past focusPoint)
+    float (&focusPoint)[3] = focusPoint_adj.a; float &v12 = focusPoint_adj.m0;
     float forward[3]; // [esp+30h] [ebp-78h] BYREF
     float focusAngles[4]; // [esp+3Ch] [ebp-6Ch] BYREF
     float viewAngles[3]; // [esp+4Ch] [ebp-5Ch]

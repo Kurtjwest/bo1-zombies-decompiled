@@ -1405,8 +1405,8 @@ bool __cdecl SV_SightTracePoint(int *hitNum, const float *start, const float *en
 int __cdecl SV_PointContents(float *p, int passEntityNum, int contentmask)
 {
     int v3; // eax
-    int entityList[1025]; // [esp+4h] [ebp-1018h] BYREF
-    int v6; // [esp+1008h] [ebp-14h]
+    struct { int a[1025]; int m0; } entityList_adj; // entityList[1025], v6: adjacent in the 32-bit stack frame (code reads past entityList)
+    int (&entityList)[1025] = entityList_adj.a; int &v6 = entityList_adj.m0;
     unsigned int model; // [esp+100Ch] [ebp-10h]
     gentity_s *ent; // [esp+1010h] [ebp-Ch]
     int v9; // [esp+1014h] [ebp-8h]

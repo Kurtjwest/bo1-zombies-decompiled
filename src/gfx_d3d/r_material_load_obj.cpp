@@ -1459,10 +1459,8 @@ char __cdecl Material_LoadPass(
     ShaderParameterSet v10; // [esp+24h] [ebp-6540h] BYREF
     char PassVertexDecl; // [esp+30BBh] [ebp-34A9h]
     ShaderParameterSet paramSet; // [esp+30BCh] [ebp-34A8h] BYREF
-    unsigned int argCount; // [esp+6150h] [ebp-414h] BYREF
-    unsigned int firstArg; // [esp+6154h] [ebp-410h] BYREF
-    unsigned int v15; // [esp+6158h] [ebp-40Ch]
-    unsigned int i; // [esp+615Ch] [ebp-408h]
+    unsigned int argCount_adj[4]; // argCount, firstArg, v15, i: adjacent in the 32-bit stack frame (code takes &argCount and reads past it)
+    unsigned int &argCount = argCount_adj[0], &firstArg = argCount_adj[1], &v15 = argCount_adj[2], &i = argCount_adj[3];
     MaterialShaderArgument *localArgs; // [esp+6160h] [ebp-404h]
     MaterialShaderArgument args[128]; // [esp+6164h] [ebp-400h] BYREF
 

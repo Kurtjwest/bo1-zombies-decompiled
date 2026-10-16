@@ -229,21 +229,8 @@ void    CG_Vehicle_PreControllers(
     float v75; // [esp+258h] [ebp-36Ch]
     float *v76; // [esp+25Ch] [ebp-368h]
     float v77[2]; // [esp+260h] [ebp-364h] BYREF
-    float fc; // [esp+268h] [ebp-35Ch] BYREF
-    float v79; // [esp+26Ch] [ebp-358h]
-    float v80; // [esp+270h] [ebp-354h]
-    float f; // [esp+274h] [ebp-350h]
-    float v82; // [esp+278h] [ebp-34Ch]
-    float v83; // [esp+27Ch] [ebp-348h]
-    float v84; // [esp+280h] [ebp-344h]
-    float v85; // [esp+284h] [ebp-340h]
-    float v86; // [esp+288h] [ebp-33Ch]
-    float v87; // [esp+28Ch] [ebp-338h]
-    float v88; // [esp+290h] [ebp-334h]
-    float v89; // [esp+294h] [ebp-330h]
-    float v90; // [esp+298h] [ebp-32Ch]
-    float v91; // [esp+29Ch] [ebp-328h]
-    float v92; // [esp+2A0h] [ebp-324h]
+    float fc_adj[15]; // fc, v79, v80, f, v82, v83, v84, v85, v86, v87, v88, v89, v90, v91, v92: adjacent in the 32-bit stack frame (code takes &fc and reads past it)
+    float &fc = fc_adj[0], &v79 = fc_adj[1], &v80 = fc_adj[2], &f = fc_adj[3], &v82 = fc_adj[4], &v83 = fc_adj[5], &v84 = fc_adj[6], &v85 = fc_adj[7], &v86 = fc_adj[8], &v87 = fc_adj[9], &v88 = fc_adj[10], &v89 = fc_adj[11], &v90 = fc_adj[12], &v91 = fc_adj[13], &v92 = fc_adj[14];
     __int16 v93; // [esp+2A6h] [ebp-31Eh]
     float v94; // [esp+2A8h] [ebp-31Ch]
     float v95; // [esp+2ACh] [ebp-318h]
@@ -287,34 +274,14 @@ void    CG_Vehicle_PreControllers(
     unsigned int yawAngles[5]; // [esp+38Ch] [ebp-238h] BYREF
     float vehAxis[3][3]; // [esp+3A0h] [ebp-224h] BYREF
     float vehYaw; // [esp+3C4h] [ebp-200h]
-    float vehAngles[4]; // [esp+3C8h] [ebp-1FCh] BYREF
-    float v137; // [esp+3D8h] [ebp-1ECh]
-    float ofsPitch; // [esp+3DCh] [ebp-1E8h]
-    float localYaw; // [esp+3E0h] [ebp-1E4h]
-    float v140; // [esp+3E4h] [ebp-1E0h]
-    float absYaw; // [esp+3E8h] [ebp-1DCh]
-    float frameInterpolation; // [esp+3ECh] [ebp-1D8h]
-    float v143; // [esp+3F0h] [ebp-1D4h]
-    float v144; // [esp+3F4h] [ebp-1D0h]
-    float v145; // [esp+3F8h] [ebp-1CCh]
-    float v146; // [esp+3FCh] [ebp-1C8h]
-    float v147; // [esp+400h] [ebp-1C4h]
-    float v148; // [esp+404h] [ebp-1C0h]
-    float v149; // [esp+408h] [ebp-1BCh]
-    float v150; // [esp+40Ch] [ebp-1B8h]
+    struct { float a[4]; float m0; float m1; float m2; float m3; float m4; float m5; float m6; float m7; float m8; float m9; float m10; float m11; float m12; float m13; } vehAngles_adj; // vehAngles[4], v137, ofsPitch, localYaw, v140, absYaw, frameInterpolation, v143, v144, v145, v146, v147, v148, v149, v150: adjacent in the 32-bit stack frame (code reads past vehAngles)
+    float (&vehAngles)[4] = vehAngles_adj.a; float &v137 = vehAngles_adj.m0, &ofsPitch = vehAngles_adj.m1, &localYaw = vehAngles_adj.m2, &v140 = vehAngles_adj.m3, &absYaw = vehAngles_adj.m4, &frameInterpolation = vehAngles_adj.m5, &v143 = vehAngles_adj.m6, &v144 = vehAngles_adj.m7, &v145 = vehAngles_adj.m8, &v146 = vehAngles_adj.m9, &v147 = vehAngles_adj.m10, &v148 = vehAngles_adj.m11, &v149 = vehAngles_adj.m12, &v150 = vehAngles_adj.m13;
     float turretAnglesAxis[3][3]; // [esp+410h] [ebp-1B4h] BYREF
     float turretAngles[4]; // [esp+434h] [ebp-190h] BYREF
     float invMat[3][3]; // [esp+444h] [ebp-180h] BYREF
     float baseAnglesAxis[3][3]; // [esp+468h] [ebp-15Ch] BYREF
-    float baseAngles[4]; // [esp+48Ch] [ebp-138h] BYREF
-    float v156; // [esp+49Ch] [ebp-128h]
-    float v157; // [esp+4A0h] [ebp-124h]
-    float v158; // [esp+4A4h] [ebp-120h]
-    float v159; // [esp+4A8h] [ebp-11Ch]
-    float v160; // [esp+4ACh] [ebp-118h]
-    float v161; // [esp+4B0h] [ebp-114h]
-    float v162; // [esp+4B4h] [ebp-110h]
-    float v163; // [esp+4B8h] [ebp-10Ch]
+    struct { float a[4]; float m0; float m1; float m2; float m3; float m4; float m5; float m6; float m7; } baseAngles_adj; // baseAngles[4], v156, v157, v158, v159, v160, v161, v162, v163: adjacent in the 32-bit stack frame (code reads past baseAngles)
+    float (&baseAngles)[4] = baseAngles_adj.a; float &v156 = baseAngles_adj.m0, &v157 = baseAngles_adj.m1, &v158 = baseAngles_adj.m2, &v159 = baseAngles_adj.m3, &v160 = baseAngles_adj.m4, &v161 = baseAngles_adj.m5, &v162 = baseAngles_adj.m6, &v163 = baseAngles_adj.m7;
     float tagAngles[3]; // [esp+4BCh] [ebp-108h] BYREF
     float tagAxis[4][3]; // [esp+4C8h] [ebp-FCh] BYREF
     DObjAnimMat animMat; // [esp+4F8h] [ebp-CCh] BYREF
@@ -1435,10 +1402,8 @@ void    CG_UpdateTankSurfaceSounds(
     int v9; // [esp+1Ch] [ebp-128h]
     int _rand; // [esp+20h] [ebp-124h]
     unsigned int _limit; // [esp+24h] [ebp-120h]
-    int surface_group_index; // [esp+2Ch] [ebp-118h]
-    int surface_type_index; // [esp+30h] [ebp-114h]
-    int v14; // [esp+34h] [ebp-110h]
-    int wheelIndex; // [esp+38h] [ebp-10Ch]
+    int surface_group_index_adj[4]; // surface_group_index, surface_type_index, v14, wheelIndex: adjacent in the 32-bit stack frame (code takes &surface_group_index and reads past it)
+    int &surface_group_index = surface_group_index_adj[0], &surface_type_index = surface_group_index_adj[1], &v14 = surface_group_index_adj[2], &wheelIndex = surface_group_index_adj[3];
     int maxGroup; // [esp+44h] [ebp-100h]
     int oldNumTracks; // [esp+4Ch] [ebp-F8h]
     int newDistInches; // [esp+50h] [ebp-F4h]

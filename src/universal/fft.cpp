@@ -66,15 +66,8 @@ void __cdecl FFT(complex_s *data_inout, unsigned int log2_count, int *bitSwap, c
     float v32[510]; // [esp+54h] [ebp-10B8h] BYREF
     unsigned int v33; // [esp+84Ch] [ebp-8C0h]
     unsigned int v34; // [esp+850h] [ebp-8BCh]
-    float v35[512]; // [esp+854h] [ebp-8B8h] BYREF
-    float v36; // [esp+1054h] [ebp-B8h]
-    float v37; // [esp+1058h] [ebp-B4h]
-    float v38; // [esp+105Ch] [ebp-B0h]
-    float v39; // [esp+1060h] [ebp-ACh]
-    float v40; // [esp+1064h] [ebp-A8h]
-    float v41; // [esp+1068h] [ebp-A4h]
-    float v42; // [esp+106Ch] [ebp-A0h]
-    float v43; // [esp+1070h] [ebp-9Ch]
+    struct { float a[512]; float m0; float m1; float m2; float m3; float m4; float m5; float m6; float m7; } v35_adj; // v35[512], v36, v37, v38, v39, v40, v41, v42, v43: adjacent in the 32-bit stack frame (code reads past v35)
+    float (&v35)[512] = v35_adj.a; float &v36 = v35_adj.m0, &v37 = v35_adj.m1, &v38 = v35_adj.m2, &v39 = v35_adj.m3, &v40 = v35_adj.m4, &v41 = v35_adj.m5, &v42 = v35_adj.m6, &v43 = v35_adj.m7;
     unsigned int *v44; // [esp+1074h] [ebp-98h]
     int v45; // [esp+1078h] [ebp-94h]
     float real; // [esp+107Ch] [ebp-90h]

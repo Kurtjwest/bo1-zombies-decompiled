@@ -1280,8 +1280,8 @@ void __cdecl DeployWeapon(gentity_s *ent)
     float v3; // [esp+14h] [ebp-1D0h]
     float *trBase; // [esp+18h] [ebp-1CCh]
     float *currentAngles; // [esp+1Ch] [ebp-1C8h]
-    float v[2]; // [esp+48h] [ebp-19Ch] BYREF
-    float v7; // [esp+50h] [ebp-194h]
+    struct { float a[2]; float m0; } v_adj; // v[2], v7: adjacent in the 32-bit stack frame (code reads past v)
+    float (&v)[2] = v_adj.a; float &v7 = v_adj.m0;
     float v8; // [esp+64h] [ebp-180h]
     float v9; // [esp+68h] [ebp-17Ch]
     float v10; // [esp+7Ch] [ebp-168h]

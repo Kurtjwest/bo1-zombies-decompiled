@@ -264,12 +264,8 @@ void __cdecl CG_UpdateCameraTransition(int localClientNum, CameraMode oldMode, C
     float *lastViewAngles; // [esp+44h] [ebp-3Ch]
     float *missileViewAngles; // [esp+48h] [ebp-38h]
     float *viewangles; // [esp+4Ch] [ebp-34h]
-    float v10; // [esp+50h] [ebp-30h] BYREF
-    float v11; // [esp+54h] [ebp-2Ch]
-    float v12; // [esp+58h] [ebp-28h]
-    float angles; // [esp+5Ch] [ebp-24h] BYREF
-    float v14; // [esp+60h] [ebp-20h]
-    float v15; // [esp+64h] [ebp-1Ch]
+    float v10_adj[6]; // v10, v11, v12, angles, v14, v15: adjacent in the 32-bit stack frame (code takes &v10 and reads past it)
+    float &v10 = v10_adj[0], &v11 = v10_adj[1], &v12 = v10_adj[2], &angles = v10_adj[3], &v14 = v10_adj[4], &v15 = v10_adj[5];
     float temp[3]; // [esp+68h] [ebp-18h] BYREF
     float tweenTime; // [esp+74h] [ebp-Ch]
     cg_s *cgameGlob; // [esp+78h] [ebp-8h]

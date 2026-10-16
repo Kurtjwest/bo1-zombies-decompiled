@@ -195,9 +195,8 @@ void __cdecl RB_DrawSuperFlareOccluder(GfxGenericFilter *FilterInfo, int iFilter
     float transformedPosition_12; // [esp+4Ch] [ebp-30h]
     float radius; // [esp+54h] [ebp-28h]
     float sizeX; // [esp+64h] [ebp-18h]
-    float position; // [esp+6Ch] [ebp-10h]
-    float position_4; // [esp+70h] [ebp-Ch]
-    float position_8; // [esp+74h] [ebp-8h]
+    float position_adj[3]; // position, position_4, position_8: adjacent in the 32-bit stack frame (code takes &position_4 and reads past it)
+    float &position = position_adj[0], &position_4 = position_adj[1], &position_8 = position_adj[2];
     GfxVertex *vert; // [esp+78h] [ebp-4h]
 
     position = FilterInfo->passParam[iFilter][iPass][0];

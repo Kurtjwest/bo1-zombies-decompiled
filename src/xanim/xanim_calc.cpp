@@ -585,16 +585,14 @@ void __cdecl XAnimCalcParts_unsigned_short_(
     __int16 *v13; // [esp+28h] [ebp-1F4h]
     unsigned __int8 *v14; // [esp+2Ch] [ebp-1F0h]
     char v15; // [esp+37h] [ebp-1E5h]
-    int v16; // [esp+3Ch] [ebp-1E0h] BYREF
-    int v17; // [esp+40h] [ebp-1DCh]
-    int v18; // [esp+44h] [ebp-1D8h]
+    int v16_adj[3]; // v16, v17, v18: adjacent in the 32-bit stack frame (code takes &v16 and reads past it)
+    int &v16 = v16_adj[0], &v17 = v16_adj[1], &v18 = v16_adj[2];
     unsigned __int16 *v19; // [esp+48h] [ebp-1D4h]
     unsigned __int8 *v20; // [esp+4Ch] [ebp-1D0h]
     char v21; // [esp+53h] [ebp-1C9h]
     unsigned int v22; // [esp+54h] [ebp-1C8h]
-    int v23; // [esp+58h] [ebp-1C4h] BYREF
-    int v24; // [esp+5Ch] [ebp-1C0h]
-    int v25; // [esp+60h] [ebp-1BCh]
+    int v23_adj[3]; // v23, v24, v25: adjacent in the 32-bit stack frame (code takes &v23 and reads past it)
+    int &v23 = v23_adj[0], &v24 = v23_adj[1], &v25 = v23_adj[2];
     unsigned __int16 *v26; // [esp+64h] [ebp-1B8h]
     DObjAnimMat *v27; // [esp+68h] [ebp-1B4h]
     float v28; // [esp+6Ch] [ebp-1B0h]
@@ -606,9 +604,8 @@ void __cdecl XAnimCalcParts_unsigned_short_(
     float dir[5]; // [esp+84h] [ebp-198h] BYREF
     char v35; // [esp+9Bh] [ebp-181h]
     unsigned int v36; // [esp+9Ch] [ebp-180h]
-    int v37; // [esp+A0h] [ebp-17Ch] BYREF
-    int v38; // [esp+A4h] [ebp-178h]
-    int v39; // [esp+A8h] [ebp-174h]
+    int v37_adj[3]; // v37, v38, v39: adjacent in the 32-bit stack frame (code takes &v37 and reads past it)
+    int &v37 = v37_adj[0], &v38 = v37_adj[1], &v39 = v37_adj[2];
     unsigned __int16 *v40; // [esp+ACh] [ebp-170h]
     float v41; // [esp+B0h] [ebp-16Ch]
     float scale; // [esp+B4h] [ebp-168h]
@@ -616,9 +613,8 @@ void __cdecl XAnimCalcParts_unsigned_short_(
     float result[5]; // [esp+BCh] [ebp-160h] BYREF
     char v45; // [esp+D3h] [ebp-149h]
     unsigned int v46; // [esp+D4h] [ebp-148h]
-    int v47; // [esp+D8h] [ebp-144h] BYREF
-    int v48; // [esp+DCh] [ebp-140h]
-    int v49; // [esp+E0h] [ebp-13Ch]
+    int v47_adj[3]; // v47, v48, v49: adjacent in the 32-bit stack frame (code takes &v47 and reads past it)
+    int &v47 = v47_adj[0], &v48 = v47_adj[1], &v49 = v47_adj[2];
     unsigned __int16 *v50; // [esp+E4h] [ebp-138h]
     int v51; // [esp+ECh] [ebp-130h] BYREF
     unsigned __int16 *v52; // [esp+F0h] [ebp-12Ch]
@@ -1757,8 +1753,8 @@ void __cdecl XAnimCalcNonLoopEnd(
     float v19; // [esp+A0h] [ebp-104h]
     float v20; // [esp+A4h] [ebp-100h]
     __int64 sizeVec; // [esp+CCh] [ebp-D8h]
-    __int64 posVec; // [esp+F0h] [ebp-B4h]
-    __int64 posVec_8; // [esp+F8h] [ebp-ACh]
+    __int64 posVec_adj[2]; // posVec, posVec_8: adjacent in the 32-bit stack frame (code takes &posVec and reads past it)
+    __int64 &posVec = posVec_adj[0], &posVec_8 = posVec_adj[1];
     float dir4[4]; // [esp+120h] [ebp-84h] BYREF
     //float v25; // [esp+124h] [ebp-80h]
     //float v26; // [esp+128h] [ebp-7Ch]

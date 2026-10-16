@@ -431,21 +431,19 @@ void CG_UpdateWind(int cur_time)
     GrassWind *v24; // [esp+6Ch] [ebp-A8h]
     GrassWind *v25; // [esp+70h] [ebp-A4h]
     float v26; // [esp+74h] [ebp-A0h]
-    float rot[3]; // [esp+78h] [ebp-9Ch]
-    float v28; // [esp+84h] [ebp-90h]
+    struct { float a[3]; float m0; } rot_adj; // rot[3], v28: adjacent in the 32-bit stack frame (code reads past rot)
+    float (&rot)[3] = rot_adj.a; float &v28 = rot_adj.m0;
     float dist[3]; // [esp+88h] [ebp-8Ch] BYREF
     float *v30; // [esp+94h] [ebp-80h]
     float *origin; // [esp+98h] [ebp-7Ch]
     GrassWind *v32; // [esp+9Ch] [ebp-78h]
     centity_s *ent; // [esp+A0h] [ebp-74h]
-    float v34[5]; // [esp+A4h] [ebp-70h] BYREF
-    float v35; // [esp+B8h] [ebp-5Ch]
-    float v36; // [esp+BCh] [ebp-58h]
+    struct { float a[5]; float m0; float m1; } v34_adj; // v34[5], v35, v36: adjacent in the 32-bit stack frame (code reads past v34)
+    float (&v34)[5] = v34_adj.a; float &v35 = v34_adj.m0, &v36 = v34_adj.m1;
     cg_s *cgameGlob; // [esp+C0h] [ebp-54h]
     int localClientNum; // [esp+C4h] [ebp-50h]
-    float windRustleAngle[5]; // [esp+C8h] [ebp-4Ch] BYREF
-    float v40; // [esp+DCh] [ebp-38h]
-    float v41; // [esp+E0h] [ebp-34h]
+    struct { float a[5]; float m0; float m1; } windRustleAngle_adj; // windRustleAngle[5], v40, v41: adjacent in the 32-bit stack frame (code reads past windRustleAngle)
+    float (&windRustleAngle)[5] = windRustleAngle_adj.a; float &v40 = windRustleAngle_adj.m0, &v41 = windRustleAngle_adj.m1;
     int j; // [esp+E4h] [ebp-30h]
     int i; // [esp+E8h] [ebp-2Ch]
     const DvarValue *v44; // [esp+ECh] [ebp-28h]

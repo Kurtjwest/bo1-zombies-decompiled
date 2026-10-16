@@ -10,38 +10,26 @@ char __cdecl TestOccluders(const float (*bounds)[3], int numOccluders, float (*p
     float v6; // [esp+8h] [ebp-854h]
     float v7; // [esp+Ch] [ebp-850h]
     float v8; // [esp+10h] [ebp-84Ch]
-    int v9; // [esp+14h] [ebp-848h]
-    int v10; // [esp+18h] [ebp-844h]
-    int v11; // [esp+1Ch] [ebp-840h]
-    int v12; // [esp+20h] [ebp-83Ch]
+    int v9_adj[4]; // v9, v10, v11, v12: adjacent in the 32-bit stack frame (code takes &v9 and reads past it)
+    int &v9 = v9_adj[0], &v10 = v9_adj[1], &v11 = v9_adj[2], &v12 = v9_adj[3];
     float v13; // [esp+24h] [ebp-838h]
     float v14; // [esp+28h] [ebp-834h]
     float v15; // [esp+2Ch] [ebp-830h]
     float v16; // [esp+30h] [ebp-82Ch]
-    int v17; // [esp+34h] [ebp-828h]
-    int v18; // [esp+38h] [ebp-824h]
-    int v19; // [esp+3Ch] [ebp-820h]
-    int v20; // [esp+40h] [ebp-81Ch]
+    int v17_adj[4]; // v17, v18, v19, v20: adjacent in the 32-bit stack frame (code takes &v17 and reads past it)
+    int &v17 = v17_adj[0], &v18 = v17_adj[1], &v19 = v17_adj[2], &v20 = v17_adj[3];
     float v21; // [esp+44h] [ebp-818h]
     float v22; // [esp+48h] [ebp-814h]
     float v23; // [esp+4Ch] [ebp-810h]
     float v24; // [esp+50h] [ebp-80Ch]
-    int v25; // [esp+54h] [ebp-808h]
-    int v26; // [esp+58h] [ebp-804h]
-    int v27; // [esp+5Ch] [ebp-800h]
-    int v28; // [esp+60h] [ebp-7FCh]
+    int v25_adj[4]; // v25, v26, v27, v28: adjacent in the 32-bit stack frame (code takes &v25 and reads past it)
+    int &v25 = v25_adj[0], &v26 = v25_adj[1], &v27 = v25_adj[2], &v28 = v25_adj[3];
     float v29; // [esp+64h] [ebp-7F8h]
     float v30; // [esp+68h] [ebp-7F4h]
     float v31; // [esp+6Ch] [ebp-7F0h]
     float v32; // [esp+70h] [ebp-7ECh]
-    int v33; // [esp+74h] [ebp-7E8h]
-    int v34; // [esp+78h] [ebp-7E4h]
-    int v35; // [esp+7Ch] [ebp-7E0h]
-    int v36; // [esp+80h] [ebp-7DCh]
-    int v37; // [esp+84h] [ebp-7D8h]
-    int v38; // [esp+88h] [ebp-7D4h]
-    int v39; // [esp+8Ch] [ebp-7D0h]
-    int v40; // [esp+90h] [ebp-7CCh]
+    int v33_adj[8]; // v33, v34, v35, v36, v37, v38, v39, v40: adjacent in the 32-bit stack frame (code takes &v33 and reads past it)
+    int &v33 = v33_adj[0], &v34 = v33_adj[1], &v35 = v33_adj[2], &v36 = v33_adj[3], &v37 = v33_adj[4], &v38 = v33_adj[5], &v39 = v33_adj[6], &v40 = v33_adj[7];
     __int64 v41; // [esp+144h] [ebp-718h]
     __int64 v42; // [esp+1F8h] [ebp-664h]
     __int64 v43; // [esp+2ACh] [ebp-5B0h]
@@ -51,16 +39,8 @@ char __cdecl TestOccluders(const float (*bounds)[3], int numOccluders, float (*p
     float v47; // [esp+574h] [ebp-2E8h]
     float v48; // [esp+624h] [ebp-238h]
     float v49; // [esp+6D4h] [ebp-188h]
-    __int64 p5; // [esp+7E4h] [ebp-78h]
-    __int64 p5_8; // [esp+7ECh] [ebp-70h]
-    __int64 p1; // [esp+7F4h] [ebp-68h]
-    __int64 p1_8; // [esp+7FCh] [ebp-60h]
-    __int64 p3; // [esp+804h] [ebp-58h]
-    __int64 p3_8; // [esp+80Ch] [ebp-50h]
-    __int64 p2; // [esp+814h] [ebp-48h]
-    __int64 p2_8; // [esp+81Ch] [ebp-40h]
-    __int64 p4; // [esp+824h] [ebp-38h]
-    __int64 p4_8; // [esp+82Ch] [ebp-30h]
+    __int64 p5_adj[10]; // p5, p5_8, p1, p1_8, p3, p3_8, p2, p2_8, p4, p4_8: adjacent in the 32-bit stack frame (code takes &p5 and reads past it)
+    __int64 &p5 = p5_adj[0], &p5_8 = p5_adj[1], &p1 = p5_adj[2], &p1_8 = p5_adj[3], &p3 = p5_adj[4], &p3_8 = p5_adj[5], &p2 = p5_adj[6], &p2_8 = p5_adj[7], &p4 = p5_adj[8], &p4_8 = p5_adj[9];
     int i; // [esp+834h] [ebp-28h]
     __int64 max; // [esp+838h] [ebp-24h]
     __int64 max_8; // [esp+840h] [ebp-1Ch]
@@ -472,22 +452,8 @@ float (*__cdecl TestOccludersPartial(const float (*bounds)[3], int *numOccluders
     _QWORD *v21; // eax
     _QWORD *v22; // eax
     _QWORD *v23; // eax
-    float v25; // [esp+4h] [ebp-E94h]
-    float v26; // [esp+8h] [ebp-E90h]
-    float v27; // [esp+Ch] [ebp-E8Ch]
-    float v28; // [esp+10h] [ebp-E88h]
-    float v29; // [esp+14h] [ebp-E84h]
-    float v30; // [esp+18h] [ebp-E80h]
-    float v31; // [esp+1Ch] [ebp-E7Ch]
-    float v32; // [esp+20h] [ebp-E78h]
-    float v33; // [esp+24h] [ebp-E74h]
-    float v34; // [esp+28h] [ebp-E70h]
-    float v35; // [esp+2Ch] [ebp-E6Ch]
-    float v36; // [esp+30h] [ebp-E68h]
-    float v37; // [esp+34h] [ebp-E64h]
-    float v38; // [esp+38h] [ebp-E60h]
-    float v39; // [esp+3Ch] [ebp-E5Ch]
-    float v40; // [esp+40h] [ebp-E58h]
+    float v25_adj[16]; // v25, v26, v27, v28, v29, v30, v31, v32, v33, v34, v35, v36, v37, v38, v39, v40: adjacent in the 32-bit stack frame (code takes &v25 and reads past it)
+    float &v25 = v25_adj[0], &v26 = v25_adj[1], &v27 = v25_adj[2], &v28 = v25_adj[3], &v29 = v25_adj[4], &v30 = v25_adj[5], &v31 = v25_adj[6], &v32 = v25_adj[7], &v33 = v25_adj[8], &v34 = v25_adj[9], &v35 = v25_adj[10], &v36 = v25_adj[11], &v37 = v25_adj[12], &v38 = v25_adj[13], &v39 = v25_adj[14], &v40 = v25_adj[15];
     float v42; // [esp+48h] [ebp-E50h]
     float v43; // [esp+4Ch] [ebp-E4Ch]
     float v44; // [esp+50h] [ebp-E48h]
@@ -504,26 +470,8 @@ float (*__cdecl TestOccludersPartial(const float (*bounds)[3], int *numOccluders
     float v55; // [esp+7Ch] [ebp-E1Ch]
     float v56; // [esp+80h] [ebp-E18h]
     float v57; // [esp+84h] [ebp-E14h]
-    int v58; // [esp+88h] [ebp-E10h]
-    int v59; // [esp+8Ch] [ebp-E0Ch]
-    int v60; // [esp+90h] [ebp-E08h]
-    int v61; // [esp+94h] [ebp-E04h]
-    int v62; // [esp+98h] [ebp-E00h]
-    int v63; // [esp+9Ch] [ebp-DFCh]
-    int v64; // [esp+A0h] [ebp-DF8h]
-    int v65; // [esp+A4h] [ebp-DF4h]
-    int v66; // [esp+A8h] [ebp-DF0h]
-    int v67; // [esp+ACh] [ebp-DECh]
-    int v68; // [esp+B0h] [ebp-DE8h]
-    int v69; // [esp+B4h] [ebp-DE4h]
-    int v70; // [esp+B8h] [ebp-DE0h]
-    int v71; // [esp+BCh] [ebp-DDCh]
-    int v72; // [esp+C0h] [ebp-DD8h]
-    int v73; // [esp+C4h] [ebp-DD4h]
-    int v74; // [esp+C8h] [ebp-DD0h]
-    int v75; // [esp+CCh] [ebp-DCCh]
-    int v76; // [esp+D0h] [ebp-DC8h]
-    int v77; // [esp+D4h] [ebp-DC4h]
+    int v58_adj[20]; // v58, v59, v60, v61, v62, v63, v64, v65, v66, v67, v68, v69, v70, v71, v72, v73, v74, v75, v76, v77: adjacent in the 32-bit stack frame (code takes &v58 and reads past it)
+    int &v58 = v58_adj[0], &v59 = v58_adj[1], &v60 = v58_adj[2], &v61 = v58_adj[3], &v62 = v58_adj[4], &v63 = v58_adj[5], &v64 = v58_adj[6], &v65 = v58_adj[7], &v66 = v58_adj[8], &v67 = v58_adj[9], &v68 = v58_adj[10], &v69 = v58_adj[11], &v70 = v58_adj[12], &v71 = v58_adj[13], &v72 = v58_adj[14], &v73 = v58_adj[15], &v74 = v58_adj[16], &v75 = v58_adj[17], &v76 = v58_adj[18], &v77 = v58_adj[19];
     float v78; // [esp+144h] [ebp-D54h]
     float v79; // [esp+1D0h] [ebp-CC8h]
     float v80; // [esp+25Ch] [ebp-C3Ch]
@@ -550,16 +498,14 @@ float (*__cdecl TestOccludersPartial(const float (*bounds)[3], int *numOccluders
     int idx; // [esp+D6Ch] [ebp-12Ch]
     __int64 t2; // [esp+D70h] [ebp-128h]
     __int64 t2_8; // [esp+D78h] [ebp-120h]
-    __int64 p5; // [esp+DA0h] [ebp-F8h]
-    __int64 p5_8; // [esp+DA8h] [ebp-F0h]
-    __int64 p1; // [esp+DD0h] [ebp-C8h]
-    __int64 p1_8; // [esp+DD8h] [ebp-C0h]
-    __int64 p3; // [esp+DE0h] [ebp-B8h]
-    __int64 p3_8; // [esp+DE8h] [ebp-B0h]
-    __int64 p2; // [esp+E30h] [ebp-68h]
-    __int64 p2_8; // [esp+E38h] [ebp-60h]
-    __int64 p4; // [esp+E50h] [ebp-48h]
-    __int64 p4_8; // [esp+E58h] [ebp-40h]
+    __int64 p5_adj[2]; // p5, p5_8: adjacent in the 32-bit stack frame (code takes &p5 and reads past it)
+    __int64 &p5 = p5_adj[0], &p5_8 = p5_adj[1];
+    __int64 p1_adj[4]; // p1, p1_8, p3, p3_8: adjacent in the 32-bit stack frame (code takes &p1 and reads past it)
+    __int64 &p1 = p1_adj[0], &p1_8 = p1_adj[1], &p3 = p1_adj[2], &p3_8 = p1_adj[3];
+    __int64 p2_adj[2]; // p2, p2_8: adjacent in the 32-bit stack frame (code takes &p2 and reads past it)
+    __int64 &p2 = p2_adj[0], &p2_8 = p2_adj[1];
+    __int64 p4_adj[2]; // p4, p4_8: adjacent in the 32-bit stack frame (code takes &p4 and reads past it)
+    __int64 &p4 = p4_adj[0], &p4_8 = p4_adj[1];
     __int64 max; // [esp+E70h] [ebp-28h]
     __int64 max_8; // [esp+E78h] [ebp-20h]
     __int64 min; // [esp+E80h] [ebp-18h]

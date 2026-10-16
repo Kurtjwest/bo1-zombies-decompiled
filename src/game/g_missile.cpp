@@ -481,11 +481,8 @@ void    G_ExplodeMissile(gentity_s *ent)
     gentity_s *v12; // [esp+30h] [ebp-19Ch]
     float v13[3]; // [esp+34h] [ebp-198h] BYREF
     int splashMethodOfDeath; // [esp+40h] [ebp-18Ch]
-    float forwardDir[3]; // [esp+44h] [ebp-188h] BYREF
-    float coneCos; // [esp+50h] [ebp-17Ch]
-    float v17; // [esp+54h] [ebp-178h]
-    float v18; // [esp+58h] [ebp-174h]
-    float v19; // [esp+5Ch] [ebp-170h]
+    struct { float a[3]; float m0; float m1; float m2; float m3; } forwardDir_adj; // forwardDir[3], coneCos, v17, v18, v19: adjacent in the 32-bit stack frame (code reads past forwardDir)
+    float (&forwardDir)[3] = forwardDir_adj.a; float &coneCos = forwardDir_adj.m0, &v17 = forwardDir_adj.m1, &v18 = forwardDir_adj.m2, &v19 = forwardDir_adj.m3;
     gentity_s *v20; // [esp+60h] [ebp-16Ch]
     int *v21; // [esp+64h] [ebp-168h]
     float endpos[4]; // [esp+68h] [ebp-164h] BYREF
@@ -1123,10 +1120,8 @@ void __cdecl G_RunMissileInternal(gentity_s *ent)
 {
     const float *v1; // [esp+1Ch] [ebp-1C4h]
     float circleDir3[3]; // [esp+A8h] [ebp-138h] BYREF
-    float center; // [esp+B4h] [ebp-12Ch] BYREF
-    float v4; // [esp+B8h] [ebp-128h]
-    float v5; // [esp+BCh] [ebp-124h]
-    float radius; // [esp+C0h] [ebp-120h]
+    float center_adj[4]; // center, v4, v5, radius: adjacent in the 32-bit stack frame (code takes &center and reads past it)
+    float &center = center_adj[0], &v4 = center_adj[1], &v5 = center_adj[2], &radius = center_adj[3];
     float circleDir2[3]; // [esp+C4h] [ebp-11Ch] BYREF
     float circleDir1[3]; // [esp+D0h] [ebp-110h] BYREF
     const float *color; // [esp+DCh] [ebp-104h]
@@ -2227,13 +2222,8 @@ bool    BounceMissile(gentity_s *ent, trace_t *trace)
     float vDelta[3]; // [esp+4Ch] [ebp-1A0h]
     gentity_s *groundEnt; // [esp+58h] [ebp-194h]
     int *p_clipAmmoCount; // [esp+5Ch] [ebp-190h]
-    float vAngles[3]; // [esp+60h] [ebp-18Ch] BYREF
-    float v13; // [esp+6Ch] [ebp-180h]
-    float v14; // [esp+70h] [ebp-17Ch]
-    float v15; // [esp+74h] [ebp-178h]
-    float v16; // [esp+78h] [ebp-174h]
-    float v17; // [esp+7Ch] [ebp-170h]
-    float v18; // [esp+80h] [ebp-16Ch]
+    struct { float a[3]; float m0; float m1; float m2; float m3; float m4; float m5; } vAngles_adj; // vAngles[3], v13, v14, v15, v16, v17, v18: adjacent in the 32-bit stack frame (code reads past vAngles)
+    float (&vAngles)[3] = vAngles_adj.a; float &v13 = vAngles_adj.m0, &v14 = vAngles_adj.m1, &v15 = vAngles_adj.m2, &v16 = vAngles_adj.m3, &v17 = vAngles_adj.m4, &v18 = vAngles_adj.m5;
     float targetAngles[3]; // [esp+84h] [ebp-168h] BYREF
     float revolutions; // [esp+90h] [ebp-15Ch]
     float linearSpeed; // [esp+94h] [ebp-158h]
@@ -2241,11 +2231,8 @@ bool    BounceMissile(gentity_s *ent, trace_t *trace)
     float v23; // [esp+9Ch] [ebp-150h]
     float *v24; // [esp+A0h] [ebp-14Ch]
     int v25; // [esp+A4h] [ebp-148h]
-    float wobbleNewPos[4]; // [esp+A8h] [ebp-144h] BYREF
-    float v27; // [esp+B8h] [ebp-134h]
-    float wobbleSideScale; // [esp+BCh] [ebp-130h]
-    float v29; // [esp+C0h] [ebp-12Ch]
-    float v30; // [esp+C4h] [ebp-128h]
+    struct { float a[4]; float m0; float m1; float m2; float m3; } wobbleNewPos_adj; // wobbleNewPos[4], v27, wobbleSideScale, v29, v30: adjacent in the 32-bit stack frame (code reads past wobbleNewPos)
+    float (&wobbleNewPos)[4] = wobbleNewPos_adj.a; float &v27 = wobbleNewPos_adj.m0, &wobbleSideScale = wobbleNewPos_adj.m1, &v29 = wobbleNewPos_adj.m2, &v30 = wobbleNewPos_adj.m3;
     float side[3]; // [esp+C8h] [ebp-124h] BYREF
     float *v32; // [esp+D4h] [ebp-118h]
     float v33; // [esp+D8h] [ebp-114h]
@@ -2834,14 +2821,8 @@ char __cdecl GrenadeBounceVelocity(
     float v13; // [esp+1Ch] [ebp-6Ch]
     float v14; // [esp+24h] [ebp-64h]
     float v15; // [esp+44h] [ebp-44h]
-    float slideDir[3]; // [esp+5Ch] [ebp-2Ch] BYREF
-    float slideSpeed; // [esp+68h] [ebp-20h]
-    float v18; // [esp+6Ch] [ebp-1Ch]
-    float frictionScale; // [esp+70h] [ebp-18h]
-    float tr_n; // [esp+74h] [ebp-14h]
-    float per; // [esp+78h] [ebp-10h]
-    float par; // [esp+7Ch] [ebp-Ch]
-    float bounceFactor; // [esp+80h] [ebp-8h]
+    struct { float a[3]; float m0; float m1; float m2; float m3; float m4; float m5; float m6; } slideDir_adj; // slideDir[3], slideSpeed, v18, frictionScale, tr_n, per, par, bounceFactor: adjacent in the 32-bit stack frame (code reads past slideDir)
+    float (&slideDir)[3] = slideDir_adj.a; float &slideSpeed = slideDir_adj.m0, &v18 = slideDir_adj.m1, &frictionScale = slideDir_adj.m2, &tr_n = slideDir_adj.m3, &per = slideDir_adj.m4, &par = slideDir_adj.m5, &bounceFactor = slideDir_adj.m6;
     bool shouldRoll; // [esp+87h] [ebp-1h]
 
     bounceFactor = Vec3Length(preBounceVelocity);

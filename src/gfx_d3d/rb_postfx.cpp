@@ -1671,10 +1671,8 @@ void    RB_GenericFilterFX(const GfxViewInfo *viewInfo)
   float v4; // [esp+3Ch] [ebp-228h] BYREF
   int v5; // [esp+40h] [ebp-224h] OVERLAPPED
   int v6; // [esp+44h] [ebp-220h]
-  float colorBlack[4]; // [esp+48h] [ebp-21Ch]
-  float Intensity; // [esp+58h] [ebp-20Ch]
-  float v9; // [esp+5Ch] [ebp-208h]
-  float v10; // [esp+60h] [ebp-204h]
+  struct { float a[4]; float m0; float m1; float m2; } colorBlack_adj; // colorBlack[4], Intensity, v9, v10: adjacent in the 32-bit stack frame (code reads past colorBlack)
+  float (&colorBlack)[4] = colorBlack_adj.a; float &Intensity = colorBlack_adj.m0, &v9 = colorBlack_adj.m1, &v10 = colorBlack_adj.m2;
   float *v11; // [esp+64h] [ebp-200h]
   float v12; // [esp+68h] [ebp-1FCh]
   float v13; // [esp+6Ch] [ebp-1F8h]

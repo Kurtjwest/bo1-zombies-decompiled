@@ -1926,13 +1926,11 @@ void __cdecl CM_TraceThroughPrimitives(
                 col_context_t *context)
 {
     bool v5; // [esp+3h] [ebp-E1h]
-    float v6; // [esp+4h] [ebp-E0h] BYREF
-    float v7; // [esp+8h] [ebp-DCh]
-    float v8; // [esp+Ch] [ebp-D8h]
+    float v6_adj[3]; // v6, v7, v8: adjacent in the 32-bit stack frame (code takes &v6 and reads past it)
+    float &v6 = v6_adj[0], &v7 = v6_adj[1], &v8 = v6_adj[2];
     int v9; // [esp+10h] [ebp-D4h]
-    float v10; // [esp+14h] [ebp-D0h] BYREF
-    float v11; // [esp+18h] [ebp-CCh]
-    float v12; // [esp+1Ch] [ebp-C8h]
+    float v10_adj[3]; // v10, v11, v12: adjacent in the 32-bit stack frame (code takes &v10 and reads past it)
+    float &v10 = v10_adj[0], &v11 = v10_adj[1], &v12 = v10_adj[2];
     int v13; // [esp+20h] [ebp-C4h]
     __int64 v14; // [esp+24h] [ebp-C0h]
     int v15; // [esp+2Ch] [ebp-B8h]

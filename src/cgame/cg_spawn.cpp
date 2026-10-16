@@ -484,9 +484,8 @@ void __cdecl CG_CallSpawn(int localClientNum, SpawnVar *spawnVar)
     float *v5; // [esp+C4h] [ebp-8Ch]
     float *v6; // [esp+C8h] [ebp-88h]
     char *out[2]; // [esp+CCh] [ebp-84h] BYREF
-    int v8; // [esp+D4h] [ebp-7Ch] BYREF
-    int v9; // [esp+D8h] [ebp-78h] BYREF
-    int v10; // [esp+DCh] [ebp-74h] BYREF
+    int v8_adj[3]; // v8, v9, v10: adjacent in the 32-bit stack frame (code takes &v8 and reads past it)
+    int &v8 = v8_adj[0], &v9 = v8_adj[1], &v10 = v8_adj[2];
     float force[3]; // [esp+E0h] [ebp-70h] BYREF
     float fmag; // [esp+ECh] [ebp-64h]
     char *v13; // [esp+F0h] [ebp-60h] BYREF

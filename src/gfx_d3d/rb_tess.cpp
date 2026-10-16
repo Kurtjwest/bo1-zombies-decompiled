@@ -523,9 +523,8 @@ unsigned int __cdecl R_TessMarkMeshList(const GfxDrawSurfListArgs *listArgs, Gfx
     const GfxDrawSurfListInfo *info; // [esp+70h] [ebp-84h]
     GfxDrawSurf drawSurf; // [esp+74h] [ebp-80h]
     const GfxBackEndData *data; // [esp+80h] [ebp-74h]
-    float curNormal; // [esp+84h] [ebp-70h]
-    float curNormal_4; // [esp+88h] [ebp-6Ch]
-    float curNormal_8; // [esp+8Ch] [ebp-68h]
+    float curNormal_adj[3]; // curNormal, curNormal_4, curNormal_8: adjacent in the 32-bit stack frame (code takes &curNormal_4 and reads past it)
+    float &curNormal = curNormal_adj[0], &curNormal_4 = curNormal_adj[1], &curNormal_8 = curNormal_adj[2];
     unsigned __int64 drawSurfSubKey; // [esp+94h] [ebp-60h]
     GfxDrawSurf drawSurfSubMask; // [esp+9Ch] [ebp-58h]
     unsigned __int8 baseTechType; // [esp+A7h] [ebp-4Dh]

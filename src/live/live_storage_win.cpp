@@ -3014,9 +3014,8 @@ char __cdecl Live_CACValidate_DispatchMessage(
     _BYTE v9[5]; // [esp+9CFFh] [ebp-9D39h] BYREF
     int v10; // [esp+9D04h] [ebp-9D34h] BYREF
     unsigned __int8 compressedcac[40172]; // [esp+9D08h] [ebp-9D30h] BYREF
-    int v12; // [esp+139F8h] [ebp-40h]
-    int len; // [esp+139FCh] [ebp-3Ch] BYREF
-    int v14; // [esp+13A00h] [ebp-38h] BYREF
+    int v12_adj[3]; // v12, len, v14: adjacent in the 32-bit stack frame (code takes &len and reads past it)
+    int &v12 = v12_adj[0], &len = v12_adj[1], &v14 = v12_adj[2];
     msg_t buf; // [esp+13A04h] [ebp-34h] BYREF
     char v16; // [esp+13A36h] [ebp-2h]
     unsigned __int8 v17; // [esp+13A37h] [ebp-1h]

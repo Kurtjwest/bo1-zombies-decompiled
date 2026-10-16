@@ -2558,8 +2558,8 @@ void __cdecl CG_CompassDrawPlayer(
 {
     float yawVector[2]; // [esp+30h] [ebp-58h] BYREF
     bool clipped; // [esp+3Bh] [ebp-4Dh]
-    float outClipped; // [esp+3Ch] [ebp-4Ch] BYREF
-    float v9; // [esp+40h] [ebp-48h]
+    float outClipped_adj[2]; // outClipped, v9: adjacent in the 32-bit stack frame (code takes &outClipped and reads past it)
+    float &outClipped = outClipped_adj[0], &v9 = outClipped_adj[1];
     float xy[2]; // [esp+44h] [ebp-44h] BYREF
     const cg_s *cgameGlob; // [esp+4Ch] [ebp-3Ch]
     float angle; // [esp+50h] [ebp-38h]
@@ -2875,9 +2875,8 @@ void    CG_CompassDrawTickertape(
     float distWithRange; // [esp+54h] [ebp-98h]
     float textAlpha; // [esp+58h] [ebp-94h]
     float goalYawa; // [esp+64h] [ebp-88h]
-    float goalYaw; // [esp+64h] [ebp-88h]
-    float v22; // [esp+68h] [ebp-84h] BYREF
-    float v23; // [esp+6Ch] [ebp-80h]
+    float goalYaw_adj[3]; // goalYaw, v22, v23: adjacent in the 32-bit stack frame (code takes &v22 and reads past it)
+    float &goalYaw = goalYaw_adj[0], &v22 = goalYaw_adj[1], &v23 = goalYaw_adj[2];
     int dist; // [esp+70h] [ebp-7Ch]
     float posDelta[2]; // [esp+74h] [ebp-78h]
     unsigned int *v26; // [esp+7Ch] [ebp-70h]

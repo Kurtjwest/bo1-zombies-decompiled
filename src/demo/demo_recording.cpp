@@ -959,10 +959,8 @@ void __cdecl Demo_WritePacketEntities(msg_t *msg)
     int number; // [esp+40h] [ebp-1020h]
     archivedEntity_s *from; // [esp+44h] [ebp-101Ch]
     int eFlags; // [esp+48h] [ebp-1018h]
-    int v21[1024]; // [esp+50h] [ebp-1010h]
-    int value; // [esp+1050h] [ebp-10h]
-    int UsedBitCount; // [esp+1054h] [ebp-Ch]
-    int v24; // [esp+1058h] [ebp-8h]
+    struct { int a[1024]; int m0; int m1; int m2; } v21_adj; // v21[1024], value, UsedBitCount, v24: adjacent in the 32-bit stack frame (code reads past v21)
+    int (&v21)[1024] = v21_adj.a; int &value = v21_adj.m0, &UsedBitCount = v21_adj.m1, &v24 = v21_adj.m2;
     entityState_s *v25; // [esp+105Ch] [ebp-4h]
 
     value = 0;

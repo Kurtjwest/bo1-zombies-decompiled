@@ -449,7 +449,7 @@ void __cdecl R_Cinematic_Init()
     iassert(!cinematicGlob.memPool);
     iassert(!g_cinematicInitialized);
 
-    memset((unsigned __int8 *)&cinematicGlob, 0, 0x9F4u);
+    memset((unsigned __int8 *)&cinematicGlob, 0, sizeof(cinematicGlob)); // 0x9F4 in the 32-bit exe; the Bink texture set holds native pointers
     cinematicGlob.activeImageFrame = -1;
     R_Cinematic_ReserveMemory();
 

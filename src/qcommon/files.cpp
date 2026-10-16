@@ -792,9 +792,8 @@ char __cdecl FS_PureServerSetLoadedIwds(char *iwdSums, char *iwdNames)
     int v3; // eax
     char *v4; // eax
     char *v5; // eax
-    int j; // [esp+20h] [ebp-2020h]
-    int v8; // [esp+24h] [ebp-201Ch]
-    int v9; // [esp+28h] [ebp-2018h]
+    int j_adj[3]; // j, v8, v9: adjacent in the 32-bit stack frame (code takes &v8 and reads past it)
+    int &j = j_adj[0], &v8 = j_adj[1], &v9 = j_adj[2];
     char v10; // [esp+2Eh] [ebp-2012h]
     char v11; // [esp+2Fh] [ebp-2011h]
     int src[1025]; // [esp+30h] [ebp-2010h] BYREF
@@ -877,7 +876,7 @@ LABEL_34:
     {
         Com_DPrintf(10, "Connected to a pure server.\n");
         Com_Memcpy(fs_serverIwds, src, 4 * fs_numServerIwds);
-        Com_Memcpy(fs_serverIwdNames, s0, 4 * fs_numServerIwds);
+        Com_Memcpy(fs_serverIwdNames, s0, sizeof(fs_serverIwdNames[0]) * fs_numServerIwds); // pointers: 4 bytes each only on 32-bit
         fs_fakeChkSum = 0;
     }
     return v10;

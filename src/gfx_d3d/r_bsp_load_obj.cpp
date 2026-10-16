@@ -147,38 +147,19 @@ char *__cdecl R_ParseSunLight(SunLightParseParams *params, char *text)
     float v6; // [esp+20h] [ebp-108Ch]
     float v7; // [esp+24h] [ebp-1088h]
     char v8; // [esp+2Bh] [ebp-1081h]
-    float v9; // [esp+2Ch] [ebp-1080h] BYREF
-    float v10; // [esp+30h] [ebp-107Ch] BYREF
-    float v11; // [esp+34h] [ebp-1078h] BYREF
-    float v12; // [esp+38h] [ebp-1074h]
+    float v9_adj[4]; // v9, v10, v11, v12: adjacent in the 32-bit stack frame (code takes &v9 and reads past it)
+    float &v9 = v9_adj[0], &v10 = v9_adj[1], &v11 = v9_adj[2], &v12 = v9_adj[3];
     char v13; // [esp+3Fh] [ebp-106Dh]
-    float v14; // [esp+40h] [ebp-106Ch]
-    float v15; // [esp+44h] [ebp-1068h]
-    float v16; // [esp+48h] [ebp-1064h]
-    float v17; // [esp+4Ch] [ebp-1060h]
-    float v18; // [esp+50h] [ebp-105Ch] BYREF
-    float v19; // [esp+54h] [ebp-1058h] BYREF
-    float v20; // [esp+58h] [ebp-1054h] BYREF
-    float v21; // [esp+5Ch] [ebp-1050h] BYREF
-    float v22; // [esp+60h] [ebp-104Ch] BYREF
-    float v23; // [esp+64h] [ebp-1048h] BYREF
+    float v14_adj[10]; // v14, v15, v16, v17, v18, v19, v20, v21, v22, v23: adjacent in the 32-bit stack frame (code takes &v18 and reads past it)
+    float &v14 = v14_adj[0], &v15 = v14_adj[1], &v16 = v14_adj[2], &v17 = v14_adj[3], &v18 = v14_adj[4], &v19 = v14_adj[5], &v20 = v14_adj[6], &v21 = v14_adj[7], &v22 = v14_adj[8], &v23 = v14_adj[9];
     char *src; // [esp+68h] [ebp-1044h]
     char dest[2052]; // [esp+6Ch] [ebp-1040h] BYREF
-    float v26; // [esp+870h] [ebp-83Ch] BYREF
-    float v27; // [esp+874h] [ebp-838h] BYREF
-    float v28; // [esp+878h] [ebp-834h] BYREF
-    float v29; // [esp+87Ch] [ebp-830h] BYREF
-    float v30; // [esp+880h] [ebp-82Ch] BYREF
-    float v31; // [esp+884h] [ebp-828h] BYREF
-    float out; // [esp+888h] [ebp-824h] BYREF
-    float v33; // [esp+88Ch] [ebp-820h] BYREF
-    float v34; // [esp+890h] [ebp-81Ch] BYREF
+    float v26_adj[9]; // v26, v27, v28, v29, v30, v31, out, v33, v34: adjacent in the 32-bit stack frame (code takes &v26 and reads past it)
+    float &v26 = v26_adj[0], &v27 = v26_adj[1], &v28 = v26_adj[2], &v29 = v26_adj[3], &v30 = v26_adj[4], &v31 = v26_adj[5], &out = v26_adj[6], &v33 = v26_adj[7], &v34 = v26_adj[8];
     char nptr; // [esp+894h] [ebp-818h] BYREF
     _BYTE v36[3]; // [esp+895h] [ebp-817h] BYREF
-    float v37; // [esp+109Ch] [ebp-10h]
-    float in; // [esp+10A0h] [ebp-Ch] BYREF
-    float v39; // [esp+10A4h] [ebp-8h] BYREF
-    float v40; // [esp+10A8h] [ebp-4h] BYREF
+    float v37_adj[4]; // v37, in, v39, v40: adjacent in the 32-bit stack frame (code takes &in and reads past it)
+    float &v37 = v37_adj[0], &in = v37_adj[1], &v39 = v37_adj[2], &v40 = v37_adj[3];
 
     if ( !params
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_bsp_load_obj.cpp", 4802, 0, "%s", "params") )

@@ -1142,20 +1142,17 @@ char __cdecl CG_DrawGenericOverlay(int SortIndex, int localClientNum)
     float v18[4]; // [esp+58h] [ebp-F8h] BYREF
     float v19[4]; // [esp+68h] [ebp-E8h] BYREF
     float c3[4]; // [esp+78h] [ebp-D8h] BYREF
-    float v21; // [esp+88h] [ebp-C8h] BYREF
-    float v22; // [esp+8Ch] [ebp-C4h] BYREF
-    float v23; // [esp+90h] [ebp-C0h] BYREF
-    float c0[4]; // [esp+94h] [ebp-BCh] BYREF
-    float v25; // [esp+A4h] [ebp-ACh] BYREF
+    float v21_adj[3]; // v21, v22, v23: adjacent in the 32-bit stack frame (code takes &v21 and reads past it)
+    float &v21 = v21_adj[0], &v22 = v21_adj[1], &v23 = v21_adj[2];
+    struct { float a[4]; float m0; } c0_adj; // c0[4], v25: adjacent in the 32-bit stack frame (code reads past c0)
+    float (&c0)[4] = c0_adj.a; float &v25 = c0_adj.m0;
     int iOverlay; // [esp+A8h] [ebp-A8h]
     float v27[4]; // [esp+ACh] [ebp-A4h] BYREF
     float vec[4]; // [esp+BCh] [ebp-94h] BYREF
     float c2[4]; // [esp+CCh] [ebp-84h] BYREF
     float c1[4]; // [esp+DCh] [ebp-74h] BYREF
-    float v31; // [esp+ECh] [ebp-64h] BYREF
-    float v32; // [esp+F0h] [ebp-60h] BYREF
-    float v33; // [esp+F4h] [ebp-5Ch] BYREF
-    float v34; // [esp+F8h] [ebp-58h] BYREF
+    float v31_adj[4]; // v31, v32, v33, v34: adjacent in the 32-bit stack frame (code takes &v31 and reads past it)
+    float &v31 = v31_adj[0], &v32 = v31_adj[1], &v33 = v31_adj[2], &v34 = v31_adj[3];
     float cb[4]; // [esp+FCh] [ebp-54h] BYREF
     float ca[4]; // [esp+10Ch] [ebp-44h] BYREF
     const WeaponVariantDef *weapVariantDef; // [esp+11Ch] [ebp-34h]

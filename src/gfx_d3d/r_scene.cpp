@@ -2256,10 +2256,8 @@ void    R_SetHDRControlConstants(GfxCmdBufInput *input, const GfxViewInfo *viewI
     float Cmul[5]; // [esp+A4h] [ebp-F8h]
     float Badd[4]; // [esp+B8h] [ebp-E4h]
     float Bmul[4]; // [esp+C8h] [ebp-D4h]
-    float Amul[6]; // [esp+D8h] [ebp-C4h]
-    float v31; // [esp+F0h] [ebp-ACh]
-    float v32; // [esp+F4h] [ebp-A8h]
-    float v33; // [esp+F8h] [ebp-A4h]
+    struct { float a[6]; float m0; float m1; float m2; } Amul_adj; // Amul[6], v31, v32, v33: adjacent in the 32-bit stack frame (code reads past Amul)
+    float (&Amul)[6] = Amul_adj.a; float &v31 = Amul_adj.m0, &v32 = Amul_adj.m1, &v33 = Amul_adj.m2;
     int i; // [esp+FCh] [ebp-A0h]
     float bloomS; // [esp+100h] [ebp-9Ch]
     float curveE[5]; // [esp+104h] [ebp-98h]

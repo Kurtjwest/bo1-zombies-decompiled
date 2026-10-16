@@ -341,8 +341,8 @@ void __cdecl Cmd_ExecSafeDvarSingleCommmandOnly(
     int j; // [esp+0h] [ebp-3010h]
     int i; // [esp+4h] [ebp-300Ch]
     char s0[4096]; // [esp+8h] [ebp-3008h] BYREF
-    char s1[4096]; // [esp+1008h] [ebp-2008h] BYREF
-    char v8; // [esp+2008h] [ebp-1008h] BYREF
+    struct { char a[4096]; char m0; } s1_adj; // s1[4096], v8: adjacent in the 32-bit stack frame (code reads past s1)
+    char (&s1)[4096] = s1_adj.a; char &v8 = s1_adj.m0;
 
     if ( !dvarWhitelistArray
         && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\qcommon\\cmd.cpp", 497, 0, "%s", "dvarWhitelistArray") )

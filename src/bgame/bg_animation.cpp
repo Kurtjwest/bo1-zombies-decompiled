@@ -2441,8 +2441,8 @@ void __cdecl BG_RunLerpFrameRate(
     bool v5; // [esp+4h] [ebp-68h]
     bool v6; // [esp+8h] [ebp-64h]
     float v7; // [esp+1Ch] [ebp-50h]
-    float v[2]; // [esp+30h] [ebp-3Ch] BYREF
-    float v9; // [esp+38h] [ebp-34h]
+    struct { float a[2]; float m0; } v_adj; // v[2], v9: adjacent in the 32-bit stack frame (code reads past v)
+    float (&v)[2] = v_adj.a; float &v9 = v_adj.m0;
     float *oldFramePos; // [esp+3Ch] [ebp-30h]
     const float *trBase; // [esp+40h] [ebp-2Ch]
     float fScaleMax; // [esp+44h] [ebp-28h]

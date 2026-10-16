@@ -1500,9 +1500,8 @@ void    R_WaterSimulationUpdateFrame(const WaterSimulationCmd *cmd)
     float v41; // [esp+168h] [ebp-3D8h]
     float v42; // [esp+16Ch] [ebp-3D4h]
     float4 clampedY; // [esp+170h] [ebp-3D0h]
-    float v44; // [esp+180h] [ebp-3C0h] BYREF
-    float v45; // [esp+184h] [ebp-3BCh]
-    float v46; // [esp+188h] [ebp-3B8h]
+    float v44_adj[3]; // v44, v45, v46: adjacent in the 32-bit stack frame (code takes &v44 and reads past it)
+    float &v44 = v44_adj[0], &v45 = v44_adj[1], &v46 = v44_adj[2];
     float4 t; // [esp+18Ch] [ebp-3B4h]
     float v48; // [esp+19Ch] [ebp-3A4h]
     float4 h; // [esp+1A0h] [ebp-3A0h]
@@ -1510,10 +1509,8 @@ void    R_WaterSimulationUpdateFrame(const WaterSimulationCmd *cmd)
     float wind_dist; // [esp+1B8h] [ebp-388h]
     float4 windadd; // [esp+1BCh] [ebp-384h]
     unsigned int v53; // [esp+1CCh] [ebp-374h]
-    float totalArray[6]; // [esp+1D0h] [ebp-370h]
-    float v55; // [esp+1E8h] [ebp-358h]
-    float diffLength; // [esp+1ECh] [ebp-354h]
-    float v57; // [esp+1F0h] [ebp-350h]
+    struct { float a[6]; float m0; float m1; float m2; } totalArray_adj; // totalArray[6], v55, diffLength, v57: adjacent in the 32-bit stack frame (code reads past totalArray)
+    float (&totalArray)[6] = totalArray_adj.a; float &v55 = totalArray_adj.m0, &diffLength = totalArray_adj.m1, &v57 = totalArray_adj.m2;
     float4 diff; // [esp+1F4h] [ebp-34Ch]
     float4 avg; // [esp+204h] [ebp-33Ch]
     int v60; // [esp+214h] [ebp-32Ch]
@@ -1523,9 +1520,8 @@ void    R_WaterSimulationUpdateFrame(const WaterSimulationCmd *cmd)
     unsigned int v64; // [esp+234h] [ebp-30Ch]
     unsigned int v65; // [esp+238h] [ebp-308h]
     float *v66; // [esp+23Ch] [ebp-304h]
-    float v67; // [esp+240h] [ebp-300h] BYREF
-    float v68; // [esp+244h] [ebp-2FCh]
-    float v69; // [esp+248h] [ebp-2F8h]
+    float v67_adj[3]; // v67, v68, v69: adjacent in the 32-bit stack frame (code takes &v67 and reads past it)
+    float &v67 = v67_adj[0], &v68 = v67_adj[1], &v69 = v67_adj[2];
     float4 normal; // [esp+24Ch] [ebp-2F4h]
     int v71; // [esp+25Ch] [ebp-2E4h]
     float v72[11]; // [esp+260h] [ebp-2E0h]
@@ -2657,11 +2653,11 @@ void    R_WaterSimulationSkinMesh(const WaterSimulationCmd *cmd)
     float v47; // [esp+D8h] [ebp-4F8h]
     float finalNormal; // [esp+DCh] [ebp-4F4h]
     __int64 v49; // [esp+F0h] [ebp-4E0h]
-    unsigned int v50; // [esp+F8h] [ebp-4D8h]
-    unsigned int v51; // [esp+FCh] [ebp-4D4h]
+    unsigned int v50_adj[2]; // v50, v51: adjacent in the 32-bit stack frame (code takes &v50 and reads past it)
+    unsigned int &v50 = v50_adj[0], &v51 = v50_adj[1];
     __int64 v52; // [esp+100h] [ebp-4D0h]
-    unsigned int v53; // [esp+108h] [ebp-4C8h]
-    unsigned int v54; // [esp+10Ch] [ebp-4C4h]
+    unsigned int v53_adj[2]; // v53, v54: adjacent in the 32-bit stack frame (code takes &v53 and reads past it)
+    unsigned int &v53 = v53_adj[0], &v54 = v53_adj[1];
     float4 v55; // [esp+110h] [ebp-4C0h]
     float v56; // [esp+120h] [ebp-4B0h]
     float v57; // [esp+124h] [ebp-4ACh]

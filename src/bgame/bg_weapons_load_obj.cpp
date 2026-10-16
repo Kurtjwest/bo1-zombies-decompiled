@@ -1652,8 +1652,8 @@ char __cdecl BG_LoadWeaponVariantDefFile(WeaponFullDef *weapFullDef, const char 
     int v10; // [esp+28h] [ebp-28464h]
     char *sources[6]; // [esp+2Ch] [ebp-28460h] BYREF
     WeaponComponentList componentAll; // [esp+44h] [ebp-28448h] BYREF
-    char szBuffer[16384]; // [esp+17Ch] [ebp-28310h] BYREF
-    char v14; // [esp+417Ch] [ebp-24310h] BYREF
+    struct { char a[16384]; char m0; } szBuffer_adj; // szBuffer[16384], v14: adjacent in the 32-bit stack frame (code reads past szBuffer)
+    char (&szBuffer)[16384] = szBuffer_adj.a; char &v14 = szBuffer_adj.m0;
     _BYTE v15[64]; // [esp+1817Ch] [ebp-10310h] BYREF
     char v16[66116]; // [esp+181BCh] [ebp-102D0h] BYREF
     Ptr32<char> *ppszConfigString; // [esp+28400h] [ebp-8Ch]

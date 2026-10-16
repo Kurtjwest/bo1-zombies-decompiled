@@ -2081,10 +2081,8 @@ void render_gjkcc_collision(float (*mins)[3], float (*maxs)[3], float (*origin)[
     float rvec2_12; // [esp+160h] [ebp-234h]
     float v46; // [esp+164h] [ebp-230h]
     phys_vec3 v47; // [esp+168h] [ebp-22Ch] BYREF
-    float rvec1_4; // [esp+178h] [ebp-21Ch]
-    float rvec1_8; // [esp+17Ch] [ebp-218h]
-    float rvec1_12; // [esp+180h] [ebp-214h] BYREF
-    float v51; // [esp+184h] [ebp-210h] BYREF
+    float rvec1_4_adj[4]; // rvec1_4, rvec1_8, rvec1_12, v51: adjacent in the 32-bit stack frame (code takes &rvec1_12 and reads past it)
+    float &rvec1_4 = rvec1_4_adj[0], &rvec1_8 = rvec1_4_adj[1], &rvec1_12 = rvec1_4_adj[2], &v51 = rvec1_4_adj[3];
     int v52; // [esp+188h] [ebp-20Ch]
     float co2; // [esp+18Ch] [ebp-208h] BYREF
     float si2; // [esp+190h] [ebp-204h] BYREF

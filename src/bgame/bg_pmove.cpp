@@ -3886,8 +3886,8 @@ void __cdecl PM_CheckDuck(pmove_t *pm, pml_t *pml)
     col_context_t v3; // [esp+168h] [ebp-C8h] BYREF
     float delta; // [esp+190h] [ebp-A0h]
     float vPoint[3]; // [esp+194h] [ebp-9Ch] BYREF
-    float vEnd[3]; // [esp+1A0h] [ebp-90h] BYREF
-    float v7; // [esp+1ACh] [ebp-84h]
+    struct { float a[3]; float m0; } vEnd_adj; // vEnd[3], v7: adjacent in the 32-bit stack frame (code reads past vEnd)
+    float (&vEnd)[3] = vEnd_adj.a; float &v7 = vEnd_adj.m0;
     bool v8; // [esp+1B3h] [ebp-7Dh]
     float save_maxs2; // [esp+1B4h] [ebp-7Ch]
     bool not_pen; // [esp+1BBh] [ebp-75h]

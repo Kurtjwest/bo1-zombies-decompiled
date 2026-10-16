@@ -184,10 +184,10 @@ void    CG_Vehicle_DoControllers(const cpose_t *pose, const DObj *obj, int *part
     int ChildBones; // [esp+Ch] [ebp-290h]
     unsigned __int8 v9[4]; // [esp+10h] [ebp-28Ch] BYREF
     float v10; // [esp+14h] [ebp-288h]
-    float v11[3]; // [esp+18h] [ebp-284h] BYREF
-    float v12; // [esp+24h] [ebp-278h]
-    float v13[3]; // [esp+28h] [ebp-274h] BYREF
-    float v14; // [esp+34h] [ebp-268h]
+    struct { float a[3]; float m0; } v11_adj; // v11[3], v12: adjacent in the 32-bit stack frame (code reads past v11)
+    float (&v11)[3] = v11_adj.a; float &v12 = v11_adj.m0;
+    struct { float a[3]; float m0; } v13_adj; // v13[3], v14: adjacent in the 32-bit stack frame (code reads past v13)
+    float (&v13)[3] = v13_adj.a; float &v14 = v13_adj.m0;
     int k; // [esp+38h] [ebp-264h]
     int n; // [esp+40h] [ebp-25Ch]
     int m; // [esp+44h] [ebp-258h]
@@ -196,9 +196,8 @@ void    CG_Vehicle_DoControllers(const cpose_t *pose, const DObj *obj, int *part
     int j; // [esp+50h] [ebp-24Ch] BYREF
     int numChildren; // [esp+54h] [ebp-248h]
     unsigned __int8 children[4]; // [esp+58h] [ebp-244h]
-    float offset[4]; // [esp+5Ch] [ebp-240h]
-    float v25; // [esp+6Ch] [ebp-230h]
-    float v26; // [esp+70h] [ebp-22Ch]
+    struct { float a[4]; float m0; float m1; } offset_adj; // offset[4], v25, v26: adjacent in the 32-bit stack frame (code reads past offset)
+    float (&offset)[4] = offset_adj.a; float &v25 = offset_adj.m0, &v26 = offset_adj.m1;
     int v27; // [esp+74h] [ebp-228h]
     int v28; // [esp+78h] [ebp-224h]
     int v29; // [esp+7Ch] [ebp-220h]

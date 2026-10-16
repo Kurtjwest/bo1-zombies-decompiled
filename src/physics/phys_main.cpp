@@ -2896,12 +2896,8 @@ void __cdecl print_static_models_stats()
     cStaticModel_s *smodel; // [esp+2Ch] [ebp-10024h]
     unsigned int base[16384]; // [esp+30h] [ebp-10020h] BYREF
     int refcount; // [esp+10030h] [ebp-20h]
-    float v7; // [esp+10034h] [ebp-1Ch]
-    float v8; // [esp+10038h] [ebp-18h]
-    float v9; // [esp+1003Ch] [ebp-14h]
-    float dims; // [esp+10040h] [ebp-10h] BYREF
-    float v11; // [esp+10044h] [ebp-Ch]
-    float v12; // [esp+10048h] [ebp-8h]
+    float v7_adj[6]; // v7, v8, v9, dims, v11, v12: adjacent in the 32-bit stack frame (code takes &dims and reads past it)
+    float &v7 = v7_adj[0], &v8 = v7_adj[1], &v9 = v7_adj[2], &dims = v7_adj[3], &v11 = v7_adj[4], &v12 = v7_adj[5];
     unsigned int num; // [esp+1004Ch] [ebp-4h]
 
     Com_Printf(20, "Static models %d\n\n", cm.numStaticModels);
@@ -3334,8 +3330,8 @@ user_rigid_body *__cdecl GetTraceResultsRigidBody(const trace_t *traceResults)
 
 void collide_vehicle_wheels(PhysObjUserData *userData)
 {
-    float v2; // [esp+2Ch] [ebp-578h] BYREF
-    float v3; // [esp+30h] [ebp-574h] BYREF
+    float v2_adj[2]; // v2, v3: adjacent in the 32-bit stack frame (code takes &v2 and reads past it)
+    float &v2 = v2_adj[0], &v3 = v2_adj[1];
     rigid_body_constraint_wheel *v5; // [esp+38h] [ebp-56Ch]
     int k; // [esp+3Ch] [ebp-568h]
     int v7; // [esp+40h] [ebp-564h]
@@ -3358,8 +3354,8 @@ void collide_vehicle_wheels(PhysObjUserData *userData)
     col_context_t v24; // [esp+DCh] [ebp-4C8h] BYREF
     float zero[3]; // [esp+13Ch] [ebp-468h] BYREF
     float p1[3]; // [esp+148h] [ebp-45Ch] BYREF
-    float p0[4]; // [esp+154h] [ebp-450h] BYREF
-    float v29; // [esp+164h] [ebp-440h]
+    struct { float a[4]; float m0; } p0_adj; // p0[4], v29: adjacent in the 32-bit stack frame (code reads past p0)
+    float (&p0)[4] = p0_adj.a; float &v29 = p0_adj.m0;
     phys_vec3 v30; // [esp+168h] [ebp-43Ch] BYREF
     phys_vec3 v31; // [esp+178h] [ebp-42Ch] BYREF
     phys_vec3 phys_zerovec; // [esp+188h] [ebp-41Ch] BYREF

@@ -501,8 +501,8 @@ void __cdecl FX_GenSpriteVerts(FxDrawState *draw, const float *tangent, const fl
     float bottomSideWidth; // [esp+25Ch] [ebp-68h]
     float bottomSideSoffset; // [esp+260h] [ebp-64h]
     float cosRot; // [esp+264h] [ebp-60h]
-    float left[3]; // [esp+268h] [ebp-5Ch]
-    float v58; // [esp+274h] [ebp-50h] BYREF
+    struct { float a[3]; float m0; } left_adj; // left[3], v58: adjacent in the 32-bit stack frame (code reads past left)
+    float (&left)[3] = left_adj.a; float &v58 = left_adj.m0;
     GfxPackedVertex *verts; // [esp+278h] [ebp-4Ch]
     float sinRot; // [esp+27Ch] [ebp-48h]
     float topSideSoffset; // [esp+280h] [ebp-44h]

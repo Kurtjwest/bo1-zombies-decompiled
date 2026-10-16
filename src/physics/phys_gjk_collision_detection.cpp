@@ -2038,17 +2038,12 @@ bool    is_walkable(
     float v13; // [esp+18h] [ebp-48h]
     char v14; // [esp+1Eh] [ebp-42h]
     bool v15; // [esp+1Fh] [ebp-41h]
-    float v16; // [esp+20h] [ebp-40h]
-    float v17; // [esp+24h] [ebp-3Ch]
-    float v18; // [esp+28h] [ebp-38h]
-    float v19; // [esp+2Ch] [ebp-34h]
-    float v20; // [esp+30h] [ebp-30h]
+    float v16_adj[5]; // v16, v17, v18, v19, v20: adjacent in the 32-bit stack frame (code takes &v17 and reads past it)
+    float &v16 = v16_adj[0], &v17 = v16_adj[1], &v18 = v16_adj[2], &v19 = v16_adj[3], &v20 = v16_adj[4];
     char v21; // [esp+36h] [ebp-2Ah]
     bool v22; // [esp+37h] [ebp-29h]
-    float v23; // [esp+38h] [ebp-28h]
-    float v24; // [esp+3Ch] [ebp-24h]
-    float mins; // [esp+40h] [ebp-20h]
-    float v26; // [esp+44h] [ebp-1Ch]
+    float v23_adj[4]; // v23, v24, mins, v26: adjacent in the 32-bit stack frame (code takes &v24 and reads past it)
+    float &v23 = v23_adj[0], &v24 = v23_adj[1], &mins = v23_adj[2], &v26 = v23_adj[3];
     unsigned int i; // [esp+48h] [ebp-18h]
     float furthest_walk_normal; // [esp+4Ch] [ebp-14h]
     float furthest_dist; // [esp+50h] [ebp-10h]

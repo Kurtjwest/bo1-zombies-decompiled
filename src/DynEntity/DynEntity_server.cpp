@@ -52,15 +52,12 @@ void __cdecl DynEntSv_InitEntities()
 
 void __cdecl DynEntSv_LinkModel(unsigned __int16 dynEntId)
 {
-    int v1; // [esp+4h] [ebp-200h]
-    int v2; // [esp+8h] [ebp-1FCh]
-    int v3; // [esp+Ch] [ebp-1F8h]
-    int v4; // [esp+14h] [ebp-1F0h]
-    int v5; // [esp+18h] [ebp-1ECh]
-    int v6; // [esp+1Ch] [ebp-1E8h]
-    int v7; // [esp+24h] [ebp-1E0h]
-    int v8; // [esp+28h] [ebp-1DCh]
-    int v9; // [esp+2Ch] [ebp-1D8h]
+    int v1_adj[3]; // v1, v2, v3: adjacent in the 32-bit stack frame (code takes &v1 and reads past it)
+    int &v1 = v1_adj[0], &v2 = v1_adj[1], &v3 = v1_adj[2];
+    int v4_adj[3]; // v4, v5, v6: adjacent in the 32-bit stack frame (code takes &v4 and reads past it)
+    int &v4 = v4_adj[0], &v5 = v4_adj[1], &v6 = v4_adj[2];
+    int v7_adj[3]; // v7, v8, v9: adjacent in the 32-bit stack frame (code takes &v7 and reads past it)
+    int &v7 = v7_adj[0], &v8 = v7_adj[1], &v9 = v7_adj[2];
     float v10; // [esp+134h] [ebp-D0h]
     float v11; // [esp+138h] [ebp-CCh]
     float v12; // [esp+13Ch] [ebp-C8h]
@@ -200,15 +197,12 @@ void __cdecl DynEntSv_LinkModel(unsigned __int16 dynEntId)
 
 void __cdecl DynEntSv_LinkBrush(unsigned __int16 dynEntId)
 {
-    int v1; // [esp+4h] [ebp-1D4h]
-    int v2; // [esp+8h] [ebp-1D0h]
-    int v3; // [esp+Ch] [ebp-1CCh]
-    int v4; // [esp+14h] [ebp-1C4h]
-    int v5; // [esp+18h] [ebp-1C0h]
-    int v6; // [esp+1Ch] [ebp-1BCh]
-    int v7; // [esp+24h] [ebp-1B4h]
-    int v8; // [esp+28h] [ebp-1B0h]
-    int v9; // [esp+2Ch] [ebp-1ACh]
+    int v1_adj[3]; // v1, v2, v3: adjacent in the 32-bit stack frame (code takes &v1 and reads past it)
+    int &v1 = v1_adj[0], &v2 = v1_adj[1], &v3 = v1_adj[2];
+    int v4_adj[3]; // v4, v5, v6: adjacent in the 32-bit stack frame (code takes &v4 and reads past it)
+    int &v4 = v4_adj[0], &v5 = v4_adj[1], &v6 = v4_adj[2];
+    int v7_adj[3]; // v7, v8, v9: adjacent in the 32-bit stack frame (code takes &v7 and reads past it)
+    int &v7 = v7_adj[0], &v8 = v7_adj[1], &v9 = v7_adj[2];
     float v10; // [esp+130h] [ebp-A8h]
     float v11; // [esp+134h] [ebp-A4h]
     float v12; // [esp+138h] [ebp-A0h]

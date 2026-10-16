@@ -88,21 +88,14 @@ void GlassPhysics::CreateAxis(
     float v56; // [esp+170h] [ebp-E0h]
     _BYTE v57[12]; // [esp+174h] [ebp-DCh] BYREF
     phys_mat44 m2w; // [esp+180h] [ebp-D0h] BYREF
-    float v59; // [esp+1C4h] [ebp-8Ch]
-    float v60; // [esp+1C8h] [ebp-88h]
-    float v61; // [esp+1CCh] [ebp-84h]
-    float v62; // [esp+1D0h] [ebp-80h]
-    float v63; // [esp+1D4h] [ebp-7Ch] BYREF
-    float v64; // [esp+1D8h] [ebp-78h]
-    float v65; // [esp+1DCh] [ebp-74h]
+    float v59_adj[7]; // v59, v60, v61, v62, v63, v64, v65: adjacent in the 32-bit stack frame (code takes &v63 and reads past it)
+    float &v59 = v59_adj[0], &v60 = v59_adj[1], &v61 = v59_adj[2], &v62 = v59_adj[3], &v63 = v59_adj[4], &v64 = v59_adj[5], &v65 = v59_adj[6];
     float v66; // [esp+1F0h] [ebp-60h] BYREF
     float v67[2]; // [esp+1F4h] [ebp-5Ch] BYREF
     float volume; // [esp+1FCh] [ebp-54h]
     phys_vec3 dim; // [esp+200h] [ebp-50h]
-    float v70; // [esp+210h] [ebp-40h]
-    float v71; // [esp+214h] [ebp-3Ch] BYREF
-    float v72; // [esp+218h] [ebp-38h]
-    float v73; // [esp+21Ch] [ebp-34h]
+    float v70_adj[4]; // v70, v71, v72, v73: adjacent in the 32-bit stack frame (code takes &v71 and reads past it)
+    float &v70 = v70_adj[0], &v71 = v70_adj[1], &v72 = v70_adj[2], &v73 = v70_adj[3];
     phys_vec3 lbbMax; // [esp+220h] [ebp-30h] BYREF
     GlassPhysics *v75; // [esp+240h] [ebp-10h]
     unsigned int v76[2]; // [esp+244h] [ebp-Ch] BYREF
@@ -684,13 +677,8 @@ void GlassPhysics::IntegrateVelocity(float deltaTime)
     float v60; // [esp+16Ch] [ebp-A8h]
     float v61; // [esp+170h] [ebp-A4h]
     phys_vec3 m_gravity_acc_vec; // [esp+174h] [ebp-A0h]
-    float v63; // [esp+188h] [ebp-8Ch]
-    float v64; // [esp+18Ch] [ebp-88h]
-    float v65; // [esp+190h] [ebp-84h]
-    float value; // [esp+194h] [ebp-80h]
-    float v67; // [esp+198h] [ebp-7Ch] BYREF
-    float v68; // [esp+19Ch] [ebp-78h]
-    float v69; // [esp+1A0h] [ebp-74h]
+    float v63_adj[7]; // v63, v64, v65, value, v67, v68, v69: adjacent in the 32-bit stack frame (code takes &v67 and reads past it)
+    float &v63 = v63_adj[0], &v64 = v63_adj[1], &v65 = v63_adj[2], &value = v63_adj[3], &v67 = v63_adj[4], &v68 = v63_adj[5], &v69 = v63_adj[6];
     phys_vec3 gravity_dir; // [esp+1A4h] [ebp-70h] BYREF
     float v71; // [esp+1F4h] [ebp-20h]
     phys_vec3 *p_m_torque_sum; // [esp+1F8h] [ebp-1Ch]
@@ -2644,7 +2632,7 @@ LABEL_23:
     //glassExtent = GlassShard::Outline::Extent(&this->outline);
     glassExtent = this->outline.Extent();
     newShards[0] = this;
-    memset(&newShards[1], 0, 36);
+    memset(&newShards[1], 0, 9 * sizeof(newShards[0])); // nine pointers (36 bytes on 32-bit)
     numNewShards = 1;
     minShardSize = this->group->glassDef->minShardSize * clGlasses->renderer->shardShatterSizeLimitScale->current.value;
     maxShardSize = this->group->glassDef->maxShardSize;

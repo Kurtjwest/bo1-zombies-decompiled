@@ -784,8 +784,8 @@ void Mount_CheckLedge(pmove_t *pm, pml_t *pml, MantleResults *mresults)
     float *ledgePos; // [esp+84h] [ebp-88h]
     float *origin; // [esp+88h] [ebp-84h]
     float lookVec[3]; // [esp+8Ch] [ebp-80h] BYREF
-    float v19; // [esp+98h] [ebp-74h]
-    float v20; // [esp+9Ch] [ebp-70h]
+    float v19_adj[2]; // v19, v20: adjacent in the 32-bit stack frame (code takes &v19 and reads past it)
+    float &v19 = v19_adj[0], &v20 = v19_adj[1];
     float up[3]; // [esp+A0h] [ebp-6Ch]
     float *velocity; // [esp+ACh] [ebp-60h]
     bool drawLines; // [esp+B3h] [ebp-59h]

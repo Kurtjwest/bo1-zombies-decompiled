@@ -380,8 +380,8 @@ void __cdecl G_MoverPush(gentity_s *pusher, mover_info_t *mi)
     float move[3]; // [esp+6Ch] [ebp-1048h] BYREF
     float minBound[3]; // [esp+78h] [ebp-103Ch]
     float amove[3]; // [esp+84h] [ebp-1030h] BYREF
-    float mins[3]; // [esp+90h] [ebp-1024h] BYREF
-    float v14; // [esp+9Ch] [ebp-1018h]
+    struct { float a[3]; float m0; } mins_adj; // mins[3], v14: adjacent in the 32-bit stack frame (code reads past mins)
+    float (&mins)[3] = mins_adj.a; float &v14 = mins_adj.m0;
     float maxBound[3]; // [esp+A0h] [ebp-1014h]
     int entityList[1024]; // [esp+ACh] [ebp-1008h] BYREF
     int i; // [esp+10ACh] [ebp-8h]

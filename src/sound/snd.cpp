@@ -3784,9 +3784,8 @@ void __cdecl SND_UpdateVoice(snd_voice_t *voice, float dt)
     float baseR; // [esp+268h] [ebp-108h]
     float baseL; // [esp+26Ch] [ebp-104h]
     int j; // [esp+270h] [ebp-100h]
-    float v55; // [esp+274h] [ebp-FCh] BYREF
-    float v56; // [esp+278h] [ebp-F8h]
-    float v57; // [esp+27Ch] [ebp-F4h] BYREF
+    float v55_adj[3]; // v55, v56, v57: adjacent in the 32-bit stack frame (code takes &v55 and reads past it)
+    float &v55 = v55_adj[0], &v56 = v55_adj[1], &v57 = v55_adj[2];
     snd_speaker_map map; // [esp+280h] [ebp-F0h] BYREF
     float atten; // [esp+2CCh] [ebp-A4h]
     int out; // [esp+2D0h] [ebp-A0h]

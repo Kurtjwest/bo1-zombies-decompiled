@@ -2190,14 +2190,13 @@ void __cdecl CM_CheckForTraps(gentity_s *ent)
     float v13; // [esp+68h] [ebp-1088h]
     float v14; // [esp+6Ch] [ebp-1084h]
     float mins[6]; // [esp+70h] [ebp-1080h] BYREF
-    float start; // [esp+88h] [ebp-1068h] BYREF
-    float v17; // [esp+8Ch] [ebp-1064h]
-    float v18; // [esp+90h] [ebp-1060h]
+    float start_adj[3]; // start, v17, v18: adjacent in the 32-bit stack frame (code takes &start and reads past it)
+    float &start = start_adj[0], &v17 = start_adj[1], &v18 = start_adj[2];
     float end[3]; // [esp+94h] [ebp-105Ch] BYREF
     int entityList[1024]; // [esp+A0h] [ebp-1050h] BYREF
     trace_t results; // [esp+10A0h] [ebp-50h] BYREF
-    float maxs[2]; // [esp+10DCh] [ebp-14h] BYREF
-    float v23; // [esp+10E4h] [ebp-Ch]
+    struct { float a[2]; float m0; } maxs_adj; // maxs[2], v23: adjacent in the 32-bit stack frame (code reads past maxs)
+    float (&maxs)[2] = maxs_adj.a; float &v23 = maxs_adj.m0;
     int contentmask; // [esp+10E8h] [ebp-8h]
     int v25; // [esp+10ECh] [ebp-4h]
 

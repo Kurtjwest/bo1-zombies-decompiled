@@ -318,9 +318,8 @@ const char *UI_LoadArenasFromFile_LoadObj()
     char *v3; // [esp+9Ch] [ebp-241Ch]
     char listbuf[1024]; // [esp+A0h] [ebp-2418h] BYREF
     char buffer[8196]; // [esp+4A0h] [ebp-2018h] BYREF
-    int len; // [esp+24A8h] [ebp-10h]
-    int f; // [esp+24ACh] [ebp-Ch] BYREF
-    int v8; // [esp+24B0h] [ebp-8h]
+    int len_adj[3]; // len, f, v8: adjacent in the 32-bit stack frame (code takes &f and reads past it)
+    int &len = len_adj[0], &f = len_adj[1], &v8 = len_adj[2];
     unsigned int v9; // [esp+24B4h] [ebp-4h]
 
     ui_numArenas = 0;

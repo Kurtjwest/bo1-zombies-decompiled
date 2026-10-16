@@ -1258,15 +1258,15 @@ bool __cdecl Vec4HomogenousClipZW(float4 *pt0, float4 *pt1, const float4 *coeffZ
     int v13; // [esp+28h] [ebp-ACh]
     int v14; // [esp+2Ch] [ebp-A8h]
     int v15; // [esp+30h] [ebp-A4h]
-    __int64 dist1Cmp; // [esp+3Ch] [ebp-98h]
-    __int64 dist1Cmp_8; // [esp+44h] [ebp-90h]
-    __int64 clipped; // [esp+50h] [ebp-84h]
-    __int64 clipped_8; // [esp+58h] [ebp-7Ch]
+    __int64 dist1Cmp_adj[2]; // dist1Cmp, dist1Cmp_8: adjacent in the 32-bit stack frame (code takes &dist1Cmp and reads past it)
+    __int64 &dist1Cmp = dist1Cmp_adj[0], &dist1Cmp_8 = dist1Cmp_adj[1];
+    __int64 clipped_adj[2]; // clipped, clipped_8: adjacent in the 32-bit stack frame (code takes &clipped and reads past it)
+    __int64 &clipped = clipped_adj[0], &clipped_8 = clipped_adj[1];
     __int64 dist1Sel1; // [esp+70h] [ebp-64h]
     __int64 dist1Sel1_8; // [esp+78h] [ebp-5Ch]
     float dist1_12; // [esp+8Ch] [ebp-48h]
-    __int64 dist0Cmp; // [esp+90h] [ebp-44h]
-    __int64 dist0Cmp_8; // [esp+98h] [ebp-3Ch]
+    __int64 dist0Cmp_adj[2]; // dist0Cmp, dist0Cmp_8: adjacent in the 32-bit stack frame (code takes &dist0Cmp and reads past it)
+    __int64 &dist0Cmp = dist0Cmp_adj[0], &dist0Cmp_8 = dist0Cmp_adj[1];
     float dist0_12; // [esp+ACh] [ebp-28h]
     float alpha; // [esp+B0h] [ebp-24h]
     float alpha_4; // [esp+B4h] [ebp-20h]

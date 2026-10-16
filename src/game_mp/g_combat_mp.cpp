@@ -1121,12 +1121,8 @@ double __cdecl CanDamage(
                 float *coneDirection,
                 int contentMask)
 {
-    float v7; // [esp+E4h] [ebp-134h] BYREF
-    float v8; // [esp+E8h] [ebp-130h]
-    float v9; // [esp+ECh] [ebp-12Ch]
-    float v10; // [esp+F0h] [ebp-128h] BYREF
-    float v11; // [esp+F4h] [ebp-124h]
-    float v12; // [esp+F8h] [ebp-120h]
+    float v7_adj[6]; // v7, v8, v9, v10, v11, v12: adjacent in the 32-bit stack frame (code takes &v7 and reads past it)
+    float &v7 = v7_adj[0], &v8 = v7_adj[1], &v9 = v7_adj[2], &v10 = v7_adj[3], &v11 = v7_adj[4], &v12 = v7_adj[5];
     char success_1; // [esp+FFh] [ebp-119h]
     float *color_; // [esp+100h] [ebp-118h]
     float centerToCorner[3]; // [esp+104h] [ebp-114h]
@@ -1138,9 +1134,8 @@ double __cdecl CanDamage(
     float up[3]; // [esp+13Ch] [ebp-DCh] BYREF
     float radiusRight; // [esp+148h] [ebp-D0h]
     float absMins[3]; // [esp+14Ch] [ebp-CCh] BYREF
-    float v; // [esp+158h] [ebp-C0h] BYREF
-    float v25; // [esp+15Ch] [ebp-BCh]
-    float v26; // [esp+160h] [ebp-B8h]
+    float v_adj[3]; // v, v25, v26: adjacent in the 32-bit stack frame (code takes &v and reads past it)
+    float &v = v_adj[0], &v25 = v_adj[1], &v26 = v_adj[2];
     float dir[3]; // [esp+164h] [ebp-B4h] BYREF
     bool success; // [esp+173h] [ebp-A5h]
     const float *color; // [esp+174h] [ebp-A4h]
@@ -1736,13 +1731,11 @@ int __cdecl G_RadiusDamage(
     float dir[3]; // [esp+34h] [ebp-104Ch] BYREF
     //float v15; // [esp+3Ch] [ebp-1044h]
     float v16; // [esp+40h] [ebp-1040h]
-    float mins[3]; // [esp+44h] [ebp-103Ch] BYREF
-    float v18; // [esp+50h] [ebp-1030h]
-    float v19; // [esp+54h] [ebp-102Ch]
-    float RadiusDamageDistanceSquared; // [esp+58h] [ebp-1028h]
+    struct { float a[3]; float m0; float m1; float m2; } mins_adj; // mins[3], v18, v19, RadiusDamageDistanceSquared: adjacent in the 32-bit stack frame (code reads past mins)
+    float (&mins)[3] = mins_adj.a; float &v18 = mins_adj.m0, &v19 = mins_adj.m1, &RadiusDamageDistanceSquared = mins_adj.m2;
     int v21; // [esp+5Ch] [ebp-1024h]
-    float maxs[3]; // [esp+60h] [ebp-1020h] BYREF
-    float v23; // [esp+6Ch] [ebp-1014h]
+    struct { float a[3]; float m0; } maxs_adj; // maxs[3], v23: adjacent in the 32-bit stack frame (code reads past maxs)
+    float (&maxs)[3] = maxs_adj.a; float &v23 = maxs_adj.m0;
     int entityList[1024]; // [esp+70h] [ebp-1010h] BYREF
     gentity_s *ent; // [esp+1070h] [ebp-10h]
     int dflags; // [esp+1074h] [ebp-Ch]

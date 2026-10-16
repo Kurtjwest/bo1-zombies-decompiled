@@ -2464,8 +2464,8 @@ void __cdecl Actor_EntInfo(gentity_s *self, float *source)
     float pos[3]; // [esp+B8h] [ebp-8F4h] BYREF
     float fact; // [esp+C4h] [ebp-8E8h]
     int cycleTime; // [esp+C8h] [ebp-8E4h]
-    float timingColor[3]; // [esp+CCh] [ebp-8E0h] BYREF
-    float v40; // [esp+D8h] [ebp-8D4h]
+    struct { float a[3]; float m0; } timingColor_adj; // timingColor[3], v40: adjacent in the 32-bit stack frame (code reads past timingColor)
+    float (&timingColor)[3] = timingColor_adj.a; float &v40 = timingColor_adj.m0;
     float vAngles[3]; // [esp+DCh] [ebp-8D0h] BYREF
     float fBaseYaw; // [esp+E8h] [ebp-8C4h]
     float vColor[4]; // [esp+ECh] [ebp-8C0h] BYREF
@@ -4818,7 +4818,26 @@ void __fastcall Actor_PredictOriginAndAngles(actor_s *self)
         __debugbreak();
     }
     Actor_UpdateAnglesAndDelta(self);
+    // Actor_DoMove runs the actor's physics, whose ground and slide traces take the collision-cache input that
+    // Actor_CallThink sets up around the think function; called from script (predictoriginandangles) outside a think,
+    // there is none and the ground trace dereferenced a null input, so it gets one here the same way.
+    gjkcc_input_t gjkcc_in;
+    const bool ownGjkccInput = !self->Physics.m_gjkcc_input;
+    if ( ownGjkccInput )
+    {
+        self->Physics.vOrigin[0] = ent->r.currentOrigin[0];
+        self->Physics.vOrigin[1] = ent->r.currentOrigin[1];
+        self->Physics.vOrigin[2] = ent->r.currentOrigin[2];
+        setup_gjkcc_input(&self->Physics, &gjkcc_in);
+        self->Physics.m_gjkcc_input = &gjkcc_in;
+        gjkcc_prolog(&gjkcc_in, self->Physics.vOrigin);
+    }
     Actor_DoMove(self);
+    if ( ownGjkccInput )
+    {
+        gjkcc_epilog(&gjkcc_in, self->Physics.vOrigin);
+        self->Physics.m_gjkcc_input = 0;
+    }
     SV_DObjInitServerTime(ent, 0.050000001);
 }
 

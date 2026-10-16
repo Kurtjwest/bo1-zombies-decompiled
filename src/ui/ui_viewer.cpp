@@ -387,9 +387,8 @@ void __thiscall UIViewer::Hide()
 void __thiscall UIViewer::UpdateCamera(refdef_s *refdef, float deltaTime)
 {
     float v4[3]; // [esp+10h] [ebp-B0h] BYREF
-    float axis[10]; // [esp+1Ch] [ebp-A4h] BYREF
-    float v6; // [esp+44h] [ebp-7Ch]
-    float v7; // [esp+48h] [ebp-78h]
+    struct { float a[10]; float m0; float m1; } axis_adj; // axis[10], v6, v7: adjacent in the 32-bit stack frame (code reads past axis)
+    float (&axis)[10] = axis_adj.a; float &v6 = axis_adj.m0, &v7 = axis_adj.m1;
     float v8[4]; // [esp+4Ch] [ebp-74h] BYREF
     float pitch; // [esp+5Ch] [ebp-64h]
     float yaw; // [esp+60h] [ebp-60h]
@@ -397,9 +396,8 @@ void __thiscall UIViewer::UpdateCamera(refdef_s *refdef, float deltaTime)
     float quatEnd[4]; // [esp+78h] [ebp-48h] BYREF
     float frac; // [esp+88h] [ebp-38h]
     float quat[4]; // [esp+8Ch] [ebp-34h] BYREF
-    float quatStart[4]; // [esp+9Ch] [ebp-24h] BYREF
-    float ANIM_TIME; // [esp+ACh] [ebp-14h]
-    float v17; // [esp+B0h] [ebp-10h]
+    struct { float a[4]; float m0; float m1; } quatStart_adj; // quatStart[4], ANIM_TIME, v17: adjacent in the 32-bit stack frame (code reads past quatStart)
+    float (&quatStart)[4] = quatStart_adj.a; float &ANIM_TIME = quatStart_adj.m0, &v17 = quatStart_adj.m1;
     cg_s *cgameGlob; // [esp+B4h] [ebp-Ch]
     int localClientNum; // [esp+B8h] [ebp-8h]
     float YAW_SPEED; // [esp+BCh] [ebp-4h]

@@ -528,8 +528,8 @@ void __cdecl CL_ServersResponsePacket(MatchMakingInfo *mminfo, int numResults, b
     bdReference<bdCommonAddr> other; // [esp+68h] [ebp-2100h] BYREF
     int v20; // [esp+6Ch] [ebp-20FCh]
     bdQoSRemoteAddr serverAddrs[300]; // [esp+70h] [ebp-20F8h] BYREF
-    int v22; // [esp+2140h] [ebp-28h] BYREF
-    int v23; // [esp+2144h] [ebp-24h]
+    int v22_adj[2]; // v22, v23: adjacent in the 32-bit stack frame (code takes &v22 and reads past it)
+    int &v22 = v22_adj[0], &v23 = v22_adj[1];
     serverInfo_t *servers; // [esp+2148h] [ebp-20h] BYREF
     unsigned int numProbes; // [esp+214Ch] [ebp-1Ch]
     int *count[5]; // [esp+2150h] [ebp-18h] BYREF

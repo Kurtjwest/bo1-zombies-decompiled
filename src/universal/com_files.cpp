@@ -1012,10 +1012,8 @@ char __cdecl FS_SanitizeFilename(const char *filename, char *sanitizedName, int 
 {
     const char *v4; // eax
     char v7; // [esp+8h] [ebp-14h]
-    char v9; // [esp+10h] [ebp-Ch]
-    char v10; // [esp+11h] [ebp-Bh]
-    char v11; // [esp+12h] [ebp-Ah]
-    char v12; // [esp+13h] [ebp-9h]
+    char v9_adj[4]; // v9, v10, v11, v12: adjacent in the 32-bit stack frame (code takes &v9 and reads past it)
+    char &v9 = v9_adj[0], &v10 = v9_adj[1], &v11 = v9_adj[2], &v12 = v9_adj[3];
     int srcIndex; // [esp+14h] [ebp-8h]
     int dstIndex; // [esp+18h] [ebp-4h]
 

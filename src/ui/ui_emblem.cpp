@@ -291,11 +291,8 @@ void __cdecl UI_EmblemUpdate(int localClientNum)
     char *v8; // eax
     char *v9; // eax
     char *v10; // eax
-    float v11; // [esp+10h] [ebp-88h]
-    float v12; // [esp+14h] [ebp-84h]
-    float v13; // [esp+18h] [ebp-80h] BYREF
-    float v14; // [esp+1Ch] [ebp-7Ch] BYREF
-    float v15; // [esp+20h] [ebp-78h] BYREF
+    float v11_adj[5]; // v11, v12, v13, v14, v15: adjacent in the 32-bit stack frame (code takes &v13 and reads past it)
+    float &v11 = v11_adj[0], &v12 = v11_adj[1], &v13 = v11_adj[2], &v14 = v11_adj[3], &v15 = v11_adj[4];
     float v16[3]; // [esp+24h] [ebp-74h] BYREF
     float x; // [esp+30h] [ebp-68h] BYREF
     float y; // [esp+34h] [ebp-64h] BYREF

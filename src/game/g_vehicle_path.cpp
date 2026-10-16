@@ -801,15 +801,12 @@ void __cdecl VP_CalcNodeAngles(__int16 nodeIdx, float *angles)
     vehicle_node_t *node; // [esp+5Ch] [ebp-34h]
     float prevDist; // [esp+60h] [ebp-30h]
     float nextDist; // [esp+64h] [ebp-2Ch]
-    float totalDist; // [esp+6Ch] [ebp-24h]
-    float nextAngles; // [esp+70h] [ebp-20h]
-    float nextAngles_4; // [esp+74h] [ebp-1Ch]
-    float nextAngles_8; // [esp+78h] [ebp-18h]
+    float totalDist_adj[4]; // totalDist, nextAngles, nextAngles_4, nextAngles_8: adjacent in the 32-bit stack frame (code takes &nextAngles and reads past it)
+    float &totalDist = totalDist_adj[0], &nextAngles = totalDist_adj[1], &nextAngles_4 = totalDist_adj[2], &nextAngles_8 = totalDist_adj[3];
     vehicle_node_t *temp; // [esp+7Ch] [ebp-14h]
     vehicle_node_t *tempa; // [esp+7Ch] [ebp-14h]
-    float prevAngles; // [esp+80h] [ebp-10h]
-    float prevAngles_4; // [esp+84h] [ebp-Ch]
-    float prevAngles_8; // [esp+88h] [ebp-8h]
+    float prevAngles_adj[3]; // prevAngles, prevAngles_4, prevAngles_8: adjacent in the 32-bit stack frame (code takes &prevAngles_4 and reads past it)
+    float &prevAngles = prevAngles_adj[0], &prevAngles_4 = prevAngles_adj[1], &prevAngles_8 = prevAngles_adj[2];
     __int16 count; // [esp+8Ch] [ebp-4h]
     __int16 counta; // [esp+8Ch] [ebp-4h]
 

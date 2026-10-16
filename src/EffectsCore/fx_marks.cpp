@@ -590,15 +590,12 @@ void __cdecl FX_ImpactMark_Generate_AddEntityBrush(
                 const float *origin,
                 float radius)
 {
-    int v5; // [esp+4h] [ebp-210h]
-    int v6; // [esp+8h] [ebp-20Ch]
-    int v7; // [esp+Ch] [ebp-208h]
-    int v8; // [esp+14h] [ebp-200h]
-    int v9; // [esp+18h] [ebp-1FCh]
-    int v10; // [esp+1Ch] [ebp-1F8h]
-    int v11; // [esp+24h] [ebp-1F0h]
-    int v12; // [esp+28h] [ebp-1ECh]
-    int v13; // [esp+2Ch] [ebp-1E8h]
+    int v5_adj[3]; // v5, v6, v7: adjacent in the 32-bit stack frame (code takes &v5 and reads past it)
+    int &v5 = v5_adj[0], &v6 = v5_adj[1], &v7 = v5_adj[2];
+    int v8_adj[3]; // v8, v9, v10: adjacent in the 32-bit stack frame (code takes &v8 and reads past it)
+    int &v8 = v8_adj[0], &v9 = v8_adj[1], &v10 = v8_adj[2];
+    int v11_adj[3]; // v11, v12, v13: adjacent in the 32-bit stack frame (code takes &v11 and reads past it)
+    int &v11 = v11_adj[0], &v12 = v11_adj[1], &v13 = v11_adj[2];
     float v14; // [esp+134h] [ebp-E0h]
     float v15; // [esp+138h] [ebp-DCh]
     float v16; // [esp+13Ch] [ebp-D8h]

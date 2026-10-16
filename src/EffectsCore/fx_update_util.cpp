@@ -689,11 +689,8 @@ void __cdecl FX_AnglesToOrientedAxis(float *anglesInRad, const orientation_t *or
     float v5; // [esp+20h] [ebp-28h]
     float cy; // [esp+24h] [ebp-24h]
     float sr; // [esp+28h] [ebp-20h]
-    float localDir[3]; // [esp+2Ch] [ebp-1Ch] BYREF
-    float v9; // [esp+38h] [ebp-10h]
-    float cr; // [esp+3Ch] [ebp-Ch]
-    float cp; // [esp+40h] [ebp-8h]
-    float sy; // [esp+44h] [ebp-4h]
+    struct { float a[3]; float m0; float m1; float m2; float m3; } localDir_adj; // localDir[3], v9, cr, cp, sy: adjacent in the 32-bit stack frame (code reads past localDir)
+    float (&localDir)[3] = localDir_adj.a; float &v9 = localDir_adj.m0, &cr = localDir_adj.m1, &cp = localDir_adj.m2, &sy = localDir_adj.m3;
 
     v5 = anglesInRad[1];
     cy = cos(v5);

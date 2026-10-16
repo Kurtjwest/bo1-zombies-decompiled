@@ -6777,9 +6777,8 @@ void    VEH_UpdatePath(gentity_s *ent)
     float v28; // [esp+94h] [ebp-11Ch]
     float nodeIdx; // [esp+98h] [ebp-118h]
     int lastNode; // [esp+9Ch] [ebp-114h]
-    float accel; // [esp+A0h] [ebp-110h] BYREF
-    float tgtSpeed; // [esp+A4h] [ebp-10Ch]
-    float v33; // [esp+A8h] [ebp-108h]
+    float accel_adj[3]; // accel, tgtSpeed, v33: adjacent in the 32-bit stack frame (code takes &accel and reads past it)
+    float &accel = accel_adj[0], &tgtSpeed = accel_adj[1], &v33 = accel_adj[2];
     bool waitNodeHit; // [esp+AFh] [ebp-101h]
     float prevSpeed; // [esp+B0h] [ebp-100h]
     vehicle_pathpos_t nextVpp; // [esp+B4h] [ebp-FCh] BYREF
@@ -7060,12 +7059,8 @@ void __cdecl VEH_UpdateMoveToGoal(gentity_s *ent, const float *goalPos)
     float alignedVel_8; // [esp+84h] [ebp-E0h]
     float axis[3][3]; // [esp+88h] [ebp-DCh] BYREF
     float dotVec[2]; // [esp+ACh] [ebp-B8h] BYREF
-    float dt; // [esp+B4h] [ebp-B0h]
-    float v17; // [esp+B8h] [ebp-ACh] BYREF
-    float v18; // [esp+BCh] [ebp-A8h]
-    float v19; // [esp+C0h] [ebp-A4h]
-    float newVerticalSpeed; // [esp+C4h] [ebp-A0h] BYREF
-    float startMoveAngle; // [esp+C8h] [ebp-9Ch]
+    float dt_adj[6]; // dt, v17, v18, v19, newVerticalSpeed, startMoveAngle: adjacent in the 32-bit stack frame (code takes &v17 and reads past it)
+    float &dt = dt_adj[0], &v17 = dt_adj[1], &v18 = dt_adj[2], &v19 = dt_adj[3], &newVerticalSpeed = dt_adj[4], &startMoveAngle = dt_adj[5];
     float desiredVel[3]; // [esp+CCh] [ebp-98h]
     float newSpeed; // [esp+D8h] [ebp-8Ch] BYREF
     float accelMax; // [esp+DCh] [ebp-88h] BYREF
@@ -7372,13 +7367,8 @@ void __cdecl VEH_UpdateMoveOrientation(gentity_s *ent, float *desiredDir)
     float timeToGoal; // [esp+34h] [ebp-50h]
     float stoppingTime; // [esp+38h] [ebp-4Ch]
     scr_vehicle_s *veh; // [esp+44h] [ebp-40h]
-    float angularAccel; // [esp+48h] [ebp-3Ch]
-    float accelFraction; // [esp+4Ch] [ebp-38h]
-    float angle; // [esp+50h] [ebp-34h]
-    float horizontalAccel; // [esp+54h] [ebp-30h]
-    float bodyDir; // [esp+58h] [ebp-2Ch]
-    float bodyDir_4; // [esp+5Ch] [ebp-28h]
-    float desiredYaw; // [esp+60h] [ebp-24h]
+    float angularAccel_adj[7]; // angularAccel, accelFraction, angle, horizontalAccel, bodyDir, bodyDir_4, desiredYaw: adjacent in the 32-bit stack frame (code takes &horizontalAccel and reads past it)
+    float &angularAccel = angularAccel_adj[0], &accelFraction = angularAccel_adj[1], &angle = angularAccel_adj[2], &horizontalAccel = angularAccel_adj[3], &bodyDir = angularAccel_adj[4], &bodyDir_4 = angularAccel_adj[5], &desiredYaw = angularAccel_adj[6];
     float accelVec[3]; // [esp+64h] [ebp-20h] BYREF
     float accelFactor; // [esp+70h] [ebp-14h]
     float perpDir[2]; // [esp+74h] [ebp-10h]

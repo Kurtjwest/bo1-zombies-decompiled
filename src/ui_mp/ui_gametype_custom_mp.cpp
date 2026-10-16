@@ -262,17 +262,14 @@ void __cdecl UI_Gametype_WriteDvarChunk(MemoryFile *memFile, char *dvarName)
 char __cdecl UI_Gametype_ReadDvarChunk(MemoryFile *memFile)
 {
     char *CString; // eax
-    unsigned __int8 v3; // [esp+14h] [ebp-47Ch] BYREF
-    unsigned __int8 v4; // [esp+15h] [ebp-47Bh] BYREF
-    unsigned __int8 v5; // [esp+16h] [ebp-47Ah] BYREF
-    unsigned __int8 v6; // [esp+17h] [ebp-479h] BYREF
+    unsigned __int8 v3_adj[4]; // v3, v4, v5, v6: adjacent in the 32-bit stack frame (code takes &v3 and reads past it)
+    unsigned __int8 &v3 = v3_adj[0], &v4 = v3_adj[1], &v5 = v3_adj[2], &v6 = v3_adj[3];
     int v7; // [esp+18h] [ebp-478h] BYREF
-    unsigned int v8; // [esp+1Ch] [ebp-474h] BYREF
-    unsigned int v9; // [esp+20h] [ebp-470h] BYREF
-    unsigned int v10; // [esp+24h] [ebp-46Ch] BYREF
+    unsigned int v8_adj[3]; // v8, v9, v10: adjacent in the 32-bit stack frame (code takes &v8 and reads past it)
+    unsigned int &v8 = v8_adj[0], &v9 = v8_adj[1], &v10 = v8_adj[2];
     unsigned int v11[4]; // [esp+28h] [ebp-468h] BYREF
-    unsigned int v12; // [esp+38h] [ebp-458h] BYREF
-    unsigned int v13; // [esp+3Ch] [ebp-454h] BYREF
+    unsigned int v12_adj[2]; // v12, v13: adjacent in the 32-bit stack frame (code takes &v12 and reads past it)
+    unsigned int &v12 = v12_adj[0], &v13 = v12_adj[1];
     float v14; // [esp+40h] [ebp-450h] BYREF
     int value; // [esp+44h] [ebp-44Ch] BYREF
     unsigned __int8 v16; // [esp+4Ah] [ebp-446h] BYREF
@@ -363,9 +360,8 @@ char __cdecl UI_Gametype_ReadDvarChunk(MemoryFile *memFile)
 
 void __cdecl MemFile_ReadVec3(MemoryFile *memFile, float *value)
 {
-    int v2; // [esp+0h] [ebp-Ch] BYREF
-    int v3; // [esp+4h] [ebp-8h] BYREF
-    int p; // [esp+8h] [ebp-4h] BYREF
+    int v2_adj[3]; // v2, v3, p: adjacent in the 32-bit stack frame (code takes &v2 and reads past it)
+    int &v2 = v2_adj[0], &v3 = v2_adj[1], &p = v2_adj[2];
 
     MemFile_ReadData(memFile, 4, (unsigned __int8 *)&p);
     *(unsigned int *)value = p;

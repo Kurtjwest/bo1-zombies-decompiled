@@ -4278,8 +4278,8 @@ void __cdecl R_SetupWorldSurfacesDpvs(const GfxViewParms *viewParms, unsigned in
     int j; // [esp+158h] [ebp-1C0h]
     float v1[3]; // [esp+15Ch] [ebp-1BCh] BYREF
     float occluderPlane[4]; // [esp+168h] [ebp-1B0h] BYREF
-    float v0[6]; // [esp+178h] [ebp-1A0h] BYREF
-    float v24; // [esp+190h] [ebp-188h]
+    struct { float a[6]; float m0; } v0_adj; // v0[6], v24: adjacent in the 32-bit stack frame (code reads past v0)
+    float (&v0)[6] = v0_adj.a; float &v24 = v0_adj.m0;
     float diff[3]; // [esp+194h] [ebp-184h]
     float div; // [esp+1A0h] [ebp-178h]
     DpvsPlane *plane; // [esp+1A4h] [ebp-174h]

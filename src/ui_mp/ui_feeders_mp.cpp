@@ -1515,11 +1515,8 @@ char *__cdecl UI_FeederItemText_SortedItems(
     unsigned int v26[256]; // [esp+10h] [ebp-1028h]
     bool v27; // [esp+413h] [ebp-C25h]
     int Int; // [esp+414h] [ebp-C24h]
-    int v29[513]; // [esp+418h] [ebp-C20h]
-    int cost; // [esp+C1Ch] [ebp-41Ch]
-    int v31; // [esp+C20h] [ebp-418h]
-    int i; // [esp+C24h] [ebp-414h]
-    int itemIndex; // [esp+C28h] [ebp-410h]
+    struct { int a[513]; int m0; int m1; int m2; int m3; } v29_adj; // v29[513], cost, v31, i, itemIndex: adjacent in the 32-bit stack frame (code reads past v29)
+    int (&v29)[513] = v29_adj.a; int &cost = v29_adj.m0, &v31 = v29_adj.m1, &i = v29_adj.m2, &itemIndex = v29_adj.m3;
     char v34; // [esp+C2Fh] [ebp-409h]
     unsigned int v35[257]; // [esp+C30h] [ebp-408h]
     bool v36; // [esp+1037h] [ebp-1h]

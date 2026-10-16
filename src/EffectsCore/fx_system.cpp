@@ -3190,8 +3190,8 @@ bool __cdecl FX_SpawnModelPhysics(
 {
     float v7; // [esp+14h] [ebp-164h]
     unsigned int rotationAxis; // [esp+70h] [ebp-108h]
-    float v[4]; // [esp+74h] [ebp-104h] BYREF
-    float v10; // [esp+84h] [ebp-F4h]
+    struct { float a[4]; float m0; } v_adj; // v[4], v10: adjacent in the 32-bit stack frame (code reads past v)
+    float (&v)[4] = v_adj.a; float &v10 = v_adj.m0;
     FxElemVisuals v11; // [esp+88h] [ebp-F0h]
     float4 fAxis; // [esp+8Ch] [ebp-ECh]
     float4 qAxis; // [esp+A0h] [ebp-D8h] BYREF

@@ -386,9 +386,8 @@ void __thiscall GlassClient::PlayShatterFX(
     int e; // [esp+7Ch] [ebp-348h]
     int nEffects; // [esp+80h] [ebp-344h]
     float step; // [esp+84h] [ebp-340h]
-    int numEffects; // [esp+88h] [ebp-33Ch]
-    int v27; // [esp+8Ch] [ebp-338h]
-    int i; // [esp+90h] [ebp-334h]
+    int numEffects_adj[3]; // numEffects, v27, i: adjacent in the 32-bit stack frame (code takes &numEffects and reads past it)
+    int &numEffects = numEffects_adj[0], &v27 = numEffects_adj[1], &i = numEffects_adj[2];
     OutlineEdge outlineEdges[32]; // [esp+94h] [ebp-330h] BYREF
     int MAX_EDGES; // [esp+398h] [ebp-2Ch]
     int MAX_EFFECTS; // [esp+39Ch] [ebp-28h]

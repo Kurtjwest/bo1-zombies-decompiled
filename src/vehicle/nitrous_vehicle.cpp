@@ -630,10 +630,8 @@ void NitrousVehicle::update_parms(
     float y; // [esp+1FCh] [ebp-138h]
     int i; // [esp+200h] [ebp-134h]
     float wheel_to_wheel_length; // [esp+204h] [ebp-130h]
-    float v63[7]; // [esp+208h] [ebp-12Ch] BYREF
-    float v64; // [esp+224h] [ebp-110h]
-    float v65; // [esp+228h] [ebp-10Ch]
-    float v66; // [esp+22Ch] [ebp-108h]
+    struct { float a[7]; float m0; float m1; float m2; } v63_adj; // v63[7], v64, v65, v66: adjacent in the 32-bit stack frame (code reads past v63)
+    float (&v63)[7] = v63_adj.a; float &v64 = v63_adj.m0, &v65 = v63_adj.m1, &v66 = v63_adj.m2;
     phys_vec3 *v67; // [esp+230h] [ebp-104h]
     phys_vec3 *p_w; // [esp+234h] [ebp-100h]
     const VehicleParameter *v69; // [esp+238h] [ebp-FCh]
@@ -2234,10 +2232,8 @@ void    NitrousVehicle::debug_render()
     phys_vec3 *scale_4; // [esp+10h] [ebp-640h]
     phys_vec3 *scale_4a; // [esp+10h] [ebp-640h]
     char buffer[508]; // [esp+1Ch] [ebp-634h] BYREF
-    float textPos[7]; // [esp+218h] [ebp-438h] BYREF
-    float v10; // [esp+234h] [ebp-41Ch]
-    float v11; // [esp+238h] [ebp-418h]
-    float v12; // [esp+23Ch] [ebp-414h]
+    struct { float a[7]; float m0; float m1; float m2; } textPos_adj; // textPos[7], v10, v11, v12: adjacent in the 32-bit stack frame (code reads past textPos)
+    float (&textPos)[7] = textPos_adj.a; float &v10 = textPos_adj.m0, &v11 = textPos_adj.m1, &v12 = textPos_adj.m2;
     phys_mat44 *v13; // [esp+240h] [ebp-410h]
     float v14; // [esp+244h] [ebp-40Ch]
     float v15; // [esp+248h] [ebp-408h]

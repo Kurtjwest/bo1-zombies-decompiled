@@ -979,20 +979,10 @@ void    IKImport_GetEntityXform(IKState *ikState)
     int angle; // [esp+0h] [ebp-200h]
     __int64 v7; // [esp+18h] [ebp-1E8h]
     float v8; // [esp+20h] [ebp-1E0h]
-    __int64 v9; // [esp+24h] [ebp-1DCh]
-    __int64 v10; // [esp+2Ch] [ebp-1D4h]
-    __int64 v11; // [esp+34h] [ebp-1CCh]
-    __int64 v12; // [esp+3Ch] [ebp-1C4h]
-    __int64 v13; // [esp+44h] [ebp-1BCh]
-    __int64 v14; // [esp+4Ch] [ebp-1B4h]
-    __int64 v15; // [esp+64h] [ebp-19Ch]
-    __int64 v16; // [esp+6Ch] [ebp-194h]
-    __int64 v17; // [esp+74h] [ebp-18Ch]
-    __int64 v18; // [esp+7Ch] [ebp-184h]
-    __int64 v19; // [esp+84h] [ebp-17Ch]
-    __int64 v20; // [esp+8Ch] [ebp-174h]
-    __int64 v21; // [esp+94h] [ebp-16Ch]
-    __int64 v22; // [esp+9Ch] [ebp-164h]
+    __int64 v9_adj[6]; // v9, v10, v11, v12, v13, v14: adjacent in the 32-bit stack frame (code takes &v9 and reads past it)
+    __int64 &v9 = v9_adj[0], &v10 = v9_adj[1], &v11 = v9_adj[2], &v12 = v9_adj[3], &v13 = v9_adj[4], &v14 = v9_adj[5];
+    __int64 v15_adj[8]; // v15, v16, v17, v18, v19, v20, v21, v22: adjacent in the 32-bit stack frame (code takes &v15 and reads past it)
+    __int64 &v15 = v15_adj[0], &v16 = v15_adj[1], &v17 = v15_adj[2], &v18 = v15_adj[3], &v19 = v15_adj[4], &v20 = v15_adj[5], &v21 = v15_adj[6], &v22 = v15_adj[7];
     float legsMat[4][4]; // [esp+104h] [ebp-FCh] BYREF
     float *v24; // [esp+150h] [ebp-B0h]
     float *v25; // [esp+154h] [ebp-ACh]
@@ -2662,10 +2652,8 @@ void    IKImport_Profiler(IKState *ikState)
     float v7; // [esp+10h] [ebp-ACh]
     float v8; // [esp+14h] [ebp-A8h]
     float v9; // [esp+18h] [ebp-A4h]
-    float out[17]; // [esp+1Ch] [ebp-A0h] OVERLAPPED BYREF
-    float v11; // [esp+60h] [ebp-5Ch]
-    float v12; // [esp+64h] [ebp-58h]
-    float v13; // [esp+68h] [ebp-54h]
+    struct { float a[17]; float m0; float m1; float m2; } out_adj; // out[17], v11, v12, v13: adjacent in the 32-bit stack frame (code reads past out)
+    float (&out)[17] = out_adj.a; float &v11 = out_adj.m0, &v12 = out_adj.m1, &v13 = out_adj.m2;
     int v14; // [esp+6Ch] [ebp-50h]
     float v15; // [esp+70h] [ebp-4Ch]
     float v16; // [esp+74h] [ebp-48h]

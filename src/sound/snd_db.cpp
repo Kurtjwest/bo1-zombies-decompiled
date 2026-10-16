@@ -437,7 +437,7 @@ void __cdecl SND_ParseInit(
     memset((unsigned __int8 *)CURVES, 0, sizeof(CURVES));
     for ( m = 0; m < curveCount; ++m )
         CURVES[m] = curves[m].name;
-    memset((unsigned __int8 *)&SND_SNAPSHOT_FIELDS[9], 0, 0x800u);
+    memset((unsigned __int8 *)&SND_SNAPSHOT_FIELDS[9], 0, sizeof(SND_SNAPSHOT_FIELDS) - 9 * sizeof(SND_SNAPSHOT_FIELDS[0])); // 0x800: entries 9..72 of 32-byte ones on 32-bit
     for ( i = 0; i < snapshotGroupCount; ++i )
     {
         if ( &snapshotGroups[i] && snapshotGroups[i].name[0] )

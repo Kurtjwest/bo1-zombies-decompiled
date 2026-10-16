@@ -649,12 +649,8 @@ bool __cdecl ClampScreenPosToEdges(
     float v11; // [esp+30h] [ebp-98h]
     float v12; // [esp+34h] [ebp-94h]
     float v13[3]; // [esp+50h] [ebp-78h] BYREF
-    float v[5]; // [esp+5Ch] [ebp-6Ch] BYREF
-    float v15; // [esp+70h] [ebp-58h]
-    float v16; // [esp+74h] [ebp-54h]
-    float v17; // [esp+78h] [ebp-50h]
-    float v18; // [esp+7Ch] [ebp-4Ch]
-    float dist; // [esp+80h] [ebp-48h]
+    struct { float a[5]; float m0; float m1; float m2; float m3; float m4; } v_adj; // v[5], v15, v16, v17, v18, dist: adjacent in the 32-bit stack frame (code reads past v)
+    float (&v)[5] = v_adj.a; float &v15 = v_adj.m0, &v16 = v_adj.m1, &v17 = v_adj.m2, &v18 = v_adj.m3, &dist = v_adj.m4;
     float dir[2]; // [esp+84h] [ebp-44h] BYREF
     bool top; // [esp+8Fh] [ebp-39h]
     float radius; // [esp+90h] [ebp-38h]
@@ -2000,9 +1996,8 @@ void    DrawOffscreenViewableWaypoint(int localClientNum, const hudelem_s *elem)
     float scale; // [esp+3C4h] [ebp-108h]
     float shrinkDist; // [esp+3C8h] [ebp-104h]
     float colorArrow[4]; // [esp+3CCh] [ebp-100h] BYREF
-    bool isWaypointOffscreen; // [esp+3DDh] [ebp-EFh]
-    bool v29; // [esp+3DEh] [ebp-EEh]
-    bool didClamp; // [esp+3DFh] [ebp-EDh]
+    bool isWaypointOffscreen_adj[3]; // isWaypointOffscreen, v29, didClamp: adjacent in the 32-bit stack frame (code takes &isWaypointOffscreen and reads past it)
+    bool &isWaypointOffscreen = isWaypointOffscreen_adj[0], &v29 = isWaypointOffscreen_adj[1], &didClamp = isWaypointOffscreen_adj[2];
     float clampedDir[2]; // [esp+3E0h] [ebp-ECh] BYREF
     float clampedDist; // [esp+3E8h] [ebp-E4h] BYREF
     float worldDistance; // [esp+3ECh] [ebp-E0h]

@@ -3215,10 +3215,10 @@ char    BG_CheckProne(
     phys_vec3 p0; // [esp+2Ch] [ebp-138h] BYREF
     float fWaistPitch; // [esp+48h] [ebp-11Ch]
     float fTorsoPitch; // [esp+4Ch] [ebp-118h]
-    float vTorsoPos[3]; // [esp+50h] [ebp-114h]
-    float v24; // [esp+5Ch] [ebp-108h]
-    float vWaistPos[3]; // [esp+60h] [ebp-104h] BYREF
-    float v26; // [esp+6Ch] [ebp-F8h]
+    struct { float a[3]; float m0; } vTorsoPos_adj; // vTorsoPos[3], v24: adjacent in the 32-bit stack frame (code reads past vTorsoPos)
+    float (&vTorsoPos)[3] = vTorsoPos_adj.a; float &v24 = vTorsoPos_adj.m0;
+    struct { float a[3]; float m0; } vWaistPos_adj; // vWaistPos[3], v26: adjacent in the 32-bit stack frame (code reads past vWaistPos)
+    float (&vWaistPos)[3] = vWaistPos_adj.a; float &v26 = vWaistPos_adj.m0;
     float v27[3]; // [esp+70h] [ebp-F4h] BYREF
     float fPitchDiff; // [esp+7Ch] [ebp-E8h]
     float v29[3]; // [esp+80h] [ebp-E4h] BYREF

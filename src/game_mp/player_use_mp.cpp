@@ -558,8 +558,8 @@ int Player_GetUseList(gentity_s *ent, useList_t *useList, int prevHintEntIndex)
     float v10; // [esp+284h] [ebp-1120h]
     float v11[3]; // [esp+2A0h] [ebp-1104h] BYREF
     BOOL v12; // [esp+2ACh] [ebp-10F8h]
-    float v13[3]; // [esp+2B0h] [ebp-10F4h] BYREF
-    float v14; // [esp+2BCh] [ebp-10E8h]
+    struct { float a[3]; float m0; } v13_adj; // v13[3], v14: adjacent in the 32-bit stack frame (code reads past v13)
+    float (&v13)[3] = v13_adj.a; float &v14 = v13_adj.m0;
     BOOL v15; // [esp+2C0h] [ebp-10E4h]
     float v16; // [esp+2C4h] [ebp-10E0h]
     gentity_s *ent1; // [esp+2C8h] [ebp-10DCh]
@@ -575,18 +575,15 @@ int Player_GetUseList(gentity_s *ent, useList_t *useList, int prevHintEntIndex)
     // The use-touch box. Hex-Rays split each float[3] into scalars (v54/v55/v56, v28/v29/v30) and passed
     // &v54 / &v28 to SV_EntityContact as arrays; separate locals are not contiguous, so trigger_use_touch
     // triggers (Five's doors) never entered the use list. Arrays as in the exe's stack layout.
-    float touchMaxs[3]; // [esp+1318h] [ebp-8Ch] BYREF
-    float v31; // [esp+1324h] [ebp-80h]
-    float mins[3]; // [esp+1328h] [ebp-7Ch] BYREF
-    float v33; // [esp+1334h] [ebp-70h]
-    float v34; // [esp+1338h] [ebp-6Ch]
-    float v35; // [esp+133Ch] [ebp-68h]
-    float v36; // [esp+1340h] [ebp-64h]
+    struct { float a[3]; float m0; } touchMaxs_adj; // touchMaxs[3], v31: adjacent in the 32-bit stack frame (code reads past touchMaxs)
+    float (&touchMaxs)[3] = touchMaxs_adj.a; float &v31 = touchMaxs_adj.m0;
+    struct { float a[3]; float m0; float m1; float m2; float m3; } mins_adj; // mins[3], v33, v34, v35, v36: adjacent in the 32-bit stack frame (code reads past mins)
+    float (&mins)[3] = mins_adj.a; float &v33 = mins_adj.m0, &v34 = mins_adj.m1, &v35 = mins_adj.m2, &v36 = mins_adj.m3;
     int v37; // [esp+1344h] [ebp-60h]
     float v38; // [esp+1348h] [ebp-5Ch]
     gentity_s *gEnt; // [esp+134Ch] [ebp-58h]
-    float forward[3]; // [esp+1350h] [ebp-54h] BYREF
-    float v41; // [esp+135Ch] [ebp-48h]
+    struct { float a[3]; float m0; } forward_adj; // forward[3], v41: adjacent in the 32-bit stack frame (code reads past forward)
+    float (&forward)[3] = forward_adj.a; float &v41 = forward_adj.m0;
     int v42; // [esp+1360h] [ebp-44h]
     int v43; // [esp+1364h] [ebp-40h]
     float maxs[3]; // [esp+1368h] [ebp-3Ch] BYREF

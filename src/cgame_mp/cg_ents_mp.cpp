@@ -248,50 +248,36 @@ void    CG_UpdateBModelWorldBounds(int localClientNum, centity_s *cent, int forc
     __int64 v5; // [esp-8h] [ebp-1ECh] BYREF
     float HARD_CODED_MIP1_RADIUS; // [esp+0h] [ebp-1E4h]
     float maxs[4]; // [esp+4h] [ebp-1E0h] BYREF
-    float mins[8]; // [esp+14h] [ebp-1D0h]
-    float v9; // [esp+34h] [ebp-1B0h]
-    float v10; // [esp+38h] [ebp-1ACh]
-    float v11; // [esp+3Ch] [ebp-1A8h]
+    struct { float a[8]; float m0; float m1; float m2; } mins_adj; // mins[8], v9, v10, v11: adjacent in the 32-bit stack frame (code reads past mins)
+    float (&mins)[8] = mins_adj.a; float &v9 = mins_adj.m0, &v10 = mins_adj.m1, &v11 = mins_adj.m2;
     float4 rotatedBounds[2]; // [esp+40h] [ebp-1A4h] BYREF
     int v13; // [esp+60h] [ebp-184h]
     __int64 v14; // [esp+64h] [ebp-180h]
-    int v15; // [esp+6Ch] [ebp-178h]
-    int v16; // [esp+70h] [ebp-174h]
-    int v17; // [esp+74h] [ebp-170h]
-    int v18; // [esp+78h] [ebp-16Ch]
-    int v19; // [esp+7Ch] [ebp-168h]
+    int v15_adj[5]; // v15, v16, v17, v18, v19: adjacent in the 32-bit stack frame (code takes &v15 and reads past it)
+    int &v15 = v15_adj[0], &v16 = v15_adj[1], &v17 = v15_adj[2], &v18 = v15_adj[3], &v19 = v15_adj[4];
     __int64 v20; // [esp+80h] [ebp-164h]
-    int v21; // [esp+88h] [ebp-15Ch]
-    int v22; // [esp+8Ch] [ebp-158h]
-    int v23; // [esp+90h] [ebp-154h]
+    int v21_adj[3]; // v21, v22, v23: adjacent in the 32-bit stack frame (code takes &v21 and reads past it)
+    int &v21 = v21_adj[0], &v22 = v21_adj[1], &v23 = v21_adj[2];
     _BYTE *v24; // [esp+94h] [ebp-150h]
     __int64 v25; // [esp+98h] [ebp-14Ch]
-    int v26; // [esp+A0h] [ebp-144h]
-    int v27; // [esp+A4h] [ebp-140h]
+    int v26_adj[2]; // v26, v27: adjacent in the 32-bit stack frame (code takes &v26 and reads past it)
+    int &v26 = v26_adj[0], &v27 = v26_adj[1];
     __int64 v28; // [esp+A8h] [ebp-13Ch]
-    int v29; // [esp+B0h] [ebp-134h]
-    int v30; // [esp+B4h] [ebp-130h]
-    int v31; // [esp+B8h] [ebp-12Ch]
-    int v32; // [esp+BCh] [ebp-128h]
-    int v33; // [esp+C0h] [ebp-124h]
+    int v29_adj[5]; // v29, v30, v31, v32, v33: adjacent in the 32-bit stack frame (code takes &v29 and reads past it)
+    int &v29 = v29_adj[0], &v30 = v29_adj[1], &v31 = v29_adj[2], &v32 = v29_adj[3], &v33 = v29_adj[4];
     __int64 v34; // [esp+C4h] [ebp-120h]
-    int v35; // [esp+CCh] [ebp-118h]
-    int v36; // [esp+D0h] [ebp-114h]
-    int v37; // [esp+D4h] [ebp-110h]
+    int v35_adj[3]; // v35, v36, v37: adjacent in the 32-bit stack frame (code takes &v35 and reads past it)
+    int &v35 = v35_adj[0], &v36 = v35_adj[1], &v37 = v35_adj[2];
     _BYTE *v38; // [esp+D8h] [ebp-10Ch]
     __int64 v39; // [esp+DCh] [ebp-108h]
-    int v40; // [esp+E4h] [ebp-100h]
-    int v41; // [esp+E8h] [ebp-FCh]
+    int v40_adj[2]; // v40, v41: adjacent in the 32-bit stack frame (code takes &v40 and reads past it)
+    int &v40 = v40_adj[0], &v41 = v40_adj[1];
     __int64 v42; // [esp+ECh] [ebp-F8h]
-    int v43; // [esp+F4h] [ebp-F0h]
-    int v44; // [esp+F8h] [ebp-ECh]
-    int v45; // [esp+FCh] [ebp-E8h]
-    int v46; // [esp+100h] [ebp-E4h]
-    int v47; // [esp+104h] [ebp-E0h]
+    int v43_adj[5]; // v43, v44, v45, v46, v47: adjacent in the 32-bit stack frame (code takes &v43 and reads past it)
+    int &v43 = v43_adj[0], &v44 = v43_adj[1], &v45 = v43_adj[2], &v46 = v43_adj[3], &v47 = v43_adj[4];
     __int64 v48; // [esp+108h] [ebp-DCh]
-    int v49; // [esp+110h] [ebp-D4h]
-    int v50; // [esp+114h] [ebp-D0h]
-    int v51; // [esp+118h] [ebp-CCh]
+    int v49_adj[3]; // v49, v50, v51: adjacent in the 32-bit stack frame (code takes &v49 and reads past it)
+    int &v49 = v49_adj[0], &v50 = v49_adj[1], &v51 = v49_adj[2];
     __int64 v52; // [esp+11Ch] [ebp-C8h]
     int v53; // [esp+124h] [ebp-C0h]
     int v54; // [esp+128h] [ebp-BCh]

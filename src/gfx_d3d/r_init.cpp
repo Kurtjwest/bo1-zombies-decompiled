@@ -113,8 +113,8 @@ void __cdecl R_SetColorMappings()
 
 void __cdecl R_CalcGammaRamp(GfxGammaRamp *gammaRamp)
 {
-    float unitScaleValue; // [esp+8h] [ebp-30h]
-    float v2; // [esp+Ch] [ebp-2Ch]
+    float unitScaleValue_adj[2]; // unitScaleValue, v2: adjacent in the 32-bit stack frame (code takes &unitScaleValue and reads past it)
+    float &unitScaleValue = unitScaleValue_adj[0], &v2 = unitScaleValue_adj[1];
     float v3; // [esp+18h] [ebp-20h]
     unsigned __int16 adjustedColorValue; // [esp+28h] [ebp-10h]
     unsigned __int16 colorTableIndex; // [esp+2Ch] [ebp-Ch]

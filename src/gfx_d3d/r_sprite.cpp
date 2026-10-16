@@ -205,8 +205,8 @@ void __cdecl R_GenerateQuadStampCodeMeshVerts(
     float dt; // [esp+20h] [ebp-58h]
     int frame; // [esp+24h] [ebp-54h]
     int numFrames; // [esp+2Ch] [ebp-4Ch]
-    float left[3]; // [esp+34h] [ebp-44h] BYREF
-    float v12; // [esp+40h] [ebp-38h]
+    struct { float a[3]; float m0; } left_adj; // left[3], v12: adjacent in the 32-bit stack frame (code reads past left)
+    float (&left)[3] = left_adj.a; float &v12 = left_adj.m0;
     float viewAxis[3][3]; // [esp+44h] [ebp-34h] BYREF
     float up[3]; // [esp+68h] [ebp-10h] BYREF
     int s0; // [esp+74h] [ebp-4h]
@@ -268,8 +268,8 @@ void __cdecl R_GenerateQuadStampCodeMeshVertsArray(
     PackedUnitVec v23; // [esp+11Ch] [ebp-1C4h]
     PackedUnitVec v24; // [esp+13Ch] [ebp-1A4h]
     float t0; // [esp+17Ch] [ebp-164h]
-    __int64 vcenter; // [esp+198h] [ebp-148h]
-    __int64 vcenter_8; // [esp+1A0h] [ebp-140h]
+    __int64 vcenter_adj[2]; // vcenter, vcenter_8: adjacent in the 32-bit stack frame (code takes &vcenter and reads past it)
+    __int64 &vcenter = vcenter_adj[0], &vcenter_8 = vcenter_adj[1];
     GfxPackedVertex *out; // [esp+1A8h] [ebp-138h]
     float c; // [esp+1ACh] [ebp-134h] BYREF
     PackedTexCoords tex1; // [esp+1B0h] [ebp-130h]
