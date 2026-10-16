@@ -298,7 +298,8 @@ void phys_slot_pool::extra_info_init(char *slot)
     {
         ei = (phys_slot_pool::extra_info *)&slot[(unsigned __int16)this->m_map_key - sizeof(phys_slot_pool::extra_info)];
         ei->m_slot_pool_owner = this;
-        ei->m_allocation_owner = (void *)BO1_I2P(0xFEDCBA98);
+        // the "allocated" marker is a raw 32-bit value: 0xFEDCBA98 is no valid handle, so decoding it gave null
+        Ptr32_Raw(ei->m_allocation_owner) = 0xFEDCBA98u;
 
         _InterlockedExchangeAdd(&this->m_total_slot_count, 1u);
         _InterlockedExchangeAdd(&this->m_allocated_slot_count, 1u);
@@ -374,10 +375,11 @@ void __thiscall phys_slot_pool::extra_info_allocate(char *slot)
         __debugbreak();
     }
 
-    if ((phys_slot_pool *)BO1_I2P(_InterlockedCompareExchange(
+    // owner: this pool's handle while free, the raw marker while allocated (compared as raw values)
+    if ((unsigned int)_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&ei->m_allocation_owner,
         0xFEDCBA98,
-        (signed __int32)BO1_P2I(this))) != this
+        (signed __int32)BO1_P2I(this)) != (unsigned int)BO1_P2I(this)
         && _tlAssert("source/phys_mem_new.cpp", 312, "retv", "internal error."))
     {
         __debugbreak();
@@ -466,10 +468,10 @@ void __thiscall phys_slot_pool::extra_info_free(unsigned __int8 *slot)
         __debugbreak();
     }
 
-    if ((phys_slot_pool *)BO1_I2P(_InterlockedCompareExchange(
+    if ((unsigned int)_InterlockedCompareExchange(
         (volatile unsigned __int32 *)&ei->m_allocation_owner,
         (signed __int32)BO1_P2I(this),
-        0xFEDCBA98)) != (phys_slot_pool *)BO1_I2P(0xFEDCBA98)
+        0xFEDCBA98) != 0xFEDCBA98u
         && _tlAssert(
             "source/phys_mem_new.cpp",
             332,

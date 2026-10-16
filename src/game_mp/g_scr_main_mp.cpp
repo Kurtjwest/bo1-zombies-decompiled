@@ -6796,6 +6796,7 @@ void __cdecl Scr_SightTracePassed()
         iIgnoreEntNum = pIgnoreEnt->s.number;
     }
     //col_context_t::col_context_t(&context, iClipMask);
+    context = col_context_t(iClipMask); // (with the constructor call commented out the trace used mask 0: nothing blocked it)
     context.passEntityNum0 = iIgnoreEntNum;
     SV_SightTracePoint(&hitNum, vStart, vEnd, &context);
     Scr_AddBool(hitNum == 0, SCRIPTINSTANCE_SERVER);

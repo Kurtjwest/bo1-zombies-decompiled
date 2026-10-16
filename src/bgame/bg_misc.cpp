@@ -3589,7 +3589,12 @@ int __cdecl BG_LoadShellShockDvars(const char *name)
                 (filebuf = Com_LoadRawTextFile("shock/default.shock")) != 0) )
     {
         for ( i = 0; i < 32; ++i )
+        {
             bg_shock_dvar_names[i] = bgShockDvarNames[i];
+            // (the decompiled function never set this array: a dvar a shock file leaves out keeps its default
+            // rather than failing the load on whatever the stack held)
+            isOptional[i] = true;
+        }
         success = Com_LoadDvarsFromBufferOptional(bg_shock_dvar_names, isOptional, 0x20u, filebuf, fullpath);
         Com_UnloadRawTextFile(filebuf);
         return success;

@@ -125,7 +125,7 @@ void __cdecl Hunk_FirstFitFree(HunkUser *_user, unsigned int *ptr)
         last = 0;
         scan = (_firstfit_heapnode *)BO1_I2P(_user[1].flags);
         free_link = (_firstfit_heapnode *)BO1_I2P(*(ptr - 1));
-        if ( free_link->next == (_firstfit_heapnode *)BO1_I2P(-559038737) )
+        if ( Ptr32_Raw(free_link->next) == 0xDEADBEEFu ) // the allocated-block marker, a raw value (no handle decodes to it)
         {
             _user[1].type -= free_link->size;
             if ( !_user[1].flags

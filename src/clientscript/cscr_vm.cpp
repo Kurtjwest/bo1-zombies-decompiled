@@ -1354,7 +1354,8 @@ void __cdecl VM_Notify(
                             buf += 4;
                             --newSize;
                         } while (newSize);
-                        if (&buf[-stackValue.intValue] != (char *)BO1_I2P(bufLen)
+                        // (the stack buffer is a 32-bit handle: measure from its decoded address)
+                        if ((unsigned int)(buf - (char *)BO1_I2P(stackValue.intValue)) != (unsigned int)bufLen
                             && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
                                 4217,
