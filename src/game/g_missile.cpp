@@ -1961,10 +1961,11 @@ void    MissileImpact(gentity_s *ent, trace_t *trace, float *dir, float *endpos)
                             if (other->client)
                             {
                                 MapHitLocationToRagdollBoneName(hitLocation, &boneName);
+                                // (decompiled as a byte offset, 1504 * corpseIndex + 4, applied to the corpseInfo_t array)
                                 if (other->client->ps.pm_type == 9
-                                    && *(int *)&g_scr_data.playerCorpseInfo[1504 * other->client->ps.corpseIndex + 4] >= 0)
+                                    && g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum >= 0)
                                 {
-                                    entnum = *(int*)&g_scr_data.playerCorpseInfo[1504 * other->client->ps.corpseIndex + 4];
+                                    entnum = g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum;
                                 }
                             }
                             else if (other->actor)
@@ -3135,10 +3136,12 @@ int __cdecl StickMissile(
         if ( team == ent->missile.team && !weapDef->timedDetonation && team )
             return isStuck;
         entnum = other->s.number;
+        // the corpse's entity (decompiled as actorXAnimTrees[376 * corpseIndex - 1495], an offset into
+        // playerCorpseInfo that no longer holds since the zombies actor tree bank moved in scr_data_t)
         if ( other->client->ps.pm_type == 9
-            && (int)BO1_P2I(g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495]) >= 0 )
+            && g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum >= 0 )
         {
-            entnum = (int)BO1_P2I(g_scr_data.actorXAnimTrees[376 * other->client->ps.corpseIndex - 1495]);
+            entnum = g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum;
         }
         ent->flags |= 0x1000u;
         boneName = 0;
@@ -3232,7 +3235,7 @@ void __cdecl createRetrieveableProjectile(
         {
             target_ent = other;
             if (other->client->ps.pm_type == 9)
-                target_ent = (gentity_s *)((char *)sv.gentities + *(_DWORD *)&g_scr_data.playerCorpseInfo[1504 * other->client->ps.corpseIndex + 4] * sv.gentitySize);
+                target_ent = (gentity_s *)((char *)sv.gentities + g_scr_data.playerCorpseInfo[other->client->ps.corpseIndex].entnum * sv.gentitySize);
         }
         else if ( other->actor )
         {

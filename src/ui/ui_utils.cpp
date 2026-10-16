@@ -712,7 +712,7 @@ void UI_GetGameTypesList_LoadObj()
         }
         else
         {
-            if (!I_stricmp(&src[v2 - 4], ".gsc"))
+            if (v2 >= 4 && !I_stricmp(&src[v2 - 4], ".gsc"))
                 src[v2 - 4] = 0;
             if (sharedUiInfo.numGameTypes == 32 || sharedUiInfo.numJoinGameTypes == 32)
             {

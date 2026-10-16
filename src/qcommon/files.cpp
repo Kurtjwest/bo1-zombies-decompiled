@@ -981,8 +981,12 @@ char *__cdecl FS_GetMapBaseName(char *mapname)
         mapname += 8;
     v2 = strlen(mapname);
     len = v2;
-    if ( !I_stricmp(&mapname[v2 - 3], "bsp") )
+    // v2 - 3 is an unsigned 32-bit index: for a name shorter than 3 characters ("map a", mapexists("0")) it wrapped
+    // to a read just before the string in 32-bit address arithmetic, but reads 4 GB past it on 64-bit
+    if ( v2 >= 7 && !I_stricmp(&mapname[v2 - 3], "bsp") )
         len = v2 - 7;
+    if ( len >= (int)sizeof(basename) )
+        len = sizeof(basename) - 1;
     memcpy((unsigned __int8 *)basename, (unsigned __int8 *)mapname, len);
     basename[len] = 0;
     for ( c = 0; c < len; ++c )

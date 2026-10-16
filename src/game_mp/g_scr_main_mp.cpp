@@ -17567,7 +17567,7 @@ int Scr_ParseGameTypeList_LoadObj()
         }
         else
         {
-            if ( !I_stricmp(&src[v10 - 4], ".gsc") )
+            if ( v10 >= 4 && !I_stricmp(&src[v10 - 4], ".gsc") )
                 src[v10 - 4] = 0;
             if ( v11 == 32 )
             {
