@@ -304,7 +304,7 @@ void __cdecl FX_DrawPriorityDebug(int clientIndex, void (__cdecl *drawFunc)(char
         v8 = num;
     for ( k = 0; k < v8; ++k )
     {
-        v7 = va("%4i     %4i     %s", *(unsigned __int8 *)BO1_I2P((base[2 * k] + 5)), base[2 * k + 1], *(const char **)BO1_I2P(base[2 * k]));
+        v7 = va("%4i     %4i     %s", *(unsigned __int8 *)BO1_I2P((base[2 * k] + 5)), base[2 * k + 1], *(Ptr32<const char> *)BO1_I2P(base[2 * k]));
         drawFunc(v7);
     }
 }

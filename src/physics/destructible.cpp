@@ -2334,7 +2334,7 @@ void __cdecl CG_DestructibleUpdateDObj(centity_s *self)
 
 void __cdecl CG_DestructibleRadiusDamage(
                 centity_s *self,
-                const centity_s **point,
+                const float *point,
                 float damgeInner,
                 float damgeOuter,
                 float radius,
@@ -2345,7 +2345,6 @@ void __cdecl CG_DestructibleRadiusDamage(
     float v8; // [esp+10h] [ebp-B4h]
     float v9; // [esp+14h] [ebp-B0h]
     float v10; // [esp+18h] [ebp-ACh]
-    const Ptr32<const centity_s> *p_attacker; // [esp+28h] [ebp-9Ch]
     unsigned __int8 boneIndex; // [esp+33h] [ebp-91h] BYREF
     float ent_axis[4][3]; // [esp+34h] [ebp-90h] BYREF
     XModel *model; // [esp+64h] [ebp-60h]
@@ -2378,14 +2377,14 @@ void __cdecl CG_DestructibleRadiusDamage(
         {
             de = &g_destructible_events[g_destructible_events_count++];
             de->type = 1;
-            de->ehe.localClientNum = (int)BO1_P2I(self);
-            p_attacker = &de->ed.attacker;
-            de->erd.point[0] = *(float *)point;
-            p_attacker[1] = point[1];
-            p_attacker[2] = point[2];
-            de->ed.dir[2] = damgeInner;
-            de->ed.point[0] = damgeOuter;
-            de->ed.point[1] = radius;
+            // (the decompile wrote these through the overlapping ed/ehe views of the same union)
+            de->erd.self = self;
+            de->erd.point[0] = point[0];
+            de->erd.point[1] = point[1];
+            de->erd.point[2] = point[2];
+            de->erd.damgeInner = damgeInner;
+            de->erd.damgeOuter = damgeOuter;
+            de->erd.radius = radius;
             de->erd.mod = mod;
         }
     }
@@ -2456,9 +2455,9 @@ void __cdecl CG_DestructibleRadiusDamage(
                 hitp[0] = (float)(spin_scale * v8) + hitp[0];
                 hitp[1] = (float)(spin_scale * v9) + hitp[1];
                 hitp[2] = (float)(spin_scale * v10) + hitp[2];
-                dir[0] = hitp[0] - *(float *)point;
-                dir[1] = hitp[1] - *((float *)point + 1);
-                dir[2] = hitp[2] - *((float *)point + 2);
+                dir[0] = hitp[0] - point[0];
+                dir[1] = hitp[1] - point[1];
+                dir[2] = hitp[2] - point[2];
                 distSquared = (float)((float)(dir[0] * dir[0]) + (float)(dir[1] * dir[1])) + (float)(dir[2] * dir[2]);
                 if ( distSquared < radiusSquared )
                 {
@@ -2923,11 +2922,11 @@ void __cdecl CG_ProcessDestructibleEvents()
             if ( type == 1 )
             {
                 CG_DestructibleRadiusDamage(
-                    de->ed.self,
-                    &de->ed.attacker,
-                    de->ed.dir[2],
-                    de->ed.point[0],
-                    de->ed.point[1],
+                    de->erd.self,
+                    de->erd.point,
+                    de->erd.damgeInner,
+                    de->erd.damgeOuter,
+                    de->erd.radius,
                     de->erd.mod,
                     0);
             }

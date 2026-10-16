@@ -338,7 +338,7 @@ const char *UI_LoadArenasFromFile_LoadObj()
                 FS_Read((unsigned __int8 *)buffer, len, f);
                 buffer[len] = 0;
                 FS_FCloseFile(f);
-                ui_numArenas += UI_ParseInfos(buffer, 128 - ui_numArenas, (char **)BO1_I2P((4 * ui_numArenas + 160058192)));
+                ui_numArenas += UI_ParseInfos(buffer, 128 - ui_numArenas, &ui_arenaInfos[ui_numArenas]); // was the absolute address of ui_arenaInfos in the retail exe
             }
             else
             {

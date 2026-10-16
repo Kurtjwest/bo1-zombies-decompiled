@@ -7199,7 +7199,7 @@ void __cdecl Material_BuildStateBitsTable(Material *material, __int16 toolFlags,
                 Material_RemapStateBits(
                     material,
                     toolFlags,
-                    *(const MaterialStateMap **)BO1_I2P((v5 + 4 * j)),
+                    *(Ptr32<const MaterialStateMap> *)BO1_I2P((v5 + 4 * j)),
                     refStateBits,
                     (unsigned int *)&stateBitsOut[j]);
             material->stateBitsEntry[i] = Material_AddStateBitsArrayToTable(

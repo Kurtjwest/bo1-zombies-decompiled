@@ -508,7 +508,7 @@ int __cdecl Trace_GetGlassHitId(const trace_t *trace);
 void __cdecl CM_GetTraceThreadInfo(TraceThreadInfo *threadInfo);
 clipMap_t *__cdecl CM_GetClipMap();
 unsigned int __cdecl CM_TempBoxModel(const float *mins, const float *maxs, int contents);
-void __cdecl CM_GetBox(cbrush_t **box_brush, cmodel_t **box_model, PhysGeomList ***geoms);
+void __cdecl CM_GetBox(cbrush_t **box_brush, cmodel_t **box_model, Ptr32<PhysGeomList> **geoms);
 unsigned int __cdecl CM_TempBrushModel(struct PhysGeomList *geoms);
 bool __cdecl CM_ClipHandleIsValid(unsigned int handle);
 cmodel_t *__cdecl CM_ClipHandleToModel(unsigned int handle);

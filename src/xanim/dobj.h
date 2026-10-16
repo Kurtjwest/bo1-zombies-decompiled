@@ -180,7 +180,7 @@ void __cdecl DObjGetCreateParms(
                 const DObj *obj,
                 DObjModel_s *dobjModels,
                 unsigned __int16 *numModels,
-                XAnimTree_s **tree,
+                Ptr32<XAnimTree_s> *tree,
                 unsigned __int16 *entnum);
 void __cdecl DObjCalcBounds(DObj *dobj, float *mins, float *maxs);
 void __cdecl DObjArchive(DObj *obj);

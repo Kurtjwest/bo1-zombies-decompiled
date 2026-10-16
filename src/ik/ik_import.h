@@ -1,4 +1,5 @@
 #pragma once
+#include <universal/ptr32.h>
 #include "ik.h"
 #include <bgame/bg_weapons.h>
 
@@ -16,7 +17,7 @@ int __cdecl IKImport_GetVar_IK_Hand_Tuning();
 void __cdecl IKImport_GetVar_IK_Hand_Offset_Vec(float *offset);
 void __cdecl IKImport_GetVar_IK_Hand_Rotation_Vec(float *rotation);
 int __cdecl IKImport_GetVar_IK_Hand_Tuning(IKState *ikState);
-void __cdecl IKImport_GetBoneStrings(char **outBoneStrings);
+void __cdecl IKImport_GetBoneStrings(Ptr32<char> *outBoneStrings);
 char __cdecl IKImport_GetBoneLookups(IKState *ikState, IKBoneNames ikBoneName);
 char __cdecl IKImport_CalcAnimatedIKBonesBits(IKState *ikState, unsigned __int8 *model);
 void __cdecl IKImport_SetIKPartBits(DObj *obj, int *partBits);

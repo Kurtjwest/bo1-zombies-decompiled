@@ -2654,7 +2654,7 @@ void __thiscall Scr_ScriptWatch::AddElement(
                 __debugbreak();
             }
             gScrVarPub[inst].evaluate = 0;
-            Scr_ExecCode(inst, *(char **)BO1_I2P((scriptExpr.parseData.stringValue + 4)), this->localId);
+            Scr_ExecCode(inst, *(Ptr32<char> *)BO1_I2P((scriptExpr.parseData.stringValue + 4)), this->localId);
             gScrVarPub[inst].evaluate = 1;
             SL_ShutdownSystem(inst, 2u);
             Scr_FreeDebugExpr(inst, &scriptExpr);

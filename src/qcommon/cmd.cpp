@@ -29,10 +29,10 @@ unsigned __int8 cmd_text_buf[1][65536];
 bool cmd_insideCBufExecute[1];
 CmdText sv_cmd_text;
 unsigned __int8 sv_cmd_text_buf[65536];
-cmd_function_s *sv_cmd_functions;
+Ptr32<cmd_function_s> sv_cmd_functions;
 CmdArgs sv_cmd_args;
 int com_inServerFrame;
-cmd_function_s *cmd_functions;
+Ptr32<cmd_function_s> cmd_functions;
 CmdArgs g_cmd_args[2];
 
 void __cdecl Cmd_Wait_f()
@@ -626,7 +626,7 @@ int __cdecl Cmd_TokenizeStringInternal(
                 const char *text_in,
                 int max_tokens,
                 bool evalExpressions,
-                const char **argv,
+                Ptr32<const char> *argv,
                 CmdArgs *argsPriv)
 {
     int v6; // [esp+0h] [ebp-80h]
@@ -992,10 +992,10 @@ void __cdecl Cmd_AddCommandInternal(const char *cmdName, void (__cdecl *function
 
 void __cdecl Cmd_RemoveCommand(const char *cmdName)
 {
-    cmd_function_s **back; // [esp+14h] [ebp-8h]
+    Ptr32<cmd_function_s> *back; // [esp+14h] [ebp-8h]
     cmd_function_s *cmd; // [esp+18h] [ebp-4h]
 
-    for ( back = &cmd_functions; ; back = (cmd_function_s **)*back )
+    for ( back = &cmd_functions; ; back = (Ptr32<cmd_function_s> *)*back )
     {
         cmd = *back;
         if ( !*back )

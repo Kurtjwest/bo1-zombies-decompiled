@@ -25,7 +25,7 @@ void phys_slot_pool::init(unsigned int slot_size, unsigned int slot_alignment)
     this->m_allocated_slot_count = 0;
 }
 
-void __cdecl ppu_pmm_get_linear_buffer(char ***linear_buffer_cur, char **linear_buffer_end)
+void __cdecl ppu_pmm_get_linear_buffer(Ptr32<char> **linear_buffer_cur, char **linear_buffer_end)
 {
     *linear_buffer_cur = &g_phys_memory_manager->m_buffer_cur;
     *linear_buffer_end = g_phys_memory_manager->m_buffer_end;

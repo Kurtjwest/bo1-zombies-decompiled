@@ -55,7 +55,7 @@ void CM_InitAllThreadData()
     CM_InitThreadData(THREAD_CONTEXT_OCCLUSION);
 }
 
-PhysGeomList *g_geoms[12];
+Ptr32<PhysGeomList> g_geoms[12];
 void __cdecl CM_InitThreadData(unsigned int threadContext)
 {
     TraceThreadInfo *traceThreadInfo; // [esp+8h] [ebp-4h]

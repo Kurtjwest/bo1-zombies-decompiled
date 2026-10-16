@@ -12,7 +12,7 @@
 #include "physics_system_internal.h"
 #include <tl/physics/rbc_def_vehicle.h>
 
-auto_rigid_body *g_auto_rigid_body_list;
+Ptr32<auto_rigid_body> g_auto_rigid_body_list;
 
 tlAtomicReadWriteMutex g_auto_rigid_body_map_mutex;
 phys_inplace_avl_tree<centity_s const *, auto_rigid_body, auto_rigid_body> g_auto_rigid_body_map;

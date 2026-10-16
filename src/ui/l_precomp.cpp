@@ -965,7 +965,7 @@ define_s *__cdecl PC_DefineFromString(char *string)
     memset((unsigned __int8 *)&src, 0, sizeof(src));
     strncpy((char *)&src, "*extern", 0x40u);
     src.scriptstack = script;
-    src.definehash = (define_s **)GetClearedMemory(0x1000u);
+    src.definehash = (Ptr32<define_s> *)GetClearedMemory(0x1000u);
     res = PC_Directive_define(&src);
     for ( t = src.tokens; t; t = src.tokens )
     {
@@ -2255,7 +2255,7 @@ source_s *__cdecl LoadSourceFile(char *filename)
     source->defines = 0;
     source->indentstack = 0;
     source->skip = 0;
-    source->definehash = (define_s **)GetClearedMemory(0x1000u);
+    source->definehash = (Ptr32<define_s> *)GetClearedMemory(0x1000u);
     PC_AddGlobalDefinesToSource(source);
     return source;
 }

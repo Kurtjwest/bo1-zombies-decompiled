@@ -429,7 +429,7 @@ void __cdecl XAnimFreeTree(
                 void (__cdecl *Free)(void *, int, scriptInstance_t),
                 scriptInstance_t inst);
 XAnim_s *__cdecl XAnimGetAnims(const XAnimTree_s *tree);
-void __cdecl XAnimInitModelMap(XModel *const *models, unsigned int numModels, XModelNameMap *modelMap);
+void __cdecl XAnimInitModelMap(const Ptr32<XModel> *models, unsigned int numModels, XModelNameMap *modelMap);
 unsigned int __cdecl XAnimGetAnimMap(const XAnimParts *parts, const XModelNameMap *modelMap);
 void __cdecl XAnimCalcRelDeltaParts(
                 const XAnimParts *parts,

@@ -1075,11 +1075,11 @@ void __cdecl Scr_EvalPrimitiveExpression(
         break;
     case 0xD:
         value->type = 2;
-        value->u.intValue = SL_GetString_(inst, *(char **)BO1_I2P((expr.stringValue + 4)), 0, 20);
+        value->u.intValue = SL_GetString_(inst, *(Ptr32<char> *)BO1_I2P((expr.stringValue + 4)), 0, 20);
         break;
     case 0xE:
         value->type = 3;
-        value->u.intValue = SL_GetString_(inst, *(char **)BO1_I2P((expr.stringValue + 4)), 0, 20);
+        value->u.intValue = SL_GetString_(inst, *(Ptr32<char> *)BO1_I2P((expr.stringValue + 4)), 0, 20);
         break;
     case 0x13:
         Scr_EvalVariableExpression(inst, *(sval_u *)BO1_I2P((expr.stringValue + 4)), localId, value);

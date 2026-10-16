@@ -21,7 +21,7 @@ phys_assert_info pai_create_sap_active_pair = { 0, 1, true };
 
 
 broad_phase_base **g_bpb_ptr_list;
-broad_phase_base *g_bpb_list_cur;
+Ptr32<broad_phase_base> g_bpb_list_cur; // 32-bit: claimed with a 32-bit compare-exchange
 volatile unsigned int g_bpb_list_index;
 volatile unsigned int g_bpb_list_max_index;
 
@@ -412,9 +412,9 @@ void phys_wheel_collide_info::collision_epilog(rigid_body_constraint_wheel *rbc_
 
 void __thiscall axis_aligned_sweep_and_prune::sap_node::init(
                 broad_phase_base *bpb,
-                axis_aligned_sweep_and_prune::axis_element **xlist,
-                axis_aligned_sweep_and_prune::axis_element **ylist,
-                axis_aligned_sweep_and_prune::axis_element **zlist)
+                Ptr32<axis_aligned_sweep_and_prune::axis_element> *xlist,
+                Ptr32<axis_aligned_sweep_and_prune::axis_element> *ylist,
+                Ptr32<axis_aligned_sweep_and_prune::axis_element> *zlist)
 {
     this->m_bpb = bpb;
     this->m_updated = 0;
@@ -451,7 +451,7 @@ bool __thiscall axis_aligned_sweep_and_prune::are_overlapping(
 }
 
 void __thiscall axis_aligned_sweep_and_prune::remove(
-                axis_aligned_sweep_and_prune::axis_element **axis_list,
+                Ptr32<axis_aligned_sweep_and_prune::axis_element> *axis_list,
                 axis_aligned_sweep_and_prune::sap_node *node)
 {
     Ptr32<axis_aligned_sweep_and_prune::axis_element> *p_m_next; // ecx
@@ -1508,8 +1508,8 @@ void __cdecl broad_phase_process_object_environment_collision()
 }
 
 void __thiscall axis_aligned_sweep_and_prune::swap(
-                axis_aligned_sweep_and_prune::axis_element **a1_ptr,
-                axis_aligned_sweep_and_prune::axis_element **a2_ptr)
+                Ptr32<axis_aligned_sweep_and_prune::axis_element> *a1_ptr,
+                Ptr32<axis_aligned_sweep_and_prune::axis_element> *a2_ptr)
 {
     axis_aligned_sweep_and_prune::axis_element *v3; // esi
     axis_aligned_sweep_and_prune::axis_element *v4; // edi
@@ -1545,15 +1545,15 @@ void __thiscall axis_aligned_sweep_and_prune::swap(
 }
 
 void __thiscall axis_aligned_sweep_and_prune::merge_sort(
-                axis_aligned_sweep_and_prune::axis_element **list,
+                Ptr32<axis_aligned_sweep_and_prune::axis_element> *list,
                 int list_count)
 {
     axis_aligned_sweep_and_prune *v3; // esi
-    axis_aligned_sweep_and_prune::axis_element **v4; // ebx
-    axis_aligned_sweep_and_prune::axis_element **v5; // edi
-    axis_aligned_sweep_and_prune::axis_element **v6; // ecx
-    axis_aligned_sweep_and_prune::axis_element **i; // esi
-    axis_aligned_sweep_and_prune::axis_element **last; // [esp+8h] [ebp-8h]
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v4; // ebx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v5; // edi
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v6; // ecx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *i; // esi
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *last; // [esp+8h] [ebp-8h]
 
     v3 = this;
     if ( list_count >= 3 )
@@ -2445,16 +2445,16 @@ int    bp_env_jq_batch_function2(jqBatch *pBatch)
     v1 = _InterlockedExchangeAdd(&g_thread_id, 1u);
     bpb = g_bpb_list_cur;
     bpeqr.m_list_bpi_env.m_list = 0;
-    bpeqr.m_list_bpi_env.m_list_cur = (broad_phase_base_list::node **)&bpeqr;
+    bpeqr.m_list_bpi_env.m_list_cur = (Ptr32<broad_phase_base_list::node> *)&bpeqr;
     for (bpeqr.m_thread_id = v1; g_bpb_list_cur; bpb = g_bpb_list_cur)
     {
         if ((broad_phase_base *)BO1_I2P(_InterlockedCompareExchange(
             (volatile unsigned __int32 *)&g_bpb_list_cur,
             (signed __int32)bpb->m_list_bpb_next,
-            (signed __int32)bpb)) == bpb)
+            (signed __int32)BO1_P2I(bpb))) == bpb)
         {
             check_terrain_query_params(bpb);
-            bpeqr.m_list_bpi_env.m_list_cur = (broad_phase_base_list::node **)&bpeqr;
+            bpeqr.m_list_bpi_env.m_list_cur = (Ptr32<broad_phase_base_list::node> *)&bpeqr;
             bpeqr.m_list_bpi_env_count = 0;
             bpeqr.m_env_collision_flags = 0;
             init_bpeqi(&bpeqi, bpb);
@@ -2802,7 +2802,7 @@ void    broad_phase_group::collision_prolog()
                 }
                 p_x = &v37[1].x;
                 //rigid_body_constraint_wheel::get_wheel_collide_segment*(rigid_body_constraint_wheel **)(*(_DWORD *)(LODWORD(v79) + 16) + 4 * i), (int)v83, half_dims_12, v37, v37 + 1);
-                (*(rigid_body_constraint_wheel **)BO1_I2P((*(_DWORD *)BO1_I2P((LODWORD(v79) + 16)) + 4 * i)))->get_wheel_collide_segment(half_dims_12, v37, v37 + 1);
+                (*(Ptr32<rigid_body_constraint_wheel> *)BO1_I2P((*(_DWORD *)BO1_I2P((LODWORD(v79) + 16)) + 4 * i)))->get_wheel_collide_segment(half_dims_12, v37, v37 + 1);
                 v37[1].x = v37[1].x - v37->x;
                 v37[1].y = v37[1].y - v37->y;
                 v37[1].z = v37[1].z - v37->z;
@@ -2953,7 +2953,7 @@ void __thiscall broad_phase_group::collision_epilog()
                     }
                 }
                 //phys_wheel_collide_info::collision_epilog(v3,(int)&savedregs, *(rigid_body_constraint_wheel **)(*(unsigned int *)(m_buffer + 16) + 4 * v2));
-                v3->collision_epilog(*(rigid_body_constraint_wheel **)BO1_I2P((*(unsigned int *)BO1_I2P((m_buffer + 16)) + 4 * v2)));
+                v3->collision_epilog(*(Ptr32<rigid_body_constraint_wheel> *)BO1_I2P((*(unsigned int *)BO1_I2P((m_buffer + 16)) + 4 * v2)));
                 ++v7;
                 if ( ++v2 >= wheel_count )
                     break;
@@ -3216,7 +3216,7 @@ void __thiscall axis_aligned_sweep_and_prune::create_sap_node(
 }
 
 void __thiscall axis_aligned_sweep_and_prune::remove(
-                axis_aligned_sweep_and_prune::active_pair **list_ap,
+                Ptr32<axis_aligned_sweep_and_prune::active_pair> *list_ap,
                 axis_aligned_sweep_and_prune::sap_node *node)
 {
     int i; // esi
@@ -3225,11 +3225,11 @@ void __thiscall axis_aligned_sweep_and_prune::remove(
 
     for ( i = (int)BO1_P2I(*list_ap); *list_ap; i = (int)BO1_P2I(*list_ap) )
     {
-        if ( *(axis_aligned_sweep_and_prune::sap_node **)BO1_I2P(i) == node
-            || *(axis_aligned_sweep_and_prune::sap_node **)BO1_I2P((i + 4)) == node )
+        if ( *(Ptr32<axis_aligned_sweep_and_prune::sap_node> *)BO1_I2P(i) == node
+            || *(Ptr32<axis_aligned_sweep_and_prune::sap_node> *)BO1_I2P((i + 4)) == node )
         {
-            *list_ap = *(axis_aligned_sweep_and_prune::active_pair **)BO1_I2P((i + 8));
-            v4 = *(char **)BO1_I2P((i + 12));
+            *list_ap = *(Ptr32<axis_aligned_sweep_and_prune::active_pair> *)BO1_I2P((i + 8));
+            v4 = *(Ptr32<char> *)BO1_I2P((i + 12));
             p_g_phys_gjk_cache_system = &G_BPM->g_phys_gjk_cache_system;
             if ( v4 )
             {
@@ -3243,7 +3243,7 @@ void __thiscall axis_aligned_sweep_and_prune::remove(
         }
         else
         {
-            list_ap = (axis_aligned_sweep_and_prune::active_pair **)BO1_I2P((i + 8));
+            list_ap = (Ptr32<axis_aligned_sweep_and_prune::active_pair> *)BO1_I2P((i + 8));
         }
     }
 }
@@ -3800,37 +3800,37 @@ void __thiscall axis_aligned_sweep_and_prune::process()
 {
     bool v1; // sf
     int v2; // esi
-    axis_aligned_sweep_and_prune::axis_element **v3; // ebx
-    axis_aligned_sweep_and_prune::axis_element **v4; // eax
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v3; // ebx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v4; // eax
     axis_aligned_sweep_and_prune::axis_element *m_y_list; // edx
     axis_aligned_sweep_and_prune::axis_element *m_x_list; // edi
     axis_aligned_sweep_and_prune::axis_element *m_z_list; // ecx
-    axis_aligned_sweep_and_prune::axis_element **v8; // eax
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v8; // eax
     int v9; // esi
-    axis_aligned_sweep_and_prune::axis_element **v10; // eax
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v10; // eax
     axis_aligned_sweep_and_prune::axis_element *v11; // ecx
-    axis_aligned_sweep_and_prune::axis_element **v12; // edx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v12; // edx
     axis_aligned_sweep_and_prune::axis_element *m_next; // edx
     axis_aligned_sweep_and_prune::axis_element *v14; // ecx
-    axis_aligned_sweep_and_prune::axis_element **v15; // edx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v15; // edx
     axis_aligned_sweep_and_prune::axis_element *v16; // ecx
     int v17; // esi
-    axis_aligned_sweep_and_prune::axis_element **v18; // edi
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v18; // edi
     axis_aligned_sweep_and_prune *v19; // esi
-    axis_aligned_sweep_and_prune::axis_element **v20; // ecx
-    axis_aligned_sweep_and_prune::axis_element **v21; // edx
-    axis_aligned_sweep_and_prune::axis_element **i; // eax
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v20; // ecx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *v21; // edx
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *i; // eax
     axis_aligned_sweep_and_prune::axis_element *v23; // edi
     axis_aligned_sweep_and_prune::axis_element *v24; // ebx
     int v25; // [esp-4h] [ebp-60h]
 //    phys_transient_allocator transient_buffer; // [esp+10h] [ebp-4Ch] BYREF
-    axis_aligned_sweep_and_prune::axis_element **zlist; // [esp+28h] [ebp-34h]
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *zlist; // [esp+28h] [ebp-34h]
     int axis_element_count; // [esp+2Ch] [ebp-30h]
-    axis_aligned_sweep_and_prune::axis_element **ylist; // [esp+30h] [ebp-2Ch]
-    axis_aligned_sweep_and_prune::axis_element **zl_i; // [esp+34h] [ebp-28h]
-    axis_aligned_sweep_and_prune::axis_element **yl_i; // [esp+38h] [ebp-24h]
-    axis_aligned_sweep_and_prune::axis_element **xl_i; // [esp+3Ch] [ebp-20h]
-    axis_aligned_sweep_and_prune::axis_element **xl_i_last; // [esp+40h] [ebp-1Ch]
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *ylist; // [esp+30h] [ebp-2Ch]
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *zl_i; // [esp+34h] [ebp-28h]
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *yl_i; // [esp+38h] [ebp-24h]
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *xl_i; // [esp+3Ch] [ebp-20h]
+    Ptr32<axis_aligned_sweep_and_prune::axis_element> *xl_i_last; // [esp+40h] [ebp-1Ch]
     axis_aligned_sweep_and_prune::axis_element *zcur; // [esp+44h] [ebp-18h]
     axis_aligned_sweep_and_prune::axis_element *ycur; // [esp+48h] [ebp-14h]
     axis_aligned_sweep_and_prune *v36; // [esp+4Ch] [ebp-10h]
@@ -3846,9 +3846,9 @@ void __thiscall axis_aligned_sweep_and_prune::process()
 
         v2 = 4 * axis_element_count;
         v37 = 0;
-        v3 = (axis_aligned_sweep_and_prune::axis_element **)   transient_buffer.allocate(4 * axis_element_count, 4, 0, "phys_transient_allocator out of memory.");
-        ylist = (axis_aligned_sweep_and_prune::axis_element **)transient_buffer.allocate(v2, 4, 0, "phys_transient_allocator out of memory.");
-        v4 = (axis_aligned_sweep_and_prune::axis_element **)   transient_buffer.allocate(v2, 4, 0, "phys_transient_allocator out of memory.");
+        v3 = (Ptr32<axis_aligned_sweep_and_prune::axis_element> *)   transient_buffer.allocate(4 * axis_element_count, 4, 0, "phys_transient_allocator out of memory.");
+        ylist = (Ptr32<axis_aligned_sweep_and_prune::axis_element> *)transient_buffer.allocate(v2, 4, 0, "phys_transient_allocator out of memory.");
+        v4 = (Ptr32<axis_aligned_sweep_and_prune::axis_element> *)   transient_buffer.allocate(v2, 4, 0, "phys_transient_allocator out of memory.");
         m_y_list = v36->m_y_list;
         m_x_list = v36->m_x_list;
         m_z_list = v36->m_z_list;

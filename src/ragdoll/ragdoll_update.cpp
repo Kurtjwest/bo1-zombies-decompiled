@@ -1788,7 +1788,7 @@ void    Ragdoll_DebugRender(RagdollBody *body)
     float z; // [esp-4h] [ebp-44h]
     phys_vec3 world_pos; // [esp+0h] [ebp-40h]
     environment_rigid_body *v9; // [esp+10h] [ebp-30h]
-    environment_rigid_body **v10; // [esp+14h] [ebp-2Ch]
+    Ptr32<environment_rigid_body> *v10; // [esp+14h] [ebp-2Ch]
     int rigidBody; // [esp+18h] [ebp-28h]
     rigid_body *body1; // [esp+1Ch] [ebp-24h]
     PhysObjUserData *userData; // [esp+20h] [ebp-20h]
@@ -1821,7 +1821,7 @@ void    Ragdoll_DebugRender(RagdollBody *body)
         }
     }
     rigidBody = body->bones[hangBone].rigidBody;
-    v10 = (environment_rigid_body **)BO1_I2P(rigidBody);
+    v10 = (Ptr32<environment_rigid_body> *)BO1_I2P(rigidBody);
     if ( ragdoll_debug->current.integer <= 1 )
     {
         if ( body->debug_hang_point )

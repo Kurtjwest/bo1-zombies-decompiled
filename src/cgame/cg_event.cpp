@@ -113,7 +113,7 @@ void __cdecl CG_ExplosionEvent(
         cent = CG_GetEntity(localClientNum, entitylist[j]);
         if ( cent->destructible )
         {
-            CG_DestructibleRadiusDamage(cent, (const centity_s **)origin, damageInner, damageOuter, radius, mod, 1);
+            CG_DestructibleRadiusDamage(cent, origin, damageInner, damageOuter, radius, mod, 1);
         }
         else if ( cent->pose.physObjId )
         {

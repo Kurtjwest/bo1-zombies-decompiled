@@ -11,12 +11,12 @@ enum servertype_t : __int32
 
 struct GroupSet // sizeof=0x14
 {                                       // XREF: .data:s_groupSets/r
-    Ptr32<const char> name;                   // XREF: LiveGroups_GetGroupID(char const *,int *,GroupSet * *)+A4/r
+    const char *name; /* native: static table */                 // XREF: LiveGroups_GetGroupID(char const *,int *,GroupSet * *)+A4/r
     bool exclusive;
     // padding byte
     // padding byte
     // padding byte
-    Ptr32<Ptr32<const char>> groupNames;
+    const char **groupNames; // native: static table
     int capacity;
     unsigned int start;
 };

@@ -65,7 +65,7 @@ void __cdecl DB_EnumXAssetsFor(
 int __cdecl Hunk_SetMark();
 void __cdecl Hunk_ClearToMark(int mark);
 void Hunk_ClearData();
-void __cdecl Hunk_ClearDataFor(fileData_s **pFileData, unsigned __int8 *low, unsigned __int8 *high);
+void __cdecl Hunk_ClearDataFor(Ptr32<fileData_s> *pFileData, unsigned __int8 *low, unsigned __int8 *high);
 void __cdecl Hunk_ClearToMarkLow(int mark);
 void Hunk_Clear();
 int __cdecl Hunk_Used();

@@ -48,7 +48,7 @@ int __cdecl DObjGetSurfaces(const DObj *obj, int *partBits, const char *lods)
     int loda; // [esp+38h] [ebp-30h]
     int targBoneIndexHigh; // [esp+3Ch] [ebp-2Ch]
     int surfPartBits[9]; // [esp+40h] [ebp-28h]
-    XModel **models; // [esp+64h] [ebp-4h]
+    Ptr32<XModel> *models; // [esp+64h] [ebp-4h]
 
     numModels = obj->numModels;
     if ( !obj->numModels
@@ -168,7 +168,7 @@ void __cdecl DObjGetBoneInfo(const DObj *obj, XBoneInfo **boneInfo)
     XModel *model; // [esp+4h] [ebp-10h]
     int size; // [esp+8h] [ebp-Ch]
     int i; // [esp+Ch] [ebp-8h]
-    XModel **models; // [esp+10h] [ebp-4h]
+    Ptr32<XModel> *models; // [esp+10h] [ebp-4h]
 
     models = obj->localModels;
     for ( j = 0; j < obj->numModels; ++j )
@@ -764,7 +764,7 @@ int __cdecl DObjGetBoneIndex(const DObj *obj, unsigned int name, unsigned __int8
     XModel *model; // [esp+Ch] [ebp-Ch]
     XModel *modela; // [esp+Ch] [ebp-Ch]
     unsigned int localBoneIndex; // [esp+10h] [ebp-8h]
-    XModel **models; // [esp+14h] [ebp-4h]
+    Ptr32<XModel> *models; // [esp+14h] [ebp-4h]
 
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_utils.cpp", 1180, 0, "%s", "obj") )
         __debugbreak();

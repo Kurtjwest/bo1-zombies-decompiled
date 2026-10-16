@@ -1250,11 +1250,11 @@ void __thiscall pulse_sum_angular::setup_vel_uni_standard(
 
 pulse_sum_normal *__thiscall pulse_sum_constraint_solver::create_pulse_sum_normal()
 {
-  pulse_sum_normal **v2; // edi
+  Ptr32<pulse_sum_normal> *v2; // edi
   Ptr32<pulse_sum_normal> *m_last_next_ptr; // ecx
 
   //v2 = (pulse_sum_normal **)phys_transient_allocator::allocate(&this->m_solver_memory_allocator, 160, 16, 0, SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
-  v2 = (pulse_sum_normal **)this->m_solver_memory_allocator.allocate(160, 16, 0, SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
+  v2 = (Ptr32<pulse_sum_normal> *)this->m_solver_memory_allocator.allocate(160, 16, 0, SOLVER_MEMORY_ALLOCATOR_ERROR_MSG);
   if ( !this->m_list_pulse_sum_normal.m_last_next_ptr
     && _tlAssert(
          "c:\\projects_pc\\cod\\codsrc\\tl\\physics\\include\\phys_mem.h",

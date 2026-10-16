@@ -612,8 +612,7 @@ void __cdecl Live_FileShareSearch_MarkItemCorrupt(int controllerIndex, int itemI
         {
             v2 = 21056 * i;
             v3 = 2104 * (itemIndex - s_fshSearch.pages[i].startIndex);
-            *(unsigned int *)BO1_I2P((v2 + v3 + 172815704)) = 0;
-            *(unsigned int *)BO1_I2P((v2 + v3 + 172815708)) = 0;
+            s_fshSearch.pages[i].descriptors[itemIndex - s_fshSearch.pages[i].startIndex].m_fileID = 0; // (decompiled as an absolute address of the retail exe)
             return;
         }
     }

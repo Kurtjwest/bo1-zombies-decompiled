@@ -197,7 +197,7 @@ unsigned int __cdecl CM_TempBoxModel(const float *mins, const float *maxs, int c
     return 0x3FFF;
 }
 
-void __cdecl CM_GetBox(cbrush_t **box_brush, cmodel_t **box_model, PhysGeomList ***geoms)
+void __cdecl CM_GetBox(cbrush_t **box_brush, cmodel_t **box_model, Ptr32<PhysGeomList> **geoms)
 {
     TraceThreadInfo *value; // [esp+0h] [ebp-4h]
 
@@ -236,7 +236,7 @@ unsigned int __cdecl CM_TempBrushModel(PhysGeomList *geoms)
 {
     cbrush_t *box_brush; // [esp+0h] [ebp-Ch] BYREF
     cmodel_t *box_model; // [esp+4h] [ebp-8h] BYREF
-    PhysGeomList **geoms_model; // [esp+8h] [ebp-4h] BYREF
+    Ptr32<PhysGeomList> *geoms_model; // [esp+8h] [ebp-4h] BYREF
 
     CM_GetBox(&box_brush, &box_model, &geoms_model);
     *geoms_model = geoms;

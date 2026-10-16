@@ -80,7 +80,7 @@ struct phys_memory_manager // sizeof=0x3D0
 BO1_LAYOUT32_ASSERT(sizeof(phys_memory_manager) == 0x3D0);
 
 void __cdecl phys_memory_manager_term();
-void __cdecl ppu_pmm_get_linear_buffer(char ***linear_buffer_cur, char **linear_buffer_end);
+void __cdecl ppu_pmm_get_linear_buffer(Ptr32<char> **linear_buffer_cur, char **linear_buffer_end);
 void __cdecl transient_allocator_update_largest_size();
 
 void *__cdecl PMM_PERM_ALLOCATE(unsigned int size, unsigned int alignment);

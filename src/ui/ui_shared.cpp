@@ -6001,7 +6001,7 @@ int __cdecl Item_DvarEnum_EnumIndex(itemDef_s *item)
     }
     for ( enumIndexa = 0; enumIndexa < enumDvar->domain.enumeration.stringCount; ++enumIndexa )
     {
-        if ( !I_stricmp(enumString, *(const char **)BO1_I2P((enumDvar->domain.integer.max + 4 * enumIndexa))) )
+        if ( !I_stricmp(enumString, *(Ptr32<const char> *)BO1_I2P((enumDvar->domain.integer.max + 4 * enumIndexa))) )
             return enumIndexa;
     }
     return 0;
@@ -9456,7 +9456,7 @@ const char *__cdecl Item_DvarEnum_Setting(itemDef_s *item)
                         v2) )
             __debugbreak();
     }
-    return *(const char **)BO1_I2P((enumDvar->domain.integer.max + 4 * enumIndex));
+    return *(Ptr32<const char> *)BO1_I2P((enumDvar->domain.integer.max + 4 * enumIndex));
 }
 
 void __cdecl Item_Slider_Paint(UiContext *dc, itemDef_s *item)

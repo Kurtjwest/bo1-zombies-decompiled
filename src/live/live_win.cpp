@@ -1721,7 +1721,7 @@ void __cdecl Live_PopulateRecentServers(unsigned __int8 *buf, int bufsize)
     {
         v2 = i;
         LODWORD(s_recentServers[v2].serverID) = *(unsigned int *)ptr;
-        *(unsigned int *)BO1_I2P((v2 * 16 + 174315068)) = *((unsigned int *)ptr + 1);
+        HIDWORD(s_recentServers[v2].serverID) = *((unsigned int *)ptr + 1); // (decompiled as an absolute address of the retail exe)
         s_recentServers[i].joinTime = *((unsigned int *)ptr + 2);
         ptr += 12;
     }
@@ -1849,7 +1849,7 @@ void __cdecl Live_AddFavourite(unsigned __int64 serverid, unsigned __int64 serve
         *(_WORD *)&v2->addressblob[4] = WORD2(serverid);
         v3 = i;
         LODWORD(s_favourites[v3].uid) = serveruid;
-        *(unsigned int *)BO1_I2P((v3 * 16 + 174313908)) = HIDWORD(serveruid);
+        HIDWORD(s_favourites[v3].uid) = HIDWORD(serveruid); // (decompiled as an absolute address of the retail exe)
     }
     CL_SetFavourites_f();
 }
@@ -1865,7 +1865,7 @@ void __cdecl Live_DeleteFavourite(unsigned __int64 serverid)
     {
         v1 = i;
         LODWORD(s_favourites[v1].uid) = 0;
-        *(unsigned int *)BO1_I2P((v1 * 16 + 174313908)) = 0;
+        HIDWORD(s_favourites[v1].uid) = 0; // (decompiled as an absolute address of the retail exe)
         CL_SetFavourites_f();
     }
 }
@@ -1883,7 +1883,7 @@ void __cdecl Live_ParseFavsBlobs(unsigned __int8 *addrblob, unsigned __int8 *uid
         *(_WORD *)&v2->addressblob[4] = *((_WORD *)addrblob + 2);
         v3 = i;
         LODWORD(s_favourites[v3].uid) = *(unsigned int *)uidblob;
-        *(unsigned int *)BO1_I2P((v3 * 16 + 174313908)) = *((unsigned int *)uidblob + 1);
+        HIDWORD(s_favourites[v3].uid) = *((unsigned int *)uidblob + 1); // (decompiled as an absolute address of the retail exe)
         addrblob += 6;
         uidblob += 8;
     }

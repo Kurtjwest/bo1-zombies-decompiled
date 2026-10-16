@@ -4,6 +4,7 @@
 // (source voices -> submix voices with XAPO effect chains -> mastering voice) rendered through CoreAudio.
 #pragma once
 #include <windows.h>
+#include <universal/ptr32.h>
 
 #ifndef STDMETHOD
 #define STDMETHOD(method) virtual HRESULT STDMETHODCALLTYPE method
@@ -314,6 +315,33 @@ struct IXAudio2 : public IUnknown
     STDMETHOD(CommitChanges)(THIS_ UINT32 OperationSet) PURE;
     STDMETHOD_(void, GetPerformanceData)(THIS_ XAUDIO2_PERFORMANCE_DATA *pPerfData) PURE;
     STDMETHOD_(void, SetDebugConfiguration)(THIS_ const XAUDIO2_DEBUG_CONFIGURATION *pDebugConfiguration, void *pReserved = NULL) PURE;
+#if BO1_PTR32_IS_CLASS
+    // out-pointers into 32-bit fields
+    HRESULT CreateSourceVoice(Ptr32<IXAudio2SourceVoice> *ppSourceVoice, const WAVEFORMATEX *pSourceFormat, UINT32 Flags = 0, float MaxFrequencyRatio = XAUDIO2_DEFAULT_FREQ_RATIO, IXAudio2VoiceCallback *pCallback = NULL, const XAUDIO2_VOICE_SENDS *pSendList = NULL, const XAUDIO2_EFFECT_CHAIN *pEffectChain = NULL)
+    {
+        IXAudio2SourceVoice *bo1_out = nullptr;
+        HRESULT hr = CreateSourceVoice(&bo1_out, pSourceFormat, Flags, MaxFrequencyRatio, pCallback, pSendList, pEffectChain);
+        if (ppSourceVoice)
+            *ppSourceVoice = bo1_out;
+        return hr;
+    }
+    HRESULT CreateSubmixVoice(Ptr32<IXAudio2SubmixVoice> *ppSubmixVoice, UINT32 InputChannels, UINT32 InputSampleRate, UINT32 Flags = 0, UINT32 ProcessingStage = 0, const XAUDIO2_VOICE_SENDS *pSendList = NULL, const XAUDIO2_EFFECT_CHAIN *pEffectChain = NULL)
+    {
+        IXAudio2SubmixVoice *bo1_out = nullptr;
+        HRESULT hr = CreateSubmixVoice(&bo1_out, InputChannels, InputSampleRate, Flags, ProcessingStage, pSendList, pEffectChain);
+        if (ppSubmixVoice)
+            *ppSubmixVoice = bo1_out;
+        return hr;
+    }
+    HRESULT CreateMasteringVoice(Ptr32<IXAudio2MasteringVoice> *ppMasteringVoice, UINT32 InputChannels = XAUDIO2_DEFAULT_CHANNELS, UINT32 InputSampleRate = XAUDIO2_DEFAULT_SAMPLERATE, UINT32 Flags = 0, UINT32 DeviceIndex = 0, const XAUDIO2_EFFECT_CHAIN *pEffectChain = NULL)
+    {
+        IXAudio2MasteringVoice *bo1_out = nullptr;
+        HRESULT hr = CreateMasteringVoice(&bo1_out, InputChannels, InputSampleRate, Flags, DeviceIndex, pEffectChain);
+        if (ppMasteringVoice)
+            *ppMasteringVoice = bo1_out;
+        return hr;
+    }
+#endif
 };
 
 // Creates the CoreAudio-backed engine (implemented in src/platform/macos/xaudio2_coreaudio.cpp).
@@ -323,6 +351,16 @@ inline HRESULT XAudio2Create(IXAudio2 **ppXAudio2, UINT32 Flags = 0, XAUDIO2_PRO
 {
     return XAudio2CreateMac(ppXAudio2, Flags, XAudio2Processor);
 }
+#if BO1_PTR32_IS_CLASS
+inline HRESULT XAudio2Create(Ptr32<IXAudio2> *ppXAudio2, UINT32 Flags = 0, XAUDIO2_PROCESSOR XAudio2Processor = XAUDIO2_DEFAULT_PROCESSOR)
+{
+    IXAudio2 *bo1_out = nullptr;
+    HRESULT hr = XAudio2CreateMac(&bo1_out, Flags, XAudio2Processor);
+    if (ppXAudio2)
+        *ppXAudio2 = bo1_out;
+    return hr;
+}
+#endif
 
 inline float XAudio2DecibelsToAmplitudeRatio(float Decibels) { return powf(10.0f, Decibels / 20.0f); }
 inline float XAudio2AmplitudeRatioToDecibels(float Volume) { return Volume == 0 ? -3.402823466e+38f : 20.0f * log10f(Volume); }

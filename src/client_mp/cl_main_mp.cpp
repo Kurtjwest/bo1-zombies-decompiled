@@ -389,7 +389,7 @@ void __cdecl CL_WriteDemoFromContinuousStateBuffer(int localClientNum, int conti
     FS_WriteToDemo((char *)&v6, 4u, LocalClientConnection->demofile);
     v6 = *(unsigned int *)BO1_I2P((v4 + 8));
     FS_WriteToDemo((char *)&v6, 4u, LocalClientConnection->demofile);
-    FS_WriteToDemo(*(char **)BO1_I2P((v4 + 4)), *(unsigned int *)BO1_I2P((v4 + 8)), LocalClientConnection->demofile);
+    FS_WriteToDemo(*(Ptr32<char> *)BO1_I2P((v4 + 4)), *(unsigned int *)BO1_I2P((v4 + 8)), LocalClientConnection->demofile);
 }
 
 void __cdecl CL_StopRecord_f()

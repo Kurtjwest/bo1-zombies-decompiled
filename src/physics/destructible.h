@@ -304,7 +304,7 @@ void __cdecl CG_UpdateDestructibles(int localClientNum, int msec);
 void __cdecl CG_DestructibleUpdateDObj(centity_s *self);
 void __cdecl CG_DestructibleRadiusDamage(
                 centity_s *self,
-                const centity_s **point,
+                const float *point,
                 float damgeInner,
                 float damgeOuter,
                 float radius,

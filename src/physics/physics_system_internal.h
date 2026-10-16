@@ -110,7 +110,7 @@ void __cdecl IPN_partition_process(const rigid_body_constraint *rbc, int *island
 void __cdecl IPN_merge(rigid_body *dest, rigid_body *source);
 void __cdecl IPN_verify_rigid_bodies(rigid_body *rb_partition_head);
 
-void __cdecl rigid_body_island_qsort(rigid_body **list, int list_count);
+void __cdecl rigid_body_island_qsort(Ptr32<rigid_body> *list, int list_count);
 void __cdecl merge_sort(rigid_body_constraint_contact **list, int list_count);
 void __cdecl SetIdentity(phys_mat44 *m);
 

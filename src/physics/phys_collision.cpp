@@ -848,10 +848,10 @@ void phys_contact_manifold_process::process(
             float min_score = BIG;
             contact_manifold_mesh_point *anchor = nullptr;
  
-            contact_manifold_mesh_point **prev_i = isect_end - 2;
-            contact_manifold_mesh_point **cur_i  = isect_end - 1;
+            Ptr32<contact_manifold_mesh_point> *prev_i = isect_end - 2;
+            Ptr32<contact_manifold_mesh_point> *cur_i  = isect_end - 1;
  
-            for (contact_manifold_mesh_point **i = isect; i != isect_end; ++i)
+            for (Ptr32<contact_manifold_mesh_point> *i = isect; i != isect_end; ++i)
             {
                 contact_manifold_mesh_point *mp   = *cur_i;
                 contact_manifold_mesh_point *prev  = *prev_i;
@@ -883,7 +883,7 @@ void phys_contact_manifold_process::process(
             }
  
             // Reduce until at most 5 points remain, always keeping the anchor
-            contact_manifold_mesh_point **end = isect_end;
+            Ptr32<contact_manifold_mesh_point> *end = isect_end;
             while ((end - isect) > 5)
             {
                 // Find the point with the smallest area (excluding anchor)
@@ -891,15 +891,15 @@ void phys_contact_manifold_process::process(
  
                 // Walk neighbours: prev->cur->next to compute triangle areas,
                 // then remove the one that adds the least area.
-                contact_manifold_mesh_point **last = end - 1;
-                contact_manifold_mesh_point **second_last = last - 1;
+                Ptr32<contact_manifold_mesh_point> *last = end - 1;
+                Ptr32<contact_manifold_mesh_point> *second_last = last - 1;
  
                 // Recompute areas for the two neighbours of the candidates
                 {
                     contact_manifold_mesh_point *A = *second_last;
                     contact_manifold_mesh_point *B = *last;
                     // neighbour wrapping
-                    contact_manifold_mesh_point **nn = (smallest_i < last) ? smallest_i + 1 : isect;
+                    Ptr32<contact_manifold_mesh_point> *nn = (smallest_i < last) ? smallest_i + 1 : isect;
                     contact_manifold_mesh_point *C = *nn;
  
                     float ex2 = C->m_contact_p.x - A->m_contact_p.x;
@@ -910,7 +910,7 @@ void phys_contact_manifold_process::process(
                     B->m_p.x = area2;
  
                     // Also update next-next neighbour
-                    contact_manifold_mesh_point **nn2 = (nn < last) ? nn + 1 : isect;
+                    Ptr32<contact_manifold_mesh_point> *nn2 = (nn < last) ? nn + 1 : isect;
                     contact_manifold_mesh_point *D = *nn2;
                     float ex3 = D->m_contact_p.x - B->m_contact_p.x;
                     float ey3 = D->m_contact_p.y - B->m_contact_p.y;
@@ -926,7 +926,7 @@ void phys_contact_manifold_process::process(
                 if (smallest_i < last)
                 {
                     int shift_count = (int)((char *)last - (char *)smallest_i - 1) / 4 + 1;
-                    memmove(smallest_i, smallest_i + 1, shift_count * sizeof(void *));
+                    memmove(smallest_i, smallest_i + 1, shift_count * sizeof(*smallest_i));
                 }
             }
  

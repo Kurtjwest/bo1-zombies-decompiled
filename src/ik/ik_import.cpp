@@ -244,7 +244,7 @@ int __cdecl IKImport_GetVar_IK_Hand_Tuning(IKState *ikState)
     return ikState->dvarValues[11].integer;
 }
 
-void __cdecl IKImport_GetBoneStrings(char **outBoneStrings)
+void __cdecl IKImport_GetBoneStrings(Ptr32<char> *outBoneStrings)
 {
     int i; // [esp+0h] [ebp-4h]
     int ia; // [esp+0h] [ebp-4h]
@@ -560,7 +560,7 @@ void __cdecl IKImport_GetBoneMatrixArrayLocalBones(IKState *ikState)
                 ikState,
                 *(const unsigned __int8 **)BO1_I2P((**((unsigned int **)obj + 30) + 12)),
                 *(unsigned __int8 *)BO1_I2P((**((unsigned int **)obj + 30) + 5)),
-                *(float **)BO1_I2P((**((unsigned int **)obj + 30) + 20)),
+                *(Ptr32<float> *)BO1_I2P((**((unsigned int **)obj + 30) + 20)),
                 objBoneIndexa,
                 matArray,
                 &localMat);

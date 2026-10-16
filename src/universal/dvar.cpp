@@ -166,7 +166,7 @@ const char *__cdecl Dvar_EnumToString(const dvar_s *dvar)
         __debugbreak();
     }
     if ( dvar->domain.enumeration.stringCount )
-        return *(const char **)BO1_I2P((dvar->domain.integer.max + 4 * dvar->current.integer));
+        return *(Ptr32<const char> *)BO1_I2P((dvar->domain.integer.max + 4 * dvar->current.integer));
     else
         return "";
 }
@@ -227,7 +227,7 @@ const char *__cdecl Dvar_IndexStringToEnumString(const dvar_s *dvar, const char 
     }
     enumIndex = atoi(indexString);
     if ( enumIndex >= 0 && enumIndex < dvar->domain.enumeration.stringCount )
-        return *(const char **)BO1_I2P((dvar->domain.integer.max + 4 * enumIndex));
+        return *(Ptr32<const char> *)BO1_I2P((dvar->domain.integer.max + 4 * enumIndex));
     else
         return "";
 }
@@ -285,7 +285,7 @@ const char *__cdecl Dvar_ValueToString(const dvar_s *dvar, DvarValue value)
                 __debugbreak();
             }
             if ( dvar->domain.enumeration.stringCount )
-                result = *(const char **)BO1_I2P((dvar->domain.integer.max + 4 * value.integer));
+                result = *(Ptr32<const char> *)BO1_I2P((dvar->domain.integer.max + 4 * value.integer));
             else
                 result = "";
             break;
@@ -527,7 +527,7 @@ char *__cdecl Dvar_DomainToString_Internal(
                                                         outBufferEnd - outBufferWalk,
                                                         "\n    %2i: %s",
                                                         stringIndex,
-                                                        *(const char **)BO1_I2P((domain.integer.max + 4 * stringIndex)));
+                                                        *(Ptr32<const char> *)BO1_I2P((domain.integer.max + 4 * stringIndex)));
                     if ( charsWrittena < 0 )
                         break;
                     if ( outLineCount )
@@ -2069,7 +2069,7 @@ int __cdecl Dvar_StringToEnum(const DvarLimits *domain, const char *string)
         __debugbreak();
     for ( stringIndex = 0; stringIndex < domain->enumeration.stringCount; ++stringIndex )
     {
-        if ( !I_stricmp(string, *(const char **)BO1_I2P((domain->integer.max + 4 * stringIndex))) )
+        if ( !I_stricmp(string, *(Ptr32<const char> *)BO1_I2P((domain->integer.max + 4 * stringIndex))) )
             return stringIndex;
     }
     stringIndexa = 0;
@@ -2084,7 +2084,7 @@ int __cdecl Dvar_StringToEnum(const DvarLimits *domain, const char *string)
     v3 = strlen(string);
     for ( stringIndexb = 0; stringIndexb < domain->enumeration.stringCount; ++stringIndexb )
     {
-        if ( !I_strnicmp(string, *(const char **)BO1_I2P((domain->integer.max + 4 * stringIndexb)), v3) )
+        if ( !I_strnicmp(string, *(Ptr32<const char> *)BO1_I2P((domain->integer.max + 4 * stringIndexb)), v3) )
             return stringIndexb;
     }
     return -1337;

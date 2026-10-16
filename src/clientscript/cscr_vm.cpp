@@ -1132,7 +1132,7 @@ void __cdecl VM_Notify(
                     stackValue.intValue = tempValue->intValue;
                     if (*(_BYTE *)BO1_I2P((*(_DWORD *)BO1_I2P(tempValue->intValue) - 1)) == 119)
                     {
-                        size = **(char **)BO1_I2P(stackValue.intValue);
+                        size = **(Ptr32<char> *)BO1_I2P(stackValue.intValue);
                         if (size < 0
                             && !Assert_MyHandler(
                                 "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_vm.cpp",
@@ -1198,8 +1198,8 @@ void __cdecl VM_Notify(
                             {
                                 RuntimeError(
                                     inst,
-                                    *(char **)BO1_I2P(stackValue.intValue),
-                                    **(char **)BO1_I2P(stackValue.intValue) - size + 3,
+                                    *(Ptr32<char> *)BO1_I2P(stackValue.intValue),
+                                    **(Ptr32<char> *)BO1_I2P(stackValue.intValue) - size + 3,
                                     gScrVarPub[inst].error_message,
                                     gScrVmGlob[inst].dialog_error_message);
                                 Scr_ClearErrorMessage(inst);
@@ -1315,7 +1315,7 @@ void __cdecl VM_Notify(
                         {
                             newStackValue = (VariableStackBuffer *)MT_Alloc(bufLen, 1, inst);
                             newStackValue->bufLen = bufLen;
-                            newStackValue->pos = *(const char **)BO1_I2P(stackValue.intValue);
+                            newStackValue->pos = *(Ptr32<const char> *)BO1_I2P(stackValue.intValue);
                             newStackValue->localId = *(_DWORD *)BO1_I2P((stackValue.intValue + 8));
                             memcpy((unsigned __int8 *)newStackValue->buf, (unsigned __int8 *)BO1_I2P((stackValue.intValue + 13)), len);
                             MT_Free((uint8*)BO1_I2P(stackValue.intValue), *(unsigned __int16 *)BO1_I2P((stackValue.intValue + 6)), inst);

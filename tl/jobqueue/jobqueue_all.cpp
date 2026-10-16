@@ -1361,7 +1361,7 @@ char __cdecl jqPopNextBatchFromQueue(jqQueue *Queue, jqBatchGroup *Worker, jqBat
     int v5; // ecx
     jqAtomicQueue<jqBatch, 32> *p_Queue; // edi
     jqBatchGroup *p_Group; // eax
-    jqAtomicQueue<jqBatch, 32>::NodeType **FreeListPtr; // eax
+    Ptr32<jqAtomicQueue<jqBatch, 32>::NodeType> *FreeListPtr; // eax
     jqAtomicQueue<jqBatch, 32>::NodeType *list; // esi
     //tlSharedAtomicMutex *ThisPtr; // eax
     bool v11; // zf
@@ -1505,7 +1505,7 @@ void __cdecl jqWorkerLoop(jqWorker *Worker, jqBatchGroup *GroupID, bool BreakWhe
     //bool v10; // cf
     bool v11; // zf
     jqAtomicQueue<jqBatch,32> *p_Queue; // esi
-    jqAtomicQueue<jqBatch,32>::NodeType **FreeListPtr; // eax
+    Ptr32<jqAtomicQueue<jqBatch, 32>::NodeType> *FreeListPtr; // eax
     jqAtomicQueue<jqBatch,32>::NodeType *freeList; // edi
     jqAtomicQueue<jqBatch,32>::NodeType *block; // eax
     //jqAtomicQueue<jqBatch,32>::NodeType *v17; // ecx
@@ -1695,7 +1695,7 @@ void __cdecl jqTempWorkerLoop(jqWorker *Worker, jqBatchGroup *GroupID, bool (__c
   jqModule *Module; // ecx
   //int v7; // eax
   jqAtomicQueue<jqBatch,32> *p_queue; // esi
-  jqAtomicQueue<jqBatch, 32>::NodeType **FreeListPtr; // eax
+  Ptr32<jqAtomicQueue<jqBatch, 32>::NodeType> *FreeListPtr; // eax
   jqAtomicQueue<jqBatch,32>::NodeType *freeList; // edi
   jqAtomicQueue<jqBatch, 32>::NodeType *block; // eax
   unsigned int *v12; // ecx
@@ -2412,7 +2412,7 @@ void jqAtomicHeap::Init(
   unsigned __int8 *v11; // eax
   unsigned __int8 *LevelData; // ebx
   unsigned __int64 *v13; // edi
-  unsigned __int64 **p_CellAvailable; // ecx
+  Ptr32<unsigned __int64> *p_CellAvailable; // ecx
   signed int v15; // kr04_4
   unsigned int *v16; // esi
   int i; // [esp+14h] [ebp+8h]

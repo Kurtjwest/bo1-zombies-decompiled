@@ -892,7 +892,7 @@ PhysObjUserData * Phys_CreateUserBody(float *position, int id, PhysicsGeomType g
     Sys_EnterCriticalSection(CRITSECT_PHYSICS);
 
     // aislopped loop cleanup
-    for (auto *node = physGlob.objects.m_dummy_head.m_next_T_internal;
+    for (phys_free_list<PhysObjUserData>::T_internal_base *node = physGlob.objects.m_dummy_head.m_next_T_internal;
         node != &physGlob.objects.m_dummy_head;
         node = node->m_next_T_internal)
     {
@@ -3056,13 +3056,15 @@ void __cdecl Phys_BodyGrabSnapshotNitrous(PhysObjUserData *userData, float delta
 //void __cdecl Nitrous_ForEachBody<void(__cdecl *)(PhysObjUserData &, float)>(void(__cdecl *func)(PhysObjUserData *, float), float t)
 void __cdecl Nitrous_ForEachBody(void(__cdecl *func)(PhysObjUserData *, float), float t)
 {
-    PhysGlob *i; // [esp+Ch] [ebp-4h]
-
-    for (i = (PhysGlob *)physGlob.objects.m_dummy_head.m_next_T_internal;
-        &physGlob != i;
-        i = (PhysGlob *)i->objects.m_dummy_head.m_next_T_internal)
+    // The decompile walked the list nodes as PhysGlob objects (node + offsetof(m_ptr_list) == &node->m_data) and called
+    // func through a (PhysObjUserData **, DWORD) cast, passing t's bits as an integer: walk it typed, so the float goes
+    // in a float register as func expects.
+    using TI = phys_free_list<PhysObjUserData>::T_internal;
+    for (phys_free_list<PhysObjUserData>::T_internal_base *node = physGlob.objects.m_dummy_head.m_next_T_internal;
+         node != &physGlob.objects.m_dummy_head;
+         node = node->m_next_T_internal)
     {
-        ((void(__cdecl *)(PhysObjUserData **, _DWORD))func)(i->objects.m_ptr_list, LODWORD(t));
+        func(&((TI *)node)->m_data, t);
     }
 }
 

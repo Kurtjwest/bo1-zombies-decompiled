@@ -73,7 +73,7 @@ void __cdecl PS_CreatePunctuationTable(script_s *script, punctuation_s *punctuat
     punctuation_s *p; // [esp+2Ch] [ebp-4h]
 
     if ( !script->punctuationtable )
-        script->punctuationtable = (punctuation_s **)GetMemory(0x400u);
+        script->punctuationtable = (Ptr32<punctuation_s> *)GetMemory(0x400u);
     memset((unsigned __int8 *)script->punctuationtable, 0, 0x400u);
     for ( i = 0; punctuations[i].p; ++i )
     {

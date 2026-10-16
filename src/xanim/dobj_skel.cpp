@@ -765,7 +765,7 @@ void __cdecl DObjCalcBaseSkel(const DObj *obj, DObjAnimMat *mat, int *partBits)
     int calcPartBits[5]; // [esp+88h] [ebp-34h] BYREF
     int ignorePartBits[5]; // [esp+9Ch] [ebp-20h]
     int i; // [esp+B0h] [ebp-Ch]
-    XModel **models; // [esp+B4h] [ebp-8h]
+    Ptr32<XModel> *models; // [esp+B4h] [ebp-8h]
     const int *savedDuplicatePartBits; // [esp+B8h] [ebp-4h]
 
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj_skel.cpp", 792, 0, "%s", "obj") )

@@ -651,7 +651,7 @@ bool phys_contact_manifold_process::find_bottom(
     Ptr32<contact_manifold_mesh_point> *start_left_i = b->m_left_i;
     Ptr32<contact_manifold_mesh_point> *start_right_i = b->m_right_i;
 
-    Ptr32<contact_manifold_mesh_point> *l_i, **r_i;
+    Ptr32<contact_manifold_mesh_point> *l_i, *r_i;
     do
     {
         l_i = b->m_left_i;
@@ -660,7 +660,7 @@ bool phys_contact_manifold_process::find_bottom(
         // Compute left edge: current left point -> next left point
         Ptr32<contact_manifold_mesh_point> *left_i = b->m_left_i;
         Ptr32<contact_manifold_mesh_point> *left_next_i = (left_i == left_cman->m_last_i)
-            ? left_cman->m_cman->m_list_contact_point
+            ? left_cman->m_cman->m_list_contact_point.get()
             : left_i + 1;
 
         contact_manifold_mesh_point *left_pt = *left_i;
@@ -675,7 +675,7 @@ bool phys_contact_manifold_process::find_bottom(
         {
             Ptr32<contact_manifold_mesh_point> *right_i = b->m_right_i;
             right_prev = (right_i == right_cman->m_cman->m_list_contact_point)
-                ? right_cman->m_last_i
+                ? right_cman->m_last_i.get()
                 : right_i - 1;
 
             phys_vec2 to_right_prev;
@@ -694,7 +694,7 @@ bool phys_contact_manifold_process::find_bottom(
         // Compute right edge: right_prev_pt -> current right point (i.e. prev -> cur on right poly)
         Ptr32<contact_manifold_mesh_point> *right_i = b->m_right_i;
         right_prev = (right_i == right_cman->m_cman->m_list_contact_point)
-            ? right_cman->m_last_i
+            ? right_cman->m_last_i.get()
             : right_i - 1;
 
         contact_manifold_mesh_point *right_pt = *right_i;
@@ -709,7 +709,7 @@ bool phys_contact_manifold_process::find_bottom(
         {
             Ptr32<contact_manifold_mesh_point> *left_i2 = b->m_left_i;
             left_next = (left_i2 == left_cman->m_last_i)
-                ? left_cman->m_cman->m_list_contact_point
+                ? left_cman->m_cman->m_list_contact_point.get()
                 : left_i2 + 1;
 
             phys_vec2 to_left_next;
@@ -784,7 +784,7 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
     double v29; // st3
     double v30; // st2
     char v31; // cl
-    float **v32; // esi
+    Ptr32<float> *v32; // esi
     float *v33; // edx
     float *v34; // edx
     float *v35; // edx
@@ -792,7 +792,7 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
     float *v37; // edx
     double v38; // st6
     Ptr32<contact_manifold_mesh_point> *v39; // edx
-    float **v40; // esi
+    Ptr32<float> *v40; // esi
     float *v41; // ecx
     double v42; // st5
     double v43; // st5
@@ -827,7 +827,7 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
     float v72; // [esp+14h] [ebp-2Ch]
     float v73; // [esp+14h] [ebp-2Ch]
     float v74; // [esp+14h] [ebp-2Ch]
-    float **v75; // [esp+14h] [ebp-2Ch]
+    Ptr32<float> *v75; // [esp+14h] [ebp-2Ch]
     float v76; // [esp+14h] [ebp-2Ch]
     Ptr32<Ptr32<contact_manifold_mesh_point>> *v77; // [esp+18h] [ebp-28h]
     float v78; // [esp+18h] [ebp-28h]
@@ -960,7 +960,7 @@ void __thiscall phys_contact_manifold::comp_feature_normal()
         this->m_feature_normal.y = this->m_feature_hitn.y;
         v23 = (unsigned int)BO1_P2I(&v21[m_close_mesh_point_count]);
         this->m_feature_normal.z = this->m_feature_hitn.z;
-        v75 = (float **)BO1_I2P(v23);
+        v75 = (Ptr32<float> *)BO1_I2P(v23);
         dot_p_fn = 0.11697778;
         v12 = 0.0;
         if ( v23 < v10 - 4 )
@@ -1139,7 +1139,7 @@ LABEL_79:
             v38 = v78;
         }
         v39 = this->m_list_sorted_mesh_point;
-        v40 = (float **)v39;
+        v40 = (Ptr32<float> *)v39;
         if ( (unsigned int)BO1_P2I(v39) < i )
         {
             do

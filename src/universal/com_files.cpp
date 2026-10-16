@@ -2191,7 +2191,7 @@ iwd_t *__cdecl FS_LoadZipFile(char *zipfile, const char *basename)
         while ( v3 );
         namePtr += &filename_inzip[strlen(filename_inzip) + 1] - &filename_inzip[1] + 1;
         unzGetCurrentFileInfoPosition(uf, (unsigned long*)&buildBuffer[i].pos);
-        buildBuffer[i].next = *(fileInIwd_s **)BO1_I2P((iwd[199] + 4 * hash));
+        buildBuffer[i].next = *(Ptr32<fileInIwd_s> *)BO1_I2P((iwd[199] + 4 * hash));
         *(unsigned int *)BO1_I2P((iwd[199] + 4 * hash)) = (unsigned int)BO1_P2I(&buildBuffer[i]);
         unzGoToNextFile(uf);
     }

@@ -888,7 +888,7 @@ environment_rigid_body *__cdecl XDoll_GetRigidBody(XDollBody *body, const char *
         {
             if ( !body->bones[bi].rigidBody )
                 return 0;
-            return *(environment_rigid_body **)BO1_I2P(body->bones[bi].rigidBody);
+            return *(Ptr32<environment_rigid_body> *)BO1_I2P(body->bones[bi].rigidBody);
         }
     }
     return (environment_rigid_body *)rb;

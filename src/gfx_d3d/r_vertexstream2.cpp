@@ -92,7 +92,7 @@ void __cdecl R_VertexStream2_Clear()
     R_VertexStream2_Unlock();
 }
 
-IDirect3DVertexBuffer9 **__cdecl R_VertexStream2_GetVB()
+Ptr32<IDirect3DVertexBuffer9> *__cdecl R_VertexStream2_GetVB()
 {
     return &stream2VertexBuffer;
 }

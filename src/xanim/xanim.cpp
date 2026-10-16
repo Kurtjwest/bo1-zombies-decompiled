@@ -410,7 +410,7 @@ XAnim_s *__cdecl XAnimCreateAnimsWithValues(
         }
         while ( v5 );
         anims->debugName = newDebugName;
-        anims->debugAnimNames = (const char **)Hunk_UserAlloc(g_DebugHunkUser, 4 * size, 4, "XAnimCreateAnims");
+        anims->debugAnimNames = (Ptr32<const char> *)Hunk_UserAlloc(g_DebugHunkUser, 4 * size, 4, "XAnimCreateAnims");
         memset((unsigned __int8 *)anims->debugAnimNames, 0, 4 * size);
     }
     anims->wasLoggedIfMissing = (bool *)Hunk_UserAlloc(g_DebugHunkUser, size, 4, "XAnimCreateAnims");
@@ -496,7 +496,7 @@ XAnim_s *__cdecl XAnimGetAnims(const XAnimTree_s *tree)
     return tree->anims;
 }
 
-void __cdecl XAnimInitModelMap(XModel *const *models, unsigned int numModels, XModelNameMap *modelMap)
+void __cdecl XAnimInitModelMap(const Ptr32<XModel> *models, unsigned int numModels, XModelNameMap *modelMap)
 {
     unsigned int boneIndex; // [esp+0h] [ebp-20h]
     unsigned __int16 boneName; // [esp+4h] [ebp-1Ch]

@@ -102,7 +102,7 @@ int __cdecl Cmd_TokenizeStringInternal(
                 const char *text_in,
                 int max_tokens,
                 bool evalExpressions,
-                const char **argv,
+                Ptr32<const char> *argv,
                 CmdArgs *argsPriv);
 bool __cdecl Cmd_IsWhiteSpaceChar(unsigned __int8 letter);
 void __cdecl Cmd_EmitString(const char *str, CmdArgs *argsPriv);

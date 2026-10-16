@@ -23,8 +23,8 @@ unsigned __int8 *s_hunkData;
 int s_hunkTotal;
 hunkUsed_t hunk_high;
 unsigned __int8 *s_origHunkData;
-fileData_s *com_fileDataHashTable[1024];
-fileData_s *com_hunkData;
+Ptr32<fileData_s> com_fileDataHashTable[1024];
+Ptr32<fileData_s> com_hunkData;
 
 
 struct AssetList // sizeof=0xC
@@ -601,7 +601,7 @@ void Hunk_ClearData()
     Hunk_ClearDataFor(&com_hunkData, low, high);
 }
 
-void __cdecl Hunk_ClearDataFor(fileData_s **pFileData, unsigned __int8 *low, unsigned __int8 *high)
+void __cdecl Hunk_ClearDataFor(Ptr32<fileData_s> *pFileData, unsigned __int8 *low, unsigned __int8 *high)
 {
     unsigned __int8 type; // [esp+0h] [ebp-Ch]
     XAnim_s *data; // [esp+4h] [ebp-8h]

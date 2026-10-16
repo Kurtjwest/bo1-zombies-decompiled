@@ -48,7 +48,7 @@ void __cdecl DObjDumpInfo(const DObj *obj)
     int numModels; // [esp+10h] [ebp-10h]
     XModel *model; // [esp+14h] [ebp-Ch]
     int i; // [esp+18h] [ebp-8h]
-    XModel **models; // [esp+1Ch] [ebp-4h]
+    Ptr32<XModel> *models; // [esp+1Ch] [ebp-4h]
 
     if ( obj )
     {
@@ -313,7 +313,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
     int index; // [esp+58h] [ebp-664h]
     int duplicatePartBits[341]; // [esp+5Ch] [ebp-660h] BYREF
     int matOffset[32]; // [esp+5B4h] [ebp-108h]
-    XModel *models[32]; // [esp+634h] [ebp-88h] BYREF
+    Ptr32<XModel> models[32]; // [esp+634h] [ebp-88h] BYREF
     int modelIndex; // [esp+6B4h] [ebp-8h]
     unsigned __int16 *boneNames; // [esp+6B8h] [ebp-4h]
 
@@ -419,7 +419,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
     {
         __debugbreak();
     }
-    obj->localModels = (XModel **)MT_Alloc(5 * numModels, 13, SCRIPTINSTANCE_SERVER);
+    obj->localModels = (Ptr32<XModel> *)MT_Alloc(5 * numModels, 13, SCRIPTINSTANCE_SERVER);
     memcpy((unsigned __int8 *)obj->localModels, (unsigned __int8 *)models, 4 * numModels);
     memcpy((unsigned __int8 *)&obj->localModels[numModels], modelParents, numModels);
     if (numModels != (unsigned __int8)numModels
@@ -608,7 +608,7 @@ void __cdecl DObjGetCreateParms(
                 const DObj *obj,
                 DObjModel_s *dobjModels,
                 unsigned __int16 *numModels,
-                XAnimTree_s **tree,
+                Ptr32<XAnimTree_s> *tree,
                 unsigned __int16 *entnum)
 {
     const unsigned __int8 *modelParents; // [esp+0h] [ebp-A8h]
@@ -618,7 +618,7 @@ void __cdecl DObjGetCreateParms(
     int startBoneIndex; // [esp+10h] [ebp-98h]
     int parentModelIndex; // [esp+14h] [ebp-94h]
     int matOffset[33]; // [esp+18h] [ebp-90h]
-    XModel **models; // [esp+9Ch] [ebp-Ch]
+    Ptr32<XModel> *models; // [esp+9Ch] [ebp-Ch]
     int modelIndex; // [esp+A0h] [ebp-8h]
     unsigned __int16 *boneNames; // [esp+A4h] [ebp-4h]
 
@@ -869,7 +869,7 @@ void __cdecl DObjPhysicsGetBounds(const DObj *obj, float *mins, float *maxs)
     {
         __debugbreak();
     }
-    XModelGetBounds(*(const XModel **)obj->localModels, mins, maxs);
+    XModelGetBounds((const XModel *)obj->localModels[0], mins, maxs);
 }
 
 double __cdecl DObjGetRadius(const DObj *obj)
@@ -910,7 +910,7 @@ const char *__cdecl DObjGetName(const DObj *obj)
     {
         __debugbreak();
     }
-    return **(const char ***)obj->localModels;
+    return obj->localModels[0]->name;
 }
 
 char *__cdecl DObjGetBoneName(const DObj *obj, int boneIndex)
@@ -921,7 +921,7 @@ char *__cdecl DObjGetBoneName(const DObj *obj, int boneIndex)
     int numModels; // [esp+Ch] [ebp-14h]
     XModel *model; // [esp+10h] [ebp-10h]
     int index; // [esp+14h] [ebp-Ch]
-    XModel **models; // [esp+18h] [ebp-8h]
+    Ptr32<XModel> *models; // [esp+18h] [ebp-8h]
     unsigned __int16 *boneNames; // [esp+1Ch] [ebp-4h]
 
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj.cpp", 1511, 0, "%s", "obj") )
@@ -1653,13 +1653,13 @@ int __cdecl DObjGetContents(const DObj *obj)
 
 bool __cdecl DObjHasCollmap(const DObj *obj)
 {
-    return obj->numModels && XModelHasCollmap(*(const XModel **)obj->localModels);
+    return obj->numModels && XModelHasCollmap((const XModel *)obj->localModels[0]);
 }
 
 PhysGeomList *__cdecl DObjGetCollmap(DObj *obj)
 {
     if ( obj->numModels )
-        return XModelGetCollmap(*(const XModel **)obj->localModels, 0);
+        return XModelGetCollmap((const XModel *)obj->localModels[0], 0);
     else
         return 0;
 }
@@ -1690,7 +1690,7 @@ int __cdecl DObjGetModelBoneIndex(const DObj *obj, const char *modelName, unsign
     XModel *model; // [esp+Ch] [ebp-Ch]
     XModel *modela; // [esp+Ch] [ebp-Ch]
     unsigned int localBoneIndex; // [esp+10h] [ebp-8h]
-    XModel **models; // [esp+14h] [ebp-4h]
+    Ptr32<XModel> *models; // [esp+14h] [ebp-4h]
 
     if ( !obj && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\xanim\\dobj.cpp", 2354, 0, "%s", "obj") )
         __debugbreak();
@@ -1767,7 +1767,7 @@ void __cdecl DObjGetBasePoseMatrix(DObj *obj, unsigned __int8 boneIndex, DObjAni
     }
     else
     {
-        memcpy(outMat, &XModelGetBasePose(*(const XModel **)obj->localModels)[boneIndex], sizeof(DObjAnimMat));
+        memcpy(outMat, &XModelGetBasePose((const XModel *)obj->localModels[0])[boneIndex], sizeof(DObjAnimMat));
     }
 }
 

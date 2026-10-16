@@ -292,9 +292,9 @@ struct axis_aligned_sweep_and_prune // sizeof=0x28
 
         void init(
             broad_phase_base *bpb,
-            axis_aligned_sweep_and_prune::axis_element **xlist,
-            axis_aligned_sweep_and_prune::axis_element **ylist,
-            axis_aligned_sweep_and_prune::axis_element **zlist);
+            Ptr32<axis_aligned_sweep_and_prune::axis_element> *xlist,
+            Ptr32<axis_aligned_sweep_and_prune::axis_element> *ylist,
+            Ptr32<axis_aligned_sweep_and_prune::axis_element> *zlist);
         void update_ae_val();
     };
     struct active_pair // sizeof=0x10
@@ -317,13 +317,13 @@ struct axis_aligned_sweep_and_prune // sizeof=0x28
 
 
     bool are_overlapping(axis_aligned_sweep_and_prune::sap_node *n1, axis_aligned_sweep_and_prune::sap_node *n2);
-    void remove(axis_aligned_sweep_and_prune::axis_element **axis_list, axis_aligned_sweep_and_prune::sap_node *node);
-    void swap(axis_aligned_sweep_and_prune::axis_element **a1_ptr, axis_aligned_sweep_and_prune::axis_element **a2_ptr);
-    void merge_sort(axis_aligned_sweep_and_prune::axis_element **list, int list_count);
+    void remove(Ptr32<axis_aligned_sweep_and_prune::axis_element> *axis_list, axis_aligned_sweep_and_prune::sap_node *node);
+    void swap(Ptr32<axis_aligned_sweep_and_prune::axis_element> *a1_ptr, Ptr32<axis_aligned_sweep_and_prune::axis_element> *a2_ptr);
+    void merge_sort(Ptr32<axis_aligned_sweep_and_prune::axis_element> *list, int list_count);
     void init_system(int max_num_active_pairs);
     void add_active_pair(axis_aligned_sweep_and_prune::sap_node *p1, axis_aligned_sweep_and_prune::sap_node *p2);
     void create_sap_node(broad_phase_base *bpb);
-    void remove(axis_aligned_sweep_and_prune::active_pair **list_ap, axis_aligned_sweep_and_prune::sap_node *node);
+    void remove(Ptr32<axis_aligned_sweep_and_prune::active_pair> *list_ap, axis_aligned_sweep_and_prune::sap_node *node);
     void destroy_sap_node(broad_phase_base *bpb);
     void process_active_pair_list();
     void process();

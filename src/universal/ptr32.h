@@ -33,6 +33,7 @@ template <typename P> using Ptr32T = P;
 inline uint32_t Ptr32_Encode(const volatile void *p) { return (uint32_t)p; }
 inline void *Ptr32_Decode(uint32_t v) { return (void *)v; }
 #define BO1_NATIVE_ARRAY(a, n) (a)
+#define BO1_VA(x) (x)
 
 #else
 
@@ -111,6 +112,14 @@ template <typename T> struct Ptr32
 
     T *get() const { return (T *)bo1ptr::Decode(v); }
     operator T *() const { return get(); }
+    // volatile slots (lock-free lists: tagged pointers, free-slot heads). (No volatile conversion operator: a second
+    // conversion to a function pointer would make calls through function-pointer members ambiguous.)
+    T *get() const volatile { return (T *)bo1ptr::Decode(v); }
+    volatile Ptr32 &operator=(T *p) volatile
+    {
+        v = bo1ptr::Encode((const volatile void *)p);
+        return *this;
+    }
     template <typename U, typename = std::enable_if_t<!std::is_same_v<U, T>>> explicit operator U *() const { return (U *)get(); }
     explicit operator uintptr_t() const { return (uintptr_t)get(); }
     // (int)ptr / (unsigned int)ptr: the 32-bit handle, which is what decompiled code computes with
@@ -200,6 +209,14 @@ template <typename T> inline NativeArray<T> MakeNativeArray(const Ptr32<Ptr32<T>
 } // namespace bo1ptr
 // (T **)-typed argument from an array of 32-bit pointers (a temporary native copy, valid for the call)
 #define BO1_NATIVE_ARRAY(a, n) (::bo1ptr::MakeNativeArray((a), (n)))
+
+namespace bo1ptr
+{
+// a 32-bit pointer passed through "..." (printf-style arguments) must be passed as the native pointer
+template <typename T> inline T *VaArg(const Ptr32<T> &p) { return p.get(); }
+template <typename T> inline T *VaArg(const volatile Ptr32<T> &p) { return p.get(); }
+} // namespace bo1ptr
+#define BO1_VA(x) (::bo1ptr::VaArg(x))
 
 static_assert(sizeof(Ptr32<int>) == 4, "Ptr32 must be 4 bytes");
 static_assert(std::is_trivially_copyable_v<Ptr32<int>>, "Ptr32 must be trivially copyable");

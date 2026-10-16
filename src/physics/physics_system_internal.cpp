@@ -82,16 +82,16 @@ void __cdecl IPN_merge(rigid_body *dest, rigid_body *source)
     source->m_partition_node.m_partition_size = 0;
 }
 
-void __cdecl rigid_body_island_qsort(rigid_body **list, int list_count)
+void __cdecl rigid_body_island_qsort(Ptr32<rigid_body> *list, int list_count)
 {
     rigid_body *v2; // ecx
-    rigid_body **v3; // esi
-    rigid_body **v4; // edi
+    Ptr32<rigid_body> *v3; // esi
+    Ptr32<rigid_body> *v4; // edi
     unsigned int i; // eax
     rigid_body *v6; // ecx
     unsigned int v7; // ecx
     int v8; // esi
-    rigid_body **last; // [esp+4h] [ebp-4h]
+    Ptr32<rigid_body> *last; // [esp+4h] [ebp-4h]
 
     if ( list_count >= 3 )
     {
@@ -102,7 +102,7 @@ void __cdecl rigid_body_island_qsort(rigid_body **list, int list_count)
         last = &list[list_count];
         for ( i = (unsigned int)BO1_P2I((v4 - 1)); v4 < last; ++v4 )
         {
-            v6 = *(rigid_body **)BO1_I2P(i);
+            v6 = *(Ptr32<rigid_body> *)BO1_I2P(i);
             if ( (*v4)->m_partition_node.m_partition_size <= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 348)) )
                 break;
             *(unsigned int *)BO1_I2P(i) = (unsigned int)BO1_P2I(*v4);
@@ -160,7 +160,7 @@ void __cdecl merge_sort(rigid_body_constraint_contact **list, int list_count)
         last = &list[list_count];
         for ( i = (unsigned int)BO1_P2I((v4 - 1)); v4 < last; ++v4 )
         {
-            v6 = *(rigid_body_constraint_contact **)BO1_I2P(i);
+            v6 = *(Ptr32<rigid_body_constraint_contact> *)BO1_I2P(i);
             if ( (*v4)->m_solver_priority >= *(unsigned int *)BO1_I2P((*(unsigned int *)BO1_I2P(i) + 20)) )
                 break;
             *(unsigned int *)BO1_I2P(i) = (unsigned int)BO1_P2I(*v4);
@@ -1036,7 +1036,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
     {
         if ((int)BO1_P2I(i4->m_ptr_list[87]) > 0)
         {
-            if ((rigid_body **)i4->m_ptr_list[84] != i4->m_ptr_list
+            if ((Ptr32<rigid_body> *)i4->m_ptr_list[84] != i4->m_ptr_list
                 && _tlAssert(
                     "source/physics_system_internal.cpp",
                     141,
@@ -1089,7 +1089,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
         {
             __debugbreak();
         }
-        i5->m_ptr_list[2] = *(rigid_body_constraint_point **)BO1_I2P((LODWORD(x) + 296));
+        i5->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_point> *)BO1_I2P((LODWORD(x) + 296));
         *(_DWORD *)BO1_I2P((LODWORD(x) + 296)) = (_DWORD)BO1_P2I(i5->m_ptr_list);
     }
     v50 = i;
@@ -1126,7 +1126,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             __debugbreak();
         }
         v50 = i;
-        i6->m_ptr_list[2] = *(rigid_body_constraint_hinge **)BO1_I2P((LODWORD(v54) + 300));
+        i6->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_hinge> *)BO1_I2P((LODWORD(v54) + 300));
         *(_DWORD *)BO1_I2P((LODWORD(v54) + 300)) = (_DWORD)BO1_P2I(i6->m_ptr_list);
     }
     v56 = (phys_free_list<rigid_body_constraint_distance> *)v50->m_list_rbc_dist.m_dummy_head.m_next_T_internal;
@@ -1162,7 +1162,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v56->m_ptr_list[2] = *(rigid_body_constraint_distance **)BO1_I2P((LODWORD(m_min_distance) + 304));
+            v56->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_distance> *)BO1_I2P((LODWORD(m_min_distance) + 304));
             v50 = i;
             *(_DWORD *)BO1_I2P((LODWORD(m_min_distance) + 304)) = (_DWORD)BO1_P2I(v56->m_ptr_list);
             v56 = (phys_free_list<rigid_body_constraint_distance> *)v56->m_dummy_head.m_next_T_internal;
@@ -1202,7 +1202,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v61->m_ptr_list[2] = *(rigid_body_constraint_ragdoll **)BO1_I2P((m_flags + 308));
+            v61->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_ragdoll> *)BO1_I2P((m_flags + 308));
             *(_DWORD *)BO1_I2P((m_flags + 308)) = (_DWORD)BO1_P2I(v61->m_ptr_list);
             v61 = (phys_free_list<rigid_body_constraint_ragdoll> *)v61->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_ragdoll != v61);
@@ -1241,7 +1241,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v66->m_ptr_list[2] = *(rigid_body_constraint_wheel **)BO1_I2P((LODWORD(m_pitch_stability_factor) + 312));
+            v66->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_wheel> *)BO1_I2P((LODWORD(m_pitch_stability_factor) + 312));
             *(_DWORD *)BO1_I2P((LODWORD(m_pitch_stability_factor) + 312)) = (_DWORD)BO1_P2I(v66->m_ptr_list);
             v66 = (phys_free_list<rigid_body_constraint_wheel> *)v66->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_wheel != v66);
@@ -1279,7 +1279,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v71->m_ptr_list[2] = *(rigid_body_constraint_angular_actuator **)BO1_I2P((LODWORD(v74) + 316));
+            v71->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_angular_actuator> *)BO1_I2P((LODWORD(v74) + 316));
             v50 = i;
             *(_DWORD *)BO1_I2P((LODWORD(v74) + 316)) = (_DWORD)BO1_P2I(v71->m_ptr_list);
             v71 = (phys_free_list<rigid_body_constraint_angular_actuator> *)v71->m_dummy_head.m_next_T_internal;
@@ -1319,7 +1319,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v76->m_ptr_list[2] = *(rigid_body_constraint_upright **)BO1_I2P((LODWORD(m_pulse_sum) + 320));
+            v76->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_upright> *)BO1_I2P((LODWORD(m_pulse_sum) + 320));
             *(_DWORD *)BO1_I2P((LODWORD(m_pulse_sum) + 320)) = (_DWORD)BO1_P2I(v76->m_ptr_list);
             v76 = (phys_free_list<rigid_body_constraint_upright> *)v76->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_upright != v76);
@@ -1358,7 +1358,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
                 __debugbreak();
             }
             v50 = i;
-            v81->m_ptr_list[0] = *(rigid_body_constraint_custom_orientation **)BO1_I2P((v84 + 324));
+            v81->m_ptr_list[0] = *(Ptr32<rigid_body_constraint_custom_orientation> *)BO1_I2P((v84 + 324));
             *(_DWORD *)BO1_I2P((v84 + 324)) = (_DWORD)BO1_P2I(&v81->m_list_count);
             v81 = (phys_free_list<rigid_body_constraint_custom_orientation> *)v81->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_custom_orientation != v81);
@@ -1396,7 +1396,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v86->m_ptr_list[2] = *(rigid_body_constraint_custom_path **)BO1_I2P((LODWORD(v89) + 328));
+            v86->m_ptr_list[2] = *(Ptr32<rigid_body_constraint_custom_path> *)BO1_I2P((LODWORD(v89) + 328));
             v50 = i;
             *(_DWORD *)BO1_I2P((LODWORD(v89) + 328)) = (_DWORD)BO1_P2I(v86->m_ptr_list);
             v86 = (phys_free_list<rigid_body_constraint_custom_path> *)v86->m_dummy_head.m_next_T_internal;
@@ -1435,7 +1435,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
             {
                 __debugbreak();
             }
-            v91->m_ptr_list[0] = *(rigid_body_constraint_contact **)BO1_I2P((v94 + 332));
+            v91->m_ptr_list[0] = *(Ptr32<rigid_body_constraint_contact> *)BO1_I2P((v94 + 332));
             *(_DWORD *)BO1_I2P((v94 + 332)) = (_DWORD)BO1_P2I(&v91->m_list_count);
             v91 = (phys_free_list<rigid_body_constraint_contact> *)v91->m_dummy_head.m_next_T_internal;
         } while (&i->m_list_rbc_contact != v91);
@@ -1453,7 +1453,7 @@ void __thiscall physics_system::generate_partitions_and_stuff(phys_transient_all
     else
     {
         //i->m_list_island = (rigid_body **)phys_transient_allocator::allocate(
-        i->m_list_island = (rigid_body **)transient_buffer->allocate(
+        i->m_list_island = (Ptr32<rigid_body> *)transient_buffer->allocate(
             4 * m_list_island_count,
             4,
             0,

@@ -3,7 +3,7 @@
 #include <tl/tl_system.h>
 #include "phys_gjk_collision_detection.h"
 
-chull_t *chull_list;
+Ptr32<chull_t> chull_list;
 phys_convex_hull g_hull;
 phys_inplace_avl_tree<unsigned int, generic_avl_map_node_t, generic_avl_map_node_t> entities_map;
 
