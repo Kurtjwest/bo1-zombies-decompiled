@@ -2392,13 +2392,13 @@ void __cdecl LiveStorage_FileShare_LoadBlockSuccessAction(dwFileShareDescriptors
             qsort(
                 fsTask->descriptors,
                 *fsTask->descriptorCount,
-                0x838u,
+                sizeof(bdFileMetaData),
                 (int (__cdecl *)(const void *, const void *))LiveStorage_FileShareSortComparator_MostRecent);
         else
             qsort(
                 fsTask->descriptors,
                 *fsTask->descriptorCount,
-                0x838u,
+                sizeof(bdFileMetaData),
                 (int (__cdecl *)(const void *, const void *))LiveStorage_FileShareSortComparator_MostPopular);
         for ( i = 0; i < *fsTask->descriptorCount; ++i )
             Live_FileShareCache_AddDescriptor(fsTask->descriptors[i].m_fileID, fsTask->location, &fsTask->descriptors[i]);
@@ -2415,7 +2415,8 @@ int __cdecl LiveStorage_FileShareSortComparator_MostRecent(unsigned int *arg0, u
         __debugbreak();
     if ( !arg1 && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp", 2645, 0, "%s", "arg1") )
         __debugbreak();
-    return arg1[4] - arg0[4];
+    // m_createTime (the fifth 32-bit word of the 32-bit layout, after the vtable pointer and m_fileID)
+    return ((const bdFileMetaData *)arg1)->m_createTime - ((const bdFileMetaData *)arg0)->m_createTime;
 }
 
 int __cdecl LiveStorage_FileShareSortComparator_MostPopular(const bdFileMetaData *arg0, const bdFileMetaData *arg1)
@@ -3769,7 +3770,8 @@ int __cdecl LiveStorage_FileShare_VoteRankComparator(unsigned int *arg0, unsigne
         __debugbreak();
     if ( !arg1 && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_storage.cpp", 3915, 0, "%s", "arg1") )
         __debugbreak();
-    return arg1[2] - arg0[2];
+    // the low word of m_entityID (the third 32-bit word of the 32-bit layout)
+    return (unsigned int)((const bdStatsInfo *)arg1)->m_entityID - (unsigned int)((const bdStatsInfo *)arg0)->m_entityID;
 }
 
 void __cdecl LiveStorage_FileShare_ReadRatingSuccessAction(dwFileShareGetRatingTask *ratingTask)
@@ -3784,7 +3786,7 @@ void __cdecl LiveStorage_FileShare_ReadRatingSuccessAction(dwFileShareGetRatingT
     qsort(
         ratingTask->outStatsInfo,
         *ratingTask->outNumRatingsReceived,
-        0xC8u,
+        sizeof(bdVoteRankStatsInfo),
         (int (__cdecl *)(const void *, const void *))LiveStorage_FileShare_VoteRankComparator);
     if ( ratingTask->successCallback )
         ratingTask->successCallback();

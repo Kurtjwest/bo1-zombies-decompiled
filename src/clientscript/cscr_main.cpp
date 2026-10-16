@@ -43,7 +43,9 @@ bool __cdecl Scr_IsInOpcodeMemory(scriptInstance_t inst, const char *pos)
     }
     if ( !pos && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_main.cpp", 36, 0, "%s", "pos") )
         __debugbreak();
-    return pos - gScrVarPub[inst].programBuffer < gScrCompilePub[inst].programLen;
+    // an unsigned offset test, as with 32-bit pointers (a 64-bit difference compared with the unsigned length is a
+    // signed comparison, which accepts every address below the buffer)
+    return (uintptr_t)(pos - gScrVarPub[inst].programBuffer) < gScrCompilePub[inst].programLen;
 }
 
 char __cdecl Scr_IsIdentifier(const char *token)

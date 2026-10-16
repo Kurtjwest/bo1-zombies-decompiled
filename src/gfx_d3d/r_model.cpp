@@ -133,7 +133,7 @@ bool __cdecl R_ModelSort(const XModel *model1, const XModel *model2)
 
 void __cdecl R_GetModelList(XAssetHeader header, XAssetHeader *data)
 {
-    if ( data->xmodelPieces >= (XModelPieces *)BO1_I2P(0x800)
+    if ( Ptr32_Raw(data->xmodelPieces) >= 0x800
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_model.cpp",
                     96,
@@ -143,7 +143,9 @@ void __cdecl R_GetModelList(XAssetHeader header, XAssetHeader *data)
     {
         __debugbreak();
     }
-    data[(int)BO1_P2I(data->xmodelPieces++) + 1] = header;
+    // data[0] is the list's count (ImageList / ModelList), kept in the header union's first member: count + 1
+    // (the decompiled pointer increment stepped it by sizeof(XModelPieces), leaving gaps and overrunning the list)
+    data[1 + Ptr32_Raw(data->xmodelPieces)++] = header;
 }
 
 XModel *__cdecl R_RegisterModel(char *name)

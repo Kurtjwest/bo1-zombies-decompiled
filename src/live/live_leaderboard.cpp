@@ -1214,12 +1214,15 @@ int __cdecl LB_CompareXUserStatsRowRanks(_QWORD *r1, _QWORD *r2)
         __debugbreak();
     if (!r2 && !Assert_MyHandler("C:\\projects_pc\\cod\\codsrc\\src\\live\\live_leaderboard.cpp", 763, 0, "%s", "r2"))
         __debugbreak();
-    if (!r1[4])
-        return r2[4] != 0;
-    if (!r2[4])
+    // the rows' m_rank (the fifth 8-byte word of the 32-bit layout; the vtable pointer moves it on 64-bit)
+    const unsigned __int64 rank1 = ((const bdStatsInfo *)r1)->m_rank;
+    const unsigned __int64 rank2 = ((const bdStatsInfo *)r2)->m_rank;
+    if (!rank1)
+        return rank2 != 0;
+    if (!rank2)
         return -1;
-    if (r1[4] >= r2[4])
-        return r1[4] > r2[4];
+    if (rank1 >= rank2)
+        return rank1 > rank2;
     return -1;
 }
 
@@ -1230,7 +1233,7 @@ void __cdecl LB_SortXUserStatsByRank(Leaderboard *lb)
     qsort(
         lb->userStats.m_leaderBoardEntries,
         lb->numResults,
-        0x98u,
+        sizeof(lb->userStats.m_leaderBoardEntries[0]),
         (int (__cdecl *)(const void *, const void *))LB_CompareXUserStatsRowRanks);
     for ( count = 0; count < lb->numResults && lb->userStats.m_leaderBoardEntries[count].m_rank; ++count )
         ;

@@ -434,7 +434,7 @@ LABEL_91:
             return 0;
         }
         strncpy(filenameBuffer, pszNameStart + 1, v12 - pszNameStart - 1);
-        *((_BYTE *)&lineOffset[3] + (int)BO1_P2I(pszNameStop) - (int)BO1_P2I(pszNameStart) + 3) = 0;
+        filenameBuffer[v12 - pszNameStart - 1] = 0; // (decompiled as an offset from lineOffset, the local before it in the x86 frame)
         filenameSubStr = filenameBuffer;
         if ( !SkipLines(1, fp) )
             return 0;

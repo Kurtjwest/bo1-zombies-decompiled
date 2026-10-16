@@ -138,7 +138,9 @@ void __cdecl Scr_ArchiveCanonicalStrings(scriptInstance_t inst)
 
 int __cdecl CompareCanonicalStrings(const char **arg1, const char **arg2)
 {
-    return strcmp(arg1[1], arg2[1]);
+    // qsort hands over ArchivedCanonicalStringInfo elements (8 bytes: the string id, then the 32-bit text
+    // pointer); the 32-bit form read the text pointer as the second pointer-sized slot
+    return strcmp(((const ArchivedCanonicalStringInfo *)arg1)->value, ((const ArchivedCanonicalStringInfo *)arg2)->value);
 }
 
 const char *__cdecl Scr_GetCanonicalString(scriptInstance_t inst, unsigned int fieldName)

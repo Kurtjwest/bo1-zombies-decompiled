@@ -792,8 +792,13 @@ unsigned __int8 *__cdecl Hunk_AllocAlign(unsigned int size, int alignment, const
     {
         __debugbreak();
     }
-    if ( endBuf != (unsigned __int8 *)BO1_I2P(((unsigned int)BO1_P2I(buf) & 0xFFFFF000)) )
-        Z_VirtualCommit((char *)BO1_I2P(((unsigned int)BO1_P2I(buf) & 0xFFFFF000)), (int)BO1_P2I(&endBuf[-(int)((unsigned int)BO1_P2I(buf) & 0xFFFFF000)]), 11);
+    {
+        // the pages from the new block's page up to the old end: a byte count between two decoded addresses (the
+        // 32-bit form subtracted the page address, here a handle, from endBuf's native address)
+        unsigned __int8 *pageStart = (unsigned __int8 *)BO1_I2P(((unsigned int)BO1_P2I(buf) & 0xFFFFF000));
+        if ( endBuf != pageStart )
+            Z_VirtualCommit((char *)pageStart, (int)(endBuf - pageStart), 11);
+    }
     track_hunk_alloc(hunk_high.permanent - old_permanent, hunk_high.temp, name, type);
     memset(buf, 0, size);
     return buf;
@@ -838,8 +843,11 @@ unsigned int __cdecl Hunk_AllocateTempMemoryHigh(int size, const char *name)
     {
         __debugbreak();
     }
-    if ( endBuf != (unsigned __int8 *)BO1_I2P((buf & 0xFFFFF000)) )
-        Z_VirtualCommit((char *)BO1_I2P((buf & 0xFFFFF000)), (int)BO1_P2I(&endBuf[-(int)(buf & 0xFFFFF000)]), 11);
+    {
+        unsigned __int8 *pageStart = (unsigned __int8 *)BO1_I2P((buf & 0xFFFFF000)); // (see Hunk_AllocAlign)
+        if ( endBuf != pageStart )
+            Z_VirtualCommit((char *)pageStart, (int)(endBuf - pageStart), 11);
+    }
     track_temp_high_alloc(size, hunk_high.temp + hunk_low.temp, hunk_high.permanent, name);
     return buf;
 }

@@ -3207,22 +3207,31 @@ void    R_WaterSimulationSkinMesh(const WaterSimulationCmd *cmd)
                     v52 = *(_QWORD *)&zOffset.unitVec[1].packed;
                     v53 = zOffset.u[3];
                     v54 = binormal.u[0];
-                    LOBYTE(v45) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[0].array[3]);
-                    BYTE1(v45) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[0].array[2]);
-                    BYTE2(v45) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[0].array[1]);
-                    HIBYTE(v45) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[0].array[0]);
-                    LOBYTE(v46) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[1].array[3]);
-                    BYTE1(v46) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[1].array[2]);
-                    BYTE2(v46) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[1].array[1]);
-                    HIBYTE(v46) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[1].array[0]);
-                    LOBYTE(v47) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[2].array[3]);
-                    BYTE1(v47) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[2].array[2]);
-                    BYTE2(v47) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[2].array[1]);
-                    HIBYTE(v47) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[2].array[0]);
-                    LOBYTE(finalNormal) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[3].array[3]);
-                    BYTE1(finalNormal) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[3].array[2]);
-                    BYTE2(finalNormal) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[3].array[1]);
-                    HIBYTE(finalNormal) = *((_BYTE *)&v49 + g_swizzleXYAB.unitVec[3].array[0]);
+                    // v49..v54 are 32 contiguous bytes in the x86 frame (two vectors for the byte permute below, which
+                    // indexes past v49): gather them in one array instead of relying on the locals' placement
+                    unsigned char permBytes[32];
+                    memcpy(permBytes + 0, &v49, 8);
+                    memcpy(permBytes + 8, &v50, 4);
+                    memcpy(permBytes + 12, &v51, 4);
+                    memcpy(permBytes + 16, &v52, 8);
+                    memcpy(permBytes + 24, &v53, 4);
+                    memcpy(permBytes + 28, &v54, 4);
+                    LOBYTE(v45) = permBytes[g_swizzleXYAB.unitVec[0].array[3]];
+                    BYTE1(v45) = permBytes[g_swizzleXYAB.unitVec[0].array[2]];
+                    BYTE2(v45) = permBytes[g_swizzleXYAB.unitVec[0].array[1]];
+                    HIBYTE(v45) = permBytes[g_swizzleXYAB.unitVec[0].array[0]];
+                    LOBYTE(v46) = permBytes[g_swizzleXYAB.unitVec[1].array[3]];
+                    BYTE1(v46) = permBytes[g_swizzleXYAB.unitVec[1].array[2]];
+                    BYTE2(v46) = permBytes[g_swizzleXYAB.unitVec[1].array[1]];
+                    HIBYTE(v46) = permBytes[g_swizzleXYAB.unitVec[1].array[0]];
+                    LOBYTE(v47) = permBytes[g_swizzleXYAB.unitVec[2].array[3]];
+                    BYTE1(v47) = permBytes[g_swizzleXYAB.unitVec[2].array[2]];
+                    BYTE2(v47) = permBytes[g_swizzleXYAB.unitVec[2].array[1]];
+                    HIBYTE(v47) = permBytes[g_swizzleXYAB.unitVec[2].array[0]];
+                    LOBYTE(finalNormal) = permBytes[g_swizzleXYAB.unitVec[3].array[3]];
+                    BYTE1(finalNormal) = permBytes[g_swizzleXYAB.unitVec[3].array[2]];
+                    BYTE2(finalNormal) = permBytes[g_swizzleXYAB.unitVec[3].array[1]];
+                    HIBYTE(finalNormal) = permBytes[g_swizzleXYAB.unitVec[3].array[0]];
                     v39 = (_BYTE *)BO1_I2P((maxBox.u[3] + 4));
                     if ( (float)((float)((float)((float)(v45 * normalOffset.v[1]) + *(float *)&mesh) + 0.5) - 0.0) < 0.0 )
                         v38 = g_zero.v[0];

@@ -652,8 +652,9 @@ int __cdecl ScoreBar_CompareScores(const char **sv1, const char **sv2)
 {
     int v2; // esi
 
-    v2 = atoi(sv2[3]);
-    return v2 - atoi(sv1[3]);
+    // the rows are serverStatusInfo_s::lines entries: 8 32-bit string pointers (column 3)
+    v2 = atoi(((const Ptr32<const char> *)sv2)[3]);
+    return v2 - atoi(((const Ptr32<const char> *)sv1)[3]);
 }
 
 void __cdecl UI_RefreshServers()

@@ -100,7 +100,9 @@ void __cdecl R_AddImageToList(XAssetHeader header, XAssetHeader *data)
     {
         __debugbreak();
     }
-    data[(int)BO1_P2I(data->xmodelPieces++) + 1] = header;
+    // data[0] is the list's count (ImageList / ModelList), kept in the header union's first member: count + 1
+    // (the decompiled pointer increment stepped it by sizeof(XModelPieces), leaving gaps and overrunning the list)
+    data[1 + Ptr32_Raw(data->xmodelPieces)++] = header;
 }
 
 void __cdecl R_SumOfUsedImages(Image_MemUsage *usage)
