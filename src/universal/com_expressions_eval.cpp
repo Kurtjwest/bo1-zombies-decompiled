@@ -12384,7 +12384,9 @@ void __cdecl GetCACItemIndex(int localClientNum, itemDef_s *item, OperandStack *
         {
             v3 = va(
                          "custom_killstreak_%c",
-                         *(char *)(strlen(list.operands[1].internals.string) + list.operands[1].internals.intVal - 1));
+                         // the slot name's last character (the decompiled form added strlen to the string's 32-bit
+                         // handle, read through the intVal member of the union)
+                         list.operands[1].internals.string[strlen(list.operands[1].internals.string) - 1]);
             Var = Dvar_FindVar(v3);
             result.internals.intVal = atoi(Var->current.string);
             AddOperandToStack(dataStack, &result);

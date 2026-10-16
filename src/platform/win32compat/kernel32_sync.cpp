@@ -184,6 +184,10 @@ void QueueApc(KThread *thread, void (*fn)(void *), void *arg)
     g_waitCv.notify_all();
 }
 
+// How long the main thread may sleep in a wait before it runs its idle work (main_thread.h: queued calls, the
+// Cocoa event pump)
+static constexpr std::chrono::milliseconds kMainThreadTick(kMainThreadPumpIntervalMs);
+
 void WakeAllWaiters()
 {
     // taking the lock orders this after a waiter's last check of its condition (no lost wakeup)
@@ -214,18 +218,19 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
     if (alertable && RunApcs(self))
         return WAIT_IO_COMPLETION;
 
-    // the main thread runs the calls other threads are waiting on it for while it waits (main_thread.h)
+    // the main thread runs the calls other threads are waiting on it for, and pumps the Cocoa events, while it
+    // waits (main_thread.h)
     const bool mainThread = IsMainThread();
     if (mainThread)
-        ServiceMainThreadCalls();
+        MainThreadIdle();
     auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms == INFINITE ? 0 : ms);
     std::unique_lock<std::mutex> lk(g_waitLock);
     for (;;)
     {
-        if (mainThread && MainThreadCallsPending())
+        if (mainThread && MainThreadIdleDue())
         {
             lk.unlock();
-            ServiceMainThreadCalls();
+            MainThreadIdle();
             lk.lock();
             continue;
         }
@@ -261,6 +266,25 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
         }
         if (ms == 0)
             return WAIT_TIMEOUT;
+        if (mainThread)
+        {
+            // wake at least every tick for the idle work
+            auto wake = std::chrono::steady_clock::now() + kMainThreadTick;
+            if (ms != INFINITE && deadline < wake)
+                wake = deadline;
+            g_waitCv.wait_until(lk, wake);
+            if (ms == INFINITE || std::chrono::steady_clock::now() < deadline)
+                continue;
+            for (DWORD i = 0; i < n; ++i)
+            {
+                if (!waitAll && objs[i] && IsSignaled(objs[i], self))
+                {
+                    Consume(objs[i], self);
+                    return WAIT_OBJECT_0 + i;
+                }
+            }
+            return WAIT_TIMEOUT;
+        }
         if (ms == INFINITE)
             g_waitCv.wait(lk);
         else if (g_waitCv.wait_until(lk, deadline) == std::cv_status::timeout)
@@ -539,7 +563,7 @@ void EnterCriticalSection(LPCRITICAL_SECTION cs)
         // while the section is busy (macOS has no pthread_mutex_timedlock)
         for (unsigned tries = 0; pthread_mutex_trylock(m) != 0; ++tries)
         {
-            ServiceMainThreadCalls();
+            MainThreadIdle();
             if (tries < 64)
                 sched_yield();
             else
@@ -934,31 +958,34 @@ void Sleep(DWORD ms)
 {
     if (IsMainThread() && ms != INFINITE)
     {
-        // the main thread runs the calls other threads queued for it while it sleeps (main_thread.h): the engine
-        // waits for the render thread in Sleep loops (R_BeginRegistration) while that thread creates the window
-        ServiceMainThreadCalls();
+        // the main thread runs the calls other threads queued for it, and pumps the Cocoa events, while it sleeps
+        // (main_thread.h): the engine waits for the render thread in Sleep loops (R_BeginRegistration) while that
+        // thread creates the window
+        MainThreadIdle();
         if (ms == 0)
         {
             sched_yield();
-            ServiceMainThreadCalls();
+            MainThreadIdle();
             return;
         }
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms);
         std::unique_lock<std::mutex> lk(g_waitLock);
         for (;;)
         {
-            if (MainThreadCallsPending())
+            if (MainThreadIdleDue())
             {
                 lk.unlock();
-                ServiceMainThreadCalls();
+                MainThreadIdle();
                 lk.lock();
                 continue;
             }
-            if (g_waitCv.wait_until(lk, deadline) == std::cv_status::timeout)
+            const auto now = std::chrono::steady_clock::now();
+            if (now >= deadline)
                 break;
+            g_waitCv.wait_until(lk, now + kMainThreadTick < deadline ? now + kMainThreadTick : deadline);
         }
         lk.unlock();
-        ServiceMainThreadCalls();
+        MainThreadIdle();
         return;
     }
     if (ms == 0)
@@ -988,15 +1015,15 @@ DWORD SleepEx(DWORD ms, BOOL alertable)
         return WAIT_IO_COMPLETION;
     const bool mainThread = IsMainThread();
     if (mainThread)
-        ServiceMainThreadCalls();
+        MainThreadIdle();
     auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms == INFINITE ? 0 : ms);
     std::unique_lock<std::mutex> lk(g_waitLock);
     for (;;)
     {
-        if (mainThread && MainThreadCallsPending())
+        if (mainThread && MainThreadIdleDue())
         {
             lk.unlock();
-            ServiceMainThreadCalls();
+            MainThreadIdle();
             lk.lock();
             continue;
         }
@@ -1008,6 +1035,16 @@ DWORD SleepEx(DWORD ms, BOOL alertable)
         }
         if (ms == 0)
             return 0;
+        if (mainThread)
+        {
+            auto wake = std::chrono::steady_clock::now() + kMainThreadTick;
+            if (ms != INFINITE && deadline < wake)
+                wake = deadline;
+            g_waitCv.wait_until(lk, wake);
+            if (ms != INFINITE && std::chrono::steady_clock::now() >= deadline)
+                return 0;
+            continue;
+        }
         if (ms == INFINITE)
             g_waitCv.wait(lk);
         else if (g_waitCv.wait_until(lk, deadline) == std::cv_status::timeout)

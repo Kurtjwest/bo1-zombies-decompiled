@@ -9,6 +9,7 @@
 #include <windows.h>
 #include <universal/ptr32.h>
 #include "kernel32_internal.h"
+#include "main_thread.h"
 #include "w32_platform.h"
 #include "../macos/cocoa_bridge.h"
 
@@ -541,6 +542,12 @@ void User32Init()
 {
     g_mainThreadId = GetCurrentThreadId();
     EnsureBridge();
+    // the main thread drains the Cocoa events whenever it waits; the engine reads the resulting messages on its
+    // render thread (main_thread.h)
+    SetMainThreadPumpHook([] {
+        Bridge_PumpEvents(0);
+        UpdateCapture();
+    });
     Bridge_GetCursorPos((int *)&g_vcurX, (int *)&g_vcurY);
 }
 

@@ -272,7 +272,7 @@ void __cdecl R_PixStartNamedRenderTarget(unsigned __int8 renderTargetId);
 void R_PixEndNamedRenderTarget();
 void __cdecl R_SetTexFilter();
 void __cdecl R_SetInitialContextState(IDirect3DDevice9 *device);
-void __cdecl R_ChangeDepthHackNearClip(GfxCmdBufSourceState *source, float depthHackFlags);
+void __cdecl R_ChangeDepthHackNearClip(GfxCmdBufSourceState *source, unsigned int depthHackFlags);
 void __cdecl R_DepthHackNearClipChanged(GfxCmdBufSourceState *source);
 void __cdecl R_ChangeObjectPlacement(GfxCmdBufSourceState *source, const GfxScaledPlacement *placement);
 void __cdecl R_ChangeObjectPlacement_Core(GfxCmdBufSourceState *source, const GfxScaledPlacement *placement);

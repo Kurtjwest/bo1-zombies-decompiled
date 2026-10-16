@@ -12,7 +12,10 @@
 #include "../win32compat/main_thread.h"
 #include <stdlib.h>
 #include <string.h>
+#include <algorithm>
+#include <atomic>
 #include <type_traits>
+#include <vector>
 
 // AppKit objects belong to the main thread, but the engine also calls the bridge from its render thread, which
 // creates, shows and sizes the game window. Such calls run on the main thread while the caller waits
@@ -64,7 +67,31 @@ struct BridgeWindow
     NSView *view;
     void *userData;
     bool coversScreen;
+    // AppKit state other threads read every frame (the render thread asks whether the window is visible, minimized
+    // and focused): kept current by the main thread, so those reads need not wait for it
+    std::atomic<int> visible{0};
+    std::atomic<int> minimized{0};
+    std::atomic<int> keyWindow{0};
 };
+
+static std::vector<BridgeWindow *> g_bridgeWindows; // main thread only
+static std::atomic<int> g_appActiveCache{1};
+
+static void RefreshWindowState(BridgeWindow *w)
+{
+    if (!w || !w->window)
+        return;
+    w->visible.store(w->window.visible ? 1 : 0, std::memory_order_relaxed);
+    w->minimized.store(w->window.miniaturized ? 1 : 0, std::memory_order_relaxed);
+    w->keyWindow.store(w->window.isKeyWindow ? 1 : 0, std::memory_order_relaxed);
+}
+
+static void RefreshAllWindowState()
+{
+    g_appActiveCache.store([NSApp isActive] ? 1 : 0, std::memory_order_relaxed);
+    for (BridgeWindow *w : g_bridgeWindows)
+        RefreshWindowState(w);
+}
 
 static void Emit(BridgeEvent &ev)
 {
@@ -406,8 +433,17 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
     ev.y = rc.top;
     Emit(ev);
 }
+- (void)windowDidBecomeKey:(NSNotification *)n
+{
+    RefreshWindowState(self.owner);
+}
+- (void)windowDidResignKey:(NSNotification *)n
+{
+    RefreshWindowState(self.owner);
+}
 - (void)windowDidMiniaturize:(NSNotification *)n
 {
+    RefreshWindowState(self.owner);
     BridgeEvent ev = {};
     ev.type = BRIDGE_EV_MINIMIZE;
     ev.window = self.owner;
@@ -417,6 +453,7 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 }
 - (void)windowDidDeminiaturize:(NSNotification *)n
 {
+    RefreshWindowState(self.owner);
     BridgeEvent ev = {};
     ev.type = BRIDGE_EV_MINIMIZE;
     ev.window = self.owner;
@@ -444,6 +481,7 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 }
 - (void)applicationDidBecomeActive:(NSNotification *)n
 {
+    RefreshAllWindowState();
     BridgeEvent ev = {};
     ev.type = BRIDGE_EV_ACTIVATE;
     ev.value = 1;
@@ -451,6 +489,7 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 }
 - (void)applicationDidResignActive:(NSNotification *)n
 {
+    RefreshAllWindowState();
     BridgeEvent ev = {};
     ev.type = BRIDGE_EV_ACTIVATE;
     ev.value = 0;
@@ -525,6 +564,7 @@ void Bridge_PumpEvents(int waitMs)
             [NSApp sendEvent:e];
         }
         [NSApp updateWindows];
+        RefreshAllWindowState();
     }
     w32::ServiceMainThreadCalls();
 }
@@ -568,6 +608,8 @@ static BridgeWindow *Main_CreateWindow(const char *title, int x, int y, int clie
         bw->view = view;
         if (x == (int)0x80000000 || y == (int)0x80000000)
             [win center];
+        g_bridgeWindows.push_back(bw);
+        RefreshWindowState(bw);
         return bw;
     }
 }
@@ -586,6 +628,7 @@ static void Main_DestroyWindow(BridgeWindow *w)
         w->window = nil;
         w->view = nil;
     }
+    g_bridgeWindows.erase(std::remove(g_bridgeWindows.begin(), g_bridgeWindows.end(), w), g_bridgeWindows.end());
     delete w;
 }
 
@@ -601,16 +644,21 @@ static void Main_ShowWindow(BridgeWindow *w, int show)
     }
     else
         [w->window orderOut:nil];
+    RefreshWindowState(w);
 }
 static void Main_MinimizeWindow(BridgeWindow *w)
 {
     if (w)
+    {
         [w->window miniaturize:nil];
+        RefreshWindowState(w);
+    }
 }
 static void Main_RestoreWindow(BridgeWindow *w)
 {
     if (w && w->window.miniaturized)
         [w->window deminiaturize:nil];
+    RefreshWindowState(w);
 }
 static int Main_IsMinimized(BridgeWindow *w) { return w && w->window.miniaturized ? 1 : 0; }
 static int Main_IsVisible(BridgeWindow *w) { return w && w->window.visible ? 1 : 0; }
@@ -1021,7 +1069,14 @@ const char *Bridge_BundleResourcePath(void)
 }
 
 // ---- the bridge entry points that use AppKit: on the main thread, whichever thread calls them
-int Bridge_IsAppActive(void) { return OnMain([&] { return Main_IsAppActive(); }); }
+int Bridge_IsAppActive(void)
+{
+    if (!w32::IsMainThread())
+        return g_appActiveCache.load(std::memory_order_relaxed);
+    const int active = Main_IsAppActive();
+    g_appActiveCache.store(active, std::memory_order_relaxed);
+    return active;
+}
 void Bridge_ActivateApp(void) { OnMain([&] { Main_ActivateApp(); }); }
 BridgeWindow *Bridge_CreateWindow(const char *title, int x, int y, int clientW, int clientH, int borderless, int resizable, void *userData)
 {
@@ -1031,23 +1086,66 @@ void Bridge_DestroyWindow(BridgeWindow *w) { OnMain([&] { Main_DestroyWindow(w);
 void Bridge_ShowWindow(BridgeWindow *w, int show) { OnMain([&] { Main_ShowWindow(w, show); }); }
 void Bridge_MinimizeWindow(BridgeWindow *w) { OnMain([&] { Main_MinimizeWindow(w); }); }
 void Bridge_RestoreWindow(BridgeWindow *w) { OnMain([&] { Main_RestoreWindow(w); }); }
-int Bridge_IsMinimized(BridgeWindow *w) { return OnMain([&] { return Main_IsMinimized(w); }); }
-int Bridge_IsVisible(BridgeWindow *w) { return OnMain([&] { return Main_IsVisible(w); }); }
+// other threads read the state the main thread keeps current (RefreshWindowState) instead of waiting for it
+int Bridge_IsMinimized(BridgeWindow *w)
+{
+    if (!w32::IsMainThread())
+        return w ? w->minimized.load(std::memory_order_relaxed) : 0;
+    RefreshWindowState(w);
+    return Main_IsMinimized(w);
+}
+int Bridge_IsVisible(BridgeWindow *w)
+{
+    if (!w32::IsMainThread())
+        return w ? w->visible.load(std::memory_order_relaxed) : 0;
+    RefreshWindowState(w);
+    return Main_IsVisible(w);
+}
 void Bridge_SetWindowStyle(BridgeWindow *w, int borderless, int resizable) { OnMain([&] { Main_SetWindowStyle(w, borderless, resizable); }); }
 void Bridge_SetClientRect(BridgeWindow *w, int x, int y, int clientW, int clientH) { OnMain([&] { Main_SetClientRect(w, x, y, clientW, clientH); }); }
 void Bridge_GetClientRect(BridgeWindow *w, BridgeRect *r) { OnMain([&] { Main_GetClientRect(w, r); }); }
 void Bridge_GetFrameRect(BridgeWindow *w, BridgeRect *r) { OnMain([&] { Main_GetFrameRect(w, r); }); }
 void Bridge_SetTitle(BridgeWindow *w, const char *title) { OnMain([&] { Main_SetTitle(w, title); }); }
 void Bridge_FocusWindow(BridgeWindow *w) { OnMain([&] { Main_FocusWindow(w); }); }
-int Bridge_IsKeyWindow(BridgeWindow *w) { return OnMain([&] { return Main_IsKeyWindow(w); }); }
+int Bridge_IsKeyWindow(BridgeWindow *w)
+{
+    if (!w32::IsMainThread())
+        return w && w->keyWindow.load(std::memory_order_relaxed) && g_appActiveCache.load(std::memory_order_relaxed) ? 1 : 0;
+    RefreshWindowState(w);
+    return Main_IsKeyWindow(w);
+}
 void Bridge_SetCoversScreen(BridgeWindow *w, int covers) { OnMain([&] { Main_SetCoversScreen(w, covers); }); }
 void *Bridge_GetMetalLayer(BridgeWindow *w) { return OnMain([&] { return Main_GetMetalLayer(w); }); }
 double Bridge_GetBackingScale(BridgeWindow *w) { return OnMain([&] { return Main_GetBackingScale(w); }); }
-void Bridge_SetCursorVisible(int visible) { OnMain([&] { Main_SetCursorVisible(visible); }); }
-void Bridge_SetMouseCaptured(int captured) { OnMain([&] { Main_SetMouseCaptured(captured); }); }
-void Bridge_WarpCursor(int x, int y) { OnMain([&] { Main_WarpCursor(x, y); }); }
+// cursor changes from other threads (the render thread shows and hides the cursor every frame) are queued for the
+// main thread without waiting; later calls from the same thread run after them
+void Bridge_SetCursorVisible(int visible)
+{
+    w32::PostToMainThread([visible] {
+        @autoreleasepool
+        {
+            Main_SetCursorVisible(visible);
+        }
+    });
+}
+void Bridge_SetMouseCaptured(int captured)
+{
+    w32::PostToMainThread([captured] { Main_SetMouseCaptured(captured); });
+}
+void Bridge_WarpCursor(int x, int y)
+{
+    w32::PostToMainThread([x, y] { Main_WarpCursor(x, y); });
+}
 void Bridge_GetCursorPos(int *x, int *y) { OnMain([&] { Main_GetCursorPos(x, y); }); }
-void Bridge_SetArrowCursor(int wait) { OnMain([&] { Main_SetArrowCursor(wait); }); }
+void Bridge_SetArrowCursor(int wait)
+{
+    w32::PostToMainThread([wait] {
+        @autoreleasepool
+        {
+            Main_SetArrowCursor(wait);
+        }
+    });
+}
 uint32_t Bridge_CurrentModifiers(void) { return OnMain([&] { return Main_CurrentModifiers(); }); }
 int Bridge_GetScreenCount(void) { return OnMain([&] { return Main_GetScreenCount(); }); }
 int Bridge_GetScreenRect(int index, BridgeRect *full, BridgeRect *work, double *refreshHz)

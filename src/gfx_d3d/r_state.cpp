@@ -326,7 +326,7 @@ void __cdecl R_SetInitialContextState(IDirect3DDevice9 *device)
     }
 }
 
-void __cdecl R_ChangeDepthHackNearClip(GfxCmdBufSourceState *source, float depthHackFlags)
+void __cdecl R_ChangeDepthHackNearClip(GfxCmdBufSourceState *source, unsigned int depthHackFlags)
 {
     iassert(source);
 
