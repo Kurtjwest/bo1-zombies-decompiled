@@ -1419,6 +1419,7 @@ void    Sys_Error(char *error, ...)
     }
     else
     {
+#if defined(_WIN32) // (no console window on macOS: Sys_ShowConsole)
         if (Sys_IsMainThread())
         {
             Sys_ShowConsole();
@@ -1426,6 +1427,7 @@ void    Sys_Error(char *error, ...)
             Conbuf_AppendText(string);
             Conbuf_AppendText((char *)"\n");
         }
+#endif
 
         Sys_SetErrorText(string);
 #if !defined(_WIN32)

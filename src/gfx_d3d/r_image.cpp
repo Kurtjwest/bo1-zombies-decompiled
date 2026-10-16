@@ -940,7 +940,7 @@ GfxImage *__cdecl Image_FindExisting_FastFile(const char *name)
 GfxImage *__cdecl Image_Register(char *imageName, unsigned __int8 semantic, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (GfxImage *)BO1_I2P(((int (__cdecl *)(char *, unsigned int, int))Image_Register_FastFile)(imageName, semantic, imageTrack));
+        return Image_Register_FastFile(imageName);
     else
         return Image_Register_LoadObj(imageName, semantic, imageTrack);
 }

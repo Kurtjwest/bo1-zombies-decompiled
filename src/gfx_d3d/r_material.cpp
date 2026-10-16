@@ -1110,7 +1110,7 @@ void __cdecl Material_GetHashIndex(const char *name, unsigned __int16 *hashIndex
 Material *__cdecl Material_Register(char *name, int imageTrack)
 {
     if ( useFastFile->current.enabled )
-        return (Material *)BO1_I2P(((int (__cdecl *)(char *, int))Material_Register_FastFile)(name, imageTrack));
+        return Material_Register_FastFile(name);
     else
         return Material_Register_LoadObj(name, imageTrack);
 }

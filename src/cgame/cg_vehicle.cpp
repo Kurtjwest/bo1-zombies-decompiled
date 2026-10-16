@@ -385,7 +385,7 @@ void    CG_Vehicle_PreControllers(
     }
     if (!cent->vehicle->vehicle_cache && numWheels > 0)
     {
-        cent->vehicle->vehicle_cache = (vehicle_cache_t *)MT_Alloc(1928, 21, SCRIPTINSTANCE_SERVER);
+        cent->vehicle->vehicle_cache = (vehicle_cache_t *)MT_Alloc(sizeof(vehicle_cache_t), 21, SCRIPTINSTANCE_SERVER); // (1928 on 32-bit Windows)
         if (!cent->vehicle->vehicle_cache
             && !Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\cgame\\cg_vehicle.cpp",

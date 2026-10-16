@@ -1116,7 +1116,7 @@ char __cdecl R_Cinematic_StartPlayback_Now(const char *filename, unsigned int pl
             __debugbreak();
         }
         R_Cinematic_InitBinkVolumes();
-        memset((unsigned __int8 *)&cinematicGlob.binkTextureSet, 0, 0xD8u);
+        memset((unsigned __int8 *)&cinematicGlob.binkTextureSet, 0, sizeof(cinematicGlob.binkTextureSet)); // (0xD8 on 32-bit Windows)
         BinkGetFrameBuffersInfo(cinematicGlob.bink, &cinematicGlob.binkTextureSet.bink_buffers);
         R_Cinematic_CheckBinkError();
         R_Cinematic_InitBinkTextures();

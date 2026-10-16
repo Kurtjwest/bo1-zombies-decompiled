@@ -135,10 +135,11 @@ void __cdecl Sys_CreateConsole(HINSTANCE__ *hInstance)
                                                      hInstance,
                                                      0);
             SendMessageA(s_wcd.hwndBuffer, 0x30u, (WPARAM)s_wcd.hfBufferFont, 0);
-            s_wcd.SysInputLineWndProc = (int (__stdcall *)(HWND__ *, unsigned int, unsigned int, int))BO1_I2P(SetWindowLongA(
-                                                                                                                                                                                                    s_wcd.hwndInputLine,
-                                                                                                                                                                                                    -4,
-                                                                                                                                                                                                    (int)BO1_P2I(InputLineWndProc)));
+            // (the pointer-sized form: the procedure is a full pointer on 64-bit targets)
+            s_wcd.SysInputLineWndProc = (int (__stdcall *)(HWND__ *, unsigned int, unsigned int, int))SetWindowLongPtrA(
+                s_wcd.hwndInputLine,
+                -4,
+                (LONG_PTR)InputLineWndProc);
             SendMessageA(s_wcd.hwndInputLine, 0x30u, (WPARAM)s_wcd.hfBufferFont, 0);
             SetFocus(s_wcd.hwndInputLine);
             Con_GetTextCopy(text, 0x4000);
@@ -241,6 +242,11 @@ void __cdecl Sys_ShowConsole()
 
     if ( Sys_IsHeadless() ) // zombies: headless never creates or shows the console window
         return;
+#if !defined(_WIN32)
+    // macOS: the console window is Win32 edit controls, which have nothing to draw them there; its text is in the
+    // log file (and on stdout)
+    return;
+#endif
     if ( !s_wcd.hWnd )
     {
         ModuleHandleA = GetModuleHandleA(0);

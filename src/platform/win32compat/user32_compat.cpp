@@ -7,6 +7,7 @@
 // "read position, recenter" mouse code expects.
 
 #include <windows.h>
+#include <universal/ptr32.h>
 #include "kernel32_internal.h"
 #include "w32_platform.h"
 #include "../macos/cocoa_bridge.h"
@@ -620,6 +621,35 @@ HWND CreateWindowExA(DWORD exStyle, LPCSTR className, LPCSTR title, DWORD style,
     g_windows.push_back(wnd);
     if (parent == HWND_MESSAGE)
         return (HWND)wnd; // message-only window: no Cocoa window
+    if (style & WS_CHILD)
+    {
+        // controls (edit boxes, buttons) of Win32 dialogs: they keep their window procedure and messages, but get
+        // no Cocoa window of their own (nothing draws GDI controls here)
+        CREATESTRUCTA cs;
+        memset(&cs, 0, sizeof(cs));
+        cs.lpCreateParams = param;
+        cs.hInstance = inst;
+        cs.hMenu = menu;
+        cs.hwndParent = parent;
+        cs.cx = w;
+        cs.cy = h;
+        cs.x = x;
+        cs.y = y;
+        cs.style = (LONG)style;
+        cs.lpszName = title;
+        cs.lpszClass = className;
+        cs.dwExStyle = exStyle;
+        if (wnd->proc)
+        {
+            wnd->proc((HWND)wnd, WM_NCCREATE, 0, (LPARAM)&cs);
+            if (wnd->proc((HWND)wnd, WM_CREATE, 0, (LPARAM)&cs) == -1)
+            {
+                DestroyWindow((HWND)wnd);
+                return nullptr;
+            }
+        }
+        return (HWND)wnd;
+    }
     if (x == CW_USEDEFAULT)
         x = (int)0x80000000;
     if (w == CW_USEDEFAULT || w <= 0)
@@ -836,8 +866,20 @@ int MapWindowPoints(HWND from, HWND to, LPPOINT pts, UINT n)
     return 0;
 }
 
-LONG GetWindowLongA(HWND h, int idx) { return (LONG)GetWindowLongPtrA(h, idx); }
-LONG SetWindowLongA(HWND h, int idx, LONG v) { return (LONG)SetWindowLongPtrA(h, idx, v); }
+// The 32-bit forms carry a window procedure as a 32-bit (Ptr32) handle: the engine's decompiled code converts the
+// function pointer with BO1_P2I before passing it, and converts the old procedure back with BO1_I2P.
+LONG GetWindowLongA(HWND h, int idx)
+{
+    if (idx == GWL_WNDPROC)
+        return (LONG)Ptr32_Encode((const void *)GetWindowLongPtrA(h, idx));
+    return (LONG)GetWindowLongPtrA(h, idx);
+}
+LONG SetWindowLongA(HWND h, int idx, LONG v)
+{
+    if (idx == GWL_WNDPROC)
+        return (LONG)Ptr32_Encode((const void *)SetWindowLongPtrA(h, idx, (LONG_PTR)Ptr32_Decode((uint32_t)v)));
+    return (LONG)SetWindowLongPtrA(h, idx, v);
+}
 LONG_PTR GetWindowLongPtrA(HWND h, int idx)
 {
     Win32Wnd *w = W(h);
