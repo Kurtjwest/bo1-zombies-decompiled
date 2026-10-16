@@ -629,7 +629,13 @@ static void Main_DestroyWindow(BridgeWindow *w)
         w->view = nil;
     }
     g_bridgeWindows.erase(std::remove(g_bridgeWindows.begin(), g_bridgeWindows.end(), w), g_bridgeWindows.end());
-    delete w;
+    // The struct itself stays allocated as a dead window (no NSWindow, state cleared) rather than being freed:
+    // other threads read the cached state through the pointer without waiting for the main thread, and one that
+    // fetched it just before the Win32 layer detached it may still ask whether it is visible or minimized.
+    // A window is only destroyed on vid_restart and quit, so this costs a few bytes each time.
+    w->visible.store(0, std::memory_order_relaxed);
+    w->minimized.store(0, std::memory_order_relaxed);
+    w->keyWindow.store(0, std::memory_order_relaxed);
 }
 
 static void Main_ShowWindow(BridgeWindow *w, int show)

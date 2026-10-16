@@ -15,6 +15,7 @@
 
 #include "mac_keycodes.h"
 #include <algorithm>
+#include <atomic>
 #include <cctype>
 #include <deque>
 #include <map>
@@ -37,8 +38,9 @@ struct Win32Wnd
     LONG_PTR userData = 0;
     LONG_PTR id = 0;
     HINSTANCE instance = nullptr;
-    BridgeWindow *bw = nullptr;
-    bool destroyed = false;
+    // read on any thread (the main thread's pump, the renderer), written by whichever thread destroys the window
+    std::atomic<BridgeWindow *> bw{nullptr};
+    std::atomic<bool> destroyed{false};
     std::map<std::string, HANDLE> props;
 };
 
@@ -704,12 +706,14 @@ BOOL DestroyWindow(HWND h)
         w->proc(h, WM_DESTROY, 0, 0);
         w->proc(h, WM_NCDESTROY, 0, 0);
     }
-    if (w->bw)
-    {
-        Bridge_DestroyWindow(w->bw);
-        w->bw = nullptr;
-    }
+    // Detach the bridge window before destroying it. The renderer destroys its window from its own thread, so
+    // Bridge_DestroyWindow waits while the main thread runs the teardown, and the main thread goes straight on to
+    // its pump (UpdateCapture -> GetForegroundWindow -> MainWindow), which must not find the window still attached.
+    BridgeWindow *bw = w->bw;
+    w->bw = nullptr;
     w->destroyed = true;
+    if (bw)
+        Bridge_DestroyWindow(bw);
     if (g_focus == h)
         g_focus = nullptr;
     {
