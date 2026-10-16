@@ -249,7 +249,7 @@ void Com_ScriptErrorDrop(const char *msg, ...)
     _vsnprintf(string, 0x1000u, msg, va);
     va_end(va);
     if ( ParseThreadInfo->parseInfoNum )
-        Com_Error(ERR_DROP, "%sFile %s, line %i: %s", BO1_VA(v3->errorPrefix), v3->parseFile, v3->lines, string);
+        Com_Error(ERR_DROP, "%sFile %s, line %i: %s", BO1_VA(v3->errorPrefix), BO1_VA(v3->parseFile), v3->lines, string);
     else
         Com_Error(ERR_DROP, "%s", string);
 }
@@ -267,7 +267,7 @@ void Com_ScriptError(const char *msg, ...)
     _vsnprintf(string, 0x1000u, msg, va);
     va_end(va);
     if ( ParseThreadInfo->parseInfoNum )
-        Com_PrintError(24, "%sFile %s, line %i: %s", BO1_VA(v3->warningPrefix), v3->parseFile, v3->lines, string);
+        Com_PrintError(24, "%sFile %s, line %i: %s", BO1_VA(v3->warningPrefix), BO1_VA(v3->parseFile), v3->lines, string);
     else
         Com_PrintError(24, "%s", string);
 }
@@ -285,7 +285,7 @@ void Com_ScriptWarning(const char *msg, ...)
     _vsnprintf(string, 0x1000u, msg, va);
     va_end(va);
     if ( ParseThreadInfo->parseInfoNum )
-        Com_PrintWarning(24, "%sFile %s, line %i: %s", BO1_VA(v3->warningPrefix), v3->parseFile, v3->lines, string);
+        Com_PrintWarning(24, "%sFile %s, line %i: %s", BO1_VA(v3->warningPrefix), BO1_VA(v3->parseFile), v3->lines, string);
     else
         Com_PrintWarning(24, "%s", string);
 }

@@ -362,10 +362,10 @@ unsigned int __cdecl R_TessRopeMeshList(const GfxDrawSurfListArgs *listArgs, Gfx
             v4 = va(
                 "0x%08x 0x%08x %i %i %s",
                 BO1_VA(data->codeMeshes[LOWORD(drawSurf.packed)].indices),
-                data->codeMeshPtr->indices,
+                BO1_VA(data->codeMeshPtr->indices),
                 3 * data->codeMeshes[LOWORD(drawSurf.packed)].triCount,
                 61440,
-                context.state->material->info.name);
+                BO1_VA(context.state->material->info.name));
             if (!Assert_MyHandler(
                 "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\rb_tess.cpp",
                 531,

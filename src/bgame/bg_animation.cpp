@@ -692,7 +692,7 @@ void __cdecl BG_ParseCommands(const char **input, animScriptItem_t *scriptItem, 
                         || !BG_StringForIndex(parseVehicleNameIndex, animVehicleNameStr, 0)
                         || !parseVehicleLoop )
                     {
-                        BG_AnimParseError("BG_ParseCommands: %vehicle_name variable used outside #FOR_ALL_VEHICLES loop");
+                        BG_AnimParseError("BG_ParseCommands: %%vehicle_name variable used outside #FOR_ALL_VEHICLES loop");
                     }
 
                     strcat(animName, BG_StringForIndex(parseVehicleNameIndex, animVehicleNameStr, 0));
@@ -4187,7 +4187,7 @@ int __cdecl BG_ParseConditions(const char **text_pp, animScriptItem_t *scriptIte
                     else
                     {
                         if ( parseVehicleNameIndex < 0 )
-                            BG_AnimParseError("BG_ParseConditions: %vehicle_name found outside of #FOR_ALL_VEHICLES loop");
+                            BG_AnimParseError("BG_ParseConditions: %%vehicle_name found outside of #FOR_ALL_VEHICLES loop");
                         conditionValue = parseVehicleNameIndex;
                     }
                 }

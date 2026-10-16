@@ -1668,7 +1668,7 @@ void DB_EndReorderZone()
                 }
                 if ( entry->type == 24 )
                 {
-                    bytesa = Com_sprintf(line, 0x200u, "%s,%s%s\r\n", BO1_VA(entry->typeString), "mp/", entry->assetName);
+                    bytesa = Com_sprintf(line, 0x200u, "%s,%s%s\r\n", BO1_VA(entry->typeString), "mp/", BO1_VA(entry->assetName));
                     WriteFile(file, line, bytesa, &written, 0);
                 }
                 else
@@ -1679,11 +1679,11 @@ void DB_EndReorderZone()
                                             0x200u,
                                             "%s,%s,%s,%s\r\n",
                                             BO1_VA(entry->typeString),
-                                            entry->assetName,
+                                            BO1_VA(entry->assetName),
                                             s_dbReorder.zoneName,
                                             "all_mp");
                     else
-                        bytes = Com_sprintf(line, 0x200u, "%s,%s\r\n", BO1_VA(entry->typeString), entry->assetName);
+                        bytes = Com_sprintf(line, 0x200u, "%s,%s\r\n", BO1_VA(entry->typeString), BO1_VA(entry->assetName));
                     WriteFile(file, line, bytes, &written, 0);
                 }
             }
@@ -4542,7 +4542,7 @@ void __cdecl DB_BuildOSPath_FromSource(const char *zoneName, FF_DIR source, unsi
             {
                 __debugbreak();
             }
-            Com_sprintf(filename, size, "%s\\%s\\%s.ff", BO1_VA(fs_homepath->current.string), fs_gameDirVar->current.string, zoneName);
+            Com_sprintf(filename, size, "%s\\%s\\%s.ff", BO1_VA(fs_homepath->current.string), BO1_VA(fs_gameDirVar->current.string), zoneName);
         }
         else if ( source == FFD_USER_MAP )
         {

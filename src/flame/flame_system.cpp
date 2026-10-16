@@ -1278,7 +1278,7 @@ void __cdecl Flame_InitDevGui()
     {
         if (flameVars[ia].name)
         {
-            v1 = va("devgui_dvar \"FT/Edit Dvars:4/%s:%i\" %s", BO1_VA(flameVars[ia].name), ia + 1, flameVars[ia].dvarName);
+            v1 = va("devgui_dvar \"FT/Edit Dvars:4/%s:%i\" %s", BO1_VA(flameVars[ia].name), ia + 1, BO1_VA(flameVars[ia].dvarName));
             Cbuf_InsertText(0, v1);
         }
     }

@@ -395,7 +395,7 @@ void __cdecl DObjCreateDuplicateParts(DObj *obj, DObjModel_s *dobjModels, unsign
                         "WARNING: Attempting to meld model, but root part '%s' of model '%s' not found in model '%s' or any of its descendants\n",
                         SL_ConvertToString(*boneNames, SCRIPTINSTANCE_SERVER),
                         BO1_VA(model->name),
-                        models[0]->name);
+                        BO1_VA(models[0]->name));
                 }
             }
         }

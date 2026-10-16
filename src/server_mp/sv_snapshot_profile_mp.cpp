@@ -127,7 +127,7 @@ void __cdecl SV_PacketAnalyze_TrackETypeBytes(
     {
         fieldArrayName = fieldList->fieldArrayName;
         EntityTypeName = BG_GetEntityTypeName(eType);
-        CG_QuickPrint("Entity %d %'%s':%d %s\n", number, EntityTypeName, eType, fieldArrayName);
+        CG_QuickPrint("Entity %d '%s':%d %s\n", number, EntityTypeName, eType, fieldArrayName);
     }
 }
 

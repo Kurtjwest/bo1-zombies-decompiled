@@ -607,9 +607,9 @@ void __cdecl R_AddRopeCodeMeshDrawSurf(
     {
         v7 = va(
                      "index = 0x%08x, sortedMaterials = 0x%08x, material = 0x%08x\n",
-                     (unsigned int)BO1_P2I((material->info.drawSurf.fields.materialSortedIndex,
-                     0,
-                     rgp.sortedMaterials[material->info.drawSurf.fields.materialSortedIndex])));
+                     (unsigned int)material->info.drawSurf.fields.materialSortedIndex,
+                     (unsigned int)BO1_P2I(rgp.sortedMaterials[material->info.drawSurf.fields.materialSortedIndex]),
+                     (unsigned int)BO1_P2I(material));
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_drawsurf.cpp",
                         740,

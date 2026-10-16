@@ -2424,7 +2424,7 @@ void __cdecl LiveStats_SortPersonalBests(int controllerIndex)
         {
             personalBestPtr = &s_personalBests[controllerIndex][personalBest];
             personalBestPtr->rating = 0;
-            v1 = va("%s%s", BO1_VA(personalBestPtr->prefix), personalBestPtr->name);
+            v1 = va("%s%s", BO1_VA(personalBestPtr->prefix), BO1_VA(personalBestPtr->name));
             personalBestRow = StringTable_LookupRowNumForValue(statsTable, 0, v1);
             if ( personalBestRow == -1 )
             {

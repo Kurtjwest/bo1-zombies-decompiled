@@ -4381,8 +4381,8 @@ void __cdecl CG_Missile(int localClientNum, centity_s *cent)
                 if ( zombiemode && zombiemode->current.enabled && Dvar_GetBool("bo1_measure") )
                     Com_Printf(14, "bo1_cgmissile: time %d ent %d weapon %s model %s dobj %d trail %s handle %d\n",
                         CG_GetLocalClientGlobals(localClientNum)->time, s1->number, BG_WeaponName(cent->nextState.weapon),
-                        BO1_VA(weapDef->projectileModel) ? weapDef->projectileModel->name : "", obj ? 1 : 0,
-                        weapDef->projTrailEffect ? weapDef->projTrailEffect->name : "", cent->fxTrailHandle ? 1 : 0);
+                        BO1_VA(weapDef->projectileModel ? weapDef->projectileModel->name : ""), obj ? 1 : 0,
+                        BO1_VA(weapDef->projTrailEffect ? weapDef->projTrailEffect->name : ""), cent->fxTrailHandle ? 1 : 0);
                 v4 = SND_FindAliasId(weapDef->projIgnitionSound);
                 CG_PlaySound(localClientNum, s1->number, cent->pose.origin, 0, 0, 1.0, v4);
                 if ( weapDef->projExplosion == WEAPPROJEXP_NAPALMBLOB )

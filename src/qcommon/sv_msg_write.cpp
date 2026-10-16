@@ -186,11 +186,11 @@ void __cdecl MSG_LoopThroughFields(const NetFieldList *fieldToCheck)
                     " Overlapping netfields - EntityField %s : NetField ID#%d - %s (%d:%d)    overlaps to NetField ID#%d - %s (%d:%d)\n",
                     BO1_VA(fieldToCheck->fieldArrayName),
                     j,
-                    fieldToCheck->array[j].name,
+                    BO1_VA(fieldToCheck->array[j].name),
                     jstart,
                     jend,
                     k,
-                    fieldToCheck->array[k].name,
+                    BO1_VA(fieldToCheck->array[k].name),
                     kstart,
                     kend);
                 if ( !Assert_MyHandler(

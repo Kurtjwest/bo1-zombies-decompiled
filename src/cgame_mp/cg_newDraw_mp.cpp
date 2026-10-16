@@ -4509,7 +4509,7 @@ void __cdecl CG_DrawPlayerWeaponName(
                 weapInfo = CG_GetLocalClientWeaponInfo(localClientNum, weapIndex);
                 weapDef = BG_GetWeaponDef(weapIndex);
                 if ( *weapDef->szModeName )
-                    string = va("%s / %s", BO1_VA(weapInfo->translatedDisplayName), weapInfo->translatedModename);
+                    string = va("%s / %s", BO1_VA(weapInfo->translatedDisplayName), BO1_VA(weapInfo->translatedModename));
                 else
                     string = va("%s", BO1_VA(weapInfo->translatedDisplayName));
                 v6 = rect->x + rect->w;
@@ -4560,7 +4560,7 @@ void __cdecl CG_DrawPlayerWeaponNameBack(
             weapInfo = CG_GetLocalClientWeaponInfo(localClientNum, weapIndex);
             weapDef = BG_GetWeaponDef(weapIndex);
             if ( *weapDef->szModeName )
-                string = va("%s / %s", BO1_VA(weapInfo->translatedDisplayName), weapInfo->translatedModename);
+                string = va("%s / %s", BO1_VA(weapInfo->translatedDisplayName), BO1_VA(weapInfo->translatedModename));
             else
                 string = va("%s", BO1_VA(weapInfo->translatedDisplayName));
             w = (float)((float)UI_TextWidth(string, 0, font, scale) + 28.0) + 8.0;

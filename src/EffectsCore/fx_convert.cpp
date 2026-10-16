@@ -77,7 +77,7 @@ const FxEffectDef *__cdecl FX_Convert(const FxEditorEffectDef *editorEffect, voi
                         Com_PrintError(
                             20,
                             "ERROR: no physics preset specified for the FX model [%s]\n",
-                            *(Ptr32<const char> *)elemVisual->anonymous);
+                            BO1_VA(*(Ptr32<const char> *)elemVisual->anonymous));
                     }
                 }
             }
@@ -2424,7 +2424,7 @@ char __cdecl FX_ValidateAtlasSettings(const FxEditorEffectDef *editorEffect, con
                         BO1_VA(mtlInfoRef.name),
                         mtlInfoRef.textureAtlasColumnCount,
                         mtlInfoRef.textureAtlasRowCount,
-                        mtlInfo.name,
+                        BO1_VA(mtlInfo.name),
                         mtlInfo.textureAtlasColumnCount,
                         mtlInfo.textureAtlasRowCount);
                     return 0;

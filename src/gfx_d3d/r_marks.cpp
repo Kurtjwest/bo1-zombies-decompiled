@@ -1280,7 +1280,7 @@ bool __cdecl R_MarkFragments_BrushSurface(
                 markInfo->markHasLightmap,
                 surface->lightmapIndex,
                 BO1_VA(markInfo->material->info.name),
-                surface->material->info.name);
+                BO1_VA(surface->material->info.name));
         }
         return true;
     }
@@ -1298,7 +1298,7 @@ bool __cdecl R_MarkFragments_BrushSurface(
                 markInfo->markHasReflection,
                 surface->reflectionProbeIndex,
                 BO1_VA(markInfo->material->info.name),
-                surface->material->info.name);
+                BO1_VA(surface->material->info.name));
         }
         return true;
     }

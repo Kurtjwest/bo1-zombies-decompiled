@@ -2267,7 +2267,7 @@ void __cdecl Playlist_RunRules(int localControllerIndex, int entryNum)
                 16,
                 "Setting up gametype %s (running script %s)\n",
                 BO1_VA(gametypeEntry->localizedName),
-                gametypeEntry->scriptName);
+                BO1_VA(gametypeEntry->scriptName));
             Dvar_SetStringByName("ui_gametype", (char *)gametypeEntry->scriptName);
         }
         else
@@ -2291,7 +2291,7 @@ void __cdecl Playlist_RunRules(int localControllerIndex, int entryNum)
                 16,
                 "Running custom game rules for gametype %s: %s\n",
                 BO1_VA(gametypeEntry->localizedName),
-                gametypeEntry->rules);
+                BO1_VA(gametypeEntry->rules));
             if ( gametypeEntry->rules && *gametypeEntry->rules )
             {
                 v9 = (char *)gametypeEntry->rules;
@@ -2656,7 +2656,7 @@ void __cdecl Playlist_SetSVMapRotation()
                             v2 = (char *)Dvar_GetString("playlist_excludeMap"),
                             v3 = strstr(v2, mapname),
                             v3)
-                    || (v9 = (char *)va("%s %s", BO1_VA(gametypeEntry->scriptName), entry->mapname),
+                    || (v9 = (char *)va("%s %s", BO1_VA(gametypeEntry->scriptName), BO1_VA(entry->mapname)),
                             v4 = (char *)Dvar_GetString("playlist_excludeGametypeMap"),
                             v5 = strstr(v4, v9),
                             v5) )
@@ -2667,7 +2667,7 @@ void __cdecl Playlist_SetSVMapRotation()
                         playlist->current.integer,
                         i,
                         BO1_VA(gametypeEntry->scriptName),
-                        entry->mapname);
+                        BO1_VA(entry->mapname));
                     entry->ignore = 1;
                 }
                 else

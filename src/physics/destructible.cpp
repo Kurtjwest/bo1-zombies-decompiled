@@ -1999,7 +1999,7 @@ void __cdecl CG_DestructibleBreakPiece(
                         21,
                         "Spawn model %s for destructible %s doesn't have physPreset.",
                         BO1_VA(model->name),
-                        self->destructible->ddef->name);
+                        BO1_VA(self->destructible->ddef->name));
                 }
             }
         }

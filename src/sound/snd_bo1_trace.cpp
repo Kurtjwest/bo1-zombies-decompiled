@@ -113,7 +113,7 @@ void Print(const char *side, const char *api, unsigned int id, int ent, const fl
         Shape(shape, sizeof(shape), side, next);
         Com_Printf(16, "BO1_AUDIO %s secondary alias=%s ent=%d org=(%.0f %.0f %.0f) t=%u -> %s of=%s%s\n",
             side, BO1_VA(link->secondaryname), ent, origin[0], origin[1], origin[2], Sys_Milliseconds(),
-            next && next->count ? "resolved_no_device" : "alias_missing", link->name ? link->name : "?", shape);
+            next && next->count ? "resolved_no_device" : "alias_missing", BO1_VA(link->name ? link->name : "?"), shape);
         link = next && next->count ? next->head : 0;
     }
 }
@@ -236,7 +236,7 @@ void SND_BO1TraceBanks(const char *when)
         if (!bank)
             continue;
         Com_Printf(16, "BO1_AUDIO bank %s: %u aliases, %u radverbs, %u snapshots\n",
-            BO1_VA(bank->name) ? bank->name : "?", bank->aliasCount, bank->radverbCount, bank->snapshotCount);
+            BO1_VA(bank->name ? bank->name : "?"), bank->aliasCount, bank->radverbCount, bank->snapshotCount);
         total += bank->aliasCount;
     }
     // L14: each sound group's attenuation columns and the product along its parent chain (the factor SND_GetBaseLevel

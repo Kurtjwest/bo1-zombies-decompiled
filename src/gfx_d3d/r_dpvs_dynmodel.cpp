@@ -25,7 +25,7 @@ void __cdecl R_AddCellDynModelSurfacesInFrustumCmd(Ptr32<const DpvsPlane> *data)
                         183,
                         0,
                         "dpvsCell->cellIndex doesn't index rgp.world->dpvsPlanes.cellCount\n\t%i not in [0, %i)",
-                        data[1],
+                        BO1_VA(data[1]),
                         rgp.world->dpvsPlanes.cellCount) )
         {
             __debugbreak();

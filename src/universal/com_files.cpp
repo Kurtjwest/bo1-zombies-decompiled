@@ -2031,7 +2031,7 @@ void __cdecl FS_AddIwdFilesForGameDirectory(char *path, char *pszGameFolder)
     {
         Com_PrintWarning(
             10,
-            "WARNING: Exceeded max number of iwd files in %s/%s (%1/%1)\n",
+            "WARNING: Exceeded max number of iwd files in %s/%s (%i/%i)\n",
             path,
             pszGameFolder,
             numfiles,

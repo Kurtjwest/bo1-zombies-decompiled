@@ -1535,7 +1535,7 @@ void __cdecl SV_SendClientGameState(client_t *client)
         && onlinegame->current.enabled
         && sv_writeConfigStrings->current.enabled )
     {
-        f = FS_SV_FOpenFileWrite(va("configStrings_pc_%s_%s.csv", BO1_VA(sv_mapname->current.string), g_gametype->current.string), (char*)"devOutput");
+        f = FS_SV_FOpenFileWrite(va("configStrings_pc_%s_%s.csv", BO1_VA(sv_mapname->current.string), BO1_VA(g_gametype->current.string)), (char*)"devOutput");
     }
 
     if ( f )

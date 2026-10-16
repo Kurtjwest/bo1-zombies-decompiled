@@ -1034,7 +1034,7 @@ const char *__cdecl R_ClosestRefreshRateForMode(unsigned int width, unsigned int
                      BO1_VA(dx.resolutionNameTable[4 * bot - 1023]),
                      bot,
                      dx.displayModes[bot].Width,
-                     dx.resolutionNameTable[4 * bot - 1023],
+                     BO1_VA(dx.resolutionNameTable[4 * bot - 1023]),
                      width,
                      height);
         if ( !Assert_MyHandler(

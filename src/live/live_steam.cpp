@@ -261,7 +261,7 @@ void __cdecl LiveSteam_TestFriends_f()
             n,
             &aOffline[20 * (i == 3) + 15 * (i == 2) + 8 * (i == 1)]);
         dwID = LiveSteam_GetFriendXuid(n);
-        Com_Printf_NoFilter("STEAM: bdOnlineUserID is: %I64x\n", dwID);
+        Com_Printf_NoFilter("STEAM: bdOnlineUserID is: %llx\n", dwID);
     }
     n = LiveSteam_GetNumFriendsOnTheServer();
     Com_Printf_NoFilter("STEAM: LiveSteam_GetNumFriendsOnTheServer(): %d\n", n);
@@ -374,7 +374,7 @@ char __cdecl LiveSteam_DWUserNameFromSteamID(char *dwUserName)
     {
         //v2 = SteamUser();
         //steamid = v2->GetSteamID(v2, v3)->m_steamid.m_unAll64Bits;
-        sprintf_s(dwUserName, 0x40u, "%s%I64x", "steam", SteamUser()->GetSteamID().ConvertToUint64());
+        sprintf_s(dwUserName, 0x40u, "%s%llx", "steam", SteamUser()->GetSteamID().ConvertToUint64());
         return 1;
     }
     else

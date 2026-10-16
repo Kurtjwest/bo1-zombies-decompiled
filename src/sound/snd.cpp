@@ -2091,7 +2091,7 @@ char __cdecl SND_CheckValidSecondary(const snd_alias_t *alias, const snd_alias_t
                         9,
                         "Error: Infinite recursion in secondary aliases sequenced together.\nAlias sequence start: '%s'->'%s'\n",
                         BO1_VA(alias->name),
-                        alias->secondaryname);
+                        BO1_VA(alias->secondaryname));
                     return 0;
                 }
                 ++secondaryAliasRecursionCounter;
@@ -2104,7 +2104,7 @@ char __cdecl SND_CheckValidSecondary(const snd_alias_t *alias, const snd_alias_t
                 9,
                 "ERROR: a looping alias cannot have a non-looping secondary alias.\nERROR: Alias sequence: '%s'->'%s'\n",
                 BO1_VA(alias->name),
-                alias->secondaryname);
+                BO1_VA(alias->secondaryname));
             return 0;
         }
     }
@@ -2114,7 +2114,7 @@ char __cdecl SND_CheckValidSecondary(const snd_alias_t *alias, const snd_alias_t
             9,
             "ERROR: a non-looping alias cannot have a looping secondary alias.\nERROR: Alias sequence: '%s'->'%s'\n",
             BO1_VA(alias->name),
-            alias->secondaryname);
+            BO1_VA(alias->secondaryname));
         return 0;
     }
 }
@@ -3711,7 +3711,7 @@ static void SND_BO1TraceVoice(const snd_voice_t *voice, bool is3d)
         "BO1_SNDVOICE t=%d v=%d id=%d alias=%s ent=%d 3d=%d pos=%.9g,%.9g,%.9g lis=%.9g,%.9g,%.9g fwd=%.9g,%.9g,%.9g "
         "dist=%.9g dmin=%.9g dmax=%.9g drmax=%.9g curves=%d,%d,%d,%d rsend=%u csend=%u env=%d datt=%.9g ratt=%.9g omni=%.9g "
         "occ=%.9g dry=%.9g wet=%.9g goal=%.9g,%.9g pan=%.9g,%.9g ch=%d futz=%d\n",
-        g_snd.time, vi, id, BO1_VA(alias->name) ? alias->name : "?", voice->sndEnt.field.entIndex, is3d ? 1 : 0,
+        g_snd.time, vi, id, BO1_VA(alias->name ? alias->name : "?"), voice->sndEnt.field.entIndex, is3d ? 1 : 0,
         voice->position[0], voice->position[1], voice->position[2],
         lis->orient.origin[0], lis->orient.origin[1], lis->orient.origin[2],
         lis->orient.axis[0][0], lis->orient.axis[0][1], lis->orient.axis[0][2],

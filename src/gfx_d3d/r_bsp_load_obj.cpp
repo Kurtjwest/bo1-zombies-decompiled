@@ -3179,7 +3179,7 @@ void __cdecl R_LoadSurfaces(GfxBspLoad *load)
                     ERR_DROP,
                     "map has at least two different skies: %s and %s\nOnly one sky per map is supported\n",
                     BO1_VA(material->info.name),
-                    skyMaterial->info.name);
+                    BO1_VA(skyMaterial->info.name));
             skyMaterial = material;
             ++s_world.skySurfCount;
             if ( surface->primaryLightIndex
@@ -3644,7 +3644,7 @@ void __cdecl R_SetSkyImage(const Material *skyMaterial)
                     ERR_DROP,
                     "colorMap '%s' for sky material '%s' is not a cubemap\n",
                     BO1_VA(texdef->u.image->name),
-                    skyMaterial->info.name);
+                    BO1_VA(skyMaterial->info.name));
             s_world.skyImage = texdef->u.image;
             s_world.skySamplerState = texdef->samplerState;
             return;

@@ -1939,7 +1939,7 @@ void __cdecl GetDvarStringValue(int localClientNum, itemDef_s *item, OperandStac
     if ( uiscript_debug && uiscript_debug->current.integer )
     {
         if ( dvar )
-            Expression_TraceInternal("dvarstring( %s ) = %s\n", BO1_VA(dvar->name), result.internals.string);
+            Expression_TraceInternal("dvarstring( %s ) = %s\n", BO1_VA(dvar->name), BO1_VA(result.internals.string));
         else
             Expression_TraceInternal("dvarstring( %s ) = %s\n", "NULL", BO1_VA(result.internals.string));
     }
@@ -2163,7 +2163,7 @@ void __cdecl GetLocalVarStringValue(int localClientNum, itemDef_s *item, Operand
         if ( uiscript_debug )
         {
             if ( uiscript_debug->current.integer )
-                Expression_TraceInternal("localVarString( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
+                Expression_TraceInternal("localVarString( %s ) = %s\n", BO1_VA(source.internals.string), BO1_VA(result.internals.string));
         }
         AddOperandToStack(dataStack, &result);
     }
@@ -2441,7 +2441,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                                         Expression_TraceInternal(
                                                                                             "player( %s ) = %s\n",
                                                                                             BO1_VA(source.internals.string),
-                                                                                            result.internals.string);
+                                                                                            BO1_VA(result.internals.string));
                                                                                 }
                                                                             }
                                                                             else
@@ -2455,7 +2455,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                                     Expression_TraceInternal(
                                                                                         "player( %s ) = %s\n",
                                                                                         BO1_VA(source.internals.string),
-                                                                                        result.internals.string);
+                                                                                        BO1_VA(result.internals.string));
                                                                             }
                                                                         }
                                                                         else
@@ -2476,7 +2476,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                                 Expression_TraceInternal(
                                                                                     "player( %s ) = %s\n",
                                                                                     BO1_VA(source.internals.string),
-                                                                                    result.internals.string);
+                                                                                    BO1_VA(result.internals.string));
                                                                         }
                                                                     }
                                                                     else
@@ -2491,7 +2491,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                             Expression_TraceInternal(
                                                                                 "player( %s ) = %s\n",
                                                                                 BO1_VA(source.internals.string),
-                                                                                result.internals.string);
+                                                                                BO1_VA(result.internals.string));
                                                                     }
                                                                 }
                                                                 else
@@ -2510,7 +2510,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                         Expression_TraceInternal(
                                                                             "player( %s ) = %s\n",
                                                                             BO1_VA(source.internals.string),
-                                                                            result.internals.string);
+                                                                            BO1_VA(result.internals.string));
                                                                 }
                                                             }
                                                             else
@@ -2527,7 +2527,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                                                     Expression_TraceInternal(
                                                                         "player( %s ) = %s\n",
                                                                         BO1_VA(source.internals.string),
-                                                                        result.internals.string);
+                                                                        BO1_VA(result.internals.string));
                                                             }
                                                         }
                                                         else
@@ -2642,7 +2642,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                                 result.dataType = VAL_INT;
                                 result.internals.intVal = CG_GetPlayerClipAmmoCount(localClientNum);
                                 if ( uiscript_debug && uiscript_debug->current.integer )
-                                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
+                                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), BO1_VA(result.internals.string));
                             }
                         }
                         else
@@ -2658,7 +2658,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                         result.dataType = VAL_STRING;
                         result.internals.intVal = (int)BO1_P2I(CG_GetPlayerOpposingTeamName(localClientNum));
                         if ( uiscript_debug && uiscript_debug->current.integer )
-                            Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
+                            Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), BO1_VA(result.internals.string));
                     }
                 }
                 else
@@ -2666,7 +2666,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                     result.dataType = VAL_STRING;
                     result.internals.intVal = (int)BO1_P2I(CG_GetPlayerTeamName(localClientNum));
                     if ( uiscript_debug && uiscript_debug->current.integer )
-                        Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
+                        Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), BO1_VA(result.internals.string));
                 }
             }
             else
@@ -2678,7 +2678,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
                 result.dataType = VAL_STRING;
                 result.internals.intVal = (int)BO1_P2I(CopyTempString(buf));
                 if ( uiscript_debug && uiscript_debug->current.integer )
-                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
+                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), BO1_VA(result.internals.string));
             }
         }
         else
@@ -2692,7 +2692,7 @@ void __cdecl GetPlayerField(int localClientNum, itemDef_s *item, OperandStack *d
             if ( uiscript_debug )
             {
                 if ( uiscript_debug->current.integer )
-                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), result.internals.string);
+                    Expression_TraceInternal("player( %s ) = %s\n", BO1_VA(source.internals.string), BO1_VA(result.internals.string));
             }
         }
         AddOperandToStack(dataStack, &result);
@@ -2770,7 +2770,7 @@ void __cdecl GetFieldForTeam(int localClientNum, team_t team, Operand *fieldName
                             "team(%i)( %s ) = %s\n",
                             team,
                             BO1_VA(fieldName->internals.string),
-                            result->internals.string);
+                            BO1_VA(result->internals.string));
                 }
             }
             else
@@ -2778,7 +2778,7 @@ void __cdecl GetFieldForTeam(int localClientNum, team_t team, Operand *fieldName
                 result->dataType = VAL_STRING;
                 result->internals.intVal = (int)BO1_P2I(CG_GetTeamName(team));
                 if ( uiscript_debug && uiscript_debug->current.integer )
-                    Expression_TraceInternal("team(%i)( %s ) = %s\n", team, BO1_VA(fieldName->internals.string), result->internals.string);
+                    Expression_TraceInternal("team(%i)( %s ) = %s\n", team, BO1_VA(fieldName->internals.string), BO1_VA(result->internals.string));
             }
         }
         else

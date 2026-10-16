@@ -416,7 +416,7 @@ const char *__cdecl DB_GetXAssetHeaderName(int type, const XAssetHeader *header)
     name = DB_XAssetGetNameHandler[type](header);
     if ( !name )
     {
-        v2 = va("Name \"%s\" not found for asset type %s\n", 0, g_assetNames[type]);
+        v2 = va("Name \"%s\" not found for asset type %s\n", "(null)", g_assetNames[type]);
         if ( !Assert_MyHandler(
                         "C:\\projects_pc\\cod\\codsrc\\src\\database\\db_assetnames.cpp",
                         691,

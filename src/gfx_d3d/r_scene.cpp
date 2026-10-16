@@ -5367,7 +5367,7 @@ void R_DrawFogParams()
         _snprintf(text, 0x80u, "fog.baseHeight = %.4f", f->baseHeight);
         R_AddCmdDrawText(text, 128, font, 100.0, yd, 1.5, 2.0, 0.0, colorWhite, 0);
         ye = yd + 25.0;
-        _snprintf(text, 0x80u, "fog.colorScale = %.4", f->color[3]);
+        _snprintf(text, 0x80u, "fog.colorScale = %.4f", f->color[3]);
         R_AddCmdDrawText(text, 128, font, 100.0, ye, 1.5, 2.0, 0.0, colorWhite, 0);
         yf = ye + 25.0;
         _snprintf(text, 0x80u, "fog.color = %.2f, %.2f, %.2f", f->color[0], f->color[1], f->color[2]);

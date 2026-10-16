@@ -6171,7 +6171,7 @@ unsigned int __cdecl Material_GetCullFlags(Material *material)
                     8,
                     "Material '%s' uses technique set '%s' with mismatched cull modes.\n",
                     BO1_VA(material->info.name),
-                    techniqueSet->name);
+                    BO1_VA(techniqueSet->name));
                 break;
             }
             cullFlags = techTypeCullFlags;
@@ -6427,7 +6427,7 @@ char __cdecl Material_ValidatePassArguments(
                     "material '%s' using technique '%s' from techniqueSet '%s' doesn't expose a '%s' texture\n",
                     BO1_VA(mtl->info.name),
                     techniqueName,
-                    mtl->localTechniqueSet->name,
+                    BO1_VA(mtl->localTechniqueSet->name),
                     argNamea);
                 return 0;
             }
@@ -6440,7 +6440,7 @@ char __cdecl Material_ValidatePassArguments(
                 "material '%s' using technique '%s' from techniqueSet '%s' doesn't expose a '%s' constant\n",
                 BO1_VA(mtl->info.name),
                 techniqueName,
-                mtl->localTechniqueSet->name,
+                BO1_VA(mtl->localTechniqueSet->name),
                 argName);
             return 0;
         }
@@ -6844,7 +6844,7 @@ MaterialTechniqueSet *__cdecl Material_RegisterLayeredTechniqueSet(const Materia
                     "Material '%s' uses technique set '%s' which cannot be used in a layered material; using default instead.    Reco"
                     "mpile the bsp to fix.\n",
                     BO1_VA(mtl[layerIndex]->info.name),
-                    mtl[layerIndex]->localTechniqueSet->name);
+                    BO1_VA(mtl[layerIndex]->localTechniqueSet->name));
                 return 0;
             }
             layerToken = layerIndex + 48;
@@ -7267,7 +7267,7 @@ void __cdecl Material_ApplyStateBitsRemapRuleSet(
         "No rule in stateMap '%s' rule set %i matched the current material state for material '%s'",
         BO1_VA(stateMap->name),
         ruleSetIndex,
-        material->info.name);
+        BO1_VA(material->info.name));
 }
 
 bool __cdecl Material_FinishLoadingInstance(

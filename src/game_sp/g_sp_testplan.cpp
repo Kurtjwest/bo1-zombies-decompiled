@@ -1890,7 +1890,7 @@ void InsertStep(int stepIndex, unsigned int replace, const char *why)
     s_planFlags.insert(s_planFlags.begin() + s_index, (unsigned char)(PLAN_INSERTED | PLAN_ARMED));
     s_planReplace.insert(s_planReplace.begin() + s_index, replace);
     Com_Printf(16, "bo1_plan: time %d insert step %d %s before %s: %s\n", level.time, s_index, BO1_VA(s_steps[stepIndex].name),
-        s_index + 1 < (int)s_plan.size() ? s_steps[s_plan[s_index + 1]].name : "-", why);
+        BO1_VA(s_index + 1 < (int)s_plan.size() ? s_steps[s_plan[s_index + 1]].name : "-"), why);
 }
 
 // Between steps: decide whether the player must buy before the step. Inserts at most one purchase.

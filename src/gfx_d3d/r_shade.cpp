@@ -930,7 +930,7 @@ void __cdecl R_UpdateVertexDecl(GfxCmdBufState *state)
             "Vertex type %i doesn't have the information used by shader %s in material %s\n",
             state->prim.vertDeclType,
             BO1_VA(pass->vertexShader->name),
-            state->material->info.name);
+            BO1_VA(state->material->info.name));
     R_SetVertexShader(state, vertexShader);
 }
 
@@ -992,7 +992,7 @@ void __cdecl R_SetupPass(GfxCmdBufContext context, unsigned int passIndex)
     if ( g_bo1ProfOn ) // p1: bo1_frameperf first-use counts (measurement only)
     {
         char name[128];
-        _snprintf_s(name, _TRUNCATE, "%s:%s", BO1_VA(material->info.name), context.state->technique->name ? context.state->technique->name : "?");
+        _snprintf_s(name, _TRUNCATE, "%s:%s", BO1_VA(material->info.name), BO1_VA(context.state->technique->name ? context.state->technique->name : "?"));
         BO1_ProfFirstUse(BO1_FIRST_PASS, (unsigned long long)(size_t)pass, name);
         BO1_ProfFirstUse(BO1_FIRST_VS, (unsigned long long)(size_t)pass->vertexShader, 0);
         BO1_ProfFirstUse(BO1_FIRST_PS, (unsigned long long)(size_t)pass->pixelShader, 0);

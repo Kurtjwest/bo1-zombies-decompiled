@@ -891,7 +891,7 @@ void __cdecl CG_DrawSoundOverlay(const ScreenPlacement *scrPlace)
                          BO1_VA(*(Ptr32<const char> *)BO1_I2P((snd_drawInfo->domain.integer.max + 4 * type))),
                          "",
                          v6,
-                         *(Ptr32<const char> *)BO1_I2P((snd_drawSort->domain.integer.max + 4 * type)));
+                         BO1_VA(*(Ptr32<const char> *)BO1_I2P((snd_drawSort->domain.integer.max + 4 * type))));
     CG_DrawStringExt(scrPlace, x, y, string, colorWhite, 0, 1, 14.0);
     y = y + 10.0;
     for ( i = 0; i < (int)num; ++i )

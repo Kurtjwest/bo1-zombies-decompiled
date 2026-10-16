@@ -375,7 +375,7 @@ void G_Mapkit_f_dump()
     const dvar_s *game = Dvar_FindVar("fs_game");
     char osPath[512];
     sprintf_s(osPath, "%s/%s/%s", BO1_VA(home && home->current.string ? home->current.string : "."),
-        game && game->current.string && *game->current.string ? game->current.string : "main", file);
+        BO1_VA(game && game->current.string && *game->current.string ? game->current.string : "main"), file);
     FILE *f = 0;
     if (fopen_s(&f, osPath, "wb") || !f)
     {

@@ -3933,8 +3933,8 @@ static void UI_ModFov_PatchMenus(UiContext *dc)
                                                   || other->window.rect.y < item->window.rect.y - 2.0f)) )
                     continue;
                 Com_Printf(13, "bo1_mod_fov: menu %s item %d %s type %d y %g dvar %s visibleExp %s\n",
-                    BO1_VA(menu->window.name), j, other->window.name ? other->window.name : "-", other->type,
-                    other->window.rect.y, other->dvar ? other->dvar : "-", other->visibleExp.filename ? "cleared" : "none");
+                    BO1_VA(menu->window.name), j, BO1_VA(other->window.name ? other->window.name : "-"), other->type,
+                    other->window.rect.y, BO1_VA(other->dvar ? other->dvar : "-"), other->visibleExp.filename ? "cleared" : "none");
                 other->visibleExp.filename = 0;
             }
         }

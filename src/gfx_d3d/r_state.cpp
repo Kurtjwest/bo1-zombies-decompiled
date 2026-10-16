@@ -676,8 +676,8 @@ void __cdecl R_TextureFromCodeError(const GfxCmdBufContext context, unsigned int
             "Code texture %u '%s' isn't valid. Material='%s', tech='%s', techType=%d\n",
             codeTexture,
             BO1_VA(rg.codeImageNames[codeTexture]),
-            context.state->material->info.name,
-            context.state->technique->name,
+            BO1_VA(context.state->material->info.name),
+            BO1_VA(context.state->technique->name),
             context.state->techType);
     else
         Com_Error(
@@ -686,7 +686,7 @@ void __cdecl R_TextureFromCodeError(const GfxCmdBufContext context, unsigned int
             codeTexture,
             "noname",
             BO1_VA(context.state->material->info.name),
-            context.state->technique->name,
+            BO1_VA(context.state->technique->name),
             context.state->techType);
 }
 
@@ -908,7 +908,7 @@ int __cdecl R_BeginMaterial(GfxCmdBufState *state, const Material *material, uns
     if ( r_logFile->current.integer )
     {
         v4 = RB_LogTechniqueType(techType);
-        v5 = va("R_BeginMaterial( %s, %s, %s )\n", BO1_VA(material->info.name), technique->name, v4);
+        v5 = va("R_BeginMaterial( %s, %s, %s )\n", BO1_VA(material->info.name), BO1_VA(technique->name), v4);
         RB_LogPrint(v5);
     }
     state->material = material;

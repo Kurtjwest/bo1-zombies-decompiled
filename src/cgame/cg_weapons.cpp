@@ -703,13 +703,13 @@ void __cdecl CG_RegisterWeapon(int localClientNum, unsigned int weaponNum)
                             ERR_LOCALIZATION,
                             "Weapon %s: Could not translate display name \"%s\"",
                             BO1_VA(weapVariantDef->szInternalName),
-                            weapVariantDef->szDisplayName);
+                            BO1_VA(weapVariantDef->szDisplayName));
                     else
                         Com_PrintWarning(
                             17,
                             "WARNING: Weapon %s: Could not translate display name \"%s\"\n",
                             BO1_VA(weapVariantDef->szInternalName),
-                            weapVariantDef->szDisplayName);
+                            BO1_VA(weapVariantDef->szDisplayName));
                 }
                 weapInfo->translatedDisplayName = weapVariantDef->szDisplayName;
             }
@@ -723,13 +723,13 @@ void __cdecl CG_RegisterWeapon(int localClientNum, unsigned int weaponNum)
                             ERR_LOCALIZATION,
                             "Weapon %s: Could not translate mode name \"%s\"",
                             BO1_VA(weapVariantDef->szInternalName),
-                            weapDef->szModeName);
+                            BO1_VA(weapDef->szModeName));
                     else
                         Com_PrintWarning(
                             17,
                             "WARNING: Weapon %s: Could not translate mode name \"%s\"\n",
                             BO1_VA(weapVariantDef->szInternalName),
-                            weapDef->szModeName);
+                            BO1_VA(weapDef->szModeName));
                 }
                 weapInfo->translatedModename = weapDef->szModeName;
             }
@@ -743,13 +743,13 @@ void __cdecl CG_RegisterWeapon(int localClientNum, unsigned int weaponNum)
                             ERR_LOCALIZATION,
                             "Weapon %s: Could not translate AI overlay description \"%s\"",
                             BO1_VA(weapVariantDef->szInternalName),
-                            weapDef->szOverlayName);
+                            BO1_VA(weapDef->szOverlayName));
                     else
                         Com_PrintWarning(
                             17,
                             "WARNING: Weapon %s: Could not translate AI overlay description \"%s\"\n",
                             BO1_VA(weapVariantDef->szInternalName),
-                            weapDef->szOverlayName);
+                            BO1_VA(weapDef->szOverlayName));
                 }
                 weapInfo->translatedAIOverlayDescription = weapDef->szOverlayName;
             }
@@ -1107,9 +1107,9 @@ void __cdecl CG_CreateWeaponViewModelXAnim(ViewModelInfo *viewModelInfo, const W
         }
     }
     if ( **((Ptr32<_BYTE> *)weapVariantDef->szXAnims + 64) && XAnimIsLooped(pAnimsa, 0x40u) )
-        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", *((unsigned int *)weapVariantDef->szXAnims + 64));
+        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", (const char *)Ptr32_Decode(*((unsigned int *)weapVariantDef->szXAnims + 64)));
     if ( **((Ptr32<_BYTE> *)weapVariantDef->szXAnims + 65) && XAnimIsLooped(pAnimsa, 0x41u) )
-        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", *((unsigned int *)weapVariantDef->szXAnims + 65));
+        Com_Error(ERR_DROP, "CG_RegisterWeapon: ADS anim [%s] cannot be looping", (const char *)Ptr32_Decode(*((unsigned int *)weapVariantDef->szXAnims + 65)));
     for ( animIndexa = 53; animIndexa <= 57; ++animIndexa )
     {
         if ( *weapVariantDef->szXAnims[animIndexa] )
@@ -7222,7 +7222,7 @@ void __cdecl CG_SetBaseWeaponForStats(const WeaponVariantDef *weapVariantDef)
                     ERR_DROP,
                     "Parent weapon '%s' not found for '%s'",
                     BO1_VA(weapVariantDef->weapDef->parentWeaponName),
-                    weapVariantDef->szInternalName);
+                    BO1_VA(weapVariantDef->szInternalName));
             else
                 weapVariantDef->weapDef->itemIndex = itemIndex;
         }

@@ -3840,7 +3840,7 @@ void __cdecl R_ShowCull(const float *viewOrigin)
                         sceneEntIndex,
                         sceneEnt->entnum,
                         sceneEnt->obj->numModels,
-                        **(Ptr32<Ptr32<const char>> *)sceneEnt->obj->localModels);
+                        BO1_VA(**(Ptr32<Ptr32<const char>> *)sceneEnt->obj->localModels));
                 else
                     _snprintf(
                         text,

@@ -152,7 +152,7 @@ void __thiscall LiveSteamServer::OnGSClientApprove(GSClientApprove_t *pGSClientA
     {
         Com_PrintWarning(
             15,
-            "STEAM: Approved client with SteamID: %I64d\n",
+            "STEAM: Approved client with SteamID: %lld\n",
             //pGSClientApprove->m_SteamID.m_steamid.m_unAll64Bits);
             pGSClientApprove->m_SteamID.ConvertToUint64());
     }
@@ -191,7 +191,7 @@ void __thiscall LiveSteamServer::OnGSClientApprove(GSClientApprove_t *pGSClientA
                 {
                     Com_PrintWarning(
                         15,
-                        "STEAM: Approved client DLC, SteamID: %I64d\n",
+                        "STEAM: Approved client DLC, SteamID: %lld\n",
                         //pGSClientApprove->m_SteamID.m_steamid.m_unAll64Bits);
                         pGSClientApprove->m_SteamID.ConvertToUint64());
                 }
