@@ -50,6 +50,11 @@ constexpr uint32_t kMarkerInline = 0xFFFFFFFFu;
 constexpr uintptr_t kArenaSize = kWindowBase;
 
 extern char *g_arenaBase; // base of the arena reservation (its first 64 KB are never mapped)
+// The executable image's window, the first one (handles [kWindowBase, kWindowBase + g_imageWindowSize) for addresses
+// from g_imageWindowStart): the engine's globals and string literals are reached through it all the time, so it is
+// decoded inline too. Size 0 until it exists.
+extern uintptr_t g_imageWindowStart;
+extern uint32_t g_imageWindowSize;
 
 uint32_t EncodeSlow(const volatile void *p); // anything outside the arena (or before the arena exists)
 void *DecodeSlow(uint32_t v);                // any handle outside the arena range
@@ -60,6 +65,9 @@ inline uint32_t Encode(const volatile void *p)
     uintptr_t d = (uintptr_t)p - (uintptr_t)g_arenaBase;
     if (__builtin_expect(g_arenaBase != nullptr && d - kSmallLimit < kWindowBase - kSmallLimit, 1))
         return (uint32_t)d;
+    const uintptr_t di = (uintptr_t)p - g_imageWindowStart;
+    if (__builtin_expect(di < g_imageWindowSize, 1))
+        return kWindowBase + (uint32_t)di;
     return EncodeSlow(p);
 }
 
@@ -67,6 +75,8 @@ inline void *Decode(uint32_t v)
 {
     if (__builtin_expect(v - kSmallLimit < kWindowBase - kSmallLimit, 1))
         return g_arenaBase + v;
+    if (__builtin_expect(v - kWindowBase < g_imageWindowSize, 1))
+        return (void *)(g_imageWindowStart + (v - kWindowBase));
     return DecodeSlow(v);
 }
 

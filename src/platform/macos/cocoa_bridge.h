@@ -29,6 +29,7 @@ enum BridgeEventType
     BRIDGE_EV_MOVE,       // x, y = new client origin (screen units)
     BRIDGE_EV_CLOSE,
     BRIDGE_EV_QUIT,       // Cmd-Q / app menu Quit
+    BRIDGE_EV_FULLSCREEN, // value: 1 = the window entered full screen, 0 = it left (also when the player toggled it)
 };
 
 typedef struct BridgeEvent
@@ -86,6 +87,14 @@ void Bridge_SetTitle(BridgeWindow *w, const char *title);
 void Bridge_FocusWindow(BridgeWindow *w);
 int Bridge_IsKeyWindow(BridgeWindow *w);
 void Bridge_SetCoversScreen(BridgeWindow *w, int covers); // hide menu bar and Dock while a borderless window covers its screen
+// Native full screen (a Space of its own, animated; requests made during the animation apply when it ends). While in
+// full screen the client rect is the screen's; Bridge_SetClientRect / Bridge_SetWindowStyle requests are kept for when
+// the window leaves it.
+void Bridge_SetFullScreen(BridgeWindow *w, int fullScreen);
+int Bridge_IsFullScreen(BridgeWindow *w); // in full screen, or on the way in
+// The size the game draws at (the Metal drawable keeps the back buffer's size) and how it covers the view: stretched
+// over all of it (fill) or at its aspect ratio with black bars.
+void Bridge_SetContentScaling(BridgeWindow *w, int logicalW, int logicalH, int fill);
 void *Bridge_GetMetalLayer(BridgeWindow *w);                // CAMetalLayer*
 double Bridge_GetBackingScale(BridgeWindow *w);
 

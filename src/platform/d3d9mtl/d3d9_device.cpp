@@ -318,8 +318,9 @@ Device::~Device()
     DestroySwapChainBuffers();
     if (m_swapChain)
         delete m_swapChain;
+    shadercache::Drain();
     for (auto &kv : m_pipelines)
-        rhi::ReleasePipeline(kv.second);
+        kv.second->Release();
     for (auto &kv : m_fvfDecls)
         kv.second->Release();
     for (rhi::Texture *t : m_dummy)
@@ -360,6 +361,7 @@ bool Device::Create(D3DPRESENT_PARAMETERS *pp, char *err, size_t errSize)
     m_layer = GetMetalLayerForWindow(window);
     if (!CreateSwapChainBuffers(err, errSize))
         return false;
+    shadercache::Start();
 
     // what unbound samplers read: (0, 0, 0, 1)
     const uint8_t black[4] = {0, 0, 0, 255};
@@ -681,6 +683,7 @@ HRESULT Device::Present(const RECT *, const RECT *, HWND, const RGNDATA *)
     }
     rhi::Present(bb, m_gammaSet ? m_gamma.red : nullptr);
     ProcessDeferredFrees();
+    shadercache::OnPresent();
     return D3D_OK;
 }
 
@@ -926,6 +929,7 @@ HRESULT Device::CreateVertexShader(const DWORD *pFunction, IDirect3DVertexShader
         s->Release();
         return D3DERR_INVALIDCALL;
     }
+    shadercache::OnShaderCreated(this, s);
     *ppShader = s;
     return D3D_OK;
 }
@@ -943,6 +947,7 @@ HRESULT Device::CreatePixelShader(const DWORD *pFunction, IDirect3DPixelShader9 
         s->Release();
         return D3DERR_INVALIDCALL;
     }
+    shadercache::OnShaderCreated(this, s);
     *ppShader = s;
     return D3D_OK;
 }
@@ -2022,6 +2027,90 @@ HRESULT Device::GetIndices(IDirect3DIndexBuffer9 **ppIndexData)
 // ======================================================================================================================
 // draw-time translation
 // ======================================================================================================================
+namespace
+{
+// The #defines that make the variant of a vertex shader for a key (VertexVariant): input types, depth-texture
+// samplers, and zero-written outputs for pixel shader inputs it does not write. A function of the key alone, so the
+// shader cache can rebuild a variant from it.
+std::string VertexPrefix(const ShaderInfo &info, uint64_t key)
+{
+    std::string prefix;
+    char line[160];
+    for (const ShaderInfo::Input &in : info.inputs)
+    {
+        const uint64_t t = (key >> (in.reg * 2)) & 3;
+        if (t == 1)
+            snprintf(line, sizeof(line), "#define BO1_VSIN_TYPE_%d uchar4\n#define BO1_VSIN_CVT_%d(x) float4(x)\n",
+                     in.reg, in.reg);
+        else if (t == 2)
+            snprintf(line, sizeof(line), "#define BO1_VSIN_TYPE_%d short4\n#define BO1_VSIN_CVT_%d(x) float4(x)\n",
+                     in.reg, in.reg);
+        else
+            continue;
+        prefix += line;
+    }
+    for (int s = 0; s < 4; ++s)
+    {
+        if (key & (1ull << (32 + s)))
+        {
+            snprintf(line, sizeof(line), "#define BO1_TEX2D_TYPE_%d depth2d<float>\n#define BO1_TEX2D_MODE_%d 1\n", s, s);
+            prefix += line;
+        }
+    }
+    std::string extraOutputs, extraInit;
+    for (int bit = kExtraVaryingFirstBit; bit < 64; ++bit)
+    {
+        if (!(key & (1ull << bit)))
+            continue;
+        char name[32];
+        ExtraVaryingName(bit, name, sizeof(name));
+        snprintf(line, sizeof(line), " float4 bo1_extra%d [[user(%s)]];", bit, name);
+        extraOutputs += line;
+        snprintf(line, sizeof(line), " output.bo1_extra%d = float4(0.0);", bit);
+        extraInit += line;
+    }
+    if (!extraOutputs.empty())
+        prefix += "#define BO1_VS_EXTRA_OUTPUTS" + extraOutputs + "\n#define BO1_VS_EXTRA_INIT" + extraInit + "\n";
+    return prefix;
+}
+
+// the pixel shader's (PixelVariant): depth-texture samplers, and the alpha test (function and reference in the key)
+std::string PixelPrefix(uint64_t key)
+{
+    std::string prefix;
+    char line[200];
+    for (int s = 0; s < 16; ++s)
+    {
+        if (key & (1ull << s))
+        {
+            snprintf(line, sizeof(line), "#define BO1_TEX2D_TYPE_%d depth2d<float>\n#define BO1_TEX2D_MODE_%d 1\n", s, s);
+            prefix += line;
+        }
+    }
+    if (key & (1ull << 28))
+    {
+        // Direct3D 9 compares the 8-bit alpha value with D3DRS_ALPHAREF
+        const char *aop = AlphaOp((DWORD)((key >> 16) & 15));
+        if (aop)
+            snprintf(line, sizeof(line),
+                     "#define BO1_ALPHA_TEST(c) if (!(rint(saturate((c).a) * 255.0f) %s %u.0f)) discard_fragment();\n",
+                     aop, (unsigned)((key >> 20) & 0xFF));
+        else
+            snprintf(line, sizeof(line), "#define BO1_ALPHA_TEST(c) discard_fragment();\n"); // D3DCMP_NEVER
+        prefix += line;
+    }
+    return prefix;
+}
+} // namespace
+
+ShaderVariant *Device::VariantFor(ShaderCode *c, uint64_t key, bool urgent)
+{
+    auto it = c->variants.find(key);
+    if (it != c->variants.end())
+        return it->second;
+    return c->Variant(key, c->info.isPixel ? PixelPrefix(key) : VertexPrefix(c->info, key), urgent);
+}
+
 ShaderVariant *Device::VertexVariant()
 {
     if (!(m_dirty & DIRTY_VS_VARIANT) && m_curVsVariant)
@@ -2076,53 +2165,7 @@ ShaderVariant *Device::VertexVariant()
                 key |= 1ull << bit;
         }
     }
-    auto it = m_vs->m_variants.find(key);
-    ShaderVariant *v;
-    if (it != m_vs->m_variants.end())
-    {
-        v = it->second;
-    }
-    else
-    {
-        std::string prefix;
-        char line[160];
-        for (const ShaderInfo::Input &in : info.inputs)
-        {
-            const uint64_t t = (key >> (in.reg * 2)) & 3;
-            if (t == 1)
-                snprintf(line, sizeof(line), "#define BO1_VSIN_TYPE_%d uchar4\n#define BO1_VSIN_CVT_%d(x) float4(x)\n",
-                         in.reg, in.reg);
-            else if (t == 2)
-                snprintf(line, sizeof(line), "#define BO1_VSIN_TYPE_%d short4\n#define BO1_VSIN_CVT_%d(x) float4(x)\n",
-                         in.reg, in.reg);
-            else
-                continue;
-            prefix += line;
-        }
-        for (int s = 0; s < 4; ++s)
-        {
-            if (key & (1ull << (32 + s)))
-            {
-                snprintf(line, sizeof(line), "#define BO1_TEX2D_TYPE_%d depth2d<float>\n#define BO1_TEX2D_MODE_%d 1\n", s, s);
-                prefix += line;
-            }
-        }
-        std::string extraOutputs, extraInit;
-        for (int bit = kExtraVaryingFirstBit; bit < 64; ++bit)
-        {
-            if (!(key & (1ull << bit)))
-                continue;
-            char name[32];
-            ExtraVaryingName(bit, name, sizeof(name));
-            snprintf(line, sizeof(line), " float4 bo1_extra%d [[user(%s)]];", bit, name);
-            extraOutputs += line;
-            snprintf(line, sizeof(line), " output.bo1_extra%d = float4(0.0);", bit);
-            extraInit += line;
-        }
-        if (!extraOutputs.empty())
-            prefix += "#define BO1_VS_EXTRA_OUTPUTS" + extraOutputs + "\n#define BO1_VS_EXTRA_INIT" + extraInit + "\n";
-        v = m_vs->Variant(key, prefix);
-    }
+    ShaderVariant *v = VariantFor(m_vs->m_shared, key, true);
     m_curVsVariant = v;
     m_curVsKey = key;
     m_dirty &= ~DIRTY_VS_VARIANT;
@@ -2143,45 +2186,13 @@ ShaderVariant *Device::PixelVariant()
         if (t && t->m_st.fi && t->m_st.fi->depth)
             key |= 1ull << s.reg;
     }
-    const char *aop = nullptr;
     if (m_rs[D3DRS_ALPHATESTENABLE] && m_rs[D3DRS_ALPHAFUNC] != D3DCMP_ALWAYS)
     {
         key |= (uint64_t)(m_rs[D3DRS_ALPHAFUNC] & 15) << 16;
         key |= (uint64_t)(m_rs[D3DRS_ALPHAREF] & 0xFF) << 20;
         key |= 1ull << 28;
-        aop = AlphaOp(m_rs[D3DRS_ALPHAFUNC]);
     }
-    auto it = m_ps->m_variants.find(key);
-    ShaderVariant *v;
-    if (it != m_ps->m_variants.end())
-    {
-        v = it->second;
-    }
-    else
-    {
-        std::string prefix;
-        char line[200];
-        for (int s = 0; s < 16; ++s)
-        {
-            if (key & (1ull << s))
-            {
-                snprintf(line, sizeof(line), "#define BO1_TEX2D_TYPE_%d depth2d<float>\n#define BO1_TEX2D_MODE_%d 1\n", s, s);
-                prefix += line;
-            }
-        }
-        if (key & (1ull << 28))
-        {
-            // Direct3D 9 compares the 8-bit alpha value with D3DRS_ALPHAREF
-            if (aop)
-                snprintf(line, sizeof(line),
-                         "#define BO1_ALPHA_TEST(c) if (!(rint(saturate((c).a) * 255.0f) %s %u.0f)) discard_fragment();\n",
-                         aop, (unsigned)(m_rs[D3DRS_ALPHAREF] & 0xFF));
-            else
-                snprintf(line, sizeof(line), "#define BO1_ALPHA_TEST(c) discard_fragment();\n"); // D3DCMP_NEVER
-            prefix += line;
-        }
-        v = m_ps->Variant(key, prefix);
-    }
+    ShaderVariant *v = VariantFor(m_ps->m_shared, key, true);
     m_curPsVariant = v;
     m_curPsKey = key;
     m_dirty &= ~DIRTY_PS_VARIANT;
@@ -2190,20 +2201,6 @@ ShaderVariant *Device::PixelVariant()
 
 namespace
 {
-struct PipelineKey
-{
-    uint32_t vsId, psId;
-    uint64_t vsKey, psKey;
-    uint32_t colorFormats[4];
-    uint32_t depthFormat, stencilFormat, samples;
-    uint8_t blend[8];
-    uint8_t writeMask[4];
-    rhi::VertexAttributeDesc attrs[rhi::MAX_VERTEX_ATTRIBUTES];
-    uint32_t strides[kMaxStreams];
-    uint8_t stepConstant[kMaxStreams];
-    uint32_t usedStreams;
-};
-
 // bytes a vertex element of the given D3DDECLTYPE occupies
 uint32_t DeclTypeSize(BYTE type)
 {
@@ -2236,7 +2233,7 @@ uint32_t DeclTypeSize(BYTE type)
 }
 } // namespace
 
-rhi::Pipeline *Device::CurrentPipeline(ShaderVariant *vsv, ShaderVariant *psv, rhi::PrimitiveType)
+PipelineEntry *Device::CurrentPipeline(ShaderVariant *vsv, ShaderVariant *psv, rhi::PrimitiveType)
 {
     if (!(m_dirty & DIRTY_PIPELINE) && m_curPipeline)
         return m_curPipeline;
@@ -2338,19 +2335,33 @@ rhi::Pipeline *Device::CurrentPipeline(ShaderVariant *vsv, ShaderVariant *psv, r
         }
     }
 
-    const std::string skey((const char *)&k, sizeof(k));
-    auto it = m_pipelines.find(skey);
+    auto it = m_pipelines.find(k);
+    PipelineEntry *e;
     if (it != m_pipelines.end())
     {
-        m_curPipeline = it->second;
-        m_dirty &= ~DIRTY_PIPELINE;
-        return m_curPipeline;
+        e = it->second;
     }
+    else
+    {
+        e = PipelineFor(k, vsv, psv, true);
+        shadercache::RecordPipeline(*m_vs, *m_ps, k);
+    }
+    m_curPipeline = e;
+    m_dirty &= ~DIRTY_PIPELINE;
+    return e;
+}
 
-    rhi::PipelineDesc d;
+PipelineEntry *Device::PipelineFor(const PipelineKey &k, ShaderVariant *vsv, ShaderVariant *psv, bool urgent)
+{
+    PipelineEntry *e = new PipelineEntry();
+    e->vsId = k.vsId;
+    e->psId = k.psId;
+    vsv->Ref();
+    psv->Ref();
+    e->vs = vsv;
+    e->ps = psv;
+    rhi::PipelineDesc &d = e->desc;
     memset(&d, 0, sizeof(d));
-    d.vertexFunction = vsv->fn;
-    d.fragmentFunction = psv->fn;
     for (int i = 0; i < rhi::MAX_VERTEX_ATTRIBUTES; ++i)
         d.attributes[i] = k.attrs[i];
     for (int s = 0; s < kMaxStreams; ++s)
@@ -2379,21 +2390,52 @@ rhi::Pipeline *Device::CurrentPipeline(ShaderVariant *vsv, ShaderVariant *psv, r
     d.depthFormat = k.depthFormat;
     d.stencilFormat = k.stencilFormat;
     d.sampleCount = k.samples;
-    char err[1024] = "";
-    rhi::Pipeline *p = rhi::CreatePipeline(d, err, sizeof(err));
-    if (!p && k.blend[0])
+    // (the functions are the variants', filled in when it is created: d3d9_shadercache.cpp)
+    m_pipelines.emplace(k, e);
+    shadercache::Queue(e, urgent);
+    return e;
+}
+
+bool Device::Prewarm(const PipelineKey &k, ShaderCode *vs, ShaderCode *ps)
+{
+    if (m_pipelines.count(k))
+        return false;
+    // (variants first: the pipeline's job, queued after them, finds them compiled or being compiled)
+    ShaderVariant *vsv = VariantFor(vs, k.vsKey, false);
+    ShaderVariant *psv = VariantFor(ps, k.psKey, false);
+    PipelineFor(k, vsv, psv, false);
+    return true;
+}
+
+bool Device::VariantUsable(ShaderVariant *v)
+{
+    const int state = v->state.load(std::memory_order_acquire);
+    if (state != kCompilePending)
+        return state == kCompileReady;
+    if (WaitForCompiles())
     {
-        // a target format that cannot blend (32-bit float on older GPUs): draw unblended rather than not at all
-        for (int i = 0; i < 4; ++i)
-            d.blend[i].enable = 0;
-        p = rhi::CreatePipeline(d, err, sizeof(err));
+        shadercache::CompileVariantNow(v);
+        return v->Ready();
     }
-    if (!p)
-        LogOnce(err, "pipeline (vs %u / ps %u) failed: %s", k.vsId, k.psId, err);
-    m_pipelines.emplace(skey, p);
-    m_curPipeline = p;
-    m_dirty &= ~DIRTY_PIPELINE;
-    return p;
+    // skipped until it is compiled, which happens next
+    shadercache::Queue(v, true);
+    shadercache::NoteSkippedDraw();
+    return false;
+}
+
+bool Device::PipelineUsable(PipelineEntry *e)
+{
+    const int state = e->state.load(std::memory_order_acquire);
+    if (state != kCompilePending)
+        return state == kCompileReady;
+    if (WaitForCompiles())
+    {
+        shadercache::CreatePipelineNow(e);
+        return e->Ready();
+    }
+    shadercache::Queue(e, true);
+    shadercache::NoteSkippedDraw();
+    return false;
 }
 
 rhi::DepthStencil *Device::CurrentDepthStencil()
@@ -2654,14 +2696,15 @@ bool Device::PrepareDraw(D3DPRIMITIVETYPE pt)
         ApplyRenderTargets();
     if (!m_rtWidth || !m_rtHeight)
         return false;
+    // (a draw whose shaders or pipeline are still being compiled is skipped: see d3d9_shadercache.cpp)
     ShaderVariant *vsv = VertexVariant();
     ShaderVariant *psv = PixelVariant();
-    if (!vsv || vsv->failed || !psv || psv->failed)
+    if (!vsv || !psv || !VariantUsable(vsv) || !VariantUsable(psv))
         return false;
-    rhi::Pipeline *p = CurrentPipeline(vsv, psv, PrimType(pt));
-    if (!p)
+    PipelineEntry *pe = CurrentPipeline(vsv, psv, PrimType(pt));
+    if (!pe || !PipelineUsable(pe) || !pe->pipeline)
         return false;
-    rhi::SetPipeline(p);
+    rhi::SetPipeline(pe->pipeline);
     if (m_dirty & DIRTY_DEPTHSTENCIL)
     {
         rhi::SetDepthStencil(CurrentDepthStencil());

@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <atomic>
 #include <cctype>
+#include <cmath>
 #include <deque>
 #include <map>
 #include <mutex>
@@ -42,6 +43,14 @@ struct Win32Wnd
     std::atomic<BridgeWindow *> bw{nullptr};
     std::atomic<bool> destroyed{false};
     std::map<std::string, HANDLE> props;
+    // What the engine asked for (units): the frame (CreateWindowEx, SetWindowPos) and the client size, which is the
+    // size the game draws at. The view can show that scaled: in native full screen, or after the player resized the
+    // window. Client coordinates (GetClientRect, ScreenToClient, the mouse messages) stay the game's own.
+    RECT frame{};
+    std::atomic<int> clientW{0}, clientH{0};
+    bool topmost = false;                    // WS_EX_TOPMOST, or HWND_TOPMOST / HWND_NOTOPMOST in SetWindowPos
+    std::atomic<bool> wantFullScreen{false}; // the engine's full-screen window (see IsFullScreenRequest)
+    bool styleDirty = false;                 // GWL_STYLE changed: the Cocoa window takes it at the next SetWindowPos
 };
 
 std::map<std::string, WNDCLASSEXA> g_classes;
@@ -404,6 +413,15 @@ void ClampVirtualCursor()
     g_vcurY = bestY;
 }
 
+// The system cursor's visibility as last sent to the main thread (-1: not yet): the engine sets its cursor count
+// every frame, and only a change needs to reach the main thread.
+std::atomic<int> g_cursorShown{-1};
+void SetCursorShown(bool shown)
+{
+    if (g_cursorShown.exchange(shown ? 1 : 0) != (shown ? 1 : 0))
+        Bridge_SetCursorVisible(shown ? 1 : 0);
+}
+
 void UpdateCapture()
 {
     const bool want = g_cursorCount < 0 && AppHasFocus();
@@ -414,7 +432,7 @@ void UpdateCapture()
         RefreshCursorScreens();
         Bridge_GetCursorPos((int *)&g_vcurX, (int *)&g_vcurY);
         ClampVirtualCursor();
-        Bridge_SetCursorVisible(0);
+        SetCursorShown(false);
         Bridge_SetMouseCaptured(1);
     }
     else
@@ -422,33 +440,165 @@ void UpdateCapture()
         Bridge_SetMouseCaptured(0);
         Bridge_WarpCursor((int)g_vcurX, (int)g_vcurY);
         if (g_cursorCount >= 0)
-            Bridge_SetCursorVisible(1);
+            SetCursorShown(true);
     }
     g_captured = want;
 }
 
-// A borderless window covering its whole screen is the engine's fullscreen/borderless mode: the menu bar and the
-// Dock are hidden while it is up.
-void UpdateCoversScreen(Win32Wnd *w, int x, int y, int cx, int cy)
+// The engine's full-screen window: a popup that is topmost (r_fullscreen 1: WS_POPUP + WS_EX_TOPMOST at the r_mode
+// size, the window Direct3D's exclusive mode takes over on Windows) or that covers the screen it is on (a borderless
+// one). macOS has no exclusive mode and no display mode switch: the window goes native full screen (a Space of its
+// own) and shows the game, drawn at the size it asked for, stretched over the screen as a monitor would.
+bool IsFullScreenRequest(DWORD style, bool topmost, int x, int y, int cx, int cy)
 {
-    if (!w->bw)
-        return;
+    if (!(style & WS_POPUP) || (style & WS_CHILD))
+        return false;
+    if (topmost)
+        return true;
     BridgeRect full;
-    int screen = Bridge_ScreenForPoint(x + cx / 2, y + cy / 2);
-    if (Bridge_GetScreenRect(screen, &full, nullptr, nullptr))
-    {
-        bool covers = IsBorderless(w->style) && x <= full.left && y <= full.top && x + cx >= full.right && y + cy >= full.bottom;
-        Bridge_SetCoversScreen(w->bw, covers);
-    }
+    const int screen = Bridge_ScreenForPoint(x + cx / 2, y + cy / 2);
+    return Bridge_GetScreenRect(screen, &full, nullptr, nullptr) && x <= full.left && y <= full.top &&
+           x + cx >= full.right && y + cy >= full.bottom;
 }
 
+// The screen a window at (x, y) belongs to: the one its top-left corner is on (an r_mode-sized full-screen window at
+// a monitor's origin can reach well into the next monitor), else the one nearest to it.
+int ScreenForWindow(int x, int y)
+{
+    const int n = Bridge_GetScreenCount();
+    long long best = -1;
+    int bestScreen = 0;
+    for (int i = 0; i < n; ++i)
+    {
+        BridgeRect r;
+        if (!Bridge_GetScreenRect(i, &r, nullptr, nullptr))
+            continue;
+        const long long dx = x < r.left ? r.left - x : x >= r.right ? x - (r.right - 1) : 0;
+        const long long dy = y < r.top ? r.top - y : y >= r.bottom ? y - (r.bottom - 1) : 0;
+        const long long d = dx * dx + dy * dy;
+        if (best < 0 || d < best)
+        {
+            best = d;
+            bestScreen = i;
+        }
+    }
+    return bestScreen;
+}
+
+// A titled window keeps its title bar on the screen, below the menu bar (the engine's default position, 3,22, is
+// under it). cx, cy: the frame's size.
+void KeepFrameOnScreen(int *x, int *y, int cx, int cy)
+{
+    BridgeRect work;
+    if (!Bridge_GetScreenRect(ScreenForWindow(*x, *y), nullptr, &work, nullptr))
+        return;
+    if (*x + cx > work.right)
+        *x = work.right - cx;
+    if (*y + cy > work.bottom)
+        *y = work.bottom - cy;
+    if (*x < work.left)
+        *x = work.left;
+    if (*y < work.top)
+        *y = work.top;
+}
+
+// The client rect (units) of the window a full-screen window becomes when the player takes it out of full screen
+// (the green button): the screen's shape, as the game draws for it, fitted into the screen's work area.
+void FullScreenFallbackRect(int screen, int *x, int *y, int *cx, int *cy)
+{
+    BridgeRect full, work;
+    if (!Bridge_GetScreenRect(screen, &full, &work, nullptr))
+    {
+        *x = *y = (int)0x80000000;
+        *cx = 1280;
+        *cy = 720;
+        return;
+    }
+    const double aspect = (double)(full.right - full.left) / std::max(1, full.bottom - full.top);
+    const int tb = TitleBarUnits(WS_CAPTION);
+    double w = (work.right - work.left) * 0.8, h = (work.bottom - work.top - tb) * 0.8;
+    if (w / h > aspect)
+        w = h * aspect;
+    else
+        h = w / aspect;
+    *cx = std::max(1, (int)lround(w));
+    *cy = std::max(1, (int)lround(h));
+    *x = (work.left + work.right - *cx) / 2;
+    *y = (work.top + work.bottom - (*cy + tb)) / 2 + tb;
+}
+
+void ApplyStyle(Win32Wnd *w)
+{
+    w->styleDirty = false;
+    Bridge_SetWindowStyle(w->bw, IsBorderless(w->style) ? 1 : 0, (w->style & WS_THICKFRAME) ? 1 : 0);
+}
+
+// The frame the engine asked for (x, y, cx, cy: the window rect, title bar included).
 void ApplyFrame(Win32Wnd *w, int x, int y, int cx, int cy)
 {
     if (!w->bw)
         return;
-    int tb = TitleBarUnits(w->style);
+    const int tb = TitleBarUnits(w->style);
+    const bool fs = IsFullScreenRequest(w->style, w->topmost, x, y, cx, cy);
+    if (!fs && tb)
+        KeepFrameOnScreen(&x, &y, cx, cy);
+    w->frame = {x, y, x + cx, y + cy};
+    w->clientW = std::max(cx, 1);
+    w->clientH = std::max(cy - tb, 1);
+    w->wantFullScreen = fs;
+    Bridge_SetContentScaling(w->bw, w->clientW, w->clientH, fs ? 1 : 0);
+    if (fs)
+    {
+        // (the Cocoa window keeps its windowed style and frame for when it leaves full screen)
+        Bridge_SetFullScreen(w->bw, 1);
+        return;
+    }
+    // a window leaving full screen gets its style and frame when the animation is over
+    ApplyStyle(w);
     Bridge_SetClientRect(w->bw, x, y + tb, cx, cy - tb > 1 ? cy - tb : 1);
-    UpdateCoversScreen(w, x, y, cx, cy);
+    Bridge_SetFullScreen(w->bw, 0);
+}
+
+// The engine's frame while the window is (or is going) full screen, else where the window actually is (the player
+// can move it).
+RECT RequestedFrame(HWND h, Win32Wnd *w)
+{
+    if (w->wantFullScreen || (w->bw && Bridge_IsFullScreen(w->bw)))
+        return w->frame;
+    RECT r = w->frame;
+    GetWindowRect(h, &r);
+    return r;
+}
+
+// Client coordinates are the game's (its back buffer's pixels). The view shows them scaled when it is not the
+// client size: stretched over all of it for the engine's full screen (which draws for the screen's shape), else at
+// their own aspect ratio, centred, with black bars. screen = origin + client * scale.
+struct ClientMap
+{
+    double ox, oy, sx, sy;
+};
+ClientMap GetClientMap(Win32Wnd *w)
+{
+    BridgeRect c;
+    Bridge_GetClientRect(w->bw, &c);
+    ClientMap m = {(double)c.left, (double)c.top, 1.0, 1.0};
+    const double vw = c.right - c.left, vh = c.bottom - c.top;
+    const double lw = w->clientW, lh = w->clientH;
+    if (vw <= 0 || vh <= 0 || lw <= 0 || lh <= 0 || (vw == lw && vh == lh))
+        return m;
+    if (w->wantFullScreen)
+    {
+        m.sx = vw / lw;
+        m.sy = vh / lh;
+    }
+    else
+    {
+        const double s = std::min(vw / lw, vh / lh);
+        m.sx = m.sy = s;
+        m.ox += (vw - lw * s) / 2;
+        m.oy += (vh - lh * s) / 2;
+    }
+    return m;
 }
 
 void OnBridgeEvent(const BridgeEvent *ev)
@@ -580,8 +730,40 @@ void OnBridgeEvent(const BridgeEvent *ev)
         Post(mw, WM_ACTIVATE, MAKEWPARAM(ev->value ? WA_INACTIVE : WA_ACTIVE, ev->value ? 1 : 0), 0);
         break;
     }
-    case BRIDGE_EV_RESIZE: Post(h, WM_SIZE, SIZE_RESTORED, MAKELPARAM(ev->x, ev->y)); break;
-    case BRIDGE_EV_MOVE: Post(h, WM_MOVE, 0, MAKELPARAM((short)ev->x, (short)ev->y)); break;
+    case BRIDGE_EV_RESIZE:
+    {
+        // The game keeps drawing at its own size when the view changes size under it: in native full screen (and on
+        // the way in and out), and in a window the player resizes after taking the engine's full screen out of full
+        // screen. A resizable window of the engine's own takes the new size.
+        Win32Wnd *w = W(h);
+        if (!w || !w->bw || w->wantFullScreen || Bridge_IsFullScreen(w->bw) || !(w->style & WS_THICKFRAME))
+            break;
+        w->clientW = std::max(ev->x, 1);
+        w->clientH = std::max(ev->y, 1);
+        Bridge_SetContentScaling(w->bw, w->clientW, w->clientH, 0);
+        Post(h, WM_SIZE, SIZE_RESTORED, MAKELPARAM(w->clientW, w->clientH));
+        break;
+    }
+    case BRIDGE_EV_MOVE:
+    {
+        // (a full-screen window's position is the screen's: the engine keeps the windowed one in vid_xpos/vid_ypos)
+        Win32Wnd *w = W(h);
+        if (w && w->bw && (w->wantFullScreen || Bridge_IsFullScreen(w->bw)))
+            break;
+        Post(h, WM_MOVE, 0, MAKELPARAM((short)ev->x, (short)ev->y));
+        break;
+    }
+    case BRIDGE_EV_FULLSCREEN:
+    {
+        // the game window entered or left native full screen (also the player, with the green button or
+        // Ctrl-Cmd-F): the cursor's screens are the same, but the window that captures it moved
+        if (g_captured)
+        {
+            RefreshCursorScreens();
+            ClampVirtualCursor();
+        }
+        break;
+    }
     case BRIDGE_EV_CLOSE: Post(h, WM_CLOSE, 0, 0); break;
     case BRIDGE_EV_QUIT:
     {
@@ -758,9 +940,32 @@ HWND CreateWindowExA(DWORD exStyle, LPCSTR className, LPCSTR title, DWORD style,
         w = 1280;
     if (h == CW_USEDEFAULT || h <= 0)
         h = 720;
-    int tb = TitleBarUnits(style);
-    wnd->bw = Bridge_CreateWindow(wnd->title.c_str(), x, y == (int)0x80000000 ? y : y + tb, w, h - tb > 1 ? h - tb : 1, IsBorderless(style) ? 1 : 0,
-                                  (style & WS_THICKFRAME) ? 1 : 0, wnd);
+    const int tb = TitleBarUnits(style);
+    wnd->topmost = (exStyle & WS_EX_TOPMOST) != 0;
+    const bool defaultPos = x == (int)0x80000000 || y == (int)0x80000000;
+    const bool fs = !defaultPos && IsFullScreenRequest(style, wnd->topmost, x, y, w, h);
+    if (!defaultPos && !fs && tb)
+        KeepFrameOnScreen(&x, &y, w, h);
+    wnd->frame = {x, y, x + w, y + h};
+    wnd->clientW = std::max(w, 1);
+    wnd->clientH = std::max(h - tb, 1);
+    wnd->wantFullScreen = fs;
+    if (fs)
+    {
+        // the engine's full-screen window: a titled window of the screen's shape (what it is once the player takes it
+        // out of full screen), full screen as soon as it is shown
+        int cx, cy, cw, ch;
+        FullScreenFallbackRect(ScreenForWindow(x, y), &cx, &cy, &cw, &ch);
+        wnd->bw = Bridge_CreateWindow(wnd->title.c_str(), cx, cy, cw, ch, 0, 1, wnd);
+        Bridge_SetContentScaling(wnd->bw, wnd->clientW, wnd->clientH, 1);
+        Bridge_SetFullScreen(wnd->bw, 1);
+    }
+    else
+    {
+        wnd->bw = Bridge_CreateWindow(wnd->title.c_str(), x, y == (int)0x80000000 ? y : y + tb, w, h - tb > 1 ? h - tb : 1,
+                                      IsBorderless(style) ? 1 : 0, (style & WS_THICKFRAME) ? 1 : 0, wnd);
+        Bridge_SetContentScaling(wnd->bw, wnd->clientW, wnd->clientH, 0);
+    }
     CREATESTRUCTA cs;
     memset(&cs, 0, sizeof(cs));
     cs.lpCreateParams = param;
@@ -837,16 +1042,13 @@ BOOL ShowWindow(HWND h, int cmd)
         w->style |= WS_VISIBLE;
         break;
     default:
-        Bridge_ShowWindow(w->bw, 1);
+        if (w->styleDirty && !w->wantFullScreen)
+            ApplyStyle(w);
+        Bridge_ShowWindow(w->bw, 1); // (a full-screen window goes full screen now: Bridge_SetFullScreen)
         w->style |= WS_VISIBLE;
         g_focus = h;
         if (!wasVisible)
         {
-            // the window created at its screen's size (the default borderless launch, a vid_restart) gets the
-            // menu bar and Dock hidden here: the engine only moves or sizes it again when the mode changes
-            RECT r;
-            if (GetWindowRect(h, &r))
-                UpdateCoversScreen(w, r.left, r.top, r.right - r.left, r.bottom - r.top);
             // Windows activates a top-level window when it is shown: WM_ACTIVATEAPP, WM_ACTIVATE, WM_SETFOCUS.
             // The app's own activation (Bridge_Init, before WinMain) came while no window existed to receive it,
             // and without it the engine never marks itself active (no mouse input, cursor never released).
@@ -876,13 +1078,24 @@ BOOL IsIconic(HWND h)
 BOOL IsZoomed(HWND) { return FALSE; }
 BOOL EnableWindow(HWND, BOOL) { return TRUE; }
 
-BOOL SetWindowPos(HWND h, HWND, int x, int y, int cx, int cy, UINT flags)
+BOOL SetWindowPos(HWND h, HWND after, int x, int y, int cx, int cy, UINT flags)
 {
     Win32Wnd *w = W(h);
     if (!w || !w->bw)
         return FALSE;
-    RECT cur;
-    GetWindowRect(h, &cur);
+    // the z-order is only kept for what it says about the window: topmost is the engine's full-screen window
+    bool zChanged = false;
+    if (!(flags & SWP_NOZORDER))
+    {
+        if (after == HWND_TOPMOST && !w->topmost)
+            w->topmost = zChanged = true;
+        else if (after == HWND_NOTOPMOST && w->topmost)
+        {
+            w->topmost = false;
+            zChanged = true;
+        }
+    }
+    const RECT cur = RequestedFrame(h, w);
     if (flags & SWP_NOMOVE)
     {
         x = cur.left;
@@ -893,9 +1106,7 @@ BOOL SetWindowPos(HWND h, HWND, int x, int y, int cx, int cy, UINT flags)
         cx = cur.right - cur.left;
         cy = cur.bottom - cur.top;
     }
-    if (flags & SWP_FRAMECHANGED)
-        Bridge_SetWindowStyle(w->bw, IsBorderless(w->style) ? 1 : 0, (w->style & WS_THICKFRAME) ? 1 : 0);
-    if (!(flags & SWP_NOMOVE) || !(flags & SWP_NOSIZE) || (flags & SWP_FRAMECHANGED))
+    if (!(flags & SWP_NOMOVE) || !(flags & SWP_NOSIZE) || (flags & SWP_FRAMECHANGED) || zChanged || w->styleDirty)
         ApplyFrame(w, x, y, cx, cy);
     if (flags & SWP_SHOWWINDOW)
         ShowWindow(h, SW_SHOW);
@@ -920,9 +1131,10 @@ BOOL GetWindowRect(HWND h, LPRECT r)
     Win32Wnd *w = W(h);
     if (!w || !w->bw)
         return FALSE;
+    // where the window is on the screen (in full screen: the screen, no title bar)
     BridgeRect c;
     Bridge_GetClientRect(w->bw, &c);
-    int tb = TitleBarUnits(w->style);
+    const int tb = Bridge_IsFullScreen(w->bw) ? 0 : TitleBarUnits(w->style);
     r->left = c.left;
     r->top = c.top - tb;
     r->right = c.right;
@@ -939,12 +1151,11 @@ BOOL GetClientRect(HWND h, LPRECT r)
         memset(r, 0, sizeof(*r));
         return FALSE;
     }
-    BridgeRect c;
-    Bridge_GetClientRect(w->bw, &c);
+    // the size the game draws at, whatever size the view shows it at
     r->left = 0;
     r->top = 0;
-    r->right = c.right - c.left;
-    r->bottom = c.bottom - c.top;
+    r->right = w->clientW;
+    r->bottom = w->clientH;
     return TRUE;
 }
 BOOL AdjustWindowRectEx(LPRECT r, DWORD style, BOOL, DWORD)
@@ -958,10 +1169,10 @@ BOOL ClientToScreen(HWND h, LPPOINT p)
     Win32Wnd *w = W(h);
     if (!w || !w->bw)
         return h == (HWND)&g_desktopTag;
-    BridgeRect c;
-    Bridge_GetClientRect(w->bw, &c);
-    p->x += c.left;
-    p->y += c.top;
+    // (the point under the middle of the client pixel, so ScreenToClient gives the pixel back)
+    const ClientMap m = GetClientMap(w);
+    p->x = (LONG)floor(m.ox + (p->x + 0.5) * m.sx);
+    p->y = (LONG)floor(m.oy + (p->y + 0.5) * m.sy);
     return TRUE;
 }
 BOOL ScreenToClient(HWND h, LPPOINT p)
@@ -969,10 +1180,9 @@ BOOL ScreenToClient(HWND h, LPPOINT p)
     Win32Wnd *w = W(h);
     if (!w || !w->bw)
         return h == (HWND)&g_desktopTag;
-    BridgeRect c;
-    Bridge_GetClientRect(w->bw, &c);
-    p->x -= c.left;
-    p->y -= c.top;
+    const ClientMap m = GetClientMap(w);
+    p->x = (LONG)floor((p->x - m.ox) / m.sx);
+    p->y = (LONG)floor((p->y - m.oy) / m.sy);
     return TRUE;
 }
 int MapWindowPoints(HWND from, HWND to, LPPOINT pts, UINT n)
@@ -1026,9 +1236,12 @@ LONG_PTR SetWindowLongPtrA(HWND h, int idx, LONG_PTR v)
     switch (idx)
     {
     case GWL_STYLE:
+        // As on Windows, the frame follows a style change at the next SetWindowPos (the engine sends SWP_FRAMECHANGED
+        // right after): whether the window is the engine's full-screen one is only known with its position, and a
+        // window going full screen must not lose its title bar first.
+        if ((DWORD)v != w->style)
+            w->styleDirty = true;
         w->style = (DWORD)v;
-        if (w->bw)
-            Bridge_SetWindowStyle(w->bw, IsBorderless(w->style) ? 1 : 0, (w->style & WS_THICKFRAME) ? 1 : 0);
         break;
     case GWL_EXSTYLE: w->exStyle = (DWORD)v; break;
     case GWLP_USERDATA: w->userData = v; break;
@@ -1501,9 +1714,9 @@ int ShowCursor(BOOL show)
     if (g_bridgeReady)
     {
         if (g_cursorCount >= 0 && !g_captured)
-            Bridge_SetCursorVisible(1);
+            SetCursorShown(true);
         else if (g_cursorCount < 0)
-            Bridge_SetCursorVisible(0);
+            SetCursorShown(false);
         UpdateCapture();
     }
     return g_cursorCount;
@@ -1763,8 +1976,8 @@ BOOL EnumDisplaySettingsExA(LPCSTR dev, DWORD mode, DEVMODEA *dm, DWORD)
         dm->dmPosition.y = full.top;
         return TRUE;
     }
-    int w[64], h[64], r[64];
-    int n = Bridge_GetScreenModes(screen, w, h, r, 64);
+    int w[128], h[128], r[128];
+    int n = Bridge_GetScreenModes(screen, w, h, r, 128);
     if ((int)mode >= n)
         return FALSE;
     dm->dmPelsWidth = (DWORD)w[mode];

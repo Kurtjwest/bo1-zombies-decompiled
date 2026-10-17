@@ -24,6 +24,7 @@ extern "C" void objc_autoreleasePoolPop(void *pool);
 #include <atomic>
 #include <cmath>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <deque>
 #include <memory>
@@ -293,6 +294,15 @@ struct Globals
     double frameGpuAccum[8] = {};
     double lastFrameGpuTime = 0;
     std::atomic<uint64_t> lastErrorReportSerial{0};
+
+    // BO1_PERF_LOG=1: once a second, where the frames' time went (counted always, it costs nothing)
+    struct Perf
+    {
+        uint32_t frames = 0, draws = 0, passes = 0, blits = 0, commits = 0, gpuFrames = 0;
+        double frameMax = 0, gpuSum = 0, gpuMax = 0, gpuWait = 0, drawableWait = 0, drawableWaitMax = 0;
+    } perf;
+    bool perfLog = false;
+    std::chrono::steady_clock::time_point perfStart, lastPresent;
 };
 
 Globals *G;
@@ -467,7 +477,10 @@ id<MTLBlitCommandEncoder> Blit()
     FlushPendingClear();
     EndRenderEncoder();
     if (!G->benc)
+    {
         G->benc = [G->cmd blitCommandEncoder];
+        ++G->perf.blits;
+    }
     return G->benc;
 }
 
@@ -477,6 +490,7 @@ void CommitCurrent()
     if (!G->cmd)
         return;
     [G->cmd commit];
+    ++G->perf.commits;
     G->inFlight.emplace_back(G->recordingSerial, G->cmd);
     G->lastCommittedSerial = G->recordingSerial;
     G->cmd = nil;
@@ -674,6 +688,7 @@ id<MTLRenderCommandEncoder> EnsureRenderEncoder()
     }
     pd.visibilityResultBuffer = G->vis->buf;
     G->renc = [G->cmd renderCommandEncoderWithDescriptor:pd];
+    ++G->perf.passes;
     G->pendingClear = 0;
     G->haveValid = false;
     if (G->activeVis && StartVisibilitySegment())
@@ -1133,6 +1148,8 @@ bool Init(void *caMetalLayer, char *err, size_t errSize)
         }
         G->queue = [G->device newCommandQueueWithMaxCommandBufferCount:64];
         G->queue.label = @"bo1 queue";
+        const char *perf = getenv("BO1_PERF_LOG");
+        G->perfLog = perf && *perf && strcmp(perf, "0") != 0;
         if (!BuildUtilities(err, errSize))
         {
             delete G;
@@ -1555,6 +1572,7 @@ id<MTLRenderCommandEncoder> BeginUtilityPass(Texture *dst, uint32_t slice, uint3
         pd.colorAttachments[0].clearColor =
             MTLClearColorMake(clearColor[0], clearColor[1], clearColor[2], clearColor[3]);
     pd.colorAttachments[0].storeAction = MTLStoreActionStore;
+    ++G->perf.passes;
     return [G->cmd renderCommandEncoderWithDescriptor:pd];
 }
 } // namespace
@@ -2099,6 +2117,7 @@ void Draw(PrimitiveType prim, uint32_t vertexStart, uint32_t vertexCount)
     if (!vertexCount || !PrepareDraw())
         return;
     [G->renc drawPrimitives:(MTLPrimitiveType)prim vertexStart:vertexStart vertexCount:vertexCount];
+    ++G->perf.draws;
 }
 
 void DrawIndexed(PrimitiveType prim, uint32_t indexCount, bool index32, Buffer *indexBuffer, uint32_t indexOffset,
@@ -2114,6 +2133,7 @@ void DrawIndexed(PrimitiveType prim, uint32_t indexCount, bool index32, Buffer *
                      instanceCount:1
                         baseVertex:baseVertex
                       baseInstance:0];
+    ++G->perf.draws;
 }
 
 void *AllocTransient(size_t length, size_t alignment, Buffer **buf, uint32_t *offset)
@@ -2254,6 +2274,42 @@ double LastFrameGpuTime() { return G ? G->lastFrameGpuTime : 0.0; }
 static thread_local void *t_framePool;
 static void PresentFrame(Texture *backBuffer, const uint16_t *gammaRamp);
 
+static double SecondsSince(std::chrono::steady_clock::time_point t)
+{
+    return std::chrono::duration<double>(std::chrono::steady_clock::now() - t).count();
+}
+
+// BO1_PERF_LOG=1: a line a second. A frame rate held down by "waited for a drawable" is the display's (v-sync); by
+// "waited for the GPU" the GPU's (a lower r_mode helps); with neither, the CPU's (the engine's threads, the draws).
+static void PerfFrame()
+{
+    Globals::Perf &p = G->perf;
+    const auto now = std::chrono::steady_clock::now();
+    if (G->lastPresent.time_since_epoch().count())
+        p.frameMax = std::max(p.frameMax, std::chrono::duration<double>(now - G->lastPresent).count());
+    G->lastPresent = now;
+    ++p.frames;
+    if (!G->perfStart.time_since_epoch().count())
+    {
+        G->perfStart = now;
+        p = Globals::Perf{};
+        return;
+    }
+    const double span = std::chrono::duration<double>(now - G->perfStart).count();
+    if (span < 1.0)
+        return;
+    const double n = p.frames ? (double)p.frames : 1.0;
+    fprintf(stderr,
+            "[metal] %.0f fps, worst frame %.1f ms | GPU %.1f ms a frame (worst %.1f) | waited for the GPU %.1f ms a "
+            "frame, for a drawable %.1f (worst %.1f) | a frame: %.0f draws, %.1f render passes, %.1f blit passes, "
+            "%.1f command buffers\n",
+            p.frames / span, p.frameMax * 1000.0, p.gpuFrames ? p.gpuSum / p.gpuFrames * 1000.0 : 0.0,
+            p.gpuMax * 1000.0, p.gpuWait / n * 1000.0, p.drawableWait / n * 1000.0, p.drawableWaitMax * 1000.0,
+            p.draws / n, p.passes / n, p.blits / n, p.commits / n);
+    p = Globals::Perf{};
+    G->perfStart = now;
+}
+
 static void CycleFramePool()
 {
     if (t_framePool)
@@ -2303,7 +2359,14 @@ static void PresentFrame(Texture *backBuffer, const uint16_t *gammaRamp)
         FlushPendingClear(); // a clear nothing drew over still has to reach the back buffer
         EndEncoders();
         EnsureCmdBuf();
+        const auto drawableStart = std::chrono::steady_clock::now();
         id<CAMetalDrawable> drawable = (G->layer && backBuffer) ? [G->layer nextDrawable] : nil;
+        if (G->perfLog)
+        {
+            const double waited = SecondsSince(drawableStart);
+            G->perf.drawableWait += waited;
+            G->perf.drawableWaitMax = std::max(G->perf.drawableWaitMax, waited);
+        }
         if (drawable)
         {
             id<MTLRenderPipelineState> pso = BlitPSO((uint32_t)G->layer.pixelFormat, 1, true);
@@ -2339,10 +2402,18 @@ static void PresentFrame(Texture *backBuffer, const uint16_t *gammaRamp)
         if (frame + 1 > (uint64_t)kMaxFramesInFlight)
         {
             const uint64_t oldest = frame + 1 - kMaxFramesInFlight - 1;
+            const auto waitStart = std::chrono::steady_clock::now();
             WaitForSerial(G->frameSerials[oldest % (kMaxFramesInFlight + 1)]);
+            if (G->perfLog)
+                G->perf.gpuWait += SecondsSince(waitStart);
             std::lock_guard<std::mutex> lock(G->timeLock);
             G->lastFrameGpuTime = G->frameGpuAccum[oldest & 7];
+            ++G->perf.gpuFrames;
+            G->perf.gpuSum += G->lastFrameGpuTime;
+            G->perf.gpuMax = std::max(G->perf.gpuMax, G->lastFrameGpuTime);
         }
+        if (G->perfLog)
+            PerfFrame();
     }
 }
 } // namespace rhi

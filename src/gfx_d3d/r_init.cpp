@@ -934,6 +934,17 @@ void __cdecl R_SetWndParms(GfxWindowParms *wndParms)
     int refreshRate; // [esp+4h] [ebp-8h] BYREF
     const char *refreshRateString; // [esp+8h] [ebp-4h]
 
+#if BO1_MACOS
+    // macOS: r_fullscreen 1 is native full screen at any r_mode, which leaves the borderless mode nothing to do; it is
+    // full screen at the monitor's size. The first Mac builds launched borderless (and saved r_borderless 1 in the
+    // config): those settings become full screen once, keeping the resolution the borderless window drew at.
+    if ( r_borderless && r_borderless->current.enabled && !Sys_IsHeadlessClient() )
+    {
+        Com_Printf(8, "r_borderless 1 is full screen on macOS: r_fullscreen 1, r_borderless 0\n");
+        Dvar_SetBool((dvar_s *)r_borderless, 0);
+        Dvar_SetBool((dvar_s *)r_fullscreen, 1);
+    }
+#endif
     wndParms->fullscreen = Dvar_GetBool("r_fullscreen");
     if ( Sys_IsHeadlessClient() ) // zombies: a headless client never goes fullscreen (that changes the display mode)
         wndParms->fullscreen = 0;
@@ -1408,6 +1419,22 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
             defaultResolutionIndex = resolutionIndex;
     }
     dx.resolutionNameTable[resolutionIndex] = 0;
+#if BO1_MACOS
+    // macOS: by default the game draws at the screen's size in points (the resolution the desktop looks like; the
+    // list goes up to the screen's pixels for a sharper picture at a higher cost)
+    {
+        char screenMode[32];
+        Com_sprintf(screenMode, sizeof(screenMode), "%ix%i", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
+        for ( resolutionIndex = 0; resolutionIndex < resolutionCount; ++resolutionIndex )
+        {
+            if ( !I_stricmp(dx.resolutionNameTable[resolutionIndex], screenMode) )
+            {
+                defaultResolutionIndex = resolutionIndex;
+                break;
+            }
+        }
+    }
+#endif
     r_mode = _Dvar_RegisterEnum(
                          "r_mode",
                          dx.resolutionNameTable,

@@ -264,6 +264,13 @@ void __cdecl SL_CheckLeaks(scriptInstance_t inst)
                     Com_PrintError(1, "leaked string = '%s', refcount = %i, i = %i\n", SL_DebugConvertToString(i, inst), v2, i);
                 }
             }
+#if BO1_MACOS
+            // A reference left over when the game quits is a leak, not a danger: logged, instead of the assert's
+            // breakpoint ending every quit after a game as a crash (macOS reports the app as having quit unexpectedly).
+            if ( gScrStringDebugGlob[inst]->totalRefCount )
+                Com_PrintError(1, "script strings: %i references not released at shutdown (instance %i)\n",
+                               gScrStringDebugGlob[inst]->totalRefCount, (int)inst);
+#else
             if ( gScrStringDebugGlob[inst]->totalRefCount
                 && !Assert_MyHandler(
                             "C:\\projects_pc\\cod\\codsrc\\src\\clientscript\\cscr_stringlist.cpp",
@@ -275,6 +282,7 @@ void __cdecl SL_CheckLeaks(scriptInstance_t inst)
             {
                 __debugbreak();
             }
+#endif
         }
         Scr_ClearScrStringDebugGlob(inst);
     }

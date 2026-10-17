@@ -13,7 +13,10 @@
 #include "../win32compat/arena.h"
 #include "../win32compat/main_thread.h"
 
+#include <os/lock.h>
+#include <pthread.h>
 #include <atomic>
+#include <cstddef>
 #include <cstdint>
 #include <cstring>
 #include <chrono>
@@ -30,7 +33,54 @@ namespace d3d9mtl
 // ======================================================================================================================
 // lock, logging
 // ======================================================================================================================
-std::recursive_mutex &DeviceMutex();
+// Every Direct3D call takes the device lock (the engine creates and fills resources on its loading and streaming
+// threads while the render thread draws): tens of thousands of times a frame, almost always uncontended. A recursive
+// lock of its own: re-entry is an owner check, taking it one os_unfair_lock (a std::recursive_mutex cost a tenth of
+// the render thread).
+class DeviceMutexType
+{
+public:
+    void lock()
+    {
+        const pthread_t self = pthread_self();
+        if (m_owner.load(std::memory_order_relaxed) == self)
+        {
+            ++m_depth;
+            return;
+        }
+        os_unfair_lock_lock(&m_lock);
+        m_owner.store(self, std::memory_order_relaxed);
+        m_depth = 1;
+    }
+    bool try_lock()
+    {
+        const pthread_t self = pthread_self();
+        if (m_owner.load(std::memory_order_relaxed) == self)
+        {
+            ++m_depth;
+            return true;
+        }
+        if (!os_unfair_lock_trylock(&m_lock))
+            return false;
+        m_owner.store(self, std::memory_order_relaxed);
+        m_depth = 1;
+        return true;
+    }
+    void unlock()
+    {
+        if (--m_depth == 0)
+        {
+            m_owner.store(pthread_t(), std::memory_order_relaxed);
+            os_unfair_lock_unlock(&m_lock);
+        }
+    }
+
+private:
+    os_unfair_lock m_lock = OS_UNFAIR_LOCK_INIT;
+    std::atomic<pthread_t> m_owner{pthread_t()}; // only the owner stores itself here, so only it can match
+    uint32_t m_depth = 0;                        // the owner's
+};
+DeviceMutexType &DeviceMutex();
 
 struct DeviceLock
 {
@@ -435,13 +485,49 @@ public:
     const D3DVERTEXELEMENT9 *Find(BYTE usage, BYTE usageIndex) const;
 };
 
+// Shader variants and pipelines are compiled off the render thread (d3d9_shadercache.cpp): a draw whose variant or
+// pipeline is still compiling is skipped instead of waiting for the Metal compiler.
+enum CompileState : int
+{
+    kCompilePending = 0,
+    kCompileReady = 1,
+    kCompileFailed = 2,
+};
+
 // one compiled specialization of a shader
 struct ShaderVariant
 {
     uint64_t key = 0;
     rhi::Library *lib = nullptr;
     rhi::Function *fn = nullptr;
-    bool failed = false;
+    std::atomic<int> state{kCompilePending};
+    std::atomic<int> refs{1};            // its shader code's, and one per queued compile or pipeline that needs it
+    std::atomic<bool> claimed{false};    // a thread has started compiling it (or it never needs compiling)
+    std::atomic<bool> urgentQueued{false};
+    std::atomic<bool> cancelled{false};  // nothing needs it any more (the compiler skips it)
+    bool isPixel = false;
+    uint32_t shaderId = 0;
+    std::string source;                  // the Metal source, until it is compiled
+    bool Ready() const { return state.load(std::memory_order_acquire) == kCompileReady; }
+    bool Failed() const { return state.load(std::memory_order_acquire) == kCompileFailed; }
+    void Ref() { refs.fetch_add(1, std::memory_order_relaxed); }
+    void Release();
+};
+
+// one render pipeline (Device::m_pipelines), created from its description once both variants are compiled
+struct PipelineEntry
+{
+    std::atomic<int> state{kCompilePending};
+    rhi::Pipeline *pipeline = nullptr;
+    std::atomic<int> refs{1};            // the device's, and one per queued creation
+    std::atomic<bool> claimed{false};
+    std::atomic<bool> urgentQueued{false};
+    rhi::PipelineDesc desc{};            // (functions filled in from the variants when it is created)
+    ShaderVariant *vs = nullptr, *ps = nullptr; // referenced until it is created
+    uint32_t vsId = 0, psId = 0;
+    bool Ready() const { return state.load(std::memory_order_acquire) == kCompileReady; }
+    void Ref() { refs.fetch_add(1, std::memory_order_relaxed); }
+    void Release();
 };
 
 // what a draw needs to know about a shader's inputs and constants
@@ -487,20 +573,57 @@ struct ShaderInfo
     std::vector<FloatDef> floatDefs;
 };
 
+// One shader bytecode and what is compiled from it. The engine creates the same shader for many materials and again
+// for every level that uses it: those shader objects share one translation, one set of variants and (through the
+// id) one set of pipelines, which stay for the rest of the run, so a shader that comes back is compiled already.
+struct ShaderCode
+{
+    uint32_t id = 0;   // pipelines are keyed by it
+    uint64_t hash = 0; // of the bytecode: the shader cache's name for it across runs
+    bool pixel = false;
+    std::vector<DWORD> code;
+    ShaderInfo info;   // (with the Metal source)
+    std::unordered_map<uint64_t, ShaderVariant *> variants;
+    uint32_t liveObjects = 0; // shader objects using it (under the device lock)
+
+    // the variant for the given key (variant-specific #defines come from 'prefix'), created on first use and compiled
+    // in the background (urgent: before the compiles queued to warm the cache up); check its state before use
+    ShaderVariant *Variant(uint64_t key, const std::string &prefix, bool urgent);
+};
+
 class ShaderBase
 {
 public:
     Device *m_device = nullptr;
-    std::vector<DWORD> m_code;
-    ShaderInfo m_info;
-    std::unordered_map<uint64_t, ShaderVariant *> m_variants;
-    uint32_t m_id = 0;
+    ShaderCode *m_shared = nullptr; // never freed
+    ShaderInfo m_info;              // m_shared->info without the Metal source
+    uint32_t m_id = 0;              // m_shared->id
+    uint64_t m_hash = 0;            // m_shared->hash
 
     bool Init(Device *dev, const DWORD *code, bool pixel);
-    void DestroyVariants();
-    // compiled variant for the given key (variant-specific #defines come from 'prefix')
-    ShaderVariant *Variant(uint64_t key, const std::string &prefix);
+    void ReleaseCode(); // (the destructors: the code stays, for the next shader object with it)
 };
+
+// ======================================================================================================================
+// background compilation and the shader cache (d3d9_shadercache.cpp)
+// ======================================================================================================================
+struct PipelineKey;
+namespace shadercache
+{
+void Start();          // the compiler's threads, and the record of earlier runs (device creation)
+void Drain();          // drops queued compiles, waits for running ones (device destruction)
+bool SyncCompiles();   // BO1_SYNC_SHADERS=1: draws wait for their compiles instead of being skipped
+void Queue(ShaderVariant *v, bool urgent);
+void Queue(PipelineEntry *e, bool urgent);
+void CompileVariantNow(ShaderVariant *v); // here, or waits for the thread compiling it
+void CreatePipelineNow(PipelineEntry *e);
+void NoteSkippedDraw();
+// (the rest under the device lock)
+void RecordPipeline(const ShaderBase &vs, const ShaderBase &ps, const PipelineKey &key); // a pipeline a draw made
+void OnShaderCreated(Device *dev, ShaderBase *s); // queues the recorded pipelines it completes
+void OnShaderDestroyed(ShaderBase *s);            // (after ReleaseCode)
+void OnPresent(); // writes new records; the log
+} // namespace shadercache
 
 class VertexShader final : public ComObject<IDirect3DVertexShader9>, public ShaderBase
 {
@@ -612,6 +735,50 @@ void FillCaps(D3DCAPS9 *caps);
 constexpr int kMaxSamplers = 20; // 16 pixel + 4 vertex (D3DVERTEXTEXTURESAMPLER0..3)
 constexpr int kVertexSamplerBase = 16;
 constexpr int kMaxStreams = 16;
+
+// Everything a Metal render pipeline depends on, built from the Direct3D state at a draw (Device::CurrentPipeline).
+// Built zeroed (padding included), so it is hashed and compared as bytes; looked up at most draws, without allocating.
+struct PipelineKey
+{
+    uint32_t vsId, psId;
+    uint64_t vsKey, psKey;
+    uint32_t colorFormats[4];
+    uint32_t depthFormat, stencilFormat, samples;
+    uint8_t blend[8];
+    uint8_t writeMask[4];
+    rhi::VertexAttributeDesc attrs[rhi::MAX_VERTEX_ATTRIBUTES];
+    uint32_t strides[kMaxStreams];
+    uint8_t stepConstant[kMaxStreams];
+    uint32_t usedStreams;
+};
+// (the bytes up to the last member: a copy of the key need not copy its tail padding)
+constexpr size_t kPipelineKeyBytes = offsetof(PipelineKey, usedStreams) + sizeof(uint32_t);
+inline uint64_t HashBytes(const void *data, size_t n, uint64_t h = 0x9E3779B97F4A7C15ull)
+{
+    const unsigned char *p = (const unsigned char *)data;
+    size_t i = 0;
+    for (; i + 8 <= n; i += 8)
+    {
+        uint64_t w;
+        memcpy(&w, p + i, 8);
+        h = (h ^ w) * 0xFF51AFD7ED558CCDull;
+        h ^= h >> 32;
+    }
+    for (; i < n; ++i)
+        h = (h ^ p[i]) * 0x100000001B3ull;
+    return h ^ (h >> 29);
+}
+struct PipelineKeyHash
+{
+    size_t operator()(const PipelineKey &k) const noexcept { return (size_t)HashBytes(&k, kPipelineKeyBytes); }
+};
+struct PipelineKeyEq
+{
+    bool operator()(const PipelineKey &a, const PipelineKey &b) const noexcept
+    {
+        return memcmp(&a, &b, kPipelineKeyBytes) == 0;
+    }
+};
 constexpr int kMaxVSConstF = 256;
 constexpr int kMaxPSConstF = 224;
 
@@ -807,6 +974,9 @@ public:
     const D3DPRESENT_PARAMETERS &PresentParams() const { return m_pp; }
     void NoteVertexShaderGone(VertexShader *vs);
     void NotePixelShaderGone(PixelShader *ps);
+    // the shader cache's prewarming: the variants and the pipeline of a recorded key (true if any was new)
+    bool Prewarm(const PipelineKey &k, ShaderCode *vs, ShaderCode *ps);
+    Query *m_activeOcclusion = nullptr; // between an occlusion query's Issue(BEGIN) and Issue(END): draws wait
 
 private:
     struct StreamBinding
@@ -825,7 +995,12 @@ private:
     void AfterDraw();
     ShaderVariant *VertexVariant();
     ShaderVariant *PixelVariant();
-    rhi::Pipeline *CurrentPipeline(ShaderVariant *vs, ShaderVariant *ps, rhi::PrimitiveType prim);
+    ShaderVariant *VariantFor(ShaderCode *c, uint64_t key, bool urgent);
+    PipelineEntry *PipelineFor(const PipelineKey &k, ShaderVariant *vs, ShaderVariant *ps, bool urgent);
+    PipelineEntry *CurrentPipeline(ShaderVariant *vs, ShaderVariant *ps, rhi::PrimitiveType prim);
+    bool WaitForCompiles() const { return m_activeOcclusion || shadercache::SyncCompiles(); }
+    bool VariantUsable(ShaderVariant *v);
+    bool PipelineUsable(PipelineEntry *e);
     rhi::DepthStencil *CurrentDepthStencil();
     rhi::Sampler *SamplerFor(int slot, bool compare);
     void BindTexturesAndSamplers();
@@ -898,13 +1073,13 @@ private:
     ShaderVariant *m_curVsVariant = nullptr;
     ShaderVariant *m_curPsVariant = nullptr;
     uint64_t m_curVsKey = 0, m_curPsKey = 0;
-    rhi::Pipeline *m_curPipeline = nullptr;
+    PipelineEntry *m_curPipeline = nullptr;
     uint32_t m_rtFormats[4] = {};
     uint32_t m_dsFormat = 0;
     uint32_t m_rtSamples = 1;
     uint32_t m_rtWidth = 1, m_rtHeight = 1;
 
-    std::unordered_map<std::string, rhi::Pipeline *> m_pipelines;
+    std::unordered_map<PipelineKey, PipelineEntry *, PipelineKeyHash, PipelineKeyEq> m_pipelines;
     std::unordered_map<uint64_t, rhi::DepthStencil *> m_depthStencils;
     std::unordered_map<uint64_t, rhi::Sampler *> m_samplers;
     std::unordered_map<DWORD, VertexDecl *> m_fvfDecls;

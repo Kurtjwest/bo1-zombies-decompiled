@@ -6,6 +6,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <IOKit/pwr_mgt/IOPMLib.h>
 #import <QuartzCore/CAMetalLayer.h>
+#import <QuartzCore/CATransaction.h>
 #import <objc/runtime.h>
 
 #include "cocoa_bridge.h"
@@ -89,11 +90,24 @@ struct BridgeWindow
     NSView *view;
     void *userData;
     bool coversScreen;
+    // native full screen (a Space of its own): what the engine asked for, the state AppKit has the window in, and
+    // the animated transition between the two (requests made during one are applied when it ends)
+    bool wantFullScreen;
+    bool inFullScreen;   // entered (or entering) full screen
+    bool transitioning;
+    int pendingFullScreen = -1;
+    // the frame and style the engine asked for while the window was in full screen, applied once it leaves
+    bool haveWindowedFrame;
+    NSRect windowedContent;
+    bool wantBorderless, wantResizable;
+    bool fillScaling;    // the drawable stretches over the whole view (else it keeps its aspect ratio)
+    int logicalW, logicalH; // the size the game draws at (the back buffer), in units
     // AppKit state other threads read every frame (the render thread asks whether the window is visible, minimized
     // and focused): kept current by the main thread, so those reads need not wait for it
     std::atomic<int> visible{0};
     std::atomic<int> minimized{0};
     std::atomic<int> keyWindow{0};
+    std::atomic<int> fullScreen{0};
 };
 
 static std::vector<BridgeWindow *> g_bridgeWindows; // main thread only
@@ -198,6 +212,8 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
     layer.needsDisplayOnBoundsChange = NO;
     layer.presentsWithTransaction = NO;
     layer.magnificationFilter = kCAFilterLinear;
+    layer.contentsGravity = kCAGravityResizeAspect;
+    layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack); // around a drawable kept at its aspect ratio
     return layer;
 }
 - (BOOL)acceptsFirstResponder
@@ -500,6 +516,129 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
 @property(nonatomic, assign) BridgeWindow *owner;
 @end
 
+// ---- native full screen --------------------------------------------------------------------------------------------
+// The engine's full-screen and borderless modes, and the window's green button / Ctrl-Cmd-F, put the game window in a
+// Space of its own. AppKit animates the change; requests that arrive during the animation are applied once it ends.
+// The game keeps drawing at its own resolution: the Metal drawable keeps the back buffer's size and the layer scales
+// it to the view (see SetContentScaling and the Win32 layer's client mapping).
+static NSWindowStyleMask WindowedStyleMask(bool borderless, bool resizable)
+{
+    NSWindowStyleMask style = borderless ? NSWindowStyleMaskBorderless
+                                         : (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable);
+    if (resizable && !borderless)
+        style |= NSWindowStyleMaskResizable;
+    return style;
+}
+
+// The drawable over the view: stretched over all of it for the engine's own full screen (it draws for the screen's
+// shape, as for a monitor showing any mode), else at its own aspect ratio with black bars around it. A window showing
+// the engine's full screen outside of full screen (the player took it out) keeps the screen's shape when resized.
+static void ApplyContentGravity(BridgeWindow *w)
+{
+    CALayer *layer = w->view.layer;
+    if (!layer)
+        return;
+    NSString *g = w->fillScaling ? kCAGravityResize : kCAGravityResizeAspect;
+    if (![layer.contentsGravity isEqualToString:g])
+    {
+        [CATransaction begin];
+        [CATransaction setDisableActions:YES];
+        layer.contentsGravity = g;
+        [CATransaction commit];
+    }
+    NSWindow *win = w->window;
+    if (!win || w->inFullScreen || w->transitioning)
+        return;
+    NSScreen *screen = win.screen ? win.screen : [NSScreen mainScreen];
+    if (w->fillScaling && screen && screen.frame.size.height > 0)
+        win.contentAspectRatio = screen.frame.size;
+    else
+        win.contentResizeIncrements = NSMakeSize(1.0, 1.0); // (clears the aspect ratio)
+}
+
+static void EmitFullScreen(BridgeWindow *w, bool on)
+{
+    BridgeEvent ev = {};
+    ev.type = BRIDGE_EV_FULLSCREEN;
+    ev.window = w;
+    ev.userData = w->userData;
+    ev.value = on ? 1 : 0;
+    Emit(ev);
+}
+
+static void EnterFullScreenNow(BridgeWindow *w)
+{
+    NSWindow *win = w->window;
+    if (!win || !win.visible)
+        return; // (entered when the window is shown, see Main_ShowWindow)
+    // only a full-screen capable window toggles, and a borderless one only with a title bar (hidden in full screen):
+    // it gets one for the duration, and its own style back when it leaves
+    win.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary | NSWindowCollectionBehaviorManaged;
+    const NSWindowStyleMask fsStyle = WindowedStyleMask(false, true);
+    if ((win.styleMask & fsStyle) != fsStyle)
+    {
+        const NSRect content = [win contentRectForFrameRect:win.frame];
+        win.styleMask = fsStyle;
+        [win setFrame:[win frameRectForContentRect:content] display:NO];
+        [win makeFirstResponder:w->view];
+    }
+    w->transitioning = true;
+    [win toggleFullScreen:nil];
+}
+
+static void ExitFullScreenNow(BridgeWindow *w)
+{
+    if (!w->window)
+        return;
+    w->transitioning = true;
+    [w->window toggleFullScreen:nil];
+}
+
+// the animation has ended (or failed): take up a request made meanwhile, or restore the windowed frame and style
+static void FullScreenSettled(BridgeWindow *w)
+{
+    w->transitioning = false;
+    w->fullScreen.store(w->inFullScreen ? 1 : 0, std::memory_order_relaxed);
+    const int pending = w->pendingFullScreen;
+    w->pendingFullScreen = -1;
+    if (!w->inFullScreen)
+    {
+        NSWindow *win = w->window;
+        const NSWindowStyleMask style = WindowedStyleMask(w->wantBorderless, w->wantResizable);
+        NSRect content = w->haveWindowedFrame ? w->windowedContent : [win contentRectForFrameRect:win.frame];
+        if (win.styleMask != style)
+            win.styleMask = style;
+        [win setFrame:[win frameRectForContentRect:content] display:YES];
+        [win makeFirstResponder:w->view];
+        w->haveWindowedFrame = false;
+    }
+    ApplyContentGravity(w);
+    EmitFullScreen(w, w->inFullScreen);
+    if (pending >= 0 && (pending != 0) != w->inFullScreen)
+    {
+        // (not from inside AppKit's completion of the last transition)
+        dispatch_async(dispatch_get_main_queue(), ^{
+          if (!w->window || w->transitioning || (pending != 0) == w->inFullScreen)
+              return;
+          if (pending)
+              EnterFullScreenNow(w);
+          else
+              ExitFullScreenNow(w);
+        });
+    }
+}
+
+// full screen the engine asked for while AppKit could not do it (the app in the background, the window minimized):
+// tried again when that changes
+static void RetryFullScreen(BridgeWindow *w)
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+      NSWindow *win = w->window;
+      if (win && win.visible && !win.miniaturized && w->wantFullScreen && !w->inFullScreen && !w->transitioning)
+          EnterFullScreenNow(w);
+    });
+}
+
 @implementation BO1WindowDelegate
 - (BOOL)windowShouldClose:(NSWindow *)sender
 {
@@ -560,10 +699,67 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
     ev.userData = self.owner->userData;
     ev.value = 0;
     Emit(ev);
+    RetryFullScreen(self.owner);
 }
 - (void)windowDidChangeBackingProperties:(NSNotification *)n
 {
     [self windowDidResize:n];
+}
+- (void)windowWillEnterFullScreen:(NSNotification *)n
+{
+    self.owner->transitioning = true;
+    self.owner->inFullScreen = true;
+    self.owner->fullScreen.store(1, std::memory_order_relaxed);
+}
+- (void)windowDidEnterFullScreen:(NSNotification *)n
+{
+    self.owner->inFullScreen = true;
+    FullScreenSettled(self.owner);
+}
+- (void)windowDidFailToEnterFullScreen:(NSWindow *)window
+{
+    self.owner->inFullScreen = false;
+    FullScreenSettled(self.owner);
+}
+- (void)windowWillExitFullScreen:(NSNotification *)n
+{
+    self.owner->transitioning = true;
+}
+- (void)windowDidExitFullScreen:(NSNotification *)n
+{
+    BridgeWindow *w = self.owner;
+    w->inFullScreen = false;
+    if (w->wantFullScreen && w->pendingFullScreen < 0)
+    {
+        // the player left the engine's full screen (green button, Ctrl-Cmd-F): the game stays in a window that fits
+        // the screen, of the shape the game draws for (the screen's when it is stretched, else its own), until the
+        // engine asks for full screen again (vid_restart) or the player goes back to it
+        w->wantFullScreen = false;
+        w->wantBorderless = false;
+        w->wantResizable = true;
+        NSScreen *screen = w->window.screen ? w->window.screen : [NSScreen mainScreen];
+        NSRect visible = NSInsetRect(screen.visibleFrame, 24, 24);
+        const NSRect cur = [w->window contentRectForFrameRect:w->window.frame];
+        const CGFloat aspect = w->fillScaling && screen.frame.size.height > 0 ? screen.frame.size.width / screen.frame.size.height
+                               : w->logicalW > 0 && w->logicalH > 0           ? (CGFloat)w->logicalW / w->logicalH
+                               : cur.size.height > 0                          ? cur.size.width / cur.size.height
+                                                                              : 16.0 / 9.0;
+        const CGFloat titleBar = [NSWindow frameRectForContentRect:NSMakeRect(0, 0, 100, 100)
+                                                         styleMask:WindowedStyleMask(false, true)].size.height - 100;
+        CGFloat cw = visible.size.width, ch = visible.size.height - titleBar;
+        if (cw / ch > aspect)
+            cw = ch * aspect;
+        else
+            ch = cw / aspect;
+        w->windowedContent = NSMakeRect(NSMidX(visible) - cw / 2, NSMidY(visible) - (ch + titleBar) / 2, cw, ch);
+        w->haveWindowedFrame = true;
+    }
+    FullScreenSettled(w);
+}
+- (void)windowDidFailToExitFullScreen:(NSWindow *)window
+{
+    self.owner->inFullScreen = true;
+    FullScreenSettled(self.owner);
 }
 @end
 
@@ -603,6 +799,8 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
     ev.type = BRIDGE_EV_ACTIVATE;
     ev.value = 1;
     Emit(ev);
+    for (BridgeWindow *w : g_bridgeWindows)
+        RetryFullScreen(w);
 }
 - (void)applicationDidResignActive:(NSNotification *)n
 {
@@ -648,6 +846,9 @@ static void BuildMenu()
     [bar addItem:windowItem];
     NSMenu *windowMenu = [[NSMenu alloc] initWithTitle:@"Window"];
     [windowMenu addItemWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
+    // the system's full-screen command (and its Ctrl-Cmd-F / Globe-F shortcuts) for the game window
+    NSMenuItem *fullScreen = [windowMenu addItemWithTitle:@"Enter Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
+    fullScreen.keyEquivalentModifierMask = NSEventModifierFlagControl | NSEventModifierFlagCommand;
     windowItem.submenu = windowMenu;
     [NSApp setMainMenu:bar];
     [NSApp setWindowsMenu:windowMenu];
@@ -668,6 +869,12 @@ void Bridge_Init(BridgeEventHandler handler)
             g_unitScale = main ? 1.0 / main.backingScaleFactor : 1.0;
         }
         w32::AddMainThreadWaker(WakeMainRunLoop);
+        // a game: no App Nap and no timer coalescing while it runs, which would stretch the 1 ms sleeps and timed
+        // waits its threads pace themselves with (the system may still sleep when idle)
+        static id<NSObject> activity;
+        activity = [[NSProcessInfo processInfo]
+            beginActivityWithOptions:NSActivityUserInitiatedAllowingIdleSystemSleep | NSActivityLatencyCritical
+                              reason:@"Game"];
         g_appDelegate = [[BO1AppDelegate alloc] init];
         [NSApp setDelegate:g_appDelegate];
         [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
@@ -724,8 +931,11 @@ static BridgeWindow *Main_CreateWindow(const char *title, int x, int y, int clie
         win.releasedWhenClosed = NO;
         win.title = EngineString(title ? title : "BO1 Zombies");
         win.acceptsMouseMovedEvents = YES;
-        win.collectionBehavior = NSWindowCollectionBehaviorFullScreenNone | NSWindowCollectionBehaviorManaged;
+        // the green button / Ctrl-Cmd-F take the window to a full-screen Space (the drawable keeps its size)
+        win.collectionBehavior = NSWindowCollectionBehaviorFullScreenPrimary | NSWindowCollectionBehaviorManaged;
         win.backgroundColor = [NSColor blackColor];
+        bw->wantBorderless = borderless != 0;
+        bw->wantResizable = resizable != 0;
         BO1MetalView *view = [[BO1MetalView alloc] initWithFrame:NSMakeRect(0, 0, content.size.width, content.size.height)];
         view.owner = bw;
         view.wantsLayer = YES;
@@ -738,6 +948,7 @@ static BridgeWindow *Main_CreateWindow(const char *title, int x, int y, int clie
         [win makeFirstResponder:view];
         bw->window = win;
         bw->view = view;
+        ApplyContentGravity(bw);
         if (x == (int)0x80000000 || y == (int)0x80000000)
             [win center];
         g_bridgeWindows.push_back(bw);
@@ -779,6 +990,12 @@ static void Main_ShowWindow(BridgeWindow *w, int show)
         [w->window makeKeyAndOrderFront:nil];
         [w->window makeFirstResponder:w->view];
         [NSApp activateIgnoringOtherApps:YES];
+        // full screen asked for before the window was on screen (the engine creates its window hidden)
+        if (w->wantFullScreen && !w->inFullScreen && !w->transitioning)
+            dispatch_async(dispatch_get_main_queue(), ^{
+              if (w->window && w->wantFullScreen && !w->inFullScreen && !w->transitioning)
+                  EnterFullScreenNow(w);
+            });
     }
     else
         [w->window orderOut:nil];
@@ -805,11 +1022,12 @@ static void Main_SetWindowStyle(BridgeWindow *w, int borderless, int resizable)
 {
     if (!w)
         return;
+    w->wantBorderless = borderless != 0;
+    w->wantResizable = resizable != 0;
+    if (w->inFullScreen || w->transitioning)
+        return; // the style the window gets back when it leaves full screen
     NSRect content = [w->window contentRectForFrameRect:w->window.frame];
-    NSWindowStyleMask style = borderless ? NSWindowStyleMaskBorderless
-                                         : (NSWindowStyleMaskTitled | NSWindowStyleMaskClosable | NSWindowStyleMaskMiniaturizable);
-    if (resizable && !borderless)
-        style |= NSWindowStyleMaskResizable;
+    NSWindowStyleMask style = WindowedStyleMask(borderless != 0, resizable != 0);
     if (w->window.styleMask != style)
     {
         w->window.styleMask = style;
@@ -823,8 +1041,41 @@ static void Main_SetClientRect(BridgeWindow *w, int x, int y, int clientW, int c
     if (!w)
         return;
     NSRect content = ToCocoaRect(x, y, clientW, clientH);
+    if (w->inFullScreen || w->transitioning)
+    {
+        // AppKit owns the frame of a full-screen window: the one asked for is the window's once it leaves
+        w->windowedContent = content;
+        w->haveWindowedFrame = true;
+        return;
+    }
     NSRect frame = [w->window frameRectForContentRect:content];
     [w->window setFrame:frame display:YES];
+}
+
+static void Main_SetFullScreen(BridgeWindow *w, int fullScreen)
+{
+    if (!w || !w->window)
+        return;
+    w->wantFullScreen = fullScreen != 0;
+    if (w->transitioning)
+    {
+        w->pendingFullScreen = fullScreen ? 1 : 0;
+        return;
+    }
+    if (fullScreen && !w->inFullScreen)
+        EnterFullScreenNow(w);
+    else if (!fullScreen && w->inFullScreen)
+        ExitFullScreenNow(w);
+}
+
+static void Main_SetContentScaling(BridgeWindow *w, int logicalW, int logicalH, int fill)
+{
+    if (!w)
+        return;
+    w->fillScaling = fill != 0;
+    w->logicalW = logicalW;
+    w->logicalH = logicalH;
+    ApplyContentGravity(w);
 }
 
 static void Main_GetClientRect(BridgeWindow *w, BridgeRect *r)
@@ -989,38 +1240,67 @@ static int Main_ScreenForPoint(int x, int y)
 static int Main_GetScreenModes(int index, int *widths, int *heights, int *rates, int maxModes)
 {
     NSArray<NSScreen *> *screens = [NSScreen screens];
-    if (index < 0 || index >= (int)screens.count)
+    if (index < 0 || index >= (int)screens.count || maxModes <= 0)
         return 0;
     NSScreen *s = screens[index];
-    // Windowed/borderless rendering at any size up to the screen is possible; offer the common 16:9/16:10/4:3 sizes
-    // that fit, plus the screen itself.
-    BridgeRect full = ToWinRect(s.frame);
-    int sw = full.right - full.left, sh = full.bottom - full.top;
-    double hz = 60.0;
+    // The game draws at its own resolution whatever the display runs at (the layer scales the drawable to the screen;
+    // full screen never switches the display's mode), so these are the resolutions it can draw at: the display's own
+    // modes (System Settings' "looks like" sizes, in points and in the pixels macOS renders them at), the usual
+    // sizes, and the screen's size in points and in pixels, up to the screen's pixels (the backing store of the mode
+    // it runs, or the panel's native resolution when that is larger).
+    const BridgeRect full = ToWinRect(s.frame);
+    const int unitW = full.right - full.left, unitH = full.bottom - full.top;
+    const CGFloat scale = s.backingScaleFactor > 0 ? s.backingScaleFactor : 1.0;
+    int maxW = (int)lround(s.frame.size.width * scale), maxH = (int)lround(s.frame.size.height * scale);
+    int hz = 60;
     if (@available(macOS 12.0, *))
-        hz = s.maximumFramesPerSecond > 0 ? (double)s.maximumFramesPerSecond : 60.0;
-    static const int sizes[][2] = {{640, 480}, {800, 600}, {1024, 768}, {1152, 864}, {1280, 720}, {1280, 800}, {1280, 960}, {1280, 1024}, {1366, 768}, {1440, 900}, {1600, 900}, {1600, 1200}, {1680, 1050}, {1920, 1080}, {1920, 1200}, {2048, 1152}, {2560, 1440}, {2560, 1600}, {2880, 1800}, {3024, 1964}, {3456, 2234}, {3840, 2160}, {5120, 2880}};
-    int n = 0;
-    for (auto &sz : sizes)
+        hz = s.maximumFramesPerSecond > 0 ? (int)s.maximumFramesPerSecond : 60;
+    std::vector<std::pair<int, int>> sizes;
+    const CGDirectDisplayID display = [s.deviceDescription[@"NSScreenNumber"] unsignedIntValue];
+    NSDictionary *options = @{(__bridge NSString *)kCGDisplayShowDuplicateLowResolutionModes : @YES};
+    if (CFArrayRef modes = CGDisplayCopyAllDisplayModes(display, (__bridge CFDictionaryRef)options))
     {
-        if (sz[0] <= sw && sz[1] <= sh && n < maxModes)
+        constexpr uint32_t kNativeModeFlag = 0x02000000; // kDisplayModeNativeFlag (IOGraphicsTypes.h)
+        for (CFIndex i = 0; i < CFArrayGetCount(modes); ++i)
         {
-            widths[n] = sz[0];
-            heights[n] = sz[1];
-            rates[n] = (int)lround(hz);
-            ++n;
+            CGDisplayModeRef m = (CGDisplayModeRef)CFArrayGetValueAtIndex(modes, i);
+            if (!CGDisplayModeIsUsableForDesktopGUI(m))
+                continue;
+            const int pw = (int)CGDisplayModeGetPixelWidth(m), ph = (int)CGDisplayModeGetPixelHeight(m);
+            if ((CGDisplayModeGetIOFlags(m) & kNativeModeFlag) && pw * ph > maxW * maxH)
+            {
+                maxW = pw;
+                maxH = ph;
+            }
+            sizes.push_back({(int)CGDisplayModeGetWidth(m), (int)CGDisplayModeGetHeight(m)});
+            sizes.push_back({pw, ph});
         }
+        CFRelease(modes);
     }
-    bool haveNative = false;
-    for (int i = 0; i < n; ++i)
-        if (widths[i] == sw && heights[i] == sh)
-            haveNative = true;
-    if (!haveNative && n < maxModes)
+    static const int common[][2] = {{800, 600}, {1024, 640}, {1024, 768}, {1152, 864}, {1280, 720}, {1280, 800},
+                                    {1280, 960}, {1280, 1024}, {1366, 768}, {1440, 900}, {1600, 900}, {1600, 1000},
+                                    {1600, 1200}, {1680, 1050}, {1920, 1080}, {1920, 1200}, {2048, 1152}, {2048, 1280},
+                                    {2304, 1440}, {2560, 1440}, {2560, 1600}, {2880, 1800}, {3024, 1964}, {3200, 1800},
+                                    {3456, 2234}, {3840, 2160}, {3840, 2400}, {5120, 2880}};
+    for (auto &c : common)
+        sizes.push_back({c[0], c[1]});
+    sizes.push_back({unitW, unitH});
+    sizes.push_back({maxW, maxH});
+    sizes.erase(std::remove_if(sizes.begin(), sizes.end(),
+                               [&](const std::pair<int, int> &z) {
+                                   return z.first < 640 || z.second < 480 || z.first > maxW || z.second > maxH;
+                               }),
+                sizes.end());
+    std::sort(sizes.begin(), sizes.end());
+    sizes.erase(std::unique(sizes.begin(), sizes.end()), sizes.end());
+    // (too many for the caller: the smallest go)
+    const size_t first = sizes.size() > (size_t)maxModes ? sizes.size() - (size_t)maxModes : 0;
+    int n = 0;
+    for (size_t i = first; i < sizes.size(); ++i, ++n)
     {
-        widths[n] = sw;
-        heights[n] = sh;
-        rates[n] = (int)lround(hz);
-        ++n;
+        widths[n] = sizes[i].first;
+        heights[n] = sizes[i].second;
+        rates[n] = hz;
     }
     return n;
 }
@@ -1269,6 +1549,12 @@ int Bridge_IsKeyWindow(BridgeWindow *w)
     return Main_IsKeyWindow(w);
 }
 void Bridge_SetCoversScreen(BridgeWindow *w, int covers) { OnMain([&] { Main_SetCoversScreen(w, covers); }); }
+void Bridge_SetFullScreen(BridgeWindow *w, int fullScreen) { OnMain([&] { Main_SetFullScreen(w, fullScreen); }); }
+int Bridge_IsFullScreen(BridgeWindow *w) { return w ? w->fullScreen.load(std::memory_order_relaxed) : 0; }
+void Bridge_SetContentScaling(BridgeWindow *w, int logicalW, int logicalH, int fill)
+{
+    OnMain([&] { Main_SetContentScaling(w, logicalW, logicalH, fill); });
+}
 void *Bridge_GetMetalLayer(BridgeWindow *w) { return OnMain([&] { return Main_GetMetalLayer(w); }); }
 double Bridge_GetBackingScale(BridgeWindow *w) { return OnMain([&] { return Main_GetBackingScale(w); }); }
 // cursor changes from other threads (the render thread shows and hides the cursor every frame) are queued for the

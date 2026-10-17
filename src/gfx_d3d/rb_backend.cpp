@@ -5941,7 +5941,15 @@ void     RB_RenderThread(unsigned int threadContext)
         }
         else
         {
+#if BO1_MACOS
+            // The idle millisecond ends as soon as the front end hands over a frame (the auto-reset event is set again
+            // for the poll at the top of the loop). Windows' Sleep(1) ends on its next 1 ms timer tick; a sleep here
+            // runs its full millisecond and more, a delay every frame adds while the back end waits for the next one.
+            if ( Sys_WaitBackendEvent(1u) )
+                Sys_NotifyRenderer();
+#else
             NET_Sleep(1u);
+#endif
         }
     }
 }

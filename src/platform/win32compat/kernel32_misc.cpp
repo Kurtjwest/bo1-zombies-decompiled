@@ -551,8 +551,11 @@ HANDLE OpenProcess(DWORD, BOOL, DWORD pid)
 }
 void ExitProcess(UINT code)
 {
+    // Windows ends the process's other threads before anything else runs. exit() would run the static destructors
+    // while the render, sound, streaming and shader threads still use those objects (a mutex locked after its
+    // destructor ran throws, a condition variable destroyed under its waiters never returns with glibc).
     fflush(nullptr);
-    exit((int)code);
+    _exit((int)code);
 }
 BOOL TerminateProcess(HANDLE h, UINT code)
 {

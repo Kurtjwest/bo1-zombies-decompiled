@@ -2132,7 +2132,7 @@ void __cdecl R_Stream_UpdateStaticModelsCmd(char *data)
 
     StreamUpdateCmd *cmd = (StreamUpdateCmd *)data;
 
-    s_viewPos = *(float4 *)cmd->viewPos;
+    memcpy(&s_viewPos, cmd->viewPos, sizeof(s_viewPos)); // (unaligned: viewPos is 4 bytes into the command)
     for (unsigned int instId = 0; instId < g_worldDpvs->smodelCount; ++instId)
     {
         R_StreamUpdateStaticModel(instId, cmd->viewPos, cmd->maxDistSq, cmd->distanceScale);
@@ -2144,7 +2144,7 @@ void __cdecl R_Stream_UpdateStaticSurfacesCmd(char *data)
     PROF_SCOPED("R_Stream_UpdateStaticSurfacesCmd");
 
     StreamUpdateCmd *cmd = (StreamUpdateCmd *)data;
-    s_viewPos = *(float4 *)cmd->viewPos;
+    memcpy(&s_viewPos, cmd->viewPos, sizeof(s_viewPos)); // (unaligned: viewPos is 4 bytes into the command)
 
     for (unsigned int surfId = 0; surfId < g_worldDpvs->staticSurfaceCount; ++surfId)
     {
@@ -2588,7 +2588,7 @@ int __cdecl r_stream_updateCallback(jqBatch *batch)
     if (batch->Module->Group.ExecutingBatchCount > 1)
         return 1;
     cmd = (StreamUpdateCmd *)jqLockData(batch);
-    s_viewPos = *(float4 *)cmd->viewPos;
+    memcpy(&s_viewPos, cmd->viewPos, sizeof(s_viewPos)); // (unaligned: viewPos is 4 bytes into the command)
     R_StreamUpdateStatic(cmd->viewPos, cmd->maxDistSq, cmd->distanceScale);
     jqUnlockData(batch);
     return 0;
@@ -2646,7 +2646,7 @@ void __cdecl R_StreamUpdateStatic(const float *viewPos, float maxDistSq, float *
 
     PROF_SCOPED("R_Stream update static");
 
-    s_viewPos = *(float4 *)viewPos;
+    memcpy(&s_viewPos, viewPos, sizeof(s_viewPos)); // (viewPos need not be 16-byte aligned)
 
     if (rgp.world->streamInfo.aabbTreeCount > 0)
     {

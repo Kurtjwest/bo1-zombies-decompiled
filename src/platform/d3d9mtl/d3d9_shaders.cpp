@@ -12,6 +12,8 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <unordered_map>
 
 namespace d3d9mtl
 {
@@ -61,32 +63,33 @@ int RegisterFromName(const char *name)
 }
 } // namespace
 
-bool ShaderBase::Init(Device *dev, const DWORD *code, bool pixel)
+namespace
 {
-    m_device = dev;
-    const UINT size = ShaderByteSize(code);
-    if (!size)
-        return false;
-    m_code.assign(code, code + size / sizeof(DWORD));
-    static uint32_t s_nextId = 1;
-    m_id = s_nextId++;
-    m_info = ShaderInfo{};
-    m_info.isPixel = pixel;
+// (under the device lock; never freed: see ShaderCode)
+std::unordered_multimap<uint64_t, ShaderCode *> &g_codes = *new std::unordered_multimap<uint64_t, ShaderCode *>;
 
+// MojoShader's translation of c->code into c->info; false if the bytecode cannot be parsed at all
+bool Translate(ShaderCode *c)
+{
+    const bool pixel = c->pixel;
+    ShaderInfo &info = c->info;
+    info = ShaderInfo{};
+    info.isPixel = pixel;
+    const UINT size = (UINT)(c->code.size() * sizeof(DWORD));
     const MOJOSHADER_parseData *pd = MOJOSHADER_parse(MOJOSHADER_PROFILE_METAL, "bo1_main",
-                                                      (const unsigned char *)m_code.data(), size, nullptr, 0, nullptr,
+                                                      (const unsigned char *)c->code.data(), size, nullptr, 0, nullptr,
                                                       0, nullptr, nullptr, nullptr);
     if (!pd)
         return false;
     if (pd->error_count > 0)
     {
         for (int i = 0; i < pd->error_count && i < 4; ++i)
-            Log("%s shader %u: translation error at %d: %s", pixel ? "pixel" : "vertex", m_id,
+            Log("%s shader %u: translation error at %d: %s", pixel ? "pixel" : "vertex", c->id,
                 pd->errors[i].error_position, pd->errors[i].error ? pd->errors[i].error : "?");
         MOJOSHADER_freeParseData(pd);
         return true; // the object exists; draws with it are skipped
     }
-    m_info.msl.assign(pd->output, pd->output_len);
+    info.msl.assign(pd->output, pd->output_len);
 
     if (!pixel)
     {
@@ -95,28 +98,28 @@ bool ShaderBase::Init(Device *dev, const DWORD *code, bool pixel)
             const MOJOSHADER_attribute &a = pd->attributes[i];
             const int reg = RegisterFromName(a.name);
             if (reg >= 0 && reg < 16)
-                m_info.inputs.push_back({reg, (int)a.usage, a.index});
+                info.inputs.push_back({reg, (int)a.usage, a.index});
         }
         for (int i = 0; i < pd->output_count; ++i)
-            m_info.outputs.emplace_back((int)pd->outputs[i].usage, pd->outputs[i].index);
+            info.outputs.emplace_back((int)pd->outputs[i].usage, pd->outputs[i].index);
     }
     else
     {
         for (int i = 0; i < pd->attribute_count; ++i)
-            m_info.outputs.emplace_back((int)pd->attributes[i].usage, pd->attributes[i].index);
+            info.outputs.emplace_back((int)pd->attributes[i].usage, pd->attributes[i].index);
     }
 
     for (int i = 0; i < pd->sampler_count; ++i)
     {
-        const MOJOSHADER_sampler &s = pd->samplers[i];
+        const MOJOSHADER_sampler &smp = pd->samplers[i];
         int type = 0;
-        if (s.type == MOJOSHADER_SAMPLER_CUBE)
+        if (smp.type == MOJOSHADER_SAMPLER_CUBE)
             type = 1;
-        else if (s.type == MOJOSHADER_SAMPLER_VOLUME)
+        else if (smp.type == MOJOSHADER_SAMPLER_VOLUME)
             type = 2;
-        m_info.samplers.push_back({s.index, type});
-        if (type == 0 && s.index >= 0 && s.index < 32)
-            m_info.sampler2DMask |= 1u << s.index;
+        info.samplers.push_back({smp.index, type});
+        if (type == 0 && smp.index >= 0 && smp.index < 32)
+            info.sampler2DMask |= 1u << smp.index;
     }
 
     // uniform packing (the order MojoShader's Metal profile emits them in)
@@ -126,7 +129,7 @@ bool ShaderBase::Init(Device *dev, const DWORD *code, bool pixel)
         const MOJOSHADER_uniform &u = pd->uniforms[i];
         if (u.array_count > 0 && !u.constant)
         {
-            m_info.floatRanges.push_back({u.index, u.array_count, (int)fslot});
+            info.floatRanges.push_back({u.index, u.array_count, (int)fslot});
             fslot += (uint32_t)u.array_count;
         }
     }
@@ -138,99 +141,116 @@ bool ShaderBase::Init(Device *dev, const DWORD *code, bool pixel)
         switch (u.type)
         {
         case MOJOSHADER_UNIFORM_FLOAT:
-            m_info.floatRanges.push_back({u.index, 1, (int)fslot++});
+            info.floatRanges.push_back({u.index, 1, (int)fslot++});
             break;
         case MOJOSHADER_UNIFORM_INT:
-            m_info.intRanges.push_back({u.index, 1, (int)islot++});
+            info.intRanges.push_back({u.index, 1, (int)islot++});
             break;
         case MOJOSHADER_UNIFORM_BOOL:
-            m_info.boolRanges.push_back({u.index, 1, (int)bslot++});
+            info.boolRanges.push_back({u.index, 1, (int)bslot++});
             break;
         default:
             break;
         }
     }
-    m_info.floatSlots = fslot;
-    m_info.intSlots = islot;
-    m_info.boolSlots = bslot;
+    info.floatSlots = fslot;
+    info.intSlots = islot;
+    info.boolSlots = bslot;
     for (int i = 0; i < pd->constant_count; ++i)
     {
-        const MOJOSHADER_constant &c = pd->constants[i];
-        if (c.type != MOJOSHADER_UNIFORM_FLOAT)
+        const MOJOSHADER_constant &k = pd->constants[i];
+        if (k.type != MOJOSHADER_UNIFORM_FLOAT)
             continue;
-        for (const ShaderInfo::Range &r : m_info.floatRanges)
-            if (r.count > 1 && c.index >= r.reg && c.index < r.reg + r.count)
+        for (const ShaderInfo::Range &r : info.floatRanges)
+            if (r.count > 1 && k.index >= r.reg && k.index < r.reg + r.count)
             {
-                m_info.floatDefs.push_back({c.index, {c.value.f[0], c.value.f[1], c.value.f[2], c.value.f[3]}});
+                info.floatDefs.push_back({k.index, {k.value.f[0], k.value.f[1], k.value.f[2], k.value.f[3]}});
                 break;
             }
     }
     uint32_t bytes = fslot * 16 + islot * 16 + bslot;
     if (fslot || islot)
         bytes = (bytes + 15) & ~15u;
-    m_info.uniformBytes = bytes;
-    m_info.valid = true;
+    info.uniformBytes = bytes;
+    info.valid = true;
     MOJOSHADER_freeParseData(pd);
     return true;
 }
+} // namespace
 
-void ShaderBase::DestroyVariants()
+bool ShaderBase::Init(Device *dev, const DWORD *code, bool pixel)
 {
-    for (auto &kv : m_variants)
+    m_device = dev;
+    const UINT size = ShaderByteSize(code);
+    if (!size)
+        return false;
+    // FNV-1a over the bytecode (and its kind): the same shader in another run
+    uint64_t h = pixel ? 0x84222325CBF29CE4ull : 0xCBF29CE484222325ull;
+    for (UINT i = 0; i < size; ++i)
+        h = (h ^ ((const unsigned char *)code)[i]) * 0x100000001B3ull;
+    ShaderCode *c = nullptr;
+    const size_t words = size / sizeof(DWORD);
+    auto range = g_codes.equal_range(h);
+    for (auto it = range.first; it != range.second && !c; ++it)
     {
-        ShaderVariant *v = kv.second;
-        if (v->fn)
-            rhi::ReleaseFunction(v->fn);
-        if (v->lib)
-            rhi::ReleaseLibrary(v->lib);
-        delete v;
+        ShaderCode *k = it->second;
+        if (k->pixel == pixel && k->code.size() == words && !memcmp(k->code.data(), code, size))
+            c = k;
     }
-    m_variants.clear();
+    if (!c)
+    {
+        static uint32_t s_nextId = 1;
+        c = new ShaderCode();
+        c->id = s_nextId++;
+        c->hash = h;
+        c->pixel = pixel;
+        c->code.assign(code, code + words);
+        if (!Translate(c))
+        {
+            delete c; // (an id is not reused)
+            return false;
+        }
+        g_codes.emplace(h, c);
+    }
+    m_shared = c;
+    ++c->liveObjects;
+    m_id = c->id;
+    m_hash = c->hash;
+    // (without the Metal source: the variants are compiled from the shared one)
+    std::string msl;
+    msl.swap(c->info.msl);
+    m_info = c->info;
+    c->info.msl.swap(msl);
+    return true;
 }
 
-ShaderVariant *ShaderBase::Variant(uint64_t key, const std::string &prefix)
+void ShaderBase::ReleaseCode()
 {
-    auto it = m_variants.find(key);
-    if (it != m_variants.end())
+    if (m_shared && m_shared->liveObjects)
+        --m_shared->liveObjects;
+}
+
+ShaderVariant *ShaderCode::Variant(uint64_t key, const std::string &prefix, bool urgent)
+{
+    auto it = variants.find(key);
+    if (it != variants.end())
         return it->second;
     ShaderVariant *v = new ShaderVariant();
     v->key = key;
-    m_variants[key] = v;
-    if (!m_info.valid)
+    v->isPixel = info.isPixel;
+    v->shaderId = id;
+    variants[key] = v;
+    if (!info.valid)
     {
-        v->failed = true;
+        v->claimed.store(true, std::memory_order_relaxed);
+        v->state.store(kCompileFailed, std::memory_order_release);
         return v;
     }
-    std::string src;
-    src.reserve(prefix.size() + m_info.msl.size() + 1);
-    src += prefix;
-    src += m_info.msl;
-    char err[4096] = "";
-    v->lib = rhi::CompileLibrary(src.c_str(), err, sizeof(err));
-    if (!v->lib)
-    {
-        v->failed = true;
-        Log("%s shader %u (variant %llx) failed to compile:\n%s", m_info.isPixel ? "pixel" : "vertex", m_id,
-            (unsigned long long)key, err);
-        if (getenv("BO1_DUMP_FAILED_SHADERS"))
-        {
-            char path[256];
-            snprintf(path, sizeof(path), "/tmp/bo1_%s_%u_%llx.metal", m_info.isPixel ? "ps" : "vs", m_id,
-                     (unsigned long long)key);
-            if (FILE *f = fopen(path, "w"))
-            {
-                fwrite(src.data(), 1, src.size(), f);
-                fclose(f);
-            }
-        }
-        return v;
-    }
-    v->fn = rhi::GetFunction(v->lib, "bo1_main");
-    if (!v->fn)
-    {
-        v->failed = true;
-        Log("%s shader %u: no entry point in the translation", m_info.isPixel ? "pixel" : "vertex", m_id);
-    }
+    v->source.reserve(prefix.size() + info.msl.size() + 1);
+    v->source += prefix;
+    v->source += info.msl;
+    // compiled in the background (a draw that needs it now compiles it itself, or skips until it is ready)
+    shadercache::Queue(v, urgent);
     return v;
 }
 
@@ -238,7 +258,8 @@ VertexShader::~VertexShader()
 {
     if (m_device)
         m_device->NoteVertexShaderGone(this);
-    DestroyVariants();
+    ReleaseCode(); // (under the device lock: ComObject::Release)
+    shadercache::OnShaderDestroyed(this);
 }
 
 HRESULT VertexShader::GetDevice(IDirect3DDevice9 **ppDevice)
@@ -255,12 +276,13 @@ HRESULT VertexShader::GetFunction(void *pData, UINT *pSizeOfData)
 {
     if (!pSizeOfData)
         return D3DERR_INVALIDCALL;
-    const UINT size = (UINT)(m_code.size() * sizeof(DWORD));
+    const std::vector<DWORD> &code = m_shared->code;
+    const UINT size = (UINT)(code.size() * sizeof(DWORD));
     if (pData)
     {
         if (*pSizeOfData < size)
             return D3DERR_MOREDATA;
-        memcpy(pData, m_code.data(), size);
+        memcpy(pData, code.data(), size);
     }
     *pSizeOfData = size;
     return D3D_OK;
@@ -270,7 +292,8 @@ PixelShader::~PixelShader()
 {
     if (m_device)
         m_device->NotePixelShaderGone(this);
-    DestroyVariants();
+    ReleaseCode();
+    shadercache::OnShaderDestroyed(this);
 }
 
 HRESULT PixelShader::GetDevice(IDirect3DDevice9 **ppDevice)
@@ -287,12 +310,13 @@ HRESULT PixelShader::GetFunction(void *pData, UINT *pSizeOfData)
 {
     if (!pSizeOfData)
         return D3DERR_INVALIDCALL;
-    const UINT size = (UINT)(m_code.size() * sizeof(DWORD));
+    const std::vector<DWORD> &code = m_shared->code;
+    const UINT size = (UINT)(code.size() * sizeof(DWORD));
     if (pData)
     {
         if (*pSizeOfData < size)
             return D3DERR_MOREDATA;
-        memcpy(pData, m_code.data(), size);
+        memcpy(pData, code.data(), size);
     }
     *pSizeOfData = size;
     return D3D_OK;

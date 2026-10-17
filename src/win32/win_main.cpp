@@ -1476,7 +1476,11 @@ void    Sys_Error(char *error, ...)
         }
     }
     //BLOPS_NULLSUB();
+#if BO1_MACOS
+    ExitProcess(0);
+#else
     exit(0);
+#endif
 }
 
 void __cdecl    Sys_Quit()
@@ -1502,7 +1506,11 @@ void __cdecl    Sys_Quit()
     if ( !com_errorEntered )
         track_shutdown(0);
     Con_ShutdownChannels();
+#if BO1_MACOS
+    ExitProcess(0); // (not exit(): the engine's threads are still running, see ExitProcess in kernel32_misc.cpp)
+#else
     exit(0);
+#endif
 }
 
 void Sys_SpawnQuitProcess()

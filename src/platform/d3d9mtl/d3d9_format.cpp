@@ -273,9 +273,9 @@ const char *FormatName(D3DFORMAT f)
 // ======================================================================================================================
 // lock and logging
 // ======================================================================================================================
-std::recursive_mutex &DeviceMutex()
+DeviceMutexType &DeviceMutex()
 {
-    static std::recursive_mutex m;
+    static DeviceMutexType m;
     return m;
 }
 

@@ -32,6 +32,8 @@ extern "C" const struct mach_header_64 _mh_execute_header;
 namespace bo1ptr
 {
 char *g_arenaBase;
+uintptr_t g_imageWindowStart;
+uint32_t g_imageWindowSize;
 } // namespace bo1ptr
 
 namespace
@@ -181,6 +183,13 @@ uint32_t RegisterWindow(const void *addr, size_t size)
         handle = g_nextWindowHandle;
         g_windows[n] = { start, handle, (uint32_t)(end - start) };
         g_nextWindowHandle += (uint32_t)(end - start);
+        if (handle == kWindowBase)
+        {
+            // the first window (the executable image, RegisterImageWindow): also decoded inline (ptr32.h); set
+            // before the arena is published, so before any other thread exists
+            g_imageWindowStart = start;
+            g_imageWindowSize = (uint32_t)(end - start);
+        }
         g_windowCount.store(n + 1, std::memory_order_release);
     }
     pthread_mutex_unlock(&g_windowLock);

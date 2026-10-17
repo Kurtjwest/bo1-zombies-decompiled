@@ -13,6 +13,7 @@
 #include <sched.h>
 #include <sys/time.h>
 #include <time.h>
+#include <algorithm>
 #include <atomic>
 #include <condition_variable>
 #include <deque>
@@ -23,7 +24,30 @@
 namespace w32
 {
 std::mutex g_waitLock;
-std::condition_variable g_waitCv;
+// the main thread's KThread once it has waited (WakeAllWaiters wakes it for the calls queued for it)
+static std::atomic<KThread *> g_mainWaitThread{nullptr};
+
+void WakeWaitersLocked(KObject *o)
+{
+    for (KThread *t : o->waiters)
+        t->wakeCv.notify_one();
+}
+
+static void AddWaiter(KObject *o, KThread *t)
+{
+    if (std::find(o->waiters.begin(), o->waiters.end(), t) == o->waiters.end())
+        o->waiters.push_back(t);
+}
+
+static void RemoveWaiter(KObject *o, KThread *t)
+{
+    auto it = std::find(o->waiters.begin(), o->waiters.end(), t);
+    if (it != o->waiters.end())
+    {
+        *it = o->waiters.back();
+        o->waiters.pop_back();
+    }
+}
 
 static thread_local DWORD t_lastError;
 static thread_local KThread *t_self;
@@ -177,11 +201,9 @@ static bool RunApcs(KThread *self)
 
 void QueueApc(KThread *thread, void (*fn)(void *), void *arg)
 {
-    {
-        std::lock_guard<std::mutex> g(g_waitLock);
-        thread->apcs.push_back({fn, arg});
-    }
-    g_waitCv.notify_all();
+    std::lock_guard<std::mutex> g(g_waitLock);
+    thread->apcs.push_back({fn, arg});
+    thread->wakeCv.notify_one();
 }
 
 // How long the main thread may sleep in a wait before it runs its idle work (main_thread.h: queued calls, the
@@ -190,11 +212,12 @@ static constexpr std::chrono::milliseconds kMainThreadTick(kMainThreadPumpInterv
 
 void WakeAllWaiters()
 {
-    // taking the lock orders this after a waiter's last check of its condition (no lost wakeup)
-    {
-        std::lock_guard<std::mutex> g(g_waitLock);
-    }
-    g_waitCv.notify_all();
+    // under the lock: ordered after the main thread's last check before it blocked (no lost wakeup)
+    KThread *main = g_mainWaitThread.load(std::memory_order_acquire);
+    if (!main)
+        return;
+    std::lock_guard<std::mutex> g(g_waitLock);
+    main->wakeCv.notify_one();
 }
 
 static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BOOL alertable)
@@ -222,97 +245,127 @@ static DWORD WaitImpl(DWORD n, const HANDLE *handles, BOOL waitAll, DWORD ms, BO
     // waits (main_thread.h)
     const bool mainThread = IsMainThread();
     if (mainThread)
-        MainThreadIdle();
-    auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms == INFINITE ? 0 : ms);
-    std::unique_lock<std::mutex> lk(g_waitLock);
-    // PulseEvent releases the threads waiting when it is called, even though the event is reset again before they
-    // run: an event whose pulse count moves during this wait counts as signaled for it
-    uint64_t pulsesAtStart[MAXIMUM_WAIT_OBJECTS];
-    for (DWORD i = 0; i < n; ++i)
-        pulsesAtStart[i] = objs[i] && objs[i]->type == KType::Event ? static_cast<KEvent *>(objs[i])->pulses : 0;
-    auto ready = [&](DWORD i) {
-        if (!objs[i])
-            return false;
-        if (IsSignaled(objs[i], self))
-            return true;
-        return objs[i]->type == KType::Event && static_cast<KEvent *>(objs[i])->pulses != pulsesAtStart[i];
-    };
-    for (;;)
     {
-        if (mainThread && MainThreadIdleDue())
-        {
-            lk.unlock();
-            MainThreadIdle();
-            lk.lock();
-            continue;
-        }
-        if (alertable && !self->apcs.empty())
-        {
-            lk.unlock();
-            RunApcs(self);
-            return WAIT_IO_COMPLETION;
-        }
-        if (waitAll)
-        {
-            bool all = n > 0;
-            for (DWORD i = 0; i < n; ++i)
-                if (!ready(i))
-                    all = false;
-            if (all)
+        g_mainWaitThread.store(self, std::memory_order_release);
+        MainThreadIdle();
+    }
+    // (only a timed wait needs the clock)
+    const auto deadline = ms == 0 || ms == INFINITE ? std::chrono::steady_clock::time_point()
+                                                    : std::chrono::steady_clock::now() + std::chrono::milliseconds(ms);
+    // the objects stay alive while this waits on them, as on Windows (another thread may close a handle meanwhile)
+    for (DWORD i = 0; i < n; ++i)
+        if (objs[i])
+            objs[i]->Ref();
+    DWORD result = WAIT_TIMEOUT;
+    bool runApcs = false;
+    {
+        std::unique_lock<std::mutex> lk(g_waitLock);
+        // PulseEvent releases the threads waiting when it is called, even though the event is reset again before
+        // they run: an event whose pulse count moves during this wait counts as signaled for it
+        uint64_t pulsesAtStart[MAXIMUM_WAIT_OBJECTS];
+        for (DWORD i = 0; i < n; ++i)
+            pulsesAtStart[i] = objs[i] && objs[i]->type == KType::Event ? static_cast<KEvent *>(objs[i])->pulses : 0;
+        auto ready = [&](DWORD i) {
+            if (!objs[i])
+                return false;
+            if (IsSignaled(objs[i], self))
+                return true;
+            return objs[i]->type == KType::Event && static_cast<KEvent *>(objs[i])->pulses != pulsesAtStart[i];
+        };
+        // satisfied now: consumes and sets result
+        auto satisfied = [&]() {
+            if (waitAll)
             {
+                if (n == 0)
+                    return false;
+                for (DWORD i = 0; i < n; ++i)
+                    if (!ready(i))
+                        return false;
                 for (DWORD i = 0; i < n; ++i)
                     Consume(objs[i], self);
-                return WAIT_OBJECT_0;
+                result = WAIT_OBJECT_0;
+                return true;
             }
-        }
-        else
-        {
             for (DWORD i = 0; i < n; ++i)
             {
                 if (ready(i))
                 {
                     Consume(objs[i], self);
-                    return WAIT_OBJECT_0 + i;
+                    result = WAIT_OBJECT_0 + i;
+                    return true;
                 }
             }
-        }
-        if (ms == 0)
-            return WAIT_TIMEOUT;
-        if (mainThread)
+            return false;
+        };
+        bool registered = false, everRegistered = false;
+        for (;;)
         {
-            // wake at least every tick for the idle work
-            auto wake = std::chrono::steady_clock::now() + kMainThreadTick;
-            if (ms != INFINITE && deadline < wake)
-                wake = deadline;
-            g_waitCv.wait_until(lk, wake);
-            if (ms == INFINITE || std::chrono::steady_clock::now() < deadline)
+            if (mainThread && MainThreadIdleDue())
+            {
+                lk.unlock();
+                MainThreadIdle();
+                lk.lock();
+                // (the idle work can wait itself, and take this thread off the objects' waiters when it is done)
+                registered = false;
                 continue;
-            for (DWORD i = 0; i < n; ++i)
-            {
-                if (!waitAll && ready(i))
-                {
-                    Consume(objs[i], self);
-                    return WAIT_OBJECT_0 + i;
-                }
             }
-            return WAIT_TIMEOUT;
-        }
-        if (ms == INFINITE)
-            g_waitCv.wait(lk);
-        else if (g_waitCv.wait_until(lk, deadline) == std::cv_status::timeout)
-        {
-            // final check after the timeout
-            for (DWORD i = 0; i < n; ++i)
+            if (alertable && !self->apcs.empty())
             {
-                if (!waitAll && ready(i))
-                {
-                    Consume(objs[i], self);
-                    return WAIT_OBJECT_0 + i;
-                }
+                runApcs = true;
+                break;
             }
-            return WAIT_TIMEOUT;
+            if (satisfied())
+                break;
+            if (ms == 0)
+            {
+                result = WAIT_TIMEOUT;
+                break;
+            }
+            if (!registered)
+            {
+                // from here on, a change to one of the objects wakes this thread
+                for (DWORD i = 0; i < n; ++i)
+                    if (objs[i])
+                        AddWaiter(objs[i], self);
+                registered = everRegistered = true;
+            }
+            if (mainThread)
+            {
+                // wake at least every tick for the idle work
+                auto wake = std::chrono::steady_clock::now() + kMainThreadTick;
+                if (ms != INFINITE && deadline < wake)
+                    wake = deadline;
+                self->wakeCv.wait_until(lk, wake);
+                if (ms == INFINITE || std::chrono::steady_clock::now() < deadline)
+                    continue;
+                // timed out: a last look (a waitAll wait needs all of them, as before)
+                if (!satisfied())
+                    result = WAIT_TIMEOUT;
+                break;
+            }
+            if (ms == INFINITE)
+                self->wakeCv.wait(lk);
+            else if (self->wakeCv.wait_until(lk, deadline) == std::cv_status::timeout)
+            {
+                if (!satisfied())
+                    result = WAIT_TIMEOUT;
+                break;
+            }
         }
+        if (everRegistered)
+            for (DWORD i = 0; i < n; ++i)
+                if (objs[i])
+                    RemoveWaiter(objs[i], self);
     }
+    for (DWORD i = 0; i < n; ++i)
+        if (objs[i])
+            objs[i]->Unref();
+    if (runApcs)
+    {
+        RunApcs(self);
+        return WAIT_IO_COMPLETION;
+    }
+    return result;
 }
 
 // -------- thread entry --------
@@ -340,6 +393,23 @@ static void ReapDeadThreads()
     }
 }
 
+// Windows thread priorities as quality-of-service classes, which decide how macOS schedules a thread on Apple
+// silicon: the render thread (above normal) and anything higher are user-interactive, first in line for the
+// performance cores, as the main thread is; normal threads (the job queue's workers, the server, streaming,
+// loading) are user-initiated, also kept on the performance cores while they have room; the lowest ones utility.
+static void ApplyThreadQos(int prio)
+{
+    qos_class_t q = QOS_CLASS_USER_INITIATED;
+    int relative = 0;
+    if (prio >= THREAD_PRIORITY_ABOVE_NORMAL)
+        q = QOS_CLASS_USER_INTERACTIVE;
+    else if (prio <= THREAD_PRIORITY_LOWEST)
+        q = QOS_CLASS_UTILITY;
+    else if (prio < THREAD_PRIORITY_NORMAL)
+        relative = -4; // below normal: user-initiated, behind the normal ones
+    pthread_set_qos_class_self_np(q, relative);
+}
+
 static void *ThreadTrampoline(void *arg)
 {
     KThread *t = (KThread *)arg;
@@ -347,16 +417,17 @@ static void *ThreadTrampoline(void *arg)
     {
         std::unique_lock<std::mutex> lk(g_waitLock);
         while (t->suspendCount > 0)
-            g_waitCv.wait(lk);
+            t->wakeCv.wait(lk);
         t->started = true;
     }
+    ApplyThreadQos(t->priority);
     DWORD code = t->start ? t->start(t->param) : 0;
     {
         std::lock_guard<std::mutex> g(g_waitLock);
         t->exitCode = code;
         t->finished = true;
+        WakeWaitersLocked(t);
     }
-    g_waitCv.notify_all();
     {
         std::lock_guard<std::mutex> g(g_deadLock);
         g_deadThreads.push_back({ pthread_self(), t->stack });
@@ -401,7 +472,22 @@ BOOL DuplicateHandle(HANDLE, HANDLE src, HANDLE, LPHANDLE dst, DWORD, BOOL, DWOR
     return TRUE;
 }
 
-DWORD WaitForSingleObject(HANDLE h, DWORD ms) { return WaitImpl(1, &h, FALSE, ms, FALSE); }
+DWORD WaitForSingleObject(HANDLE h, DWORD ms)
+{
+    // A zero-timeout look at a manual-reset event (the engine polls the device's and the renderer's events this way,
+    // thousands of times a frame) consumes nothing: no lock, no idle work beyond the queued main-thread calls.
+    if (ms == 0)
+    {
+        KObject *o = Resolve(h);
+        if (o && o->type == KType::Event && static_cast<KEvent *>(o)->manualReset)
+        {
+            if (IsMainThread())
+                ServiceMainThreadCalls();
+            return static_cast<KEvent *>(o)->signaled.load(std::memory_order_acquire) ? WAIT_OBJECT_0 : WAIT_TIMEOUT;
+        }
+    }
+    return WaitImpl(1, &h, FALSE, ms, FALSE);
+}
 DWORD WaitForSingleObjectEx(HANDLE h, DWORD ms, BOOL alertable) { return WaitImpl(1, &h, FALSE, ms, alertable); }
 DWORD WaitForMultipleObjects(DWORD n, const HANDLE *h, BOOL all, DWORD ms) { return WaitImpl(n, h, all, ms, FALSE); }
 DWORD WaitForMultipleObjectsEx(DWORD n, const HANDLE *h, BOOL all, DWORD ms, BOOL alertable) { return WaitImpl(n, h, all, ms, alertable); }
@@ -435,11 +521,9 @@ BOOL SetEvent(HANDLE h)
     KObject *o = Resolve(h);
     if (!o || o->type != KType::Event)
         return FALSE;
-    {
-        std::lock_guard<std::mutex> g(g_waitLock);
-        static_cast<KEvent *>(o)->signaled = true;
-    }
-    g_waitCv.notify_all();
+    std::lock_guard<std::mutex> g(g_waitLock);
+    static_cast<KEvent *>(o)->signaled = true;
+    WakeWaitersLocked(o);
     return TRUE;
 }
 BOOL ResetEvent(HANDLE h)
@@ -458,13 +542,11 @@ BOOL PulseEvent(HANDLE h)
     KObject *o = Resolve(h);
     if (!o || o->type != KType::Event)
         return FALSE;
-    {
-        std::lock_guard<std::mutex> g(g_waitLock);
-        KEvent *e = static_cast<KEvent *>(o);
-        e->signaled = false;
-        ++e->pulses;
-    }
-    g_waitCv.notify_all();
+    std::lock_guard<std::mutex> g(g_waitLock);
+    KEvent *e = static_cast<KEvent *>(o);
+    e->signaled = false;
+    ++e->pulses;
+    WakeWaitersLocked(o);
     return TRUE;
 }
 
@@ -494,14 +576,14 @@ BOOL ReleaseMutex(HANDLE h)
     if (!o || o->type != KType::Mutex)
         return FALSE;
     KMutex *m = static_cast<KMutex *>(o);
+    std::lock_guard<std::mutex> g(g_waitLock);
+    if (m->owner != ThreadSelfId())
+        return FALSE;
+    if (--m->recursion == 0)
     {
-        std::lock_guard<std::mutex> g(g_waitLock);
-        if (m->owner != ThreadSelfId())
-            return FALSE;
-        if (--m->recursion == 0)
-            m->owner = 0;
+        m->owner = 0;
+        WakeWaitersLocked(m);
     }
-    g_waitCv.notify_all();
     return TRUE;
 }
 
@@ -521,15 +603,13 @@ BOOL ReleaseSemaphore(HANDLE h, LONG n, LPLONG prev)
     if (!o || o->type != KType::Semaphore)
         return FALSE;
     KSemaphore *s = static_cast<KSemaphore *>(o);
-    {
-        std::lock_guard<std::mutex> g(g_waitLock);
-        if (prev)
-            *prev = s->count;
-        if (s->count + n > s->maximum)
-            return FALSE;
-        s->count += n;
-    }
-    g_waitCv.notify_all();
+    std::lock_guard<std::mutex> g(g_waitLock);
+    if (prev)
+        *prev = s->count;
+    if (s->count + n > s->maximum)
+        return FALSE;
+    s->count += n;
+    WakeWaitersLocked(s);
     return TRUE;
 }
 
@@ -822,13 +902,13 @@ DWORD ResumeThread(HANDLE h)
         prev = (DWORD)t->suspendCount;
         if (t->suspendCount > 0)
             t->suspendCount--;
+        t->wakeCv.notify_one(); // a thread created suspended waits for this in ThreadTrampoline
     }
     if (t->started && !t->finished && prev > 0 && t->machSuspended > 0)
     {
         t->machSuspended--;
         thread_resume(t->machThread);
     }
-    g_waitCv.notify_all();
     return prev;
 }
 DWORD SuspendThread(HANDLE h)
@@ -858,8 +938,8 @@ void ExitThread(DWORD code)
         std::lock_guard<std::mutex> g(g_waitLock);
         t->exitCode = code;
         t->finished = true;
+        WakeWaitersLocked(t);
     }
-    g_waitCv.notify_all();
     if (!t->adopted)
     {
         std::lock_guard<std::mutex> g(g_deadLock);
@@ -882,17 +962,14 @@ BOOL GetExitCodeThread(HANDLE h, LPDWORD code)
 BOOL SetThreadPriority(HANDLE h, int prio)
 {
     KObject *o = Resolve(h);
-    if (o && o->type == KType::Thread)
-        static_cast<KThread *>(o)->priority = prio;
-    if (o == CurrentThread())
-    {
-        qos_class_t q = QOS_CLASS_USER_INITIATED;
-        if (prio >= THREAD_PRIORITY_HIGHEST)
-            q = QOS_CLASS_USER_INTERACTIVE;
-        else if (prio <= THREAD_PRIORITY_LOWEST)
-            q = QOS_CLASS_UTILITY;
-        pthread_set_qos_class_self_np(q, 0);
-    }
+    if (!o || o->type != KType::Thread)
+        return FALSE;
+    KThread *t = static_cast<KThread *>(o);
+    t->priority = prio;
+    // (a thread's QoS can only be set by the thread itself: one that has not started yet - the engine sets the
+    // priority of the threads it creates suspended - takes it when it starts, see ThreadTrampoline)
+    if (t == CurrentThread() && !(IsMainThread() && prio < THREAD_PRIORITY_ABOVE_NORMAL))
+        ApplyThreadQos(prio);
     return TRUE;
 }
 int GetThreadPriority(HANDLE h)
@@ -991,6 +1068,8 @@ void Sleep(DWORD ms)
             return;
         }
         const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms);
+        KThread *self = CurrentThread();
+        g_mainWaitThread.store(self, std::memory_order_release);
         std::unique_lock<std::mutex> lk(g_waitLock);
         for (;;)
         {
@@ -1004,7 +1083,7 @@ void Sleep(DWORD ms)
             const auto now = std::chrono::steady_clock::now();
             if (now >= deadline)
                 break;
-            g_waitCv.wait_until(lk, now + kMainThreadTick < deadline ? now + kMainThreadTick : deadline);
+            self->wakeCv.wait_until(lk, now + kMainThreadTick < deadline ? now + kMainThreadTick : deadline);
         }
         lk.unlock();
         MainThreadIdle();
@@ -1037,7 +1116,10 @@ DWORD SleepEx(DWORD ms, BOOL alertable)
         return WAIT_IO_COMPLETION;
     const bool mainThread = IsMainThread();
     if (mainThread)
+    {
+        g_mainWaitThread.store(self, std::memory_order_release);
         MainThreadIdle();
+    }
     auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms == INFINITE ? 0 : ms);
     std::unique_lock<std::mutex> lk(g_waitLock);
     for (;;)
@@ -1057,19 +1139,20 @@ DWORD SleepEx(DWORD ms, BOOL alertable)
         }
         if (ms == 0)
             return 0;
+        // (QueueApc wakes this thread)
         if (mainThread)
         {
             auto wake = std::chrono::steady_clock::now() + kMainThreadTick;
             if (ms != INFINITE && deadline < wake)
                 wake = deadline;
-            g_waitCv.wait_until(lk, wake);
+            self->wakeCv.wait_until(lk, wake);
             if (ms != INFINITE && std::chrono::steady_clock::now() >= deadline)
                 return 0;
             continue;
         }
         if (ms == INFINITE)
-            g_waitCv.wait(lk);
-        else if (g_waitCv.wait_until(lk, deadline) == std::cv_status::timeout)
+            self->wakeCv.wait(lk);
+        else if (self->wakeCv.wait_until(lk, deadline) == std::cv_status::timeout)
             return 0;
     }
 }

@@ -27,11 +27,14 @@ enum class KType
     Other
 };
 
+struct KThread;
+
 // Base of everything a HANDLE points at. Handles are plain pointers to these objects.
 struct KObject
 {
     KType type;
     std::atomic<int> refs{1};
+    std::vector<KThread *> waiters; // threads blocked in a wait on this object (g_waitLock)
     explicit KObject(KType t) : type(t) {}
     virtual ~KObject();
     virtual void OnClose() {}
@@ -39,14 +42,18 @@ struct KObject
     void Unref();
 };
 
-// All waitable state is guarded by g_waitLock; any change that can satisfy a wait notifies g_waitCv.
+// All waitable state is guarded by g_waitLock. A thread that has to block adds itself to the waiters of the objects
+// it waits for and sleeps on its own condition variable (KThread::wakeCv); a change that can satisfy a wait wakes
+// the waiters of that object only (WakeWaitersLocked). (One condition variable for every wait in the process woke
+// every waiting thread - all the job queue's workers, the stream, database, sound and server threads - at every
+// event the engine set or pulsed, hundreds of times a frame.)
 extern std::mutex g_waitLock;
-extern std::condition_variable g_waitCv;
+void WakeWaitersLocked(KObject *o); // g_waitLock held
 
 struct KEvent : KObject
 {
     bool manualReset = false;
-    bool signaled = false;
+    std::atomic<bool> signaled{false}; // (changed under g_waitLock; read without it by a zero-timeout wait)
     uint64_t pulses = 0; // PulseEvent count: a wait in progress when it changes is released (WaitImpl)
     KEvent() : KObject(KType::Event) {}
 };
@@ -87,6 +94,7 @@ struct KThread : KObject
     int priority = 0;
     void *stack = nullptr; // arena stack of a CreateThread thread (Arena_AllocStack)
     std::deque<Apc> apcs; // guarded by g_waitLock
+    std::condition_variable wakeCv; // this thread's waits block on it (with g_waitLock)
     KThread() : KObject(KType::Thread) {}
 };
 
@@ -134,8 +142,8 @@ KThread *CurrentThread();
 KThread *FindThread(DWORD id);
 void ForEachThread(void (*fn)(KThread *, void *), void *ctx);
 void QueueApc(KThread *thread, void (*fn)(void *), void *arg);
-// Wakes every thread blocked in a Win32 wait (they re-check what they wait for); the main thread then also runs
-// the calls other threads queued for it (main_thread.h).
+// Wakes the main thread if it is blocked in a Win32 wait (or Sleep): it then runs the calls other threads queued
+// for it (main_thread.h).
 void WakeAllWaiters();
 void SetError(DWORD e);
 DWORD ErrnoToWin32(int e);

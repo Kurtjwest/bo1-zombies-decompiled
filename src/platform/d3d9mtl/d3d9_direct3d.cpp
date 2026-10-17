@@ -63,8 +63,8 @@ void Direct3D::EnumModes()
     if (m_modesEnumerated)
         return;
     m_modesEnumerated = true;
-    int w[64], h[64], r[64];
-    const int n = Bridge_GetScreenModes(0, w, h, r, 64);
+    int w[128], h[128], r[128];
+    const int n = Bridge_GetScreenModes(0, w, h, r, 128);
     for (int i = 0; i < n; ++i)
     {
         D3DDISPLAYMODE m;
@@ -115,7 +115,19 @@ HRESULT Direct3D::GetAdapterDisplayMode(UINT Adapter, D3DDISPLAYMODE *pMode)
         return D3DERR_INVALIDCALL;
     BridgeRect full, work;
     double hz = 60.0;
-    if (Bridge_GetScreenRect(0, &full, &work, &hz))
+    const Device *fullScreenDevice = CurrentDevice();
+    if (fullScreenDevice && fullScreenDevice->PresentParams().Windowed)
+        fullScreenDevice = nullptr;
+    const bool haveScreen = Bridge_GetScreenRect(0, &full, &work, &hz) != 0;
+    if (fullScreenDevice)
+    {
+        // Windows switches the display to a full-screen device's mode: the screen shows its back buffer stretched
+        // over all of it here, which is what the engine works out its display pixels' shape from
+        // (vidConfig.aspectRatioDisplayPixel)
+        pMode->Width = fullScreenDevice->PresentParams().BackBufferWidth;
+        pMode->Height = fullScreenDevice->PresentParams().BackBufferHeight;
+    }
+    else if (haveScreen)
     {
         pMode->Width = (UINT)(full.right - full.left);
         pMode->Height = (UINT)(full.bottom - full.top);

@@ -225,12 +225,12 @@ int main(int argc, char **argv)
     std::string cmdline;
     if (engineArgs.empty())
     {
-        // Play.bat's defaults: the zombies boot, windowed borderless at the top-left corner. Play.bat also sets
-        // fs_b and fs_h to the game folder; both default to the working directory, which is the game folder here,
-        // and the engine splits its command line at every '+', so a folder path with a '+' in it can't be passed.
-        const char *defaults[] = {"+set", "bo1_zombies", "1", "+set", "logfile", "2", "+set", "net_ip", "127.0.0.1",
-                                  "+set", "r_fullscreen", "0", "+set", "r_borderless", "1", "+set", "vid_xpos", "0",
-                                  "+set", "vid_ypos", "0"};
+        // Play.bat's defaults: the zombies boot. Play.bat also sets fs_b and fs_h to the game folder; both default
+        // to the working directory, which is the game folder here, and the engine splits its command line at every
+        // '+', so a folder path with a '+' in it can't be passed. Play.bat's display settings (windowed borderless
+        // at the top-left corner) are left to the game's options and config: full screen by default (r_fullscreen,
+        // native full screen at r_mode), or a window.
+        const char *defaults[] = {"+set", "bo1_zombies", "1", "+set", "logfile", "2", "+set", "net_ip", "127.0.0.1"};
         for (const char *d : defaults)
             AppendArg(cmdline, d);
     }

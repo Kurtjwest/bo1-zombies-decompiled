@@ -604,7 +604,13 @@ void __cdecl R_RegisterDvars()
     vid_xpos = _Dvar_RegisterInt("vid_xpos", 3, -4096, 4096, 1u, "Game window horizontal position");
     vid_ypos = _Dvar_RegisterInt("vid_ypos", 22, -4096, 4096, 1u, "game window vertical position");
     //r_fullscreen = _Dvar_RegisterBool("r_fullscreen", 1, 0x21u, "Display game full screen");
+#if BO1_MACOS
+    // macOS: full screen is the native kind (a Space of its own; the display mode never changes, the game draws at
+    // r_mode and the screen shows it scaled), the default for a Mac app that is a game
+    r_fullscreen = _Dvar_RegisterBool("r_fullscreen", 1, 0x21u, "Display game full screen");
+#else
     r_fullscreen = _Dvar_RegisterBool("r_fullscreen", 0, 0x21u, "Display game full screen");
+#endif
     // borderless: BO1Zombies's own addition (neither BO1 exe has it). With r_fullscreen 0: a frameless window over the
     // whole monitor at vid_xpos/vid_ypos (else the primary), D3D windowed, so Alt+Tab never loses the device.
     // Archived and latched like r_fullscreen: applied at startup or by vid_restart.

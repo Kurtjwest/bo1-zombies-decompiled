@@ -874,7 +874,8 @@ void __cdecl SV_AllocateClientMemory(HunkUser *hunk, int maxLocalClients, int ma
     svs.clients = (client_t *)Hunk_UserAlloc(hunk, sizeof(client_t) * maxClients, 8, "svs.clients");
     memset((unsigned __int8 *)svs.clients, 0, sizeof(client_t) * maxClients);
     svs.numSnapshotMatchStates = 32 * maxClients;
-    svs.snapshotMatchStates = (MatchState *)Hunk_UserAlloc(hunk, kMatchStateSize * svs.numSnapshotMatchStates, 4, "svs.snapshotMatchStates");
+    // MatchState is declared align(64): with 4 the compiler's aligned vector copies of it fault (x86 movaps)
+    svs.snapshotMatchStates = (MatchState *)Hunk_UserAlloc(hunk, kMatchStateSize * svs.numSnapshotMatchStates, 64, "svs.snapshotMatchStates");
     memset((unsigned __int8 *)svs.snapshotMatchStates, 0, kMatchStateSize * svs.numSnapshotMatchStates);
     svs.numSnapshotEntities = 2688 * maxClients;
     svs.snapshotEntities = (entityState_s *)Hunk_UserAlloc(hunk, sizeof(entityState_s) * svs.numSnapshotEntities, 4, "svs.snapshotEntities");
@@ -888,7 +889,7 @@ void __cdecl SV_AllocateClientMemory(HunkUser *hunk, int maxLocalClients, int ma
     svs.cachedSnapshotMatchStates = (MatchState *)Hunk_UserAlloc(
                                                                                                     hunk,
                                                                                                     kMatchStateSize * maxClients,
-                                                                                                    4,
+                                                                                                    64,
                                                                                                     "svs.cachedSnapshotMatchStates");
     memset((unsigned __int8 *)svs.cachedSnapshotMatchStates, 0, kMatchStateSize * svs.numCachedSnapshotMatchStates);
     svs.numCachedSnapshotEntities = 80 * maxClients;

@@ -158,7 +158,7 @@ void __cdecl R_GetWorldMatrixForModelSurf(const GfxModelRigidSurface *modelSurf,
     float scale; // [esp+64h] [ebp-18h]
     float4 scaleVec; // [esp+68h] [ebp-14h]
 
-    quat = *(float4 *)modelSurf->placement.base.quat;
+    memcpy(&quat, modelSurf->placement.base.quat, sizeof(quat)); // (the placement need not be 16-byte aligned)
     if ( !Vec4IsNormalized(quat.v)
         && !Assert_MyHandler(
                     "c:\\projects_pc\\cod\\codsrc\\src\\universal\\com_vector4_novec.h",

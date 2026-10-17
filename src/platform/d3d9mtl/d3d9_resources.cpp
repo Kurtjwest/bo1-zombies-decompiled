@@ -1096,6 +1096,8 @@ uint64_t NowNs()
 
 Query::~Query()
 {
+    if (m_device && m_device->m_activeOcclusion == this)
+        m_device->m_activeOcclusion = nullptr;
     if (m_vis)
         rhi::ReleaseVisibility(m_vis);
 }
@@ -1133,15 +1135,20 @@ HRESULT Query::Issue(DWORD dwIssueFlags)
     switch (m_type)
     {
     case D3DQUERYTYPE_OCCLUSION:
+        // (the draws a query counts must not be skipped while their shaders compile: they wait for them)
         if (dwIssueFlags & D3DISSUE_BEGIN)
         {
             rhi::BeginVisibility(m_vis);
             m_issued = false;
+            if (m_device)
+                m_device->m_activeOcclusion = this;
         }
         if (dwIssueFlags & D3DISSUE_END)
         {
             rhi::EndVisibility(m_vis);
             m_issued = true;
+            if (m_device && m_device->m_activeOcclusion == this)
+                m_device->m_activeOcclusion = nullptr;
         }
         break;
     case D3DQUERYTYPE_EVENT:
