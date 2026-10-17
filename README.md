@@ -30,6 +30,10 @@ the zombies menu the way `Play.bat` does on Windows; engine arguments work as on
 the app is in; `--gamedir <path>` or `BO1_GAME_DIR` point it elsewhere, and if none has the game's files the app
 asks for the folder once.
 
+Controls are the Windows ones. The menus drawn on the front end's TV screens have no cursor, as on Windows: the mouse
+looks around the room, the scroll wheel (or a two-finger swipe on a trackpad, one item per short swipe) or W/S moves
+through the items, a click or D chooses, a right-click (a two-finger click on a trackpad) or A goes back.
+
 Settings for the Mac build:
 
 | Environment variable | Effect |

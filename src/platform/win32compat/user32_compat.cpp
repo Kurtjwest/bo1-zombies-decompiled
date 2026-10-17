@@ -86,6 +86,10 @@ bool g_bridgeReady;
 int g_cursorCount;         // ShowCursor display count (>= 0 visible)
 bool g_captured;           // mouse decoupled from the cursor
 LONG g_vcurX, g_vcurY;     // virtual cursor (screen units)
+// The screens, for keeping the virtual cursor on the desktop (main thread: refreshed when the mouse is captured)
+constexpr int kMaxCursorScreens = 8;
+RECT g_cursorScreens[kMaxCursorScreens];
+int g_cursorScreenCount;
 WPARAM g_buttons;          // MK_* currently down
 bool g_appActive = true;
 bool g_quitPosted;
@@ -355,6 +359,51 @@ bool AppHasFocus()
     return fg != nullptr;
 }
 
+void RefreshCursorScreens()
+{
+    int n = Bridge_GetScreenCount();
+    if (n > kMaxCursorScreens)
+        n = kMaxCursorScreens;
+    int count = 0;
+    for (int i = 0; i < n; ++i)
+    {
+        BridgeRect r;
+        if (Bridge_GetScreenRect(i, &r, nullptr, nullptr) && r.right > r.left && r.bottom > r.top)
+            g_cursorScreens[count++] = {r.left, r.top, r.right, r.bottom};
+    }
+    g_cursorScreenCount = count;
+}
+
+// The Windows cursor never leaves the desktop: at a screen edge it stops, and the game's own menu cursor stops with
+// it. The virtual cursor (fed by raw deltas while the mouse is captured) gets the same limits, or it would run on past
+// the edge: the menu cursor would vanish there, the hidden system cursor would come back, the capture would be undone
+// and redone every frame, and moving back would first have to make up the distance travelled off screen.
+void ClampVirtualCursor()
+{
+    if (g_cursorScreenCount <= 0)
+        return;
+    LONG bestX = g_vcurX, bestY = g_vcurY;
+    long long bestDist = -1;
+    for (int i = 0; i < g_cursorScreenCount; ++i)
+    {
+        const RECT &r = g_cursorScreens[i];
+        const LONG x = std::clamp<LONG>(g_vcurX, r.left, r.right - 1);
+        const LONG y = std::clamp<LONG>(g_vcurY, r.top, r.bottom - 1);
+        const long long dx = (long long)x - g_vcurX, dy = (long long)y - g_vcurY;
+        const long long dist = dx * dx + dy * dy;
+        if (bestDist < 0 || dist < bestDist)
+        {
+            bestDist = dist;
+            bestX = x;
+            bestY = y;
+        }
+        if (dist == 0)
+            break; // on this screen
+    }
+    g_vcurX = bestX;
+    g_vcurY = bestY;
+}
+
 void UpdateCapture()
 {
     const bool want = g_cursorCount < 0 && AppHasFocus();
@@ -362,7 +411,9 @@ void UpdateCapture()
         return;
     if (want)
     {
+        RefreshCursorScreens();
         Bridge_GetCursorPos((int *)&g_vcurX, (int *)&g_vcurY);
+        ClampVirtualCursor();
         Bridge_SetCursorVisible(0);
         Bridge_SetMouseCaptured(1);
     }
@@ -453,6 +504,7 @@ void OnBridgeEvent(const BridgeEvent *ev)
             fy -= iy;
             g_vcurX += ix;
             g_vcurY += iy;
+            ClampVirtualCursor();
         }
         else
         {
@@ -1437,6 +1489,8 @@ BOOL SetCursorPos(int x, int y)
 {
     g_vcurX = x;
     g_vcurY = y;
+    if (g_captured)
+        ClampVirtualCursor(); // as Windows keeps SetCursorPos on the desktop
     if (!g_captured && g_bridgeReady && Bridge_IsAppActive())
         Bridge_WarpCursor(x, y);
     return TRUE;

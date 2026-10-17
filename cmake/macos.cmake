@@ -152,6 +152,16 @@ target_compile_options(${BIN_NAME} PRIVATE
     $<$<CONFIG:Release>:-O2>
 )
 
+# The bundled third-party libraries are portable C that never relied on MSVC's volatile semantics, and some of them
+# use volatile for unaligned access: minilzo reads and writes its match data through 'volatile uint32_t *' at any
+# byte offset. With -fms-volatile those accesses become load-acquire/store-release instructions, which raise an
+# alignment fault (SIGBUS) on an address that is not naturally aligned, so they are compiled with plain volatile.
+set(BO1_MAC_THIRD_PARTY_SOURCES ${BO1_ALL_SOURCES})
+# (matched without the checkout's own path, which may contain characters that mean something in a regex)
+list(FILTER BO1_MAC_THIRD_PARTY_SOURCES INCLUDE REGEX
+    "/src/(minilzo|zlib|jpeg|groupvoice/speex|libs/libtomcrypt-1\\.17|libs/libtommath-1\\.0)/.*\\.(c|cpp)$")
+set_source_files_properties(${BO1_MAC_THIRD_PARTY_SOURCES} PROPERTIES COMPILE_OPTIONS -fno-ms-volatile)
+
 # The platform layer implements the path-translating CRT wrappers itself (so it calls the real functions) and is
 # written against standard C++ (no Windows min/max macros).
 file(GLOB BO1_MAC_COMPAT_SOURCES "${PLATFORM_DIR}/win32compat/*.cpp" "${PLATFORM_DIR}/macos/*.cpp" "${PLATFORM_DIR}/d3d9mtl/*.cpp")

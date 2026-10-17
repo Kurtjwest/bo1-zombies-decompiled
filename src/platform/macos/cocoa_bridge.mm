@@ -60,7 +60,28 @@ static int g_cursorHideCount;
 static bool g_mouseCaptured;
 static IOPMAssertionID g_sleepAssertion;
 static bool g_sleepAssertionActive;
-static double g_wheelAccum;
+static double g_wheelAccum;      // precise scrolling: points of the current swipe not turned into notches yet
+static int g_wheelGestureNotches; // notches sent for the current swipe
+static int g_wheelGestureDir;     // its direction (1, -1; 0 = none yet)
+static double g_wheelLastTime;    // timestamp of the last precise scroll event
+// The delta of the first mouse event after CGWarpMouseCursorPosition still contains the warp: AppKit measures it from
+// where the cursor was at the previous event. The mouse is captured by warping the cursor into the window, so that
+// first delta would throw the game's cursor (or the view) by the distance the cursor was moved; it is taken out
+// again, as SDL does (Cocoa_HandleMouseEvent).
+static bool g_warpPending;
+static CGPoint g_warpTarget;        // CG global coordinates (top-left origin, points)
+static NSPoint g_lastMoveLocation;  // +[NSEvent mouseLocation] at the last mouse move (bottom-left origin)
+static bool g_haveLastMove;
+static void NoteCursorWarp(CGPoint p)
+{
+    if (!g_haveLastMove)
+    {
+        g_lastMoveLocation = [NSEvent mouseLocation];
+        g_haveLastMove = true;
+    }
+    g_warpTarget = p;
+    g_warpPending = true;
+}
 
 struct BridgeWindow
 {
@@ -207,6 +228,18 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
     ev.y = (int)lround((self.bounds.size.height - p.y) / g_unitScale);
     ev.dx = e.deltaX;
     ev.dy = e.deltaY;
+    if (type == BRIDGE_EV_MOUSE_MOVE)
+    {
+        const NSPoint loc = [NSEvent mouseLocation];
+        if (g_warpPending && g_haveLastMove)
+        {
+            ev.dx += g_lastMoveLocation.x - g_warpTarget.x;
+            ev.dy += (PrimaryHeight() - g_lastMoveLocation.y) - g_warpTarget.y;
+        }
+        g_warpPending = false;
+        g_lastMoveLocation = loc;
+        g_haveLastMove = true;
+    }
     ev.button = button;
     ev.modifiers = ModsFromFlags(e.modifierFlags);
     ev.time = e.timestamp;
@@ -265,19 +298,47 @@ static uint32_t ModsFromFlags(NSEventModifierFlags f)
         d = -d;
     if (e.hasPreciseScrollingDeltas)
     {
-        // trackpads: accumulate pixel deltas into wheel notches
-        g_wheelAccum += d;
-        const double step = 16.0;
-        while (fabs(g_wheelAccum) >= step)
+        // Trackpads and the Magic Mouse send a stream of point deltas, and then keep scrolling on their own (the
+        // momentum phase) after the fingers lift. The game takes one wheel notch as one step (the next menu item
+        // on the front end's screens, the next weapon), so the momentum is dropped and the deltas are turned into
+        // notches: the first one early in a swipe, the following ones only as the swipe goes on.
+        if (e.momentumPhase != NSEventPhaseNone)
+            return;
+        const bool gestureOver = e.phase == NSEventPhaseEnded || e.phase == NSEventPhaseCancelled;
+        // (devices with smooth scrolling but no gesture phases: a pause starts a new swipe)
+        const bool paused = e.timestamp - g_wheelLastTime > 0.25;
+        g_wheelLastTime = e.timestamp;
+        if (gestureOver || paused || e.phase == NSEventPhaseBegan || e.phase == NSEventPhaseMayBegin)
         {
+            g_wheelAccum = 0;
+            g_wheelGestureNotches = 0;
+            g_wheelGestureDir = 0;
+        }
+        if (gestureOver || d == 0)
+            return;
+        const int dir = d > 0 ? 1 : -1;
+        if (dir != g_wheelGestureDir)
+        {
+            // a new swipe, or the same one turned around
+            g_wheelAccum = 0;
+            g_wheelGestureNotches = 0;
+            g_wheelGestureDir = dir;
+        }
+        g_wheelAccum += fabs(d);
+        for (;;)
+        {
+            const double step = g_wheelGestureNotches == 0 ? 6.0 : 48.0;
+            if (g_wheelAccum < step)
+                break;
+            g_wheelAccum -= step;
+            ++g_wheelGestureNotches;
             BridgeEvent ev = {};
             ev.type = BRIDGE_EV_WHEEL;
             ev.window = self.owner;
             ev.userData = self.owner ? self.owner->userData : nullptr;
-            ev.dy = g_wheelAccum > 0 ? 1.0 : -1.0;
+            ev.dy = dir;
             ev.time = e.timestamp;
             Emit(ev);
-            g_wheelAccum -= g_wheelAccum > 0 ? step : -step;
         }
         return;
     }
@@ -857,7 +918,9 @@ static void Main_SetMouseCaptured(int captured)
         {
             const NSRect content = [win contentRectForFrameRect:win.frame];
             const CGFloat primaryHeight = screens[0].frame.size.height;
-            CGWarpMouseCursorPosition(CGPointMake(NSMidX(content), primaryHeight - NSMidY(content)));
+            const CGPoint centre = CGPointMake(NSMidX(content), primaryHeight - NSMidY(content));
+            NoteCursorWarp(centre);
+            CGWarpMouseCursorPosition(centre);
         }
     }
     CGAssociateMouseAndMouseCursorPosition(captured ? false : true);
@@ -866,6 +929,7 @@ static void Main_SetMouseCaptured(int captured)
 static void Main_WarpCursor(int x, int y)
 {
     CGPoint p = CGPointMake(x * g_unitScale, y * g_unitScale);
+    NoteCursorWarp(p);
     CGWarpMouseCursorPosition(p);
     if (!g_mouseCaptured)
         CGAssociateMouseAndMouseCursorPosition(true);

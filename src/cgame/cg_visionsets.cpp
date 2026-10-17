@@ -943,8 +943,10 @@ void __cdecl CG_VisionSetConfigString_Naked(int localClientNum)
 
     cgameGlob = CG_GetLocalClientGlobals(localClientNum);
     configString = CL_GetConfigString(1550);
-    // zombies: per-client info-string transport (SP 0x006929E0), in KB's naked-vision slot.
-    if (zombiemode && zombiemode->current.enabled)
+    // zombies: per-client info-string transport (SP 0x006929E0), in KB's naked-vision slot. Every SP level writes it
+    // that way (G_SP_VisionSetNaked), the front end too, where zombiemode is off: there the MP parse took the whole
+    // info string for the name ("vision/\0\int_frontend_default.vision" not found). An info string starts with '\'.
+    if ((zombiemode && zombiemode->current.enabled) || (configString && configString[0] == '\\'))
         configString = Info_ValueForKey((char *)configString, va("%i", cgameGlob->clientNum));
     token = Com_Parse(&configString)->token;
     I_strncpyz(cgameGlob->visionNameNaked, token, 64);
