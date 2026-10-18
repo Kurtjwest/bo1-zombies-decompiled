@@ -42,7 +42,10 @@ the game writes.
 
 Controls are the Windows ones. The menus drawn on the front end's TV screens have no cursor, as on Windows: the mouse
 looks around the room, the scroll wheel (or a two-finger swipe on a trackpad, one item per short swipe) or W/S moves
-through the items, a click or D chooses, a right-click (a two-finger click on a trackpad) or A goes back.
+through the items, a click or D chooses, a right-click (a two-finger click on a trackpad) or A goes back. A
+controller moves through every menu with the d-pad or the left stick (held, they scroll on), chooses with A and goes
+back with B. The main menu offers Zombies, Options and Quit: Campaign and Multiplayer need the Windows game's own
+programs, so the Mac build leaves them out.
 
 The game starts in macOS full screen (a Space of its own; the game's own full-screen setting, `r_fullscreen`). The
 display's mode never changes: the game draws at the resolution chosen in its graphics options (`r_mode`), anything

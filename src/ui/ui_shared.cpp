@@ -4770,11 +4770,21 @@ void    Menu_HandleKey(int localClientNum, UiContext *dc, menuDef_t *menu, int k
                             case 154:
                             case 183:
                             case 206:
+#if BO1_MACOS
+                            // zombies (port): the d-pad and the left stick (K_DPAD_*, K_APAD_*) move through the
+                            // menus as on the consoles; the PC exe only took the arrow keys and the wheel
+                            case 20:
+                            case 28:
+#endif
                                 Menu_SetPrevCursorItem(localClientNum, dc, menu, 1);
                                 break;
                             case 155:
                             case 189:
                             case 205:
+#if BO1_MACOS
+                            case 21:
+                            case 29:
+#endif
                                 Menu_SetNextCursorItem(localClientNum, dc, menu, 0, 1);
                                 break;
                             case 177:

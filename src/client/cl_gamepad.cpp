@@ -452,6 +452,24 @@ void __cdecl CL_GamepadGenerateAPad(int localClientNum, int portIndex, unsigned 
     stick = stickForAxis[physicalAxis];
     if ( stick )
     {
+#if BO1_MACOS
+        // zombies (port): the left stick's directions are the analog pad keys (K_APAD_*), which the menus move
+        // through as with the d-pad (Menu_HandleKey). The PC exe's calls here were empty: it had no gamepad menus.
+        // (Nothing binds them in the game.)
+        if ( stick == GPAD_LX || stick == GPAD_LY )
+        {
+            const unsigned int time = Sys_Milliseconds();
+            for ( int dir = GPAD_STICK_POS; dir < GPAD_STICK_DIRCOUNT; ++dir )
+            {
+                const int key = stick == GPAD_LY ? (dir == GPAD_STICK_POS ? K_APAD_UP : K_APAD_DOWN)
+                                                 : (dir == GPAD_STICK_POS ? K_APAD_RIGHT : K_APAD_LEFT);
+                if ( GPad_IsStickPressed(portIndex, stick, (GamePadStickDir)dir) )
+                    CL_GamepadButtonEventForPort(portIndex, key, 1, time, GPAD_NONE);
+                else if ( GPad_IsStickReleased(portIndex, stick, (GamePadStickDir)dir) )
+                    CL_GamepadButtonEventForPort(portIndex, key, 0, time, GPAD_NONE);
+            }
+        }
+#else
         if (GPad_IsStickPressed(portIndex, stick, GPAD_STICK_POS) || GPad_IsStickPressed(portIndex, stick, GPAD_STICK_NEG))
         {
             //BLOPS_NULLSUB();
@@ -460,8 +478,32 @@ void __cdecl CL_GamepadGenerateAPad(int localClientNum, int portIndex, unsigned 
         {
             //BLOPS_NULLSUB();
         }
+#endif
     }
 }
+
+#if BO1_MACOS
+// zombies (port): a menu goes on scrolling while a d-pad direction or the left stick is held, as on the consoles. The
+// held key is sent again every frame; CL_CheckForIgnoreDueToRepeat lets one through gpad_menu_scroll_delay_first ms
+// after the press, then one every gpad_menu_scroll_delay_rest ms. (Straight to CL_GamepadButtonEvent: the per-port
+// entry point restarts that delay at every press.)
+void __cdecl CL_GamepadRepeatMenuScrollKeys(int portIndex, unsigned int time)
+{
+    int localClientNum;
+    int i;
+    int key;
+
+    localClientNum = Com_ControllerIndex_GetLocalClientNum(portIndex);
+    if ( localClientNum == -1 || !Key_IsCatcherActive(localClientNum, 16) )
+        return;
+    for ( i = 0; i < 8; ++i )
+    {
+        key = menuScrollButtonList[i];
+        if ( playerKeys[localClientNum].keys[key].down && playerKeys[localClientNum].keys[key].repeats > 0 )
+            CL_GamepadButtonEvent(localClientNum, portIndex, key, 1, time, GPAD_NONE);
+    }
+}
+#endif
 
 double __cdecl CL_GamepadAxisValue(int localClientNum, unsigned int virtualAxis)
 {

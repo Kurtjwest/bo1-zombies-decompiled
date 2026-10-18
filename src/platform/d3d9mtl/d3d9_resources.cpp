@@ -87,6 +87,16 @@ bool TexStorage::Init(Device *, D3DRESOURCETYPE rtype, UINT w, UINT h, UINT d, U
     view = (fi->swizzled && samples == 1) ? rhi::CreateTextureView(tex, fi->mtl, fi->swizzle) : tex;
     if (!view)
         view = tex;
+    // A new render target is zeroed on Windows (the video memory manager clears what it hands out); Metal leaves it
+    // undefined, so whatever the engine never draws over shows old GPU memory: the front end's UI3D texture has a
+    // second window, for the TV below the menu's, that nothing draws into, and that TV was bright purple.
+    if ((use & D3DUSAGE_RENDERTARGET) && !fi->depth)
+    {
+        static const float zero[4] = {0, 0, 0, 0};
+        for (UINT f = 0; f < faces; ++f)
+            for (UINT l = 0; l < levels; ++l)
+                rhi::FillTexture(tex, f, l, 0, 0, (int)LevelWidth(l), (int)LevelHeight(l), zero);
+    }
     return true;
 }
 

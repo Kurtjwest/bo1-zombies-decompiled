@@ -274,6 +274,9 @@ void IN_GamepadsMove()
                     CL_GamepadButtonEventForPort(controllerIndex, buttonList[2 * butIndex + 1], 0, time, buttonList[2 * butIndex]);
                 }
             }
+#if BO1_MACOS
+            CL_GamepadRepeatMenuScrollKeys(controllerIndex, time); // (a held d-pad or stick scrolls a menu)
+#endif
         }
     }
     if (gpad_present && gpad_present->current.color[0] != gpadPresent)
