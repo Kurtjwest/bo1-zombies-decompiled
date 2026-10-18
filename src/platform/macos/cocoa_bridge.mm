@@ -929,6 +929,9 @@ static BridgeWindow *Main_CreateWindow(const char *title, int x, int y, int clie
         NSRect content = ToCocoaRect(x, y, clientW, clientH);
         BO1Window *win = [[BO1Window alloc] initWithContentRect:content styleMask:style backing:NSBackingStoreBuffered defer:NO];
         win.releasedWhenClosed = NO;
+        // no window state kept by macOS (~/Library/Saved Application State): the game keeps its own window settings,
+        // in its game folder
+        win.restorable = NO;
         win.title = EngineString(title ? title : "BO1 Zombies");
         win.acceptsMouseMovedEvents = YES;
         // the green button / Ctrl-Cmd-F take the window to a full-screen Space (the drawable keeps its size)
@@ -1423,7 +1426,8 @@ static void Main_OpenURL(const char *url)
         NSString *s = EngineString(url);
         if (!s.length)
             return;
-        NSURL *u = [NSURL URLWithString:s];
+        // a path (a folder to show in Finder) or a URL
+        NSURL *u = [s hasPrefix:@"/"] ? [NSURL fileURLWithPath:s] : [NSURL URLWithString:s];
         if (!u)
             u = [NSURL fileURLWithPath:s];
         if (u)
@@ -1443,38 +1447,6 @@ void Bridge_PreventDisplaySleep(int prevent)
         IOPMAssertionRelease(g_sleepAssertion);
         g_sleepAssertionActive = false;
     }
-}
-
-int Bridge_ChooseFolder(const char *message, char *out, int outSize)
-{
-    __block int ok = 0;
-    void (^run)(void) = ^{
-        @autoreleasepool
-        {
-            [NSApp activateIgnoringOtherApps:YES];
-            NSOpenPanel *panel = [NSOpenPanel openPanel];
-            panel.canChooseDirectories = YES;
-            panel.canChooseFiles = NO;
-            panel.allowsMultipleSelection = NO;
-            panel.canCreateDirectories = NO;
-            panel.prompt = @"Choose";
-            if (message)
-                panel.message = EngineString(message);
-            if ([panel runModal] == NSModalResponseOK && panel.URLs.count)
-            {
-                const char *p = panel.URLs[0].path.fileSystemRepresentation;
-                if (p && out && outSize > 0)
-                {
-                    strncpy(out, p, (size_t)outSize - 1);
-                    out[outSize - 1] = 0;
-                    ok = 1;
-                }
-            }
-        }
-    };
-    // (not dispatch_sync: the main thread may be blocked in a Win32 wait, where it runs queued calls instead)
-    OnMain([&] { run(); });
-    return ok;
 }
 
 const char *Bridge_AppSupportPath(void)
@@ -1497,7 +1469,7 @@ const char *Bridge_BundleResourcePath(void)
     @autoreleasepool
     {
         NSString *p = [[NSBundle mainBundle] resourcePath];
-        strncpy(path, p ? p.UTF8String : ".", sizeof(path) - 1);
+        strncpy(path, p ? p.fileSystemRepresentation : ".", sizeof(path) - 1);
     }
     return path;
 }

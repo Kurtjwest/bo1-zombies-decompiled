@@ -19,16 +19,26 @@ copied from Windows.
 
 ```sh
 ./build-mac.sh                                        # builds build-mac/BO1Zombies.app
-./setup-mac.sh "/path/to/Call of Duty Black Ops"      # one time: copies zone/, main/, ... next to the app
+./setup-mac.sh "/path/to/Call of Duty Black Ops"      # one time: copies zone/, main/, ... to the game folder
 open build-mac/BO1Zombies.app                         # or double-click it
 ```
 
 The first build downloads and compiles FFmpeg and libvpx (for offline builds pass
 `-DBO1_FFMPEG_SOURCE_DIR=...` / `-DBO1_LIBVPX_SOURCE_DIR=...` to CMake). Started without arguments the app opens
 the zombies menu the way `Play.bat` does on Windows; engine arguments work as on Windows
-(`build-mac/BO1Zombies.app/Contents/MacOS/BO1Zombies +set bo1_zombies 1 +set r_fullscreen 1 ...`). The game folder is the folder
-the app is in; `--gamedir <path>` or `BO1_GAME_DIR` point it elsewhere, and if none has the game's files the app
-asks for the folder once.
+(`build-mac/BO1Zombies.app/Contents/MacOS/BO1Zombies +set bo1_zombies 1 +set r_fullscreen 1 ...`).
+
+The game folder is `~/Library/Application Support/BO1Zombies`. The game reads the original game's files there and
+writes everything there (settings and saves in `players/`, logs, screenshots, the shader cache), and nowhere else, so
+the app runs from any folder with nothing next to it (drag it to /Applications, say). The repository's own files
+(`mods/`, `data/main/`) are built into the app, which installs them in the game folder when it starts: change them in
+the repository and rebuild (the app replaces the copies in the game folder that differ from its own, and removes the
+ones a later build no longer has unless you changed them; links in the game folder are left alone).
+`./setup-mac.sh --move "/path/to/Call of Duty Black Ops"` moves the game files instead of copying them (instant on the
+same disk). Earlier versions of `setup-mac.sh` put the game files next to the app, in `build-mac`, where the game also
+kept its settings and saves: `./setup-mac.sh` on its own moves all of that to the game folder (and leaves the build,
+with its old copy of `mods/`). `--gamedir <path>` runs the game on another folder (for testing), which then holds what
+the game writes.
 
 Controls are the Windows ones. The menus drawn on the front end's TV screens have no cursor, as on Windows: the mouse
 looks around the room, the scroll wheel (or a two-finger swipe on a trackpad, one item per short swipe) or W/S moves
@@ -43,7 +53,7 @@ the game is in a window of that size in points (as large as the screen at most).
 
 Metal compiles the game's shaders when they are first drawn. Instead of stalling the frame meanwhile, the game draws
 the frames without what is not compiled yet (a new place or effect shows a moment later the first time), and keeps a
-record of what it compiled (`~/Library/Application Support/BO1Zombies/shadercache`): the next time a level loads,
+record of what it compiled (`shadercache/` in the game folder): the next time a level loads,
 that is compiled in the background before it is needed.
 
 The log (with the `BO1_*` settings below) goes to the terminal when the app is started from one:
@@ -55,7 +65,7 @@ Settings for the Mac build:
 | --- | --- |
 | `BO1_HIDPI=1` | window sizes (and the screen size the game sees) in pixels instead of points: a window at the display's full Retina sharpness, half as large |
 | `BO1_METAL_FRONT_CCW=1` | flip the triangle winding Metal treats as front-facing (if geometry renders inside out) |
-| `BO1_DUMP_FAILED_SHADERS=1` | write shaders Metal rejects to `/tmp/bo1_*.metal` (with the error in the log) |
+| `BO1_DUMP_FAILED_SHADERS=1` | write shaders Metal rejects to `shaderdumps/` in the game folder (with the error in the log) |
 | `BO1_SYNC_SHADERS=1` | draws wait for their shaders to compile instead of being skipped (no pop-in, but stalls) |
 | `BO1_SHADER_LOG=1` | log what the shader compiler does in every frame that compiled something |
 | `BO1_PERF_LOG=1` | log once a second where the frames' time went: frame rate, GPU time, waits for the GPU and for the display (v-sync), draws and render passes per frame |

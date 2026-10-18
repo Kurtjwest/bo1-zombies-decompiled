@@ -122,8 +122,7 @@ int Bridge_MessageBox(const char *title, const char *text, int buttons, int icon
 void Bridge_OpenURL(const char *url);
 void Bridge_PreventDisplaySleep(int prevent);
 const char *Bridge_BundleResourcePath(void);
-const char *Bridge_AppSupportPath(void);                            // ~/Library/Application Support/BO1Zombies (created)
-int Bridge_ChooseFolder(const char *message, char *out, int outSize); // folder picker; 1 if one was chosen
+const char *Bridge_AppSupportPath(void); // ~/Library/Application Support/BO1Zombies (created): the game folder
 
 #ifdef __cplusplus
 }

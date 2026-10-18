@@ -250,10 +250,19 @@ target_link_options(${BIN_NAME} PRIVATE
     "-Wl,-stack_size,0x2000000"
 )
 
-# ---- run folder: mods/ and data/main/ next to the game data, as the Windows build does ----
-add_custom_target(copy_mods ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/mods" "${CMAKE_BINARY_DIR}/mods"
-    COMMENT "Copying mods/ to the run folder")
-add_custom_target(copy_base_data ALL
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data/main" "${CMAKE_BINARY_DIR}/main"
-    COMMENT "Copying data/main/ to the run folder")
+# ---- the repository's own game files (mods/, data/main/) inside the app: it installs them into its game folder,
+# ~/Library/Application Support/BO1Zombies, when it starts (main_mac.cpp). Rebuilt every build: a file removed from
+# the repository leaves the bundle, and the app then removes it from the game folder too. ----
+if(CMAKE_VERSION VERSION_LESS 3.17)
+    set(BO1_RM_DIR remove_directory)
+else()
+    set(BO1_RM_DIR rm -rf)
+endif()
+add_custom_target(bundle_game_data ALL
+    COMMAND ${CMAKE_COMMAND} -E ${BO1_RM_DIR} "$<TARGET_BUNDLE_CONTENT_DIR:${BIN_NAME}>/Resources/gamedata"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/mods"
+        "$<TARGET_BUNDLE_CONTENT_DIR:${BIN_NAME}>/Resources/gamedata/mods"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/data/main"
+        "$<TARGET_BUNDLE_CONTENT_DIR:${BIN_NAME}>/Resources/gamedata/main"
+    COMMENT "Bundling mods/ and data/main/ into the app")
+add_dependencies(bundle_game_data ${BIN_NAME})

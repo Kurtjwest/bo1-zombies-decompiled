@@ -53,6 +53,7 @@ static std::vector<std::wstring> g_wideCommandLine;
 // install path, log and semaphore names from the exe path.
 std::string g_gameDir;
 void SetGameDirectory(const char *dir) { g_gameDir = dir ? dir : ""; }
+const char *GameDirectory() { return g_gameDir.c_str(); }
 
 void SetCommandLine(int argc, char **argv)
 {
@@ -1274,21 +1275,30 @@ void RtlCaptureContext(PCONTEXT ctx)
 // ---------------------------------------------------------------- shell folders
 HRESULT SHGetFolderPathA(HWND, int csidl, HANDLE, DWORD, LPSTR path)
 {
-    const char *home = getenv("HOME");
-    if (!home)
-    {
-        struct passwd *pw = getpwuid(getuid());
-        home = pw ? pw->pw_dir : "/tmp";
-    }
     std::string p;
-    switch (csidl & 0xFF)
+    if (!g_gameDir.empty())
     {
-    case CSIDL_PERSONAL: p = std::string(home) + "/Documents"; break;
-    case CSIDL_DESKTOP: p = std::string(home) + "/Desktop"; break;
-    case CSIDL_APPDATA:
-    case CSIDL_LOCAL_APPDATA:
-    case CSIDL_COMMON_APPDATA: p = std::string(home) + "/Library/Application Support"; break;
-    default: p = home; break;
+        // Documents (the engine's fs_userDocuments), the AppData folders, the desktop: all in the game folder, where
+        // the game keeps everything it writes (main_mac.cpp)
+        p = g_gameDir;
+    }
+    else
+    {
+        const char *home = getenv("HOME");
+        if (!home)
+        {
+            struct passwd *pw = getpwuid(getuid());
+            home = pw ? pw->pw_dir : "/tmp";
+        }
+        switch (csidl & 0xFF)
+        {
+        case CSIDL_PERSONAL: p = std::string(home) + "/Documents"; break;
+        case CSIDL_DESKTOP: p = std::string(home) + "/Desktop"; break;
+        case CSIDL_APPDATA:
+        case CSIDL_LOCAL_APPDATA:
+        case CSIDL_COMMON_APPDATA: p = std::string(home) + "/Library/Application Support"; break;
+        default: p = home; break;
+        }
     }
     if (csidl & CSIDL_FLAG_CREATE)
         mkdir(p.c_str(), 0755);

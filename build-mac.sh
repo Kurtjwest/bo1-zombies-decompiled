@@ -35,5 +35,9 @@ cmake -S . -B "$dir" -G Ninja -DCMAKE_BUILD_TYPE="$config"
 cmake --build "$dir"
 
 echo
-echo "Built $dir/BO1Zombies.app"
-echo "Next: ./setup-mac.sh \"/path/to/Call of Duty Black Ops\" copies your game files next to it (one time)."
+echo "Built $dir/BO1Zombies.app (its game folder: ~/Library/Application Support/BO1Zombies)"
+if [ -d build-mac/zone ] || [ -d "$dir/zone" ]; then
+    echo "Next: ./setup-mac.sh moves the game files an earlier setup put next to the app to the game folder (one time)."
+elif [ ! -d "$HOME/Library/Application Support/BO1Zombies/zone" ]; then
+    echo "Next: ./setup-mac.sh \"/path/to/Call of Duty Black Ops\" copies your game files to the game folder (one time)."
+fi

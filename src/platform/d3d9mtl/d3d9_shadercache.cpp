@@ -13,6 +13,7 @@
 //    in the background, so that they are ready before a draw needs them.
 #include "d3d9_internal.h"
 #include "../macos/cocoa_bridge.h"
+#include "../win32compat/w32_platform.h"
 
 #include <cerrno>
 #include <chrono>
@@ -89,12 +90,28 @@ std::atomic<uint64_t> g_compileNs{0};
 std::atomic<uint32_t> g_skippedDraws{0}, g_waits{0};
 bool g_logVerbose;
 
+// the game folder (main_mac.cpp), where the game keeps everything it writes
+std::string GameFolder()
+{
+    const char *dir = w32::GameDirectory();
+    if (dir && *dir)
+        return dir;
+    const char *appSupport = Bridge_AppSupportPath();
+    return appSupport ? appSupport : "";
+}
+
 void DumpFailedShader(const ShaderVariant *v, const std::string &src)
 {
     if (!getenv("BO1_DUMP_FAILED_SHADERS"))
         return;
-    char path[256];
-    snprintf(path, sizeof(path), "/tmp/bo1_%s_%u_%llx.metal", v->isPixel ? "ps" : "vs", v->shaderId,
+    // (in the game folder, as everything the game writes)
+    const std::string base = GameFolder();
+    if (base.empty())
+        return;
+    const std::string dir = base + "/shaderdumps";
+    mkdir(dir.c_str(), 0755);
+    char path[1024];
+    snprintf(path, sizeof(path), "%s/bo1_%s_%u_%llx.metal", dir.c_str(), v->isPixel ? "ps" : "vs", v->shaderId,
              (unsigned long long)v->key);
     if (FILE *f = fopen(path, "w"))
     {
@@ -340,10 +357,10 @@ void Index(uint32_t i)
 void Load()
 {
     g_loaded = true;
-    const char *base = Bridge_AppSupportPath();
-    if (!base || !*base)
+    const std::string base = GameFolder();
+    if (base.empty())
         return;
-    std::string dir = std::string(base) + "/shadercache";
+    std::string dir = base + "/shadercache";
     mkdir(dir.c_str(), 0755);
     g_path = dir + "/pipelines.bin";
     FILE *f = fopen(g_path.c_str(), "rb");

@@ -9,6 +9,7 @@ namespace w32
 void PlatformInit(int argc, char **argv);
 // The game's run folder (zone/, main/, ...): GetModuleFileName(NULL) reports the executable as living there.
 void SetGameDirectory(const char *dir);
+const char *GameDirectory(); // ("" before SetGameDirectory)
 // Cocoa application object and window/input bridge; must run on the main thread.
 void User32Init();
 // The CAMetalLayer of a window's content view (the first live window when hwnd is null); nullptr if none.

@@ -1,4 +1,4 @@
-// <shlobj.h> stand-in for the macOS port. Known folders map to ~/Library/Application Support and ~/Documents.
+// <shlobj.h> stand-in for the macOS port. Known folders map to the game folder (SHGetFolderPathA, kernel32_misc.cpp).
 #pragma once
 #include <windows.h>
 #ifdef __cplusplus
