@@ -73,6 +73,7 @@ void __cdecl R_UI3D_OnetimeInit(
                 bool useDisplaySize,
                 int pmemLocation,
                 bool allocatePingPongBuffer);
+void __cdecl R_UI3D_OnetimeInitFrontEndTV(int pmemLocation); // zombies: the SP front end's TV (r_ui3d.cpp)
 void __cdecl R_UI3D_Shutdown();
 void __cdecl R_UI3D_PerframeInit();
 void __cdecl R_InitUI3DStack(GfxUI3DStack *stack);

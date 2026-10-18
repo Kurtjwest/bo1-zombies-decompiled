@@ -572,7 +572,10 @@ double __cdecl GPad_GetStick(int portIndex, GamePadStick stick)
     {
         __debugbreak();
     }
-    return s_gamePads[portIndex].sticks[stick];
+    // The stick values carry GPAD_STICK_MASK (0x40000000). The 32-bit exe indexes sticks[] with the whole value: the
+    // offset (value * 4) wraps around 2^32 to the stick's own, so the compiler left out the mask. In a 64-bit build
+    // it does not wrap and reads 4 GB past the array (the sticks always read 0 on the Mac).
+    return s_gamePads[portIndex].sticks[stick & 0xBFFFFFFF];
 }
 
 bool __cdecl GPad_IsStickPressed(int portIndex, GamePadStick stick, GamePadStickDir stickDir)

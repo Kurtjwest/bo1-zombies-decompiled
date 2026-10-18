@@ -642,7 +642,10 @@ void __cdecl Com_InitDynamicRender()
     v1 = Com_IsMenuLevel(0);
     R_ExtraCam_Init(v1);
     v2 = Com_IsMenuLevel(0);
-    R_UI3D_OnetimeInit(0x80u, 0x80u, 0, v2, 0);
+    if ( Com_IsSPFrontEndRunning() )
+        R_UI3D_OnetimeInitFrontEndTV(v2); // zombies: the TV's menus (r_ui3d.cpp)
+    else
+        R_UI3D_OnetimeInit(0x80u, 0x80u, 0, v2, 0);
 }
 
 void __cdecl Com_InitDynamicMemorySystems()

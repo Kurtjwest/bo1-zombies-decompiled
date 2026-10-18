@@ -11,6 +11,34 @@ GfxUI3DStack g_ui3dStack;
 Ui3dTextureWindow g_ui3d_windows[6];
 Ui3dStatus g_ui3dStatus;
 
+// zombies: SP's front end shows the UI3D texture on its TV. Its client script splits it in two windows
+// (ui3dsetwindow): the top half holds the menus, the bottom half a second screen. MP's level UI3D texture is
+// 128 x 128 (Com_InitDynamicRender), which drew the TV's menus into 128 x 64 pixels; the front end's is sized from
+// the display instead, and follows it when the resolution changes: each window a 4:3 screen (the menus' shape) as
+// tall as the display, so the TV never shows it magnified (on the Mac its mip levels filter it down).
+static bool s_ui3dFrontEndTV;
+
+static void R_UI3D_FrontEndTVSize(unsigned __int16 *width, unsigned __int16 *height)
+{
+    int windowHeight = vidConfig.displayHeight;
+    if ( windowHeight < 480 )
+        windowHeight = 480;
+    if ( windowHeight > 2048 )
+        windowHeight = 2048;
+    *width = (unsigned __int16)((windowHeight * 4 + 2) / 3);
+    *height = (unsigned __int16)(windowHeight * 2);
+}
+
+void __cdecl R_UI3D_OnetimeInitFrontEndTV(int pmemLocation)
+{
+    unsigned __int16 width;
+    unsigned __int16 height;
+
+    R_UI3D_FrontEndTVSize(&width, &height);
+    R_UI3D_OnetimeInit(width, height, 1, pmemLocation, 0);
+    s_ui3dFrontEndTV = true;
+}
+
 
 GfxUI3DStack *__cdecl R_GetUI3DStack()
 {
@@ -74,8 +102,15 @@ void __cdecl R_UI3D_CheckRenderTarget()
 
     if (g_ui3dStatus.useDisplaySize)
     {
-        g_ui3dStatus.width = vidConfig.displayWidth;
-        g_ui3dStatus.height = vidConfig.displayHeight;
+        if ( s_ui3dFrontEndTV )
+        {
+            R_UI3D_FrontEndTVSize(&g_ui3dStatus.width, &g_ui3dStatus.height);
+        }
+        else
+        {
+            g_ui3dStatus.width = vidConfig.displayWidth;
+            g_ui3dStatus.height = vidConfig.displayHeight;
+        }
     }
     if (!gfxRenderTargets[R_RENDERTARGET_UI3D].width && g_ui3dStatus.initialized)
     {
@@ -91,7 +126,11 @@ void __cdecl R_UI3D_CheckRenderTarget()
                 g_ui3d_windows[i].normY,
                 g_ui3d_windows[i].normW,
                 g_ui3d_windows[i].normH);
-        if (r_glob.isMultiplayer)
+        // zombies: only a window 0 that is the whole texture (MP's menus, Com_InitUIAndCommonXAssets) is the full
+        // screen. The SP front end's window 0 is the top half: given the full screen's placement after a resolution
+        // change, its menus were drawn screen-sized past the window, and the TV showed nothing of them until the
+        // front end's script set the windows up again (the next launch).
+        if (r_glob.isMultiplayer && g_ui3d_windows[0].normW >= 1.0f && g_ui3d_windows[0].normH >= 1.0f)
         {
             scrPlace = R_UI3D_ScrPlaceFromTextureWindow(0);
             ScrPlace_SetupUI3DForFullscreen(scrPlace, &scrPlaceFull);
@@ -141,6 +180,7 @@ void __cdecl R_UI3D_Shutdown()
         g_ui3dStatus.hasPingPongBuffer = 0;
         g_ui3dStatus.blurRadius = 0.0f;
         g_ui3dStatus.initialized = 0;
+        s_ui3dFrontEndTV = false;
     }
 }
 
@@ -484,6 +524,11 @@ void __cdecl RB_UI3D_RenderToTexture(const void *cmds, const GfxUI3DBackend *rbU
             RB_GaussianFilterImage(rbUI3D->blurRadius, R_RENDERTARGET_UI3D, R_RENDERTARGET_UI3D_PING_PONG);
             RB_GaussianFilterImage(rbUI3D->blurRadius, R_RENDERTARGET_UI3D_PING_PONG, R_RENDERTARGET_UI3D);
           }
+#if BO1_MACOS
+          // the mip levels of what was just drawn (the texture has them: Image_Create2DTexture_PC)
+          if ( gfxRenderTargets[R_RENDERTARGET_UI3D].image && gfxRenderTargets[R_RENDERTARGET_UI3D].image->texture.map )
+            gfxRenderTargets[R_RENDERTARGET_UI3D].image->texture.map->GenerateMipSubLevels();
+#endif
           g_ui3dStatus.rendering = 0;
         }
         else

@@ -17,6 +17,7 @@
 
 #include <algorithm>
 #include "rb_state.h"
+#include "rb_backend.h"
 #include <qcommon/common.h>
 
 const char *g_imageProgNames[29] =
@@ -411,6 +412,16 @@ void __cdecl Image_Create2DTexture_PC(
     image->depth = 1;
     image->mapType = 3;
     usage = Image_GetUsage(imageFlags, imageFormat);
+#if BO1_MACOS
+    // The UI3D texture (the SP front end's TV screen) is minified on the TV through a trilinear sampler: with mip
+    // levels, regenerated after each frame's drawing into it (RB_UI3D_RenderToTexture), its menus are filtered
+    // instead of aliased.
+    if ( image == gfxRenderTargets[R_RENDERTARGET_UI3D].image && (usage & D3DUSAGE_RENDERTARGET) )
+    {
+        mipmapCount = 0;
+        usage |= D3DUSAGE_AUTOGENMIPMAP;
+    }
+#endif
     if ( (imageFlags & 0x40000) != 0 )
         memPool = D3DPOOL_SYSTEMMEM;
     else
