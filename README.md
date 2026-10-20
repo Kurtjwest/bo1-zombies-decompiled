@@ -6,22 +6,27 @@ Decompiled engine code for Black Ops 1 Zombies, so mods can change the engine it
 
 ![](images/2.webp)
 
-## macOS (Apple silicon)
+## macOS (Apple silicon and Intel)
 
-The engine also builds as a native arm64 Mac app. Nothing is emulated or translated at run time: the Win32 API
+The engine also builds as a native Mac app, for Apple silicon (arm64) and Intel (x86_64) Macs. Nothing is emulated or translated at run time: the Win32 API
 calls the engine makes go to `src/platform/win32compat` and `src/platform/macos` (POSIX, Mach and Cocoa),
 Direct3D 9 runs on Metal (`src/platform/d3d9mtl`, with the game's shaders translated to Metal by MojoShader),
 XAudio2 on Core Audio, XInput on Game Controller, and Bink videos and xWMA sounds are decoded with FFmpeg.
 
-Needs macOS 13 or later on an Apple silicon Mac, the Xcode command line tools (`xcode-select --install`), CMake and
-Ninja (`brew install cmake ninja`), and the game files of a Call of Duty: Black Ops PC install (Steam or retail),
-copied from Windows.
+Needs macOS 13 or later (Apple silicon, or an Intel Mac with a Metal GPU), the Xcode command line tools
+(`xcode-select --install`), CMake and Ninja (`brew install cmake ninja`), and the game files of a Call of Duty: Black Ops
+PC install (Steam or retail), copied from Windows.
 
 ```sh
-./build-mac.sh                                        # builds build-mac/BO1Zombies.app
+./build-mac.sh                                        # builds build-mac/BO1Zombies.app for this Mac's processor
 ./setup-mac.sh "/path/to/Call of Duty Black Ops"      # one time: copies zone/, main/, ... to the game folder
 open build-mac/BO1Zombies.app                         # or double-click it
 ```
+
+`./build-mac.sh --arch x86_64` builds the Intel app on any Mac (in `build-mac-x86_64`; `--arch arm64` the Apple
+silicon one), and `./build-mac.sh --universal` both, joined into one app that runs natively on either
+(`build-mac-universal/BO1Zombies.app`). On an Apple silicon Mac the Intel app runs under Rosetta
+(`arch -x86_64 build-mac-x86_64/BO1Zombies.app/Contents/MacOS/BO1Zombies`).
 
 The first build downloads and compiles FFmpeg and libvpx (for offline builds pass
 `-DBO1_FFMPEG_SOURCE_DIR=...` / `-DBO1_LIBVPX_SOURCE_DIR=...` to CMake). Started without arguments the app opens
@@ -71,6 +76,7 @@ Settings for the Mac build:
 | `BO1_DUMP_FAILED_SHADERS=1` | write shaders Metal rejects to `shaderdumps/` in the game folder (with the error in the log) |
 | `BO1_SYNC_SHADERS=1` | draws wait for their shaders to compile instead of being skipped (no pop-in, but stalls) |
 | `BO1_SHADER_LOG=1` | log what the shader compiler does in every frame that compiled something |
+| `BO1_METAL_INTEL_GPU_PATH=1` | use an Apple GPU the way the Intel and AMD GPUs of Intel Macs are used (textures in private memory, written through the GPU; no 16-bit 5:6:5 format): to test that path on Apple silicon |
 | `BO1_PERF_LOG=1` | log once a second where the frames' time went: frame rate, GPU time, waits for the GPU and for the display (v-sync), draws and render passes per frame |
 
-Cross-compiling from Linux (clang, lld and a macOS SDK) works too: see `cmake/toolchain-macos-arm64.cmake`.
+Cross-compiling from Linux (clang, lld and a macOS SDK) works too: see `cmake/toolchain-macos.cmake` (`toolchain-macos-arm64.cmake`, `toolchain-macos-x86_64.cmake`).

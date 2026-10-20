@@ -2,9 +2,10 @@ cmake_minimum_required(VERSION 3.16)
 
 # APPLE is only known after project(); before it, a Mac host (or a Darwin cross toolchain) is detected like this.
 if(CMAKE_HOST_APPLE OR CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-    # Native macOS build for Apple silicon (arm64). See cmake/macos.cmake and the macOS section of README.md.
+    # Native macOS build for Apple silicon (arm64, the default) or Intel (x86_64) Macs. See cmake/macos.cmake and the
+    # macOS section of README.md.
     if(NOT CMAKE_OSX_ARCHITECTURES)
-        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Target architecture" FORCE)
+        set(CMAKE_OSX_ARCHITECTURES "arm64" CACHE STRING "Target architecture: arm64 or x86_64" FORCE)
     endif()
     if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
         set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" CACHE STRING "Minimum macOS version" FORCE)

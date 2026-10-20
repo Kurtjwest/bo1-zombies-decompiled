@@ -42,17 +42,27 @@
 
     #define RADSTRUCT struct
 
-    #if defined(__APPLE__) && defined(__aarch64__)
+    #if defined(BO1_PORT)
 
-      // macOS (Apple silicon) port: the engine is Windows code, so the RAD headers present their 64-bit Windows
-      // API (DirectSound/Direct3D 9 sound and texture interfaces); the Bink calls behind it are implemented natively
-      // in src/platform/macos/bink_mac.cpp.
+      // macOS / Linux ports: the engine is Windows code, so the RAD headers present their Windows API
+      // (DirectSound/Direct3D 9 sound and texture interfaces); the Bink calls behind it are implemented natively in
+      // src/platform/macos/bink_mac.cpp.
       #define __RADWIN__
       #define __RADNT__
       #define __RADINEXE__
       #define __RAD32__
-      #define __RAD64__
-      #define __RADARM64__
+      #if defined(__x86_64__)
+        #define __RAD64__
+        #define __RADX64__
+        #define __RADX86__
+      #elif defined(__aarch64__)
+        #define __RAD64__
+        #define __RADARM64__
+      #elif defined(__i386__)
+        #define __RADX86__
+      #elif defined(__arm__)
+        #define __RADARM__
+      #endif
       #define __RADLITTLEENDIAN__
       #define RADINLINE inline
       #define RADRESTRICT __restrict
@@ -385,7 +395,7 @@
 
     #else
 
-      #if defined(__RADNT__) && !defined(__RADARM64__)
+      #if defined(__RADNT__) && !defined(BO1_PORT)
         #ifndef _WIN32
           #define _WIN32
         #endif

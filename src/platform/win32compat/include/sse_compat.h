@@ -1,6 +1,7 @@
-// SSE/MMX intrinsics on arm64: translated to NEON by sse2neon (MIT, src/platform/third_party/sse2neon).
+// SSE/MMX intrinsics on ARM (arm64, 32-bit ARM with NEON): translated to NEON by sse2neon (MIT,
+// src/platform/third_party/sse2neon). On x86 the compiler's own headers.
 #pragma once
-#if defined(__aarch64__) || defined(__arm64__)
+#if defined(__aarch64__) || defined(__arm64__) || defined(__arm__)
 // sse2neon defines __int64 as a macro unless it already is one; with -fms-extensions __int64 is a keyword, so
 // shield it for the duration of the include (otherwise "unsigned __int64" would become "unsigned int64_t").
 #pragma push_macro("__int64")

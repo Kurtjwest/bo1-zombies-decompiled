@@ -986,6 +986,11 @@ BOOL GetThreadContext(HANDLE h, LPCONTEXT ctx)
     if (!o || o->type != KType::Thread || !ctx)
         return FALSE;
     KThread *t = static_cast<KThread *>(o);
+#if defined(__linux__)
+    // (another thread's registers: Mach only)
+    (void)t;
+    return FALSE;
+#elif defined(__APPLE__) && defined(__aarch64__)
     arm_thread_state64_t st;
     mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
     if (thread_get_state(t->machThread, ARM_THREAD_STATE64, (thread_state_t)&st, &count) != KERN_SUCCESS)
@@ -996,6 +1001,21 @@ BOOL GetThreadContext(HANDLE h, LPCONTEXT ctx)
     ctx->Lr = (DWORD64)arm_thread_state64_get_lr(st);
     for (int i = 0; i < 29; ++i)
         ctx->X[i] = st.__x[i];
+#elif defined(__APPLE__) && defined(__x86_64__)
+    x86_thread_state64_t st;
+    mach_msg_type_number_t count = x86_THREAD_STATE64_COUNT;
+    if (thread_get_state(t->machThread, x86_THREAD_STATE64, (thread_state_t)&st, &count) != KERN_SUCCESS)
+        return FALSE;
+    ctx->Pc = st.__rip;
+    ctx->Sp = st.__rsp;
+    ctx->Fp = st.__rbp;
+    const DWORD64 regs[6] = {st.__rax, st.__rbx, st.__rcx, st.__rdx, st.__rsi, st.__rdi};
+    for (int i = 0; i < 6; ++i)
+        ctx->X[i] = regs[i];
+#else
+    (void)t;
+    return FALSE;
+#endif
     ctx->Eip = (DWORD)ctx->Pc;
     ctx->Esp = (DWORD)ctx->Sp;
     ctx->Ebp = (DWORD)ctx->Fp;

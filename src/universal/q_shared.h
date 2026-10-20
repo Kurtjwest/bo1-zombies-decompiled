@@ -28,22 +28,52 @@
 #undef QDECL
 #define	QDECL	__cdecl
 
+// the ports' system and processor names (CPUSTRING)
+#if defined(BO1_PORT)
+#if defined(__linux__)
+#define BO1_PORT_OS "linux"
+#elif defined(__APPLE__)
+#define BO1_PORT_OS "macos"
+#else
+#define BO1_PORT_OS "posix"
+#endif
+#if defined(__aarch64__)
+#define BO1_PORT_ARCH "arm64"
+#elif defined(__x86_64__)
+#define BO1_PORT_ARCH "x86_64"
+#elif defined(__i386__)
+#define BO1_PORT_ARCH "x86"
+#elif defined(__arm__)
+#define BO1_PORT_ARCH "armhf"
+#else
+#define BO1_PORT_ARCH "unknown"
+#endif
+#endif
+
 // buildstring will be incorporated into the version string
 #ifdef NDEBUG
 #ifdef _M_IX86
 #define	CPUSTRING	"win-x86"
 #elif defined _M_ALPHA
 #define	CPUSTRING	"win-AXP"
-#elif defined(__APPLE__) && defined(__aarch64__)
-#define	CPUSTRING	"macos-arm64"
+#elif defined(_M_X64) || (defined(_WIN64) && defined(__x86_64__))
+#define	CPUSTRING	"win-x64"
+#elif defined(_WIN32) && defined(__i386__)
+#define	CPUSTRING	"win-x86"
+#elif defined(BO1_PORT)
+#define	CPUSTRING	BO1_PORT_OS "-" BO1_PORT_ARCH
 #endif
 #else
 #ifdef _M_IX86
 #define	CPUSTRING	"win-x86-debug"
 #elif defined _M_ALPHA
 #define	CPUSTRING	"win-AXP-debug"
-#elif defined(__APPLE__) && defined(__aarch64__)
-#define	CPUSTRING	"macos-arm64-debug"
+#elif defined(_M_X64) || (defined(_WIN64) && defined(__x86_64__))
+#define	CPUSTRING	"win-x64-debug"
+#elif defined(_WIN32) && defined(__i386__)
+#define	CPUSTRING	"win-x86-debug"
+#elif defined(BO1_PORT)
+#define	CPUSTRING	BO1_PORT_OS "-" BO1_PORT_ARCH "-debug"
 #endif
 #endif
 

@@ -109,6 +109,82 @@ constexpr unsigned long long kFileTimeUnixEpoch = 116444736000000000ull;
 LPTOP_LEVEL_EXCEPTION_FILTER g_unhandledFilter;
 std::atomic<int> g_inCrash{0};
 
+// The interrupted thread's registers from a signal's context: pc, sp, frame pointer, link register (0 where the CPU
+// has none) and the general registers the crash report shows as eax..edi (X[0..5]: the first six of the CPU's own).
+bool ReadSignalContext(ucontext_t *uc, CONTEXT &ctx)
+{
+#if defined(__linux__) && defined(__x86_64__)
+    const greg_t *g = uc->uc_mcontext.gregs;
+    ctx.Pc = (DWORD64)g[REG_RIP];
+    ctx.Sp = (DWORD64)g[REG_RSP];
+    ctx.Fp = (DWORD64)g[REG_RBP];
+    const int regs[6] = {REG_RAX, REG_RBX, REG_RCX, REG_RDX, REG_RSI, REG_RDI};
+    for (int i = 0; i < 6; ++i)
+        ctx.X[i] = (DWORD64)g[regs[i]];
+    ctx.EFlags = (DWORD)g[REG_EFL];
+    return true;
+#elif defined(__linux__) && defined(__i386__)
+    const greg_t *g = uc->uc_mcontext.gregs;
+    ctx.Pc = (DWORD)g[REG_EIP];
+    ctx.Sp = (DWORD)g[REG_ESP];
+    ctx.Fp = (DWORD)g[REG_EBP];
+    const int regs[6] = {REG_EAX, REG_EBX, REG_ECX, REG_EDX, REG_ESI, REG_EDI};
+    for (int i = 0; i < 6; ++i)
+        ctx.X[i] = (DWORD)g[regs[i]];
+    ctx.EFlags = (DWORD)g[REG_EFL];
+    return true;
+#elif defined(__linux__) && defined(__aarch64__)
+    const auto &m = uc->uc_mcontext;
+    ctx.Pc = m.pc;
+    ctx.Sp = m.sp;
+    ctx.Fp = m.regs[29];
+    ctx.Lr = m.regs[30];
+    for (int i = 0; i < 29; ++i)
+        ctx.X[i] = m.regs[i];
+    ctx.EFlags = (DWORD)m.pstate;
+    return true;
+#elif defined(__linux__) && defined(__arm__)
+    const auto &m = uc->uc_mcontext;
+    ctx.Pc = m.arm_pc;
+    ctx.Sp = m.arm_sp;
+    ctx.Fp = m.arm_fp;
+    ctx.Lr = m.arm_lr;
+    const unsigned long regs[11] = {m.arm_r0, m.arm_r1, m.arm_r2, m.arm_r3, m.arm_r4, m.arm_r5,
+                                    m.arm_r6, m.arm_r7, m.arm_r8, m.arm_r9, m.arm_r10};
+    for (int i = 0; i < 11; ++i)
+        ctx.X[i] = regs[i];
+    ctx.EFlags = (DWORD)m.arm_cpsr;
+    return true;
+#elif defined(__APPLE__) && defined(__aarch64__)
+    if (!uc->uc_mcontext)
+        return false;
+    ctx.Pc = (DWORD64)__darwin_arm_thread_state64_get_pc(uc->uc_mcontext->__ss);
+    ctx.Sp = (DWORD64)__darwin_arm_thread_state64_get_sp(uc->uc_mcontext->__ss);
+    ctx.Fp = (DWORD64)__darwin_arm_thread_state64_get_fp(uc->uc_mcontext->__ss);
+    ctx.Lr = (DWORD64)__darwin_arm_thread_state64_get_lr(uc->uc_mcontext->__ss);
+    for (int i = 0; i < 29; ++i)
+        ctx.X[i] = uc->uc_mcontext->__ss.__x[i];
+    ctx.EFlags = (DWORD)uc->uc_mcontext->__ss.__cpsr;
+    return true;
+#elif defined(__APPLE__) && defined(__x86_64__)
+    if (!uc->uc_mcontext)
+        return false;
+    const auto &ss = uc->uc_mcontext->__ss;
+    ctx.Pc = ss.__rip;
+    ctx.Sp = ss.__rsp;
+    ctx.Fp = ss.__rbp;
+    const DWORD64 regs[6] = {ss.__rax, ss.__rbx, ss.__rcx, ss.__rdx, ss.__rsi, ss.__rdi};
+    for (int i = 0; i < 6; ++i)
+        ctx.X[i] = regs[i];
+    ctx.EFlags = (DWORD)ss.__rflags;
+    return true;
+#else
+    (void)uc;
+    (void)ctx;
+    return false;
+#endif
+}
+
 void CrashSignalHandler(int sig, siginfo_t *info, void *uctx)
 {
     if (g_inCrash.exchange(1))
@@ -130,14 +206,8 @@ void CrashSignalHandler(int sig, siginfo_t *info, void *uctx)
     rec.NumberParameters = 2;
     rec.ExceptionInformation[1] = (ULONG_PTR)(info ? info->si_addr : nullptr);
     ucontext_t *uc = (ucontext_t *)uctx;
-    if (uc && uc->uc_mcontext)
+    if (uc && ReadSignalContext(uc, ctx))
     {
-        ctx.Pc = (DWORD64)__darwin_arm_thread_state64_get_pc(uc->uc_mcontext->__ss);
-        ctx.Sp = (DWORD64)__darwin_arm_thread_state64_get_sp(uc->uc_mcontext->__ss);
-        ctx.Fp = (DWORD64)__darwin_arm_thread_state64_get_fp(uc->uc_mcontext->__ss);
-        ctx.Lr = (DWORD64)__darwin_arm_thread_state64_get_lr(uc->uc_mcontext->__ss);
-        for (int i = 0; i < 29; ++i)
-            ctx.X[i] = uc->uc_mcontext->__ss.__x[i];
         ctx.Eip = (DWORD_PTR)ctx.Pc;
         ctx.Esp = (DWORD_PTR)ctx.Sp;
         ctx.Ebp = (DWORD_PTR)ctx.Fp;
@@ -147,7 +217,6 @@ void CrashSignalHandler(int sig, siginfo_t *info, void *uctx)
         ctx.Edx = (DWORD_PTR)ctx.X[3];
         ctx.Esi = (DWORD_PTR)ctx.X[4];
         ctx.Edi = (DWORD_PTR)ctx.X[5];
-        ctx.EFlags = (DWORD)uc->uc_mcontext->__ss.__cpsr;
         ctx.ContextFlags = CONTEXT_FULL;
         rec.ExceptionAddress = (PVOID)ctx.Pc;
     }
@@ -1263,8 +1332,14 @@ void RtlCaptureContext(PCONTEXT ctx)
     memset(ctx, 0, sizeof(*ctx));
     ctx->Pc = (DWORD64)__builtin_return_address(0);
     ctx->Fp = (DWORD64)__builtin_frame_address(0);
-    uint64_t sp;
+    uintptr_t sp;
+#if defined(__x86_64__)
+    __asm__ volatile("mov %%rsp, %0" : "=r"(sp));
+#elif defined(__i386__)
+    __asm__ volatile("mov %%esp, %0" : "=r"(sp));
+#else
     __asm__ volatile("mov %0, sp" : "=r"(sp));
+#endif
     ctx->Sp = sp;
     ctx->Eip = (DWORD_PTR)ctx->Pc;
     ctx->Esp = (DWORD_PTR)ctx->Sp;

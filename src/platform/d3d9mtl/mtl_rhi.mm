@@ -226,6 +226,9 @@ struct EncoderState
 struct Globals
 {
     id<MTLDevice> device;
+    // an Apple GPU (Apple silicon): textures can live in shared memory, and the 16-bit B5G6R5 format exists. The
+    // Intel and AMD GPUs of Intel Macs keep textures in private storage (written through blits) and have no B5G6R5.
+    bool appleGPU = false;
     id<MTLCommandQueue> queue;
     CAMetalLayer *layer;
 
@@ -953,7 +956,9 @@ bool BuildUtilities(char *err, size_t errSize)
                                                                                  height:1
                                                                               mipmapped:NO];
     td.usage = MTLTextureUsageShaderRead;
-    td.storageMode = MTLStorageModeShared;
+    // (managed on Intel and AMD GPUs, which have no shared textures; replaceRegion below and the blits of later ramps
+    // work on both)
+    td.storageMode = G->appleGPU ? MTLStorageModeShared : MTLStorageModeManaged;
     G->gammaLut = [G->device newTextureWithDescriptor:td];
     uint16_t identity[256 * 4];
     for (int i = 0; i < 256; ++i)
@@ -1146,6 +1151,12 @@ bool Init(void *caMetalLayer, char *err, size_t errSize)
             G = nullptr;
             return false;
         }
+        G->appleGPU = [G->device supportsFamily:MTLGPUFamilyApple1];
+        // BO1_METAL_INTEL_GPU_PATH=1: an Apple GPU used the way the Intel and AMD ones are (private textures, no
+        // B5G6R5), to test that path on Apple silicon
+        if (const char *e = getenv("BO1_METAL_INTEL_GPU_PATH"))
+            if (*e && strcmp(e, "0") != 0)
+                G->appleGPU = false;
         G->queue = [G->device newCommandQueueWithMaxCommandBufferCount:64];
         G->queue.label = @"bo1 queue";
         const char *perf = getenv("BO1_PERF_LOG");
@@ -1203,6 +1214,8 @@ bool SupportsFormat(uint32_t pixelFormat, uint32_t usage)
         return false;
     if (pixelFormat == MTLPixelFormatDepth24Unorm_Stencil8)
         return G->device.depth24Stencil8PixelFormatSupported;
+    if (pixelFormat == PF_B5G6R5)
+        return G->appleGPU; // (an Apple GPU format: Intel and AMD GPUs have none)
     if (IsCompressed(pixelFormat))
     {
         if (usage & USAGE_RENDER_TARGET)
@@ -1275,7 +1288,8 @@ Texture *CreateTexture(const TextureDesc &desc)
         if (desc.usage & USAGE_PIXEL_FORMAT_VIEW)
             usage |= MTLTextureUsagePixelFormatView;
         d.usage = usage ? usage : MTLTextureUsageShaderRead;
-        const bool priv = (desc.usage & USAGE_RENDER_TARGET) || samples > 1 || IsDepthFormat(desc.format);
+        // (shared storage for textures exists on Apple GPUs only)
+        const bool priv = (desc.usage & USAGE_RENDER_TARGET) || samples > 1 || IsDepthFormat(desc.format) || !G->appleGPU;
         d.storageMode = priv ? MTLStorageModePrivate : MTLStorageModeShared;
         if (!priv)
             d.cpuCacheMode = MTLCPUCacheModeWriteCombined;

@@ -1,5 +1,5 @@
-# FFmpeg (LGPL 2.1+), built as a minimal static library set for the macOS port. Two of the game's media formats
-# have no system decoder on macOS:
+# FFmpeg (LGPL 2.1+), built as a minimal static library set for the macOS and Linux ports. Two of the game's media
+# formats have no system decoder there:
 #   - xWMA (WMA v2) sound assets, which XAudio2 decodes on Windows (src/platform/macos/xaudio2_coreaudio.cpp)
 #   - Bink 1 (.bik) cinematics, which binkw32.dll decodes on Windows (src/platform/macos/bink_mac.cpp)
 # Only those decoders and the Bink demuxer are enabled; nothing else of FFmpeg is built or linked.
@@ -20,37 +20,30 @@ set(BO1_FFMPEG_LIBS
     "${BO1_FFMPEG_INSTALL}/lib/libavutil.a"
 )
 
-# compiler and flags for FFmpeg's own configure script
-if(CMAKE_OSX_SYSROOT)
-    set(BO1_FFMPEG_SYSROOT "${CMAKE_OSX_SYSROOT}")
-elseif(MACOS_SDK)
-    set(BO1_FFMPEG_SYSROOT "${MACOS_SDK}")
-endif()
-set(BO1_FFMPEG_ARCH_FLAGS "-arch arm64 -mmacosx-version-min=${CMAKE_OSX_DEPLOYMENT_TARGET}")
-if(BO1_FFMPEG_SYSROOT)
-    string(APPEND BO1_FFMPEG_ARCH_FLAGS " -isysroot ${BO1_FFMPEG_SYSROOT}")
-endif()
-set(BO1_FFMPEG_CC "${CMAKE_C_COMPILER}")
-set(BO1_FFMPEG_EXTRA_LDFLAGS "${BO1_FFMPEG_ARCH_FLAGS}")
+# compiler and flags for FFmpeg's own configure script (cmake/deps_target.cmake)
+include("${CMAKE_CURRENT_LIST_DIR}/deps_target.cmake")
 set(BO1_FFMPEG_CROSS_ARGS "")
-if(CMAKE_CROSSCOMPILING)
-    # clang driving ld64.lld from a non-Apple host (cmake/toolchain-macos-arm64.cmake)
-    set(BO1_FFMPEG_ARCH_FLAGS "-target arm64-apple-macos${CMAKE_OSX_DEPLOYMENT_TARGET} -isysroot ${BO1_FFMPEG_SYSROOT}")
-    set(BO1_FFMPEG_EXTRA_LDFLAGS "${BO1_FFMPEG_ARCH_FLAGS} -fuse-ld=lld")
+if(BO1_DEP_CROSS)
     set(BO1_FFMPEG_CROSS_ARGS --enable-cross-compile)
+endif()
+# (the decoders are light: no hand-written x86 assembly, which would need nasm; ARM's is built-in)
+set(BO1_FFMPEG_ASM_ARGS "")
+if(BO1_DEP_ARCH STREQUAL "x86_64" OR BO1_DEP_ARCH STREQUAL "x86")
+    set(BO1_FFMPEG_ASM_ARGS --disable-x86asm)
 endif()
 
 set(BO1_FFMPEG_CONFIGURE_ARGS
     --prefix=${BO1_FFMPEG_INSTALL}
-    --target-os=darwin
-    --arch=aarch64
+    --target-os=${BO1_DEP_OS}
+    --arch=${BO1_DEP_ARCH}
     ${BO1_FFMPEG_CROSS_ARGS}
-    --cc=${BO1_FFMPEG_CC}
+    ${BO1_FFMPEG_ASM_ARGS}
+    --cc=${CMAKE_C_COMPILER}
     --ar=${CMAKE_AR}
     --ranlib=${CMAKE_RANLIB}
     --nm=${CMAKE_NM}
-    "--extra-cflags=${BO1_FFMPEG_ARCH_FLAGS}"
-    "--extra-ldflags=${BO1_FFMPEG_EXTRA_LDFLAGS}"
+    "--extra-cflags=${BO1_DEP_CFLAGS}"
+    "--extra-ldflags=${BO1_DEP_LDFLAGS}"
     --enable-static
     --disable-shared
     --enable-pic

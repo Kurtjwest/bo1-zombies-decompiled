@@ -92,6 +92,25 @@ inline void Put(uint8_t *d, uint32_t r, uint32_t g, uint32_t b, uint32_t a)
 }
 } // namespace
 
+namespace
+{
+template <size_t N> const FormatInfo *FindNative(const FormatInfo (&table)[N], D3DFORMAT f)
+{
+    for (const FormatInfo &fi : table)
+        if (fi.d3d == f)
+            return &fi;
+    return nullptr;
+}
+
+// the GPU stores 5:6:5 texels as they are (before the device exists: assumed, as for every listed format)
+bool Has565()
+{
+    if (!rhi::SupportsFormat(rhi::PF_BGRA8, rhi::USAGE_SHADER_READ))
+        return true;
+    return rhi::SupportsFormat(rhi::PF_B5G6R5, rhi::USAGE_SHADER_READ);
+}
+} // namespace
+
 const FormatInfo *FindFormat(D3DFORMAT f)
 {
     static FormatInfo table[sizeof(kFormats) / sizeof(kFormats[0])];
@@ -119,10 +138,20 @@ const FormatInfo *FindFormat(D3DFORMAT f)
         return true;
     }();
     (void)init;
-    for (const FormatInfo &fi : table)
-        if (fi.d3d == f)
-            return &fi;
-    return nullptr;
+    if (f == D3DFMT_R5G6B5 && !Has565())
+    {
+        // the GPU has no 5:6:5 format (Intel and AMD GPUs on macOS): stored as BGRA8, converted on upload
+        static FormatInfo wide = [] {
+            FormatInfo fi = *FindNative(table, D3DFMT_R5G6B5);
+            fi.mtl = PF_BGRA8;
+            fi.mtlBytes = 4;
+            fi.conv = CONV_R5G6B5;
+            fi.renderTarget = true;
+            return fi;
+        }();
+        return &wide;
+    }
+    return FindNative(table, f);
 }
 
 uint32_t RowPitch(const FormatInfo *fi, uint32_t width)
@@ -161,6 +190,13 @@ void ConvertRows(const FormatInfo *fi, const uint8_t *src, uint32_t srcPitch, ui
                 const uint32_t v = s[0] | (s[1] << 8);
                 Put(d, Expand((v >> 10) & 31, 5), Expand((v >> 5) & 31, 5), Expand(v & 31, 5),
                     fi->conv == CONV_A1R5G5B5 ? ((v & 0x8000) ? 255 : 0) : 255);
+            }
+            break;
+        case CONV_R5G6B5:
+            for (uint32_t x = 0; x < width; ++x, s += 2, d += 4)
+            {
+                const uint32_t v = s[0] | (s[1] << 8);
+                Put(d, Expand((v >> 11) & 31, 5), Expand((v >> 5) & 63, 6), Expand(v & 31, 5), 255);
             }
             break;
         case CONV_A4R4G4B4:
@@ -249,6 +285,14 @@ void ConvertRowsBack(const FormatInfo *fi, const uint8_t *src, uint32_t srcPitch
         case CONV_A4L4:
             for (uint32_t x = 0; x < width; ++x, s += 2, d += 1)
                 d[0] = (uint8_t)((s[0] >> 4) | (s[1] & 0xF0));
+            break;
+        case CONV_R5G6B5:
+            for (uint32_t x = 0; x < width; ++x, s += 4, d += 2)
+            {
+                const uint32_t v = ((uint32_t)(s[2] >> 3) << 11) | ((uint32_t)(s[1] >> 2) << 5) | (uint32_t)(s[0] >> 3);
+                d[0] = (uint8_t)v;
+                d[1] = (uint8_t)(v >> 8);
+            }
             break;
         default:
             memcpy(d, s, std::min(srcPitch, dstPitch));

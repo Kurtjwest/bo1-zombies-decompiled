@@ -470,7 +470,8 @@ static inline _purecall_handler _set_purecall_handler(_purecall_handler h) { (vo
 #define _CRTDBG_ALLOC_MEM_DF 0x01
 #define _CRTDBG_LEAK_CHECK_DF 0x20
 
-// ---- x86-only intrinsics mapped to arm64 equivalents ----
+// ---- x86-only intrinsics: the compiler's own on x86, equivalents elsewhere ----
+#if defined(__aarch64__)
 // __rdtsc: the arm64 virtual counter (24 MHz on Apple silicon) is monotonic and readable from user space.
 static inline unsigned long long __rdtsc(void)
 {
@@ -478,12 +479,36 @@ static inline unsigned long long __rdtsc(void)
     __asm__ __volatile__("mrs %0, cntvct_el0" : "=r"(v));
     return v;
 }
+#elif defined(__x86_64__) || defined(__i386__)
+#ifdef __cplusplus
+}
+#endif
+#include <x86intrin.h> // (__rdtsc)
+#ifdef __cplusplus
+extern "C" {
+#endif
+#else
+// a monotonic nanosecond count where the CPU's counter is not readable from user space (32-bit ARM)
+static inline unsigned long long __rdtsc(void)
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (unsigned long long)ts.tv_sec * 1000000000ull + (unsigned long long)ts.tv_nsec;
+}
+#endif
 // __readfsdword(0x24) is the x86 TEB's current thread id; the engine only ever reads that offset.
 unsigned int Sys_Compat_CurrentThreadId(void); // kernel32_sync.cpp (same value as GetCurrentThreadId)
+#if defined(__x86_64__) || defined(__i386__)
+// (on x86 the MSVC intrinsics are compiler builtins: __cpuid / __cpuidex / _xgetbv are the CPU's own, and
+// __readfsdword, which would read the system's FS segment, is renamed)
+static inline unsigned int bo1_readfsdword(unsigned int offset) { return offset == 0x24 ? Sys_Compat_CurrentThreadId() : 0u; }
+#define __readfsdword(offset) bo1_readfsdword(offset)
+#else
 static inline unsigned int __readfsdword(unsigned int offset) { return offset == 0x24 ? Sys_Compat_CurrentThreadId() : 0u; }
 static inline void __cpuid(int info[4], int leaf) { (void)leaf; info[0] = info[1] = info[2] = info[3] = 0; }
 static inline void __cpuidex(int info[4], int leaf, int sub) { (void)leaf; (void)sub; info[0] = info[1] = info[2] = info[3] = 0; }
 static inline unsigned long long _xgetbv(unsigned int x) { (void)x; return 0; }
+#endif
 
 #ifdef __cplusplus
 }

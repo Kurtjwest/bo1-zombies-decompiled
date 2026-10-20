@@ -127,6 +127,7 @@ enum Conversion : uint8_t
     CONV_A4L4,     // -> RG8 (l, a)
     CONV_L6V5U5,   // -> RGBA8 snorm/unorm mix, approximated
     CONV_X8L8V8U8, // -> RGBA8 snorm
+    CONV_R5G6B5,   // -> BGRA8 (GPUs without a 5:6:5 format)
 };
 
 struct FormatInfo

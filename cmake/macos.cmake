@@ -1,16 +1,23 @@
-# Native macOS (Apple silicon, arm64) build of the engine.
+# Native macOS build of the engine, for Apple silicon (arm64) or Intel (x86_64) Macs.
 #
-#   cmake -S . -B build-mac -G Ninja -DCMAKE_BUILD_TYPE=Release
+#   cmake -S . -B build-mac -G Ninja -DCMAKE_BUILD_TYPE=Release [-DCMAKE_OSX_ARCHITECTURES=x86_64]
 #   cmake --build build-mac
 #
-# Produces build-mac/BO1Zombies.app (a native arm64 Mach-O executable inside an app bundle). No Windows SDK,
+# Produces build-mac/BO1Zombies.app (a native Mach-O executable inside an app bundle). One architecture per build
+# (FFmpeg and libvpx are built for it): build-mac.sh --universal builds both and joins them into one app. No Windows SDK,
 # DirectX SDK or emulation layer is involved: the Win32 API surface the engine uses is implemented on
 # POSIX/Mach/Cocoa (src/platform/win32compat, src/platform/macos), Direct3D 9 is implemented on Metal
 # (src/platform/d3d9mtl), XAudio2 on CoreAudio and XInput on GameController.
 #
-# Cross-compiling from Linux (CI) works too: see cmake/toolchain-macos-arm64.cmake.
+# Cross-compiling from Linux (CI) works too: see cmake/toolchain-macos.cmake.
 
 set(PLATFORM_DIR "${SRC_DIR}/platform")
+
+list(LENGTH CMAKE_OSX_ARCHITECTURES BO1_MAC_ARCH_COUNT)
+if(NOT BO1_MAC_ARCH_COUNT EQUAL 1 OR NOT CMAKE_OSX_ARCHITECTURES MATCHES "^(arm64|x86_64)$")
+    message(FATAL_ERROR "CMAKE_OSX_ARCHITECTURES must be one of arm64, x86_64 (it is '${CMAKE_OSX_ARCHITECTURES}'); "
+                        "build-mac.sh --universal builds both and joins them")
+endif()
 
 # ---- sources: the engine list from cmake_files.cmake, minus the Windows-only pieces, plus the macOS platform ----
 get_target_property(BO1_ALL_SOURCES ${BIN_NAME} SOURCES)
@@ -61,6 +68,7 @@ set_target_properties(${BIN_NAME} PROPERTIES
 
 target_compile_definitions(${BIN_NAME} PRIVATE
     BO1_MP
+    BO1_PORT=1
     BO1_MACOS=1
     _CONSOLE
     _CRT_SECURE_NO_WARNINGS
