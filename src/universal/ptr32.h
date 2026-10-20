@@ -40,6 +40,8 @@ template <typename P> using Ptr32T = P;
 
 inline uint32_t Ptr32_Encode(const volatile void *p) { return (uint32_t)p; }
 inline void *Ptr32_Decode(uint32_t v) { return (void *)v; }
+// the native pointer of a 32-bit pointer field, written the same for both forms (the class's p.get())
+template <typename T> inline T *Ptr32_Get(T *p) { return p; }
 #define BO1_NATIVE_ARRAY(a, n) (a)
 #define BO1_VA(x) (x)
 #define BO1_OUT(p) (p)
@@ -223,6 +225,11 @@ template <typename T> struct Ptr32
 
 // pointer typedefs (HANDLE, HWND, ...) as 32-bit pointer fields
 template <typename P> using Ptr32T = Ptr32<std::remove_pointer_t<P>>;
+
+// the native pointer of a 32-bit pointer field, written the same for both forms (Ptr32<T> is T* on 32-bit Windows)
+template <typename T> inline T *Ptr32_Get(const Ptr32<T> &p) { return p.get(); }
+template <typename T> inline T *Ptr32_Get(const volatile Ptr32<T> &p) { return p.get(); }
+template <typename T> inline T *Ptr32_Get(T *p) { return p; }
 
 namespace bo1ptr
 {

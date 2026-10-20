@@ -828,7 +828,7 @@ bool Matches(const gentity_s *ent, const PlanStep &step)
         : !strcmp(step.key, "script_flag_wait") ? F_FLAGWAIT : !strcmp(step.key, "script_string") ? F_SCRIPTSTRING
         : !strcmp(step.key, "requiredplayers") ? F_REQPLAYERS
         : !strcmp(step.key, "zombie_equipment_upgrade") ? F_EQUIPUPGRADE : -1; // L42: the Hacker pickup
-    return field >= 0 && EntField(ent->s.number, field, &text, nullptr) && text == step.value.get();
+    return field >= 0 && EntField(ent->s.number, field, &text, nullptr) && text == Ptr32_Get(step.value);
 }
 
 // A trigger the scripts switched off (trigger_off / disable_trigger) is moved 10000 units down.
@@ -1013,7 +1013,7 @@ void ParsePlan(const gentity_s *player)
     s_plan.clear();
     s_planFlags.clear();
     s_planReplace.clear();
-    std::string text = s_planDvar->current.string.get();
+    std::string text = Ptr32_Get(s_planDvar->current.string);
     // L37: Verruckt starts a solo player in a random one of two rooms (zombie_cod5_asylum.gsc spawn_point_override,
     // randomint(100) > 50). bo1_testclient_plan_alt is the plan for a start y above bo1_testclient_plan_alty.
     if (s_planAltDvar->current.string[0])
@@ -1038,7 +1038,7 @@ void ParsePlan(const gentity_s *player)
             continue;
         bool found = false;
         for (int i = 0; i < (int)ARRAY_COUNT(s_steps); ++i)
-            if (word == s_steps[i].name.get())
+            if (word == Ptr32_Get(s_steps[i].name))
             {
                 s_plan.push_back(i);
                 s_planFlags.push_back(0);
@@ -3306,7 +3306,7 @@ bool G_SP_TestPlanCommand(gentity_s *player, client_t *client, usercmd_s *cmd, g
         }
         else if (s_phase == 1 && level.time - s_phaseTime >= 250)
         {
-            Dvar_SetStringByName("zombie_devgui", const_cast<char *>(step.value.get()));
+            Dvar_SetStringByName("zombie_devgui", const_cast<char *>(Ptr32_Get(step.value)));
             s_phase = 2;
             Log("devgui", step.value);
         }

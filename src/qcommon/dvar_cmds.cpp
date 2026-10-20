@@ -621,7 +621,7 @@ void __cdecl Com_DvarDumpSingle(const dvar_s *dvar, void *userData)
     DvarDumpInfo *dumpInfo = (DvarDumpInfo *)userData;
 
     ++dumpInfo->count;
-    if ( !dumpInfo->match || Com_Filter(dumpInfo->match.get(), (char *)dvar->name, 0) )
+    if ( !dumpInfo->match || Com_Filter(Ptr32_Get(dumpInfo->match), (char *)dvar->name, 0) )
     {
         if ( Dvar_HasLatchedValue(dvar) )
         {

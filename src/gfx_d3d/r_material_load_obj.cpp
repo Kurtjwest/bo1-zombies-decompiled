@@ -7412,7 +7412,7 @@ void __cdecl Material_PreLoadAllShaderText()
     //    (signed int)(12 * mtlLoadGlob.cachedShaderCount) / 12,
     //    Material_CachedShaderTextLess);
 
-    std::sort(mtlLoadGlob.cachedShaderText.get(), mtlLoadGlob.cachedShaderText.get() + mtlLoadGlob.cachedShaderCount, Material_CachedShaderTextLess);
+    std::sort(Ptr32_Get(mtlLoadGlob.cachedShaderText), Ptr32_Get(mtlLoadGlob.cachedShaderText) + mtlLoadGlob.cachedShaderCount, Material_CachedShaderTextLess);
 
     FS_FreeFileList(shaderListLib1);
     FS_FreeFileList(shaderListLib2);

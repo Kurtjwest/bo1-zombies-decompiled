@@ -276,7 +276,7 @@ namespace
     const char *MkJ_Str(int node, const char *key, const char *def)
     {
         int c = MkJ_Child(node, key);
-        return c >= 0 && s_json[c].type == MKJ_STR ? s_json[c].str.get() : def;
+        return c >= 0 && s_json[c].type == MKJ_STR ? Ptr32_Get(s_json[c].str) : def;
     }
 
     float MkJ_Num(int node, const char *key, float def)

@@ -660,7 +660,7 @@ bool phys_contact_manifold_process::find_bottom(
         // Compute left edge: current left point -> next left point
         Ptr32<contact_manifold_mesh_point> *left_i = b->m_left_i;
         Ptr32<contact_manifold_mesh_point> *left_next_i = (left_i == left_cman->m_last_i)
-            ? left_cman->m_cman->m_list_contact_point.get()
+            ? Ptr32_Get(left_cman->m_cman->m_list_contact_point)
             : left_i + 1;
 
         contact_manifold_mesh_point *left_pt = *left_i;
@@ -675,7 +675,7 @@ bool phys_contact_manifold_process::find_bottom(
         {
             Ptr32<contact_manifold_mesh_point> *right_i = b->m_right_i;
             right_prev = (right_i == right_cman->m_cman->m_list_contact_point)
-                ? right_cman->m_last_i.get()
+                ? Ptr32_Get(right_cman->m_last_i)
                 : right_i - 1;
 
             phys_vec2 to_right_prev;
@@ -694,7 +694,7 @@ bool phys_contact_manifold_process::find_bottom(
         // Compute right edge: right_prev_pt -> current right point (i.e. prev -> cur on right poly)
         Ptr32<contact_manifold_mesh_point> *right_i = b->m_right_i;
         right_prev = (right_i == right_cman->m_cman->m_list_contact_point)
-            ? right_cman->m_last_i.get()
+            ? Ptr32_Get(right_cman->m_last_i)
             : right_i - 1;
 
         contact_manifold_mesh_point *right_pt = *right_i;
@@ -709,7 +709,7 @@ bool phys_contact_manifold_process::find_bottom(
         {
             Ptr32<contact_manifold_mesh_point> *left_i2 = b->m_left_i;
             left_next = (left_i2 == left_cman->m_last_i)
-                ? left_cman->m_cman->m_list_contact_point.get()
+                ? Ptr32_Get(left_cman->m_cman->m_list_contact_point)
                 : left_i2 + 1;
 
             phys_vec2 to_left_next;

@@ -53,7 +53,7 @@ struct Lock
 void OpenFile()
 {
     const dvar_s *home = Dvar_FindVar("fs_homepath");
-    std::string dir = home && home->current.string[0] ? home->current.string.get() : ".";
+    std::string dir = home && home->current.string[0] ? Ptr32_Get(home->current.string) : ".";
     dir += "\\playtrace";
     CreateDirectoryA(dir.c_str(), nullptr);
     time_t now = time(nullptr);

@@ -210,7 +210,7 @@ void __cdecl CG_UpdateActorDObj(int localClientNum, centity_s *cent, actorInfo_t
         objExists = pDObj != 0;
         // zombies: SP CG_UpdateActorDObj (0x005F9920) takes the tree from 0x00454430, which rebuilds it for
         // es.animtreeIndex (dogs); ai is that same slot.
-        pAnimTree = zombiemode && zombiemode->current.enabled ? CG_SP_GetActorClientTree(localClientNum, cent) : ai->pXAnimTree.get();
+        pAnimTree = zombiemode && zombiemode->current.enabled ? CG_SP_GetActorClientTree(localClientNum, cent) : Ptr32_Get(ai->pXAnimTree);
         model = CG_WhatModelShouldLocalPlayerSee(
                             localClientNum,
                             cgameGlob,

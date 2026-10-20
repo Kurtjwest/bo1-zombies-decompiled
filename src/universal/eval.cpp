@@ -181,7 +181,7 @@ char    Eval_PushOperator(Eval *eval, EvalOperatorType op)
 
 static void Eval_FreeString(EvalValue *value)
 {
-    free(value->u.s.get());
+    free(Ptr32_Get(value->u.s));
     value->u.s = nullptr;
 }
 
@@ -234,8 +234,8 @@ bool    Eval_EvaluationStep(Eval *eval)
     case EVAL_OP_PLUS:
         if ( a && a->type == EVAL_VALUE_STRING && b->type == EVAL_VALUE_STRING )
         {
-            const char *left = a->u.s.get();
-            const char *right = b->u.s.get();
+            const char *left = Ptr32_Get(a->u.s);
+            const char *right = Ptr32_Get(b->u.s);
             size_t leftLen = strlen(left);
             size_t rightLen = strlen(right);
             char *s = (char *)malloc(leftLen + rightLen + 1);
@@ -381,7 +381,7 @@ bool    Eval_EvaluationStep(Eval *eval)
         bool same;
         if ( a && a->type == EVAL_VALUE_STRING && b->type == EVAL_VALUE_STRING )
         {
-            same = I_stricmp(a->u.s.get(), b->u.s.get()) == 0;
+            same = I_stricmp(Ptr32_Get(a->u.s), Ptr32_Get(b->u.s)) == 0;
             Eval_FreeString(a);
             Eval_FreeString(b);
         }

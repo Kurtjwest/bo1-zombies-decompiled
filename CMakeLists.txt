@@ -38,9 +38,20 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     # README.md.
     include(cmake/linux.cmake)
     return()
+elseif(WIN32 AND NOT MSVC)
+    # Windows x86 and x64 built with clang and MinGW-w64 (build-windows.sh). See cmake/windows.cmake and the Windows
+    # section of README.md.
+    include(cmake/windows.cmake)
+    return()
 endif()
 
 # ===================== Windows (MSVC, x86) =====================
+# The original Visual Studio project, with the June 2010 DirectX SDK: 32-bit only (its DirectX SDK, Bink and NVAPI
+# libraries are 32-bit ones). 64-bit Windows builds are made with clang and MinGW-w64 (cmake/windows.cmake).
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+    message(FATAL_ERROR "The Visual Studio project builds the 32-bit game (cmake -A Win32). For the 64-bit Windows game "
+                        "use build-windows.sh (clang and MinGW-w64), see README.md.")
+endif()
 
 # phys_gjk.cpp specific flag (experimental)
 set_source_files_properties(

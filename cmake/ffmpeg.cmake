@@ -1,7 +1,7 @@
-# FFmpeg (LGPL 2.1+), built as a minimal static library set for the macOS and Linux ports. Two of the game's media
-# formats have no system decoder there:
-#   - xWMA (WMA v2) sound assets, which XAudio2 decodes on Windows (src/platform/common/xaudio2_soft.cpp)
-#   - Bink 1 (.bik) cinematics, which binkw32.dll decodes on Windows (src/platform/common/bink_ffmpeg.cpp)
+# FFmpeg (LGPL 2.1+), built as a minimal static library set for the macOS and Linux ports and the clang/MinGW Windows
+# builds. Two of the game's media formats have no system decoder there:
+#   - xWMA (WMA v2) sound assets, which Microsoft's XAudio2 decodes (src/platform/common/xaudio2_soft.cpp)
+#   - Bink 1 (.bik) cinematics, which binkw32.dll decodes, a 32-bit Windows DLL only (src/platform/common/bink_ffmpeg.cpp)
 # Only those decoders and the Bink demuxer are enabled; nothing else of FFmpeg is built or linked.
 #
 # The source is fetched from the official repository at build time. For offline builds point

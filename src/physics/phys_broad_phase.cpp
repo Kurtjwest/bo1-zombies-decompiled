@@ -3551,7 +3551,7 @@ void    axis_aligned_sweep_and_prune::process_active_pair_list()
                 }
                 // the second node's m_bpb (decompiled as *(broad_phase_info **)m_p2: the node's first field, a 32-bit
                 // handle here, so it is decoded rather than read as a native pointer)
-                v9 = (broad_phase_info *)m_list_bpi_bpi->m_p2->m_bpb.get();
+                v9 = (broad_phase_info *)Ptr32_Get(m_list_bpi_bpi->m_p2->m_bpb);
                 v7 = (v9->m_flags & 1) == 0;
                 p_g_phys_gjk_cache_system = (phys_heap_gjk_cache_system_avl_tree *)v9;
                 if (v7
@@ -3738,7 +3738,7 @@ void    axis_aligned_sweep_and_prune::process_active_pair_list()
                     __debugbreak();
                 }
                 // (decompiled as *(broad_phase_info **)m_p2, see the bpi-bpi list above)
-                v28 = (broad_phase_info *)m_list_bpg_bpg->m_p2->m_bpb.get();
+                v28 = (broad_phase_info *)Ptr32_Get(m_list_bpg_bpg->m_p2->m_bpb);
                 v7 = (v28->m_flags & 2) == 0;
                 v35 = v28;
                 if (v7

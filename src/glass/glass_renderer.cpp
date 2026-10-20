@@ -2132,7 +2132,7 @@ void GlassRenderer::DoMaintenance()
     if (usedFraction <= maxFraction)
     {
         // Too much shard memory reserved
-        size_t totalMemory = reinterpret_cast<char *>(shardMemoryAllocator.tail.get()) - reinterpret_cast<char *>(shardMemoryAllocator.head.get());
+        size_t totalMemory = reinterpret_cast<char *>(Ptr32_Get(shardMemoryAllocator.tail)) - reinterpret_cast<char *>(Ptr32_Get(shardMemoryAllocator.head));
         float freeFraction = static_cast<float>(shardMemoryAllocator.GetFree()) / static_cast<float>(totalMemory);
 
 

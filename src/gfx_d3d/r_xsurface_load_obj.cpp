@@ -1443,7 +1443,7 @@ void __cdecl XModelReadSurface_BuildCollisionTree(
     v3 = (unsigned __int8 *)Alloc(allocSize);
     alloced = v3;
     tree->nodes = (XSurfaceCollisionNode *)(((uintptr_t)(v3 + 15)) & ~(uintptr_t)15);
-    if ( ((uintptr_t)tree->nodes.get() & 0xF) != 0
+    if ( ((uintptr_t)Ptr32_Get(tree->nodes) & 0xF) != 0
         && !Assert_MyHandler(
                     "C:\\projects_pc\\cod\\codsrc\\src\\gfx_d3d\\r_xsurface_load_obj.cpp",
                     494,

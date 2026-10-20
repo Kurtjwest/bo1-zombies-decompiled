@@ -6,6 +6,51 @@ Decompiled engine code for Black Ops 1 Zombies, so mods can change the engine it
 
 ![](images/2.webp)
 
+## Building
+
+The engine builds for Windows (64-bit and 32-bit), macOS (Apple silicon and Intel) and Linux (x86_64, x86, arm64 and
+armhf), each a native program of its platform; the sections below say how.
+
+| Platform | Script | Output |
+| --- | --- | --- |
+| Windows x64 / x86 | `./build-windows.sh [--arch i686]` (clang and MinGW-w64), or the Visual Studio project (32-bit) | `build-windows-x64/BO1Zombies.exe`, `build-windows-x86/`, `build/Release/` |
+| macOS Apple silicon / Intel / both | `./build-mac.sh [--arch x86_64 \| --universal]` | `build-mac/BO1Zombies.app` |
+| Linux x86_64 / x86 / arm64 / armhf | `./build-linux.sh [--arch i686 \| aarch64 \| armhf]` | `build-linux/BO1Zombies` |
+
+## Windows (64-bit and 32-bit)
+
+The engine is a Windows program, and runs on Windows' own APIs there: Win32, Direct3D 9, DirectSound, XInput and
+Winsock. Two builds make it:
+
+- `build-windows.sh` builds the 64-bit (x64) game, and with `--arch i686` the 32-bit (x86) one, with clang and
+  MinGW-w64. It runs on Windows in an MSYS2 or Git Bash shell, and on Linux and macOS as a cross build. It needs clang
+  and lld with MinGW-w64 ([llvm-mingw](https://github.com/mstorsjo/llvm-mingw) on any of them, with its `bin` folder on
+  `PATH`; Debian/Ubuntu: `sudo apt install clang lld mingw-w64`; MSYS2: `pacman -S mingw-w64-clang-x86_64-toolchain`),
+  CMake, Ninja, git and make. The first build downloads and compiles FFmpeg and libvpx.
+- The Visual Studio project (`cmake -A Win32`, CMakeLists.txt) builds the original 32-bit game with MSVC and the
+  June 2010 DirectX SDK (`-DDXSDK_DIR=...` for an extracted copy).
+
+```sh
+./build-windows.sh                    # build-windows-x64/BO1Zombies.exe
+./build-windows.sh --arch i686        # build-windows-x86/BO1Zombies.exe
+```
+
+The game runs in its build folder, with the original game's files next to it, as the Visual Studio build does: on
+Windows `powershell -NoProfile -ExecutionPolicy Bypass -File setup.ps1 -Build build-windows-x64 [-GameDir "D:\...\Call of Duty Black Ops"]`
+copies them there once (and D3DX9's `d3dx9_43.dll` out of the game's `Redist` folder), then `Play.bat` (or the
+executable with its own arguments) starts it. The build puts the repository's `mods/` and `main/` (`data/main/`) next to
+the executable.
+
+What the clang/MinGW-w64 build uses instead of the DirectX SDK and the 32-bit-only libraries of the Visual Studio one:
+XAudio2 is the software XAudio2 of the macOS and Linux builds (`src/platform/common/xaudio2_soft.cpp`), played through
+WASAPI (`src/platform/windows`), so no XAudio2 DLL is needed; Bink movies play with `binkw32.dll` on x86 and, as RAD
+made no 64-bit Bink 1, with FFmpeg on x64; Steam is `steam_api.dll` on x86, and on x64 a stand-in `steam_api64.dll`
+without Steam (Valve's own `steam_api64.dll` from the Steamworks SDK can replace it); NVAPI is absent (the renderer
+takes its non-NVIDIA paths); XInput is Windows' own `xinput1_4.dll`. The executables need no runtime DLLs of their own.
+In the 64-bit game the engine's 32-bit pointer fields hold handles into a 3.25 GB arena, as in the 64-bit macOS and
+Linux builds (`src/universal/ptr32.h`). As in the other builds, a controller moves through every menu and the main
+menu offers Zombies, Options and Quit (see the macOS section).
+
 ## macOS (Apple silicon and Intel)
 
 The engine also builds as a native Mac app, for Apple silicon (arm64) and Intel (x86_64) Macs. Nothing is emulated or translated at run time: the Win32 API
@@ -49,8 +94,8 @@ Controls are the Windows ones. The menus drawn on the front end's TV screens hav
 looks around the room, the scroll wheel (or a two-finger swipe on a trackpad, one item per short swipe) or W/S moves
 through the items, a click or D chooses, a right-click (a two-finger click on a trackpad) or A goes back. A
 controller moves through every menu with the d-pad or the left stick (held, they scroll on), chooses with A and goes
-back with B. The main menu offers Zombies, Options and Quit: Campaign and Multiplayer need the Windows game's own
-programs, so the Mac build leaves them out.
+back with B. The main menu offers Zombies, Options and Quit, in every build: Campaign and Multiplayer are the retail
+game's own programs (BlackOps.exe, BlackOpsMP.exe), which this engine does not replace.
 
 The game starts in macOS full screen (a Space of its own; the game's own full-screen setting, `r_fullscreen`). The
 display's mode never changes: the game draws at the resolution chosen in its graphics options (`r_mode`), anything
