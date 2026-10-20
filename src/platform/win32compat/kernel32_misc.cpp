@@ -1,5 +1,6 @@
-// Win32 compatibility layer for the macOS port: virtual memory (backed by the Ptr32 arena), heaps, time, system
-// information, process/environment, modules, string conversion, registry stubs, crash handling and assorted APIs.
+// Win32 compatibility layer for the macOS and Linux ports: virtual memory (backed by the Ptr32 arena), heaps, time,
+// system information, process/environment, modules, string conversion, registry stubs, crash handling and assorted
+// APIs.
 
 #include <windows.h>
 #include <psapi.h>
@@ -14,24 +15,33 @@
 
 #include <dlfcn.h>
 #include <execinfo.h>
+#if defined(__APPLE__)
 #include <libproc.h>
 #include <mach-o/dyld.h>
 #include <mach/mach.h>
 #include <mach/mach_time.h>
 #include <mach/mach_vm.h>
 #include <malloc/malloc.h>
+#include <sys/sysctl.h>
+#else
+#include <link.h>
+#include <sys/prctl.h>
+#include <sys/sysinfo.h>
+#include <sys/uio.h>
+#include <time.h>
+#endif
 #include <pwd.h>
 #include <signal.h>
 #include <spawn.h>
 #include <sys/mman.h>
 #include <sys/resource.h>
 #include <sys/stat.h>
-#include <sys/sysctl.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/ucontext.h>
 #include <unistd.h>
+#include <algorithm>
 #include <atomic>
 #include <cstdio>
 #include <cstring>
@@ -74,6 +84,7 @@ void SetCommandLine(int argc, char **argv)
 
 namespace
 {
+#if defined(__APPLE__)
 mach_timebase_info_data_t g_timebase;
 uint64_t g_startTicks;
 
@@ -86,11 +97,44 @@ void InitTime()
     }
 }
 
+// the performance counter: Mach absolute time
+uint64_t CounterTicks() { return mach_absolute_time(); }
+uint64_t CounterFrequency()
+{
+    InitTime();
+    return 1000000000ull * g_timebase.denom / g_timebase.numer;
+}
+
 uint64_t MonotonicNs()
 {
     InitTime();
     return (mach_absolute_time() - g_startTicks) * g_timebase.numer / g_timebase.denom;
 }
+#else
+uint64_t RawMonotonicNs()
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
+}
+uint64_t g_startNs;
+
+void InitTime()
+{
+    if (!g_startNs)
+        g_startNs = RawMonotonicNs();
+}
+
+// the performance counter: CLOCK_MONOTONIC nanoseconds
+uint64_t CounterTicks() { return RawMonotonicNs(); }
+uint64_t CounterFrequency() { return 1000000000ull; }
+
+uint64_t MonotonicNs()
+{
+    InitTime();
+    return RawMonotonicNs() - g_startNs;
+}
+#endif
 
 void TmToSystemTime(const struct tm &tm, int ms, LPSYSTEMTIME st)
 {
@@ -111,7 +155,7 @@ std::atomic<int> g_inCrash{0};
 
 // The interrupted thread's registers from a signal's context: pc, sp, frame pointer, link register (0 where the CPU
 // has none) and the general registers the crash report shows as eax..edi (X[0..5]: the first six of the CPU's own).
-bool ReadSignalContext(ucontext_t *uc, CONTEXT &ctx)
+bool ReadContext(const ucontext_t *uc, CONTEXT &ctx)
 {
 #if defined(__linux__) && defined(__x86_64__)
     const greg_t *g = uc->uc_mcontext.gregs;
@@ -206,7 +250,7 @@ void CrashSignalHandler(int sig, siginfo_t *info, void *uctx)
     rec.NumberParameters = 2;
     rec.ExceptionInformation[1] = (ULONG_PTR)(info ? info->si_addr : nullptr);
     ucontext_t *uc = (ucontext_t *)uctx;
-    if (uc && ReadSignalContext(uc, ctx))
+    if (uc && ReadContext(uc, ctx))
     {
         ctx.Eip = (DWORD_PTR)ctx.Pc;
         ctx.Esp = (DWORD_PTR)ctx.Sp;
@@ -260,15 +304,43 @@ void InstallCrashHandlers()
 std::string ExecutablePath()
 {
     char buf[PATH_MAX];
+#if defined(__APPLE__)
     uint32_t sz = sizeof(buf);
     if (_NSGetExecutablePath(buf, &sz) != 0)
         return "BO1Zombies";
+#else
+    const ssize_t n = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+    if (n <= 0)
+        return "BO1Zombies";
+    buf[n] = 0;
+#endif
     char real[PATH_MAX];
     if (realpath(buf, real))
         return real;
     return buf;
 }
 } // namespace
+
+namespace w32
+{
+#if !defined(__APPLE__)
+bool ReadSignalContext(const ucontext_t *uc, CONTEXT &ctx) { return uc && ReadContext(uc, ctx); }
+#endif
+
+void SetCurrentThreadName(const char *name)
+{
+    if (!name)
+        return;
+#if defined(__APPLE__)
+    pthread_setname_np(name);
+#else
+    char buf[16]; // (Linux keeps 15 characters)
+    strncpy(buf, name, sizeof(buf) - 1);
+    buf[sizeof(buf) - 1] = 0;
+    pthread_setname_np(pthread_self(), buf);
+#endif
+}
+} // namespace w32
 
 extern "C" {
 
@@ -340,13 +412,39 @@ SIZE_T VirtualQuery(LPCVOID addr, PMEMORY_BASIC_INFORMATION mbi, SIZE_T len)
         mbi->RegionSize = (uintptr_t)base + size - a;
         mbi->Type = MEM_PRIVATE;
         // committed pages are resident-capable; mincore tells us whether the page is accessible at all
+#if defined(__APPLE__)
         char vec = 0;
+#else
+        unsigned char vec = 0;
+#endif
         bool committed = mincore((void *)a, page, &vec) == 0 || true;
         mbi->State = committed ? MEM_COMMIT : MEM_RESERVE;
         mbi->Protect = PAGE_READWRITE;
         return sizeof(*mbi);
     }
     // outside the arena: describe the enclosing VM region
+#if defined(__linux__)
+    if (FILE *maps = fopen("/proc/self/maps", "r"))
+    {
+        char line[512];
+        while (fgets(line, sizeof(line), maps))
+        {
+            unsigned long lo = 0, hi = 0;
+            char perms[8] = "";
+            if (sscanf(line, "%lx-%lx %7s", &lo, &hi, perms) != 3 || a < lo || a >= hi)
+                continue;
+            fclose(maps);
+            mbi->AllocationBase = (PVOID)(uintptr_t)lo;
+            mbi->RegionSize = (SIZE_T)(hi - a);
+            mbi->State = MEM_COMMIT;
+            mbi->Type = MEM_PRIVATE;
+            mbi->Protect = perms[1] == 'w' ? PAGE_READWRITE : perms[0] == 'r' ? PAGE_READONLY : PAGE_NOACCESS;
+            mbi->AllocationProtect = mbi->Protect;
+            return sizeof(*mbi);
+        }
+        fclose(maps);
+    }
+#else
     mach_vm_address_t raddr = a;
     mach_vm_size_t rsize = 0;
     vm_region_basic_info_data_64_t info;
@@ -362,6 +460,7 @@ SIZE_T VirtualQuery(LPCVOID addr, PMEMORY_BASIC_INFORMATION mbi, SIZE_T len)
         mbi->AllocationProtect = mbi->Protect;
         return sizeof(*mbi);
     }
+#endif
     mbi->State = MEM_FREE;
     mbi->RegionSize = page;
     return sizeof(*mbi);
@@ -436,6 +535,31 @@ size_t _msize(void *p) { return malloc_size(p); }
 
 static void PhysicalMemory(unsigned long long *total, unsigned long long *avail)
 {
+#if defined(__linux__)
+    struct sysinfo si;
+    if (sysinfo(&si) != 0)
+    {
+        *total = 4ull << 30;
+        *avail = 2ull << 30;
+        return;
+    }
+    *total = (unsigned long long)si.totalram * si.mem_unit;
+    *avail = (unsigned long long)(si.freeram + si.bufferram) * si.mem_unit;
+    // MemAvailable counts the page cache the kernel can drop, as macOS's inactive and purgeable pages are counted
+    if (FILE *f = fopen("/proc/meminfo", "r"))
+    {
+        char line[128];
+        unsigned long long kb = 0;
+        while (fgets(line, sizeof(line), f))
+            if (sscanf(line, "MemAvailable: %llu kB", &kb) == 1)
+            {
+                *avail = kb * 1024ull;
+                break;
+            }
+        fclose(f);
+    }
+    return;
+#else
     uint64_t mem = 0;
     size_t len = sizeof(mem);
     sysctlbyname("hw.memsize", &mem, &len, nullptr, 0);
@@ -446,6 +570,7 @@ static void PhysicalMemory(unsigned long long *total, unsigned long long *avail)
         *avail = (unsigned long long)(vs.free_count + vs.inactive_count + vs.purgeable_count) * (unsigned long long)vm_page_size;
     else
         *avail = mem / 2;
+#endif
 }
 void GlobalMemoryStatus(LPMEMORYSTATUS st)
 {
@@ -477,10 +602,16 @@ BOOL GlobalMemoryStatusEx(LPMEMORYSTATUSEX st)
 }
 static DWORD CpuCount()
 {
+#if defined(__linux__)
+    long n = sysconf(_SC_NPROCESSORS_ONLN);
+    if (n <= 0)
+        n = 4;
+#else
     int n = 0;
     size_t len = sizeof(n);
     if (sysctlbyname("hw.logicalcpu", &n, &len, nullptr, 0) != 0 || n <= 0)
         n = 4;
+#endif
     return (DWORD)n;
 }
 void GetSystemInfo(LPSYSTEM_INFO si)
@@ -508,13 +639,12 @@ BOOL SetProcessWorkingSetSize(HANDLE, SIZE_T, SIZE_T) { return TRUE; }
 BOOL QueryPerformanceCounter(LARGE_INTEGER *c)
 {
     InitTime();
-    c->QuadPart = (LONGLONG)mach_absolute_time();
+    c->QuadPart = (LONGLONG)CounterTicks();
     return TRUE;
 }
 BOOL QueryPerformanceFrequency(LARGE_INTEGER *f)
 {
-    InitTime();
-    f->QuadPart = (LONGLONG)(1000000000ull * g_timebase.denom / g_timebase.numer);
+    f->QuadPart = (LONGLONG)CounterFrequency();
     return TRUE;
 }
 DWORD GetTickCount(void) { return (DWORD)(MonotonicNs() / 1000000ull); }
@@ -732,36 +862,69 @@ BOOL GetProcessTimes(HANDLE, LPFILETIME c, LPFILETIME e, LPFILETIME k, LPFILETIM
 BOOL QueryProcessCycleTime(HANDLE, PULONG64 cycles)
 {
     if (cycles)
-        *cycles = clock_gettime_nsec_np(CLOCK_PROCESS_CPUTIME_ID);
+    {
+        struct timespec ts;
+        clock_gettime(CLOCK_PROCESS_CPUTIME_ID, &ts);
+        *cycles = (ULONG64)ts.tv_sec * 1000000000ull + (ULONG64)ts.tv_nsec;
+    }
     return TRUE;
 }
 BOOL GetSystemTimes(LPFILETIME idle, LPFILETIME kernel, LPFILETIME user)
 {
+    auto put = [](LPFILETIME ft, unsigned long long ticks, unsigned long long hz) {
+        if (!ft)
+            return;
+        unsigned long long v = ticks * (10000000ull / hz); // clock ticks -> 100 ns
+        ft->dwLowDateTime = (DWORD)v;
+        ft->dwHighDateTime = (DWORD)(v >> 32);
+    };
+#if defined(__linux__)
+    // the first line of /proc/stat: cpu user nice system idle iowait irq softirq (USER_HZ ticks)
+    unsigned long long t[7] = {};
+    FILE *f = fopen("/proc/stat", "r");
+    if (!f)
+        return FALSE;
+    const int got = fscanf(f, "cpu %llu %llu %llu %llu %llu %llu %llu", &t[0], &t[1], &t[2], &t[3], &t[4], &t[5], &t[6]);
+    fclose(f);
+    if (got < 4)
+        return FALSE;
+    long hz = sysconf(_SC_CLK_TCK);
+    if (hz <= 0)
+        hz = 100;
+    const unsigned long long idleTicks = t[3] + t[4];
+    put(idle, idleTicks, (unsigned long long)hz);
+    put(kernel, t[2] + t[5] + t[6] + idleTicks, (unsigned long long)hz);
+    put(user, t[0] + t[1], (unsigned long long)hz);
+    return TRUE;
+#else
     host_cpu_load_info_data_t load;
     mach_msg_type_number_t count = HOST_CPU_LOAD_INFO_COUNT;
     if (host_statistics(mach_host_self(), HOST_CPU_LOAD_INFO, (host_info_t)&load, &count) != KERN_SUCCESS)
         return FALSE;
-    auto put = [](LPFILETIME ft, unsigned long long ticks) {
-        if (!ft)
-            return;
-        unsigned long long v = ticks * 100000ull; // 10 ms ticks -> 100 ns
-        ft->dwLowDateTime = (DWORD)v;
-        ft->dwHighDateTime = (DWORD)(v >> 32);
-    };
-    put(idle, load.cpu_ticks[CPU_STATE_IDLE]);
-    put(kernel, load.cpu_ticks[CPU_STATE_SYSTEM] + load.cpu_ticks[CPU_STATE_IDLE]);
-    put(user, load.cpu_ticks[CPU_STATE_USER] + load.cpu_ticks[CPU_STATE_NICE]);
+    put(idle, load.cpu_ticks[CPU_STATE_IDLE], 100);
+    put(kernel, load.cpu_ticks[CPU_STATE_SYSTEM] + load.cpu_ticks[CPU_STATE_IDLE], 100);
+    put(user, load.cpu_ticks[CPU_STATE_USER] + load.cpu_ticks[CPU_STATE_NICE], 100);
     return TRUE;
+#endif
 }
 BOOL ReadProcessMemory(HANDLE h, LPCVOID addr, LPVOID buf, SIZE_T n, SIZE_T *got)
 {
     if (h != GetCurrentProcess())
         return FALSE;
+#if defined(__linux__)
+    // a copy the kernel makes, so an unmapped source fails instead of faulting (as on Windows)
+    struct iovec local = {buf, n}, remote = {(void *)addr, n};
+    const ssize_t out = process_vm_readv(getpid(), &local, 1, &remote, 1, 0);
+    if (got)
+        *got = out > 0 ? (SIZE_T)out : 0;
+    return out == (ssize_t)n;
+#else
     mach_vm_size_t out = 0;
     kern_return_t kr = mach_vm_read_overwrite(mach_task_self(), (mach_vm_address_t)addr, n, (mach_vm_address_t)buf, &out);
     if (got)
         *got = (SIZE_T)out;
     return kr == KERN_SUCCESS;
+#endif
 }
 BOOL WriteProcessMemory(HANDLE h, LPVOID addr, LPCVOID buf, SIZE_T n, SIZE_T *wrote)
 {
@@ -830,6 +993,18 @@ DWORD ExpandEnvironmentStringsA(LPCSTR src, LPSTR dst, DWORD n)
 }
 BOOL IsDebuggerPresent(void)
 {
+#if defined(__linux__)
+    FILE *f = fopen("/proc/self/status", "r");
+    if (!f)
+        return FALSE;
+    char line[128];
+    int tracer = 0;
+    while (fgets(line, sizeof(line), f))
+        if (sscanf(line, "TracerPid: %d", &tracer) == 1)
+            break;
+    fclose(f);
+    return tracer != 0;
+#else
     int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()};
     struct kinfo_proc info;
     size_t size = sizeof(info);
@@ -837,6 +1012,7 @@ BOOL IsDebuggerPresent(void)
     if (sysctl(mib, 4, &info, &size, nullptr, 0) != 0)
         return FALSE;
     return (info.kp_proc.p_flag & P_TRACED) != 0;
+#endif
 }
 void DebugBreak(void)
 {
@@ -866,7 +1042,7 @@ void RaiseException(DWORD code, DWORD, DWORD nargs, const ULONG_PTR *args)
             const char *name = (const char *)Ptr32_Decode(w[1]);
             const DWORD tid = nargs >= 3 ? (DWORD)w[2] : (DWORD)-1;
             if (name && (tid == (DWORD)-1 || tid == GetCurrentThreadId()))
-                pthread_setname_np(name);
+                SetCurrentThreadName(name);
         }
         return;
     }
@@ -1190,25 +1366,61 @@ LSTATUS RegGetValueA(HKEY, LPCSTR, LPCSTR, DWORD, LPDWORD, PVOID, LPDWORD) { ret
 // ---------------------------------------------------------------- psapi / toolhelp
 BOOL GetProcessMemoryInfo(HANDLE, PPROCESS_MEMORY_COUNTERS c, DWORD cb)
 {
+    unsigned long long resident = 0, peak = 0;
+#if defined(__linux__)
+    // VmRSS / VmHWM of /proc/self/status (kB)
+    FILE *f = fopen("/proc/self/status", "r");
+    if (!f)
+        return FALSE;
+    char line[128];
+    unsigned long long kb;
+    while (fgets(line, sizeof(line), f))
+    {
+        if (sscanf(line, "VmRSS: %llu kB", &kb) == 1)
+            resident = kb * 1024ull;
+        else if (sscanf(line, "VmHWM: %llu kB", &kb) == 1)
+            peak = kb * 1024ull;
+    }
+    fclose(f);
+#else
     mach_task_basic_info_data_t info;
     mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     if (task_info(mach_task_self(), MACH_TASK_BASIC_INFO, (task_info_t)&info, &count) != KERN_SUCCESS)
         return FALSE;
+    resident = info.resident_size;
+    peak = info.resident_size_max;
+#endif
     memset(c, 0, cb);
     c->cb = cb;
-    c->WorkingSetSize = (SIZE_T)info.resident_size;
-    c->PeakWorkingSetSize = (SIZE_T)info.resident_size_max;
-    c->PagefileUsage = (SIZE_T)info.resident_size;
-    c->PeakPagefileUsage = (SIZE_T)info.resident_size_max;
+    c->WorkingSetSize = (SIZE_T)resident;
+    c->PeakWorkingSetSize = (SIZE_T)peak;
+    c->PagefileUsage = (SIZE_T)resident;
+    c->PeakPagefileUsage = (SIZE_T)peak;
     if (cb >= sizeof(PROCESS_MEMORY_COUNTERS_EX))
-        ((PPROCESS_MEMORY_COUNTERS_EX)c)->PrivateUsage = (SIZE_T)info.resident_size;
+        ((PPROCESS_MEMORY_COUNTERS_EX)c)->PrivateUsage = (SIZE_T)resident;
     return TRUE;
 }
 BOOL K32GetProcessMemoryInfo(HANDLE h, PPROCESS_MEMORY_COUNTERS c, DWORD cb) { return GetProcessMemoryInfo(h, c, cb); }
 BOOL GetModuleInformation(HANDLE, HMODULE, LPMODULEINFO mi, DWORD)
 {
+#if defined(__linux__)
+    // the main program's first loadable segment
+    uintptr_t base = 0;
+    dl_iterate_phdr(
+        [](struct dl_phdr_info *info, size_t, void *data) -> int {
+            uintptr_t lo = UINTPTR_MAX;
+            for (int i = 0; i < info->dlpi_phnum; ++i)
+                if (info->dlpi_phdr[i].p_type == PT_LOAD && info->dlpi_addr + info->dlpi_phdr[i].p_vaddr < lo)
+                    lo = info->dlpi_addr + info->dlpi_phdr[i].p_vaddr;
+            *(uintptr_t *)data = lo == UINTPTR_MAX ? 0 : lo;
+            return 1;
+        },
+        &base);
+    mi->lpBaseOfDll = (LPVOID)base;
+#else
     const struct mach_header *mh = _dyld_get_image_header(0);
     mi->lpBaseOfDll = (LPVOID)mh;
+#endif
     mi->SizeOfImage = 0x10000000;
     mi->EntryPoint = nullptr;
     return TRUE;
@@ -1354,7 +1566,7 @@ HRESULT SHGetFolderPathA(HWND, int csidl, HANDLE, DWORD, LPSTR path)
     if (!g_gameDir.empty())
     {
         // Documents (the engine's fs_userDocuments), the AppData folders, the desktop: all in the game folder, where
-        // the game keeps everything it writes (main_mac.cpp)
+        // the game keeps everything it writes (main_posix.cpp)
         p = g_gameDir;
     }
     else
@@ -1453,9 +1665,44 @@ BOOL SetThreadSelectedCpuSets(HANDLE, const ULONG *, ULONG) { return TRUE; }
 BOOL GetLogicalProcessorInformation(PSYSTEM_LOGICAL_PROCESSOR_INFORMATION buf, PDWORD len)
 {
     int phys = 0;
+#if defined(__linux__)
+    // the distinct (package, core) pairs of the online processors
+    {
+        std::vector<std::pair<int, int>> cores;
+        for (int cpu = 0; cpu < 4096; ++cpu)
+        {
+            char path[128];
+            int pkg = 0, core = -1;
+            snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%d/topology/core_id", cpu);
+            FILE *f = fopen(path, "r");
+            if (!f)
+            {
+                if (cpu >= (int)CpuCount())
+                    break;
+                continue;
+            }
+            if (fscanf(f, "%d", &core) != 1)
+                core = cpu;
+            fclose(f);
+            snprintf(path, sizeof(path), "/sys/devices/system/cpu/cpu%d/topology/physical_package_id", cpu);
+            if ((f = fopen(path, "r")))
+            {
+                if (fscanf(f, "%d", &pkg) != 1)
+                    pkg = 0;
+                fclose(f);
+            }
+            if (std::find(cores.begin(), cores.end(), std::make_pair(pkg, core)) == cores.end())
+                cores.push_back({pkg, core});
+        }
+        phys = (int)cores.size();
+    }
+    if (phys <= 0 || phys > (int)CpuCount())
+        phys = (int)CpuCount();
+#else
     size_t l = sizeof(phys);
     if (sysctlbyname("hw.physicalcpu", &phys, &l, nullptr, 0) != 0 || phys <= 0)
         phys = (int)CpuCount();
+#endif
     DWORD need = (DWORD)(phys * sizeof(SYSTEM_LOGICAL_PROCESSOR_INFORMATION));
     if (!buf || *len < need)
     {
@@ -1529,14 +1776,41 @@ namespace w32
 // Called once from main() before anything else runs.
 void PlatformInit(int argc, char **argv)
 {
+#if defined(__linux__)
+    // The engine keeps big structures on the main thread's stack (the macOS build links a 32 MB one, Windows reserves
+    // what the exe asks for). Linux grows the main thread's stack up to the stack rlimit as it is used (8 MB by
+    // default), and raising the limit now still applies to it.
+    {
+        struct rlimit rl;
+        const rlim_t want = (rlim_t)32 << 20;
+        if (getrlimit(RLIMIT_STACK, &rl) == 0 && rl.rlim_cur != RLIM_INFINITY && rl.rlim_cur < want)
+        {
+            rl.rlim_cur = (rl.rlim_max == RLIM_INFINITY || rl.rlim_max >= want) ? want : rl.rlim_max;
+            setrlimit(RLIMIT_STACK, &rl);
+        }
+    }
+#endif
     InitTime();
     SetCommandLine(argc, argv);
     bo1ptr::InitArena();
     {
         // the main thread's stack is not in the arena: give its locals 32-bit handles through a window
         // (the reported size can be the rlimit rather than the linked -stack_size; cover the larger of the two)
+#if defined(__linux__)
+        char *top = nullptr;
+        size_t size = 0;
+        pthread_attr_t attr;
+        if (pthread_getattr_np(pthread_self(), &attr) == 0)
+        {
+            void *low = nullptr;
+            pthread_attr_getstack(&attr, &low, &size);
+            pthread_attr_destroy(&attr);
+            top = low ? (char *)low + size : nullptr;
+        }
+#else
         char *top = (char *)pthread_get_stackaddr_np(pthread_self());
         size_t size = pthread_get_stacksize_np(pthread_self());
+#endif
         if (size < ((size_t)64 << 20))
             size = (size_t)64 << 20;
         if (top)

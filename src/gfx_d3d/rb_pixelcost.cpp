@@ -12,7 +12,7 @@ struct $24C327571DE1B1A743908CE1FB1197BD // sizeof=0x10030
     // padding byte
     // padding byte
     long double msecOverhead;
-    unsigned __int64 timeBegin;
+    BO1_ALIGN8 unsigned __int64 timeBegin;
     long double msecElapsed;            // XREF: R_PixelCost_EndSurface(GfxCmdBufContext)+A3/r
                                         // RB_PixelCost_AccumulateMsec+6/r
     int frameIndex;                     // XREF: R_PixelCost_EndSurface(GfxCmdBufContext)+11F/r

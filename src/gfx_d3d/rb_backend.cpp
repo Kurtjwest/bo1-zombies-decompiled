@@ -4726,17 +4726,17 @@ void RB_BO1GpuInit()
     s_kgqInit = true;
     for (BO1GpuQuerySet &q : s_kgq)
     {
-        if (dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, &q.disjoint) < 0
-            || dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, &q.freq) < 0
-            || dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, &q.begin) < 0
-            || dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, &q.end) < 0)
+        if (dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMPDISJOINT, BO1_OUT(&q.disjoint)) < 0
+            || dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMPFREQ, BO1_OUT(&q.freq)) < 0
+            || dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, BO1_OUT(&q.begin)) < 0
+            || dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, BO1_OUT(&q.end)) < 0)
         {
             s_kgqFailed = true;
             return;
         }
         for (auto &m : q.mark)
         {
-            if (dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, &m) < 0)
+            if (dx.device->CreateQuery(D3DQUERYTYPE_TIMESTAMP, BO1_OUT(&m)) < 0)
             {
                 s_kgqFailed = true;
                 return;
@@ -5941,7 +5941,7 @@ void     RB_RenderThread(unsigned int threadContext)
         }
         else
         {
-#if BO1_MACOS
+#if BO1_PORT
             // The idle millisecond ends as soon as the front end hands over a frame (the auto-reset event is set again
             // for the poll at the top of the loop). Windows' Sleep(1) ends on its next 1 ms timer tick; a sleep here
             // runs its full millisecond and more, a delay every frame adds while the back end waits for the next one.

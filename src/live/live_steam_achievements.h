@@ -26,7 +26,7 @@ struct CSteamAchievements // sizeof=0x58
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_iAppID;
+    BO1_ALIGN8 unsigned __int64 m_iAppID;
     Ptr32<Achievement_t> m_pAchievements;
     int m_iNumAchievements;
     bool m_bInitialized;

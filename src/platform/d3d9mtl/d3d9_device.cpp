@@ -2031,7 +2031,66 @@ namespace
 {
 // The #defines that make the variant of a vertex shader for a key (VertexVariant): input types, depth-texture
 // samplers, and zero-written outputs for pixel shader inputs it does not write. A function of the key alone, so the
-// shader cache can rebuild a variant from it.
+// shader cache can rebuild a variant from it. In the shading language of the renderer: Metal, or GLSL for the
+// OpenGL one (BO1_RHI_OPENGL; mojoshader_profile_glsl.c has the same hooks).
+#if defined(BO1_RHI_OPENGL)
+std::string VertexPrefix(const ShaderInfo &, uint64_t key)
+{
+    // (integer vertex formats need nothing: GL's vertex fetch converts them to the shader's float inputs)
+    std::string prefix;
+    char line[160];
+    for (int s = 0; s < 4; ++s)
+    {
+        if (key & (1ull << (32 + s)))
+        {
+            snprintf(line, sizeof(line), "#define BO1_TEX2D_TYPE_%d sampler2DShadow\n#define BO1_TEX2D_MODE_%d 1\n", s, s);
+            prefix += line;
+        }
+    }
+    std::string extraOutputs, extraInit;
+    for (int bit = kExtraVaryingFirstBit; bit < 64; ++bit)
+    {
+        if (!(key & (1ull << bit)))
+            continue;
+        char name[32];
+        ExtraVaryingName(bit, name, sizeof(name));
+        snprintf(line, sizeof(line), " out vec4 bo1v_%s;", name);
+        extraOutputs += line;
+        snprintf(line, sizeof(line), " bo1v_%s = vec4(0.0);", name);
+        extraInit += line;
+    }
+    if (!extraOutputs.empty())
+        prefix += "#define BO1_VS_EXTRA_OUTPUTS" + extraOutputs + "\n#define BO1_VS_EXTRA_INIT" + extraInit + "\n";
+    return prefix;
+}
+
+std::string PixelPrefix(uint64_t key)
+{
+    std::string prefix;
+    char line[200];
+    for (int s = 0; s < 16; ++s)
+    {
+        if (key & (1ull << s))
+        {
+            snprintf(line, sizeof(line), "#define BO1_TEX2D_TYPE_%d sampler2DShadow\n#define BO1_TEX2D_MODE_%d 1\n", s, s);
+            prefix += line;
+        }
+    }
+    if (key & (1ull << 28))
+    {
+        // Direct3D 9 compares the 8-bit alpha value with D3DRS_ALPHAREF
+        const char *aop = AlphaOp((DWORD)((key >> 16) & 15));
+        if (aop)
+            snprintf(line, sizeof(line),
+                     "#define BO1_ALPHA_TEST(c) if (!(roundEven(clamp((c).a, 0.0, 1.0) * 255.0) %s %u.0)) discard;\n",
+                     aop, (unsigned)((key >> 20) & 0xFF));
+        else
+            snprintf(line, sizeof(line), "#define BO1_ALPHA_TEST(c) discard;\n"); // D3DCMP_NEVER
+        prefix += line;
+    }
+    return prefix;
+}
+#else
 std::string VertexPrefix(const ShaderInfo &info, uint64_t key)
 {
     std::string prefix;
@@ -2101,6 +2160,7 @@ std::string PixelPrefix(uint64_t key)
     }
     return prefix;
 }
+#endif
 } // namespace
 
 ShaderVariant *Device::VariantFor(ShaderCode *c, uint64_t key, bool urgent)
@@ -2117,6 +2177,7 @@ ShaderVariant *Device::VertexVariant()
         return m_curVsVariant;
     const ShaderInfo &info = m_vs->m_info;
     uint64_t key = 0;
+#if !defined(BO1_RHI_OPENGL) // (GL's vertex fetch converts integer formats: one variant for every format)
     for (const ShaderInfo::Input &in : info.inputs)
     {
         const D3DVERTEXELEMENT9 *e = m_decl ? m_decl->Find((BYTE)in.usage, (BYTE)in.index) : nullptr;
@@ -2130,6 +2191,7 @@ ShaderVariant *Device::VertexVariant()
         }
         key |= t << (in.reg * 2);
     }
+#endif
     for (const ShaderInfo::SamplerUse &s : info.samplers)
     {
         if (s.type != 0 || s.reg < 0 || s.reg >= 4)

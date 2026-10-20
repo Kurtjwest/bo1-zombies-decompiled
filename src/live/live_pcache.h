@@ -5,7 +5,7 @@
 struct __declspec(align(8)) PCacheComponent // sizeof=0x20
 {                                       // XREF: PCachePublicProfile/r
                                         // PCachePlayerEmblem/r
-    unsigned __int64 xuid;
+    BO1_ALIGN8 unsigned __int64 xuid;
     int controllerIndex;
     int type;
     unsigned int updateTime;
@@ -34,7 +34,7 @@ struct PCachePublicProfile // sizeof=0x120
 
 struct PCacheEntry // sizeof=0x20
 {                                       // XREF: .data:s_entries/r
-    unsigned __int64 xuid;              // XREF: PCache_Init(void)+96/w
+    BO1_ALIGN8 unsigned __int64 xuid;              // XREF: PCache_Init(void)+96/w
     int controllerIndex;
     unsigned int neighborhood;
     unsigned int hash;

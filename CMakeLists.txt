@@ -20,7 +20,7 @@ endif()
 set(BIN_NAME "BO1Zombies")
 
 set(CMAKE_CXX_STANDARD 20)
-if(NOT APPLE)
+if(WIN32)
     set(CMAKE_GENERATOR_PLATFORM "WIN32")
 endif()
 
@@ -32,6 +32,11 @@ include(cmake_files.cmake)
 
 if(APPLE)
     include(cmake/macos.cmake)
+    return()
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    # Native Linux build (x86_64, x86, arm64, armhf): SDL2 and OpenGL. See cmake/linux.cmake and the Linux section of
+    # README.md.
+    include(cmake/linux.cmake)
     return()
 endif()
 

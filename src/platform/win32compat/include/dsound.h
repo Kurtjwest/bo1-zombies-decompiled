@@ -1,5 +1,5 @@
 // DirectSound for the macOS port. Only the voice-chat path (src/groupvoice) uses it; the implementation
-// (src/platform/macos/dsound_mac.cpp) plays buffers through Core Audio and captures from the default input device.
+// (src/platform/common/dsound_soft.cpp) plays buffers through Core Audio and captures from the default input device.
 #pragma once
 #include "xaudio2.h"
 #include <universal/ptr32.h>

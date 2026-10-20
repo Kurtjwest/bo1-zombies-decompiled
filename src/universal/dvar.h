@@ -33,8 +33,8 @@ union DvarValue // sizeof=0x10
         bool enabled;
         int integer;
         unsigned int unsignedInt;
-        __int64 integer64;
-        unsigned __int64 unsignedInt64;
+        BO1_ALIGN8 __int64 integer64;
+        BO1_ALIGN8 unsigned __int64 unsignedInt64;
         float value;
         float vector[4];
         Ptr32<const char> string;
@@ -55,8 +55,8 @@ struct DvarLimits_int // sizeof=0x8
 
 struct DvarLimits_int64 // sizeof=0x10
 {                                                                             // XREF: DvarLimits/r
-        __int64 min;
-        __int64 max;
+        BO1_ALIGN8 __int64 min;
+        BO1_ALIGN8 __int64 max;
 };
 
 struct DvarLimits_float // sizeof=0x8

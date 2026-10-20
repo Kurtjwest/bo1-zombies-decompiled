@@ -8,6 +8,9 @@
 // MSVC accepts, and to 'long' counters, which are 64-bit on macOS: 8-byte integers get the same operation at 64 bits.
 // Anything else (a pointer, a struct) is refused so a truncating use can't slip through.
 #ifdef __cplusplus
+// 64-bit operands as 8-byte aligned: 32-bit x86 Linux aligns a long long member to 4 bytes, and clang turns an 8-byte
+// atomic it can't prove aligned into a libatomic call (lock cmpxchg8b is atomic at any alignment on x86)
+typedef LONGLONG W32_LL8 __attribute__((aligned(8)));
 #define W32_IL32(T) static_assert(sizeof(T) == 4 || (sizeof(T) == 8 && __is_integral(T)), "interlocked operation on a non-integer object")
 #define W32_IL64(T) static_assert(sizeof(T) == 8, "64-bit interlocked operation on a non-64-bit object")
 #define W32_ILOP(T, op32, op64) \
@@ -27,27 +30,27 @@ template <typename V> static inline LONGLONG W32_Operand64(V v)
 template <typename T> static inline LONG InterlockedIncrement(volatile T *p)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_add_fetch((volatile LONG *)p, 1, __ATOMIC_SEQ_CST), __atomic_add_fetch((volatile LONGLONG *)p, 1, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_add_fetch((volatile LONG *)p, 1, __ATOMIC_SEQ_CST), __atomic_add_fetch((volatile W32_LL8 *)p, 1, __ATOMIC_SEQ_CST));
 }
 template <typename T> static inline LONG InterlockedDecrement(volatile T *p)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_sub_fetch((volatile LONG *)p, 1, __ATOMIC_SEQ_CST), __atomic_sub_fetch((volatile LONGLONG *)p, 1, __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_sub_fetch((volatile LONG *)p, 1, __ATOMIC_SEQ_CST), __atomic_sub_fetch((volatile W32_LL8 *)p, 1, __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedExchange(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_exchange_n((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_exchange_n((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_exchange_n((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_exchange_n((volatile W32_LL8 *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedExchangeAdd(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_add((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_add((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_add((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_add((volatile W32_LL8 *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedAdd(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_add_fetch((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_add_fetch((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_add_fetch((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_add_fetch((volatile W32_LL8 *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V, typename C> static inline LONG InterlockedCompareExchange(volatile T *p, V exchange, C comparand)
 {
@@ -55,7 +58,7 @@ template <typename T, typename V, typename C> static inline LONG InterlockedComp
     if constexpr (sizeof(T) == 8)
     {
         LONGLONG c = W32_Operand64(comparand);
-        __atomic_compare_exchange_n((volatile LONGLONG *)p, &c, W32_Operand64(exchange), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+        __atomic_compare_exchange_n((volatile W32_LL8 *)p, &c, W32_Operand64(exchange), false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
         return (LONG)c;
     }
     else
@@ -68,32 +71,32 @@ template <typename T, typename V, typename C> static inline LONG InterlockedComp
 template <typename T, typename V> static inline LONG InterlockedOr(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_or((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_or((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_or((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_or((volatile W32_LL8 *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedAnd(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_and((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_and((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_and((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_and((volatile W32_LL8 *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
 template <typename T, typename V> static inline LONG InterlockedXor(volatile T *p, V v)
 {
     W32_IL32(T);
-    W32_ILOP(T, __atomic_fetch_xor((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_xor((volatile LONGLONG *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
+    W32_ILOP(T, __atomic_fetch_xor((volatile LONG *)p, (LONG)v, __ATOMIC_SEQ_CST), __atomic_fetch_xor((volatile W32_LL8 *)p, W32_Operand64(v), __ATOMIC_SEQ_CST));
 }
-template <typename T> static inline LONGLONG InterlockedIncrement64(volatile T *p) { W32_IL64(T); return __atomic_add_fetch((volatile LONGLONG *)p, 1, __ATOMIC_SEQ_CST); }
-template <typename T> static inline LONGLONG InterlockedDecrement64(volatile T *p) { W32_IL64(T); return __atomic_sub_fetch((volatile LONGLONG *)p, 1, __ATOMIC_SEQ_CST); }
-template <typename T, typename V> static inline LONGLONG InterlockedExchange64(volatile T *p, V v) { W32_IL64(T); return __atomic_exchange_n((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
-template <typename T, typename V> static inline LONGLONG InterlockedExchangeAdd64(volatile T *p, V v) { W32_IL64(T); return __atomic_fetch_add((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
-template <typename T, typename V> static inline LONGLONG InterlockedAdd64(volatile T *p, V v) { W32_IL64(T); return __atomic_add_fetch((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
+template <typename T> static inline LONGLONG InterlockedIncrement64(volatile T *p) { W32_IL64(T); return __atomic_add_fetch((volatile W32_LL8 *)p, 1, __ATOMIC_SEQ_CST); }
+template <typename T> static inline LONGLONG InterlockedDecrement64(volatile T *p) { W32_IL64(T); return __atomic_sub_fetch((volatile W32_LL8 *)p, 1, __ATOMIC_SEQ_CST); }
+template <typename T, typename V> static inline LONGLONG InterlockedExchange64(volatile T *p, V v) { W32_IL64(T); return __atomic_exchange_n((volatile W32_LL8 *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
+template <typename T, typename V> static inline LONGLONG InterlockedExchangeAdd64(volatile T *p, V v) { W32_IL64(T); return __atomic_fetch_add((volatile W32_LL8 *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
+template <typename T, typename V> static inline LONGLONG InterlockedAdd64(volatile T *p, V v) { W32_IL64(T); return __atomic_add_fetch((volatile W32_LL8 *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
 template <typename T, typename V, typename C> static inline LONGLONG InterlockedCompareExchange64(volatile T *p, V exchange, C comparand)
 {
     W32_IL64(T);
     LONGLONG c = (LONGLONG)comparand;
-    __atomic_compare_exchange_n((volatile LONGLONG *)p, &c, (LONGLONG)exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
+    __atomic_compare_exchange_n((volatile W32_LL8 *)p, &c, (LONGLONG)exchange, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
     return c;
 }
-template <typename T, typename V> static inline LONGLONG InterlockedOr64(volatile T *p, V v) { W32_IL64(T); return __atomic_fetch_or((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
-template <typename T, typename V> static inline LONGLONG InterlockedAnd64(volatile T *p, V v) { W32_IL64(T); return __atomic_fetch_and((volatile LONGLONG *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
+template <typename T, typename V> static inline LONGLONG InterlockedOr64(volatile T *p, V v) { W32_IL64(T); return __atomic_fetch_or((volatile W32_LL8 *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
+template <typename T, typename V> static inline LONGLONG InterlockedAnd64(volatile T *p, V v) { W32_IL64(T); return __atomic_fetch_and((volatile W32_LL8 *)p, (LONGLONG)v, __ATOMIC_SEQ_CST); }
 static inline PVOID InterlockedExchangePointer(PVOID volatile *p, PVOID v) { return __atomic_exchange_n(p, v, __ATOMIC_SEQ_CST); }
 static inline PVOID InterlockedCompareExchangePointer(PVOID volatile *p, PVOID exchange, PVOID comparand)
 {

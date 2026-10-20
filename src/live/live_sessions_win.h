@@ -22,7 +22,7 @@ struct RegisteredUser // sizeof=0x28
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 xuid;
+    BO1_ALIGN8 unsigned __int64 xuid;
     netadr_t addr;
     bool privateSlot;
     // padding byte
@@ -41,7 +41,7 @@ struct __declspec(align(4)) RemoteTalkerInfo // sizeof=0x20
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 xuid;
+    BO1_ALIGN8 unsigned __int64 xuid;
     int natType;
     int voiceConnectivityBits;
     int lastConnectivityTestTime[1];
@@ -74,7 +74,7 @@ struct __declspec(align(8)) SessionData_s // sizeof=0x978
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 sessionNonce;
+    BO1_ALIGN8 unsigned __int64 sessionNonce;
     int privateSlots;                   // XREF: Live_Frame_MP(int,int)+1FB/r
     int publicSlots;                    // XREF: Live_Frame_MP(int,int)+202/r
     int flags;
@@ -112,7 +112,7 @@ struct __declspec(align(8)) SessionJoinData // sizeof=0x20
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 player;
+    BO1_ALIGN8 unsigned __int64 player;
     Ptr32<SessionData_s> session;
     // padding byte
     // padding byte

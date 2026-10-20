@@ -12,7 +12,7 @@
 //    game creates the shaders of a recorded pipeline (while a level loads), its variants and the pipeline are compiled
 //    in the background, so that they are ready before a draw needs them.
 #include "d3d9_internal.h"
-#include "../macos/cocoa_bridge.h"
+#include "../common/platform_bridge.h"
 #include "../win32compat/w32_platform.h"
 
 #include <cerrno>
@@ -90,7 +90,7 @@ std::atomic<uint64_t> g_compileNs{0};
 std::atomic<uint32_t> g_skippedDraws{0}, g_waits{0};
 bool g_logVerbose;
 
-// the game folder (main_mac.cpp), where the game keeps everything it writes
+// the game folder (main_posix.cpp), where the game keeps everything it writes
 std::string GameFolder()
 {
     const char *dir = w32::GameDirectory();
@@ -111,8 +111,13 @@ void DumpFailedShader(const ShaderVariant *v, const std::string &src)
     const std::string dir = base + "/shaderdumps";
     mkdir(dir.c_str(), 0755);
     char path[1024];
-    snprintf(path, sizeof(path), "%s/bo1_%s_%u_%llx.metal", dir.c_str(), v->isPixel ? "ps" : "vs", v->shaderId,
-             (unsigned long long)v->key);
+#if defined(BO1_RHI_OPENGL)
+    const char *ext = "glsl";
+#else
+    const char *ext = "metal";
+#endif
+    snprintf(path, sizeof(path), "%s/bo1_%s_%u_%llx.%s", dir.c_str(), v->isPixel ? "ps" : "vs", v->shaderId,
+             (unsigned long long)v->key, ext);
     if (FILE *f = fopen(path, "w"))
     {
         fwrite(src.data(), 1, src.size(), f);
@@ -246,6 +251,8 @@ void WorkerLoop()
     // the compiles a draw waits for are as urgent as the frame; prewarming runs while the level loads
     pthread_set_qos_class_self_np(QOS_CLASS_USER_INITIATED, 0);
     pthread_setname_np("bo1 shader compiler");
+#elif defined(__linux__)
+    pthread_setname_np(pthread_self(), "bo1 shadercomp"); // (15 characters at most)
 #endif
     Compiler &c = g_compiler;
     for (;;)

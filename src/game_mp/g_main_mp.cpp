@@ -4049,9 +4049,14 @@ static void G_ModSvProfSamplePc(int cat)
     if (depth >= 0 && depth <= 63)
         cat = g_svProfStack[depth];
     ResumeThread(thread);
-    if (!ok || !ctx.Eip)
+#if defined(_WIN64)
+    const DWORD64 ip = ctx.Rip;
+#else
+    const DWORD ip = ctx.Eip;
+#endif
+    if (!ok || !ip)
         return;
-    const unsigned int pc = ctx.Eip;
+    const unsigned int pc = (unsigned int)ip;
     unsigned int h = (pc * 2654435761u) >> 20;
     for (int probe = 0; probe < 16; ++probe, h = (h + 1) & (SVPROF_SAMPLE_SLOTS - 1))
     {

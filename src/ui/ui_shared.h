@@ -226,8 +226,8 @@ struct __declspec(align(8)) menuDef_t // sizeof=0x190
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 showBits;
-    unsigned __int64 hideBits;
+    BO1_ALIGN8 unsigned __int64 showBits;
+    BO1_ALIGN8 unsigned __int64 hideBits;
     Ptr32<const char> allowedBinding;
     Ptr32<const char> soundName;
     int imageTrack;
@@ -568,8 +568,8 @@ struct sharedUiInfo_t // sizeof=0x261D0
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 visibilityBits[1];
-    unsigned __int64 localVisibilityBits[1];
+    BO1_ALIGN8 unsigned __int64 visibilityBits[1];
+    BO1_ALIGN8 unsigned __int64 localVisibilityBits[1];
     int contractIndex;
     Ptr32<Material> loadingScreen;
 };
@@ -859,8 +859,8 @@ struct __declspec(align(8)) itemDef_s // sizeof=0x110
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 showBits;
-    unsigned __int64 hideBits;
+    BO1_ALIGN8 unsigned __int64 showBits;
+    BO1_ALIGN8 unsigned __int64 hideBits;
     ExpressionStatement forecolorAExp;
     int ui3dWindowId;
     Ptr32<GenericEventHandler> onEvent;

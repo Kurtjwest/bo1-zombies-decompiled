@@ -85,8 +85,13 @@ enum CriticalSection : __int32
 
 struct FastCriticalSection // sizeof=0x8
 {                                                                             // XREF: .data:g_dvarCritSect/r
+#if defined(_WIN32)
+        volatile long readCount; // (Win32 LONG, which the _Interlocked intrinsics take)
+        volatile long writeCount;                       // XREF: Dvar_FindMalleableVar_0:loc_7BD2E2/r
+#else
         volatile int readCount; // (Win32 LONG: 32 bits, as the 0xFFFFFFFF decrements expect)
         volatile int writeCount;                        // XREF: Dvar_FindMalleableVar_0:loc_7BD2E2/r
+#endif
 };
 
 void __cdecl Sys_Mkdir(const char *path);

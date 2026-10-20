@@ -262,7 +262,7 @@ unsigned int __cdecl mixerGetRecordLevel(char *SrcName)
     if ( mixerOpen(&phmx, 0, 0, 0, 0) )
         return -1;
     memset((unsigned __int8 *)&mixerline, 0, sizeof(mixerline));
-    mixerline.cbStruct = 168;
+    mixerline.cbStruct = sizeof(mixerline);
     mixerline.dwComponentType = 7;
     mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 3u);
     jj = mixerline.cConnections;
@@ -272,7 +272,7 @@ unsigned int __cdecl mixerGetRecordLevel(char *SrcName)
         mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 1u);
         if ( !I_stricmp(mixerline.szName, SrcName) )
         {
-            mxlc.cbStruct = 24;
+            mxlc.cbStruct = sizeof(mxlc);
             mxlc.dwLineID = mixerline.dwLineID;
             mxlc.dwControlID = 1342373889;
             mxlc.cControls = 1;
@@ -280,7 +280,7 @@ unsigned int __cdecl mixerGetRecordLevel(char *SrcName)
             mxlc.pamxctrl = &mxc;
             if ( !mixerGetLineControlsA((HMIXEROBJ)phmx, &mxlc, 2u) )
             {
-                mxcd.cbStruct = 24;
+                mxcd.cbStruct = sizeof(mxcd);
                 mxcd.cChannels = 1;
                 mxcd.cbDetails = 4;
                 mxcd.paDetails = &newSetting;
@@ -322,7 +322,7 @@ int __cdecl mixerSetRecordLevel(char *SrcName, unsigned __int16 newLevel)
         return 0;
     if ( mixerOpen(&phmx, 0, 0, 0, 0) )
         return 0;
-    mixerline.cbStruct = 168;
+    mixerline.cbStruct = sizeof(mixerline);
     mixerline.dwComponentType = 7;
     if ( mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 3u) )
         return 0;
@@ -332,7 +332,7 @@ int __cdecl mixerSetRecordLevel(char *SrcName, unsigned __int16 newLevel)
         mixerline.dwSource = ii;
         if ( !mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 1u) && !I_stricmp(mixerline.szName, SrcName) )
         {
-            mxlc.cbStruct = 24;
+            mxlc.cbStruct = sizeof(mxlc);
             mxlc.dwLineID = mixerline.dwLineID;
             mxlc.dwControlID = 1342373889;
             mxlc.cControls = 1;
@@ -341,7 +341,7 @@ int __cdecl mixerSetRecordLevel(char *SrcName, unsigned __int16 newLevel)
             err = mixerGetLineControlsA((HMIXEROBJ)phmx, &mxlc, 2u);
             if ( !err )
             {
-                mxcd.cbStruct = 24;
+                mxcd.cbStruct = sizeof(mxcd);
                 mxcd.cChannels = 1;
                 mxcd.cbDetails = 4;
                 mxcd.paDetails = &newSetting;
@@ -389,7 +389,7 @@ int __cdecl mixerGetRecordSource(char *srcName)
     lpmxc = 0;
     lpListText = 0;
     lpListBool = 0;
-    mixerline.cbStruct = 168;
+    mixerline.cbStruct = sizeof(mixerline);
     mixerline.dwComponentType = 7;
 
     if (mixerGetLineInfoA(phmx, &mixerline, 3u) != MMSYSERR_NOERROR)
@@ -400,7 +400,7 @@ int __cdecl mixerGetRecordSource(char *srcName)
 
     mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 3u);
     lpmxc = (tagMIXERCONTROLA *)calloc(148 * mixerline.cControls, 1u);
-    mxlc.cbStruct = 24;
+    mxlc.cbStruct = sizeof(mxlc);
     mxlc.dwLineID = mixerline.dwLineID;
     mxlc.dwControlID = 0;
     mxlc.cControls = mixerline.cControls;
@@ -420,7 +420,7 @@ int __cdecl mixerGetRecordSource(char *srcName)
                 if ( (lpmxc[ii].fdwControl & 2) != 0 )
                     iMultipleItems = lpmxc[ii].cMultipleItems;
                 lpListText = (tagMIXERCONTROLDETAILS_LISTTEXTA *)calloc(72 * iMultipleItems * iNumChannels, 1u);
-                mxcd.cbStruct = 24;
+                mxcd.cbStruct = sizeof(mxcd);
                 mxcd.dwControlID = lpmxc[ii].dwControlID;
                 mxcd.cChannels = iNumChannels;
                 mxcd.cMultipleItems = iMultipleItems;
@@ -495,7 +495,7 @@ int __cdecl mixerSetRecordSource(char *SrcName)
     lpmxc = 0;
     lpListText = 0;
     lpListBool = 0;
-    mixerline.cbStruct = 168;
+    mixerline.cbStruct = sizeof(mixerline);
     mixerline.dwComponentType = 7;
 
     if (mixerGetLineInfoA(phmx, &mixerline, 3u) != MMSYSERR_NOERROR)
@@ -506,7 +506,7 @@ int __cdecl mixerSetRecordSource(char *SrcName)
 
     mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 3u);
     lpmxc = (tagMIXERCONTROLA *)calloc(148 * mixerline.cControls, 1u);
-    mxlc.cbStruct = 24;
+    mxlc.cbStruct = sizeof(mxlc);
     mxlc.dwLineID = mixerline.dwLineID;
     mxlc.dwControlID = 0;
     mxlc.cControls = mixerline.cControls;
@@ -526,7 +526,7 @@ int __cdecl mixerSetRecordSource(char *SrcName)
                 if ( (lpmxc[ii].fdwControl & 2) != 0 )
                     iMultipleItems = lpmxc[ii].cMultipleItems;
                 lpListText = (tagMIXERCONTROLDETAILS_LISTTEXTA *)calloc(72 * iMultipleItems * iNumChannels, 1u);
-                mxcd.cbStruct = 24;
+                mxcd.cbStruct = sizeof(mxcd);
                 mxcd.dwControlID = lpmxc[ii].dwControlID;
                 mxcd.cChannels = iNumChannels;
                 mxcd.cMultipleItems = iMultipleItems;
@@ -594,7 +594,7 @@ int __cdecl mixerSetMicrophoneMute(unsigned __int8 bMute)
         return 0;
     if ( mixerOpen(&phmx, 0, 0, 0, 0) )
         return 0;
-    mixerline.cbStruct = 168;
+    mixerline.cbStruct = sizeof(mixerline);
     mixerline.dwComponentType = 4;
     err = mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 3u);
     if ( !err )
@@ -606,7 +606,7 @@ int __cdecl mixerSetMicrophoneMute(unsigned __int8 bMute)
             mixerGetLineInfoA((HMIXEROBJ)phmx, &mixerline, 1u);
             if ( !I_stricmp(mixerline.szName, old_rec_source) )
             {
-                mxlc.cbStruct = 24;
+                mxlc.cbStruct = sizeof(mxlc);
                 mxlc.dwLineID = mixerline.dwLineID;
                 mxlc.dwControlID = 536936450;
                 mxlc.cControls = 1;
@@ -615,7 +615,7 @@ int __cdecl mixerSetMicrophoneMute(unsigned __int8 bMute)
                 err = mixerGetLineControlsA((HMIXEROBJ)phmx, &mxlc, 2u);
                 if ( !err )
                 {
-                    mxcd.cbStruct = 24;
+                    mxcd.cbStruct = sizeof(mxcd);
                     mxcd.cChannels = 1;
                     mxcd.cbDetails = 4;
                     mxcd.paDetails = &newSetting;

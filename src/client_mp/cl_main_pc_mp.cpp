@@ -57,7 +57,7 @@ quickmatchstate_t s_quickmatchstate;
 
 struct cacvalidateserver_t // sizeof=0x8
 {                                       // XREF: .data:cacvalidateserver_t g_cacValidateServer/r
-    unsigned __int64 uid;               // XREF: CL_CACValidateServerMatches+B/r
+    BO1_ALIGN8 unsigned __int64 uid;               // XREF: CL_CACValidateServerMatches+B/r
 };
 cacvalidateserver_t g_cacValidateServer;
 
@@ -342,7 +342,7 @@ void __cdecl CL_ConnectHackDW()
 
 bool __cdecl CL_CDKeyValidate(netadr_t addr)
 {
-#if defined(WIN32) || defined(__APPLE__)
+#if defined(WIN32) || defined(BO1_PORT)
     // no-steam: without a logged-on Steam client there is no ticket to make; connect without one (the server
     // decides: SV_GetChallenge admits ticketless clients only when it runs without Steam itself).
     if (!g_steamInitialized)

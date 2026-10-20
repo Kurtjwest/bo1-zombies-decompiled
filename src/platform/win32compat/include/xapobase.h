@@ -1,4 +1,4 @@
-// CXAPOBase for the macOS port: a self-contained base class providing the IXAPO plumbing (reference counting,
+// CXAPOBase (the SDK's xapobase.lib) for the builds without Microsoft's XAudio2 (xaudio2.h): a self-contained base class providing the IXAPO plumbing (reference counting,
 // registration properties, lock state) that the engine's effects (src/sound/snd_driver_xaudio2_dsp.h) build on.
 #pragma once
 #include "xapo.h"
@@ -102,8 +102,9 @@ class CXAPOBase : public IXAPO
     STDMETHOD_(UINT32, CalcOutputFrames)(UINT32 InputFrameCount) override { return InputFrameCount; }
 };
 
-// MSVC's __uuidof(IUnknown) as used by the engine's QueryInterface implementations.
-#ifndef BO1_UUIDOF_IUNKNOWN
+// MSVC's __uuidof(IUnknown) as used by the engine's QueryInterface implementations (Windows' headers declare the
+// interfaces' GUIDs for the compiler's own __uuidof).
+#if !defined(_WIN32) && !defined(BO1_UUIDOF_IUNKNOWN)
 #define BO1_UUIDOF_IUNKNOWN 1
 #define __uuidof(x) IID_##x
 #endif

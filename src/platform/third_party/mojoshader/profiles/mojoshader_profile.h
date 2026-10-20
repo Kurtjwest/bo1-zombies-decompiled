@@ -201,7 +201,7 @@ typedef struct Context
     int profile_supports_glsles3;
 #endif
 
-#if SUPPORT_PROFILE_METAL
+#if SUPPORT_PROFILE_METAL || SUPPORT_PROFILE_GLSL  // BO1: the GLSL profile is derived from the Metal one
     int metal_need_header_common;
     int metal_need_header_math;
     int metal_need_header_relational;

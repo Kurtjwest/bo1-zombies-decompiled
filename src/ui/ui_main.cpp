@@ -3941,33 +3941,32 @@ static void UI_ModFov_PatchMenus(UiContext *dc)
     }
 }
 
-#if BO1_MACOS
 // zombies (port): the SP front end's main menu (main_text) offers Campaign and Multiplayer, which need the retail SP
 // and MP programs: here the campaign's levels ended the game, and Multiplayer started the app again. Their rows are
 // hidden, the three left (Zombies, Options, Quit) move to the middle of the TV, and the menu opens on Zombies.
-static char s_macHiddenItemExpression[] = "bo1_mac_hidden"; // (an item hidden here: its visibleExp is "0")
-static expressionRpn s_macHiddenItemRpn[2];
-static char s_macMainMenuFocus[256];
+static char s_portHiddenItemExpression[] = "bo1_port_hidden"; // (an item hidden here: its visibleExp is "0")
+static expressionRpn s_portHiddenItemRpn[2];
+static char s_portMainMenuFocus[256];
 
-static void UI_Mac_HideItem(itemDef_s *item)
+static void UI_Port_HideItem(itemDef_s *item)
 {
-    s_macHiddenItemRpn[0].type = 0; // a constant: 0
-    s_macHiddenItemRpn[0].data.constant.dataType = VAL_INT;
-    s_macHiddenItemRpn[0].data.constant.internals.intVal = 0;
-    s_macHiddenItemRpn[1].type = 3; // the end
-    item->visibleExp.filename = s_macHiddenItemExpression;
+    s_portHiddenItemRpn[0].type = 0; // a constant: 0
+    s_portHiddenItemRpn[0].data.constant.dataType = VAL_INT;
+    s_portHiddenItemRpn[0].data.constant.internals.intVal = 0;
+    s_portHiddenItemRpn[1].type = 3; // the end
+    item->visibleExp.filename = s_portHiddenItemExpression;
     item->visibleExp.line = 0;
     item->visibleExp.numRpn = 1;
-    item->visibleExp.rpn = s_macHiddenItemRpn;
+    item->visibleExp.rpn = s_portHiddenItemRpn;
 }
 
-static bool UI_Mac_IsHiddenButton(const itemDef_s *item)
+static bool UI_Port_IsHiddenButton(const itemDef_s *item)
 {
     return item->window.name
         && (!I_stricmp(item->window.name, "main_button1") || !I_stricmp(item->window.name, "main_button2"));
 }
 
-static void UI_Mac_PatchMainMenu(UiContext *dc)
+static void UI_Port_PatchMainMenu(UiContext *dc)
 {
     menuDef_t *menu;
     itemDef_s *item;
@@ -3995,12 +3994,12 @@ static void UI_Mac_PatchMainMenu(UiContext *dc)
         item = menu->items[i];
         if ( !item || !item->window.name || I_strnicmp(item->window.name, "main_button", 11) )
             continue;
-        if ( item->visibleExp.filename == s_macHiddenItemExpression )
+        if ( item->visibleExp.filename == s_portHiddenItemExpression )
             return; // (patched already)
         y = item->window.rectClient.y;
         top = y < top ? y : top;
         bottom = y + item->window.rectClient.h > bottom ? y + item->window.rectClient.h : bottom;
-        if ( UI_Mac_IsHiddenButton(item) )
+        if ( UI_Port_IsHiddenButton(item) )
         {
             for ( k = 0; k < hiddenRowCount && fabsf(hiddenRows[k] - y) > 1.0f; ++k )
                 ;
@@ -4027,7 +4026,7 @@ static void UI_Mac_PatchMainMenu(UiContext *dc)
             inHiddenRow = inHiddenRow || fabsf(hiddenRows[k] - y) <= 1.0f;
         if ( inHiddenRow )
         {
-            UI_Mac_HideItem(item);
+            UI_Port_HideItem(item);
         }
         else if ( !item->rectExpData && y >= keptTop - 1.0f && y < keptBottom )
         {
@@ -4043,17 +4042,16 @@ static void UI_Mac_PatchMainMenu(UiContext *dc)
         for ( script = handler->eventScript; script; script = script->next )
         {
             action = script->action;
-            if ( !action || !(found = strstr(action, "\"main_button1\"")) || s_macMainMenuFocus[0] )
+            if ( !action || !(found = strstr(action, "\"main_button1\"")) || s_portMainMenuFocus[0] )
                 continue;
-            Com_sprintf(s_macMainMenuFocus, sizeof(s_macMainMenuFocus), "%.*s\"main_button3\"%s", (int)(found - action),
+            Com_sprintf(s_portMainMenuFocus, sizeof(s_portMainMenuFocus), "%.*s\"main_button3\"%s", (int)(found - action),
                 action, found + strlen("\"main_button1\""));
-            script->action = s_macMainMenuFocus;
+            script->action = s_portMainMenuFocus;
         }
     }
     Com_Printf(13, "bo1_mac: main menu without Campaign and Multiplayer (%d rows hidden, the rest moved by %g)\n",
         hiddenRowCount, shift);
 }
-#endif
 
 void __cdecl UI_LoadIngameMenus(int contextIndex)
 {
@@ -4093,9 +4091,7 @@ void __cdecl UI_LoadIngameMenus(int contextIndex)
                     UI_AddMenuList(contextIndex, &uiInfo->uiDC, menuList, 1);
             }
             Menus_CloseAll(contextIndex, &uiInfo->uiDC);
-#if BO1_MACOS
-            UI_Mac_PatchMainMenu(&uiInfo->uiDC);
-#endif
+            UI_Port_PatchMainMenu(&uiInfo->uiDC);
         }
         if ( zombiemode && zombiemode->current.enabled )
         {

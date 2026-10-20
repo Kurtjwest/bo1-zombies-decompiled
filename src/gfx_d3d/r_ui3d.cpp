@@ -524,7 +524,7 @@ void __cdecl RB_UI3D_RenderToTexture(const void *cmds, const GfxUI3DBackend *rbU
             RB_GaussianFilterImage(rbUI3D->blurRadius, R_RENDERTARGET_UI3D, R_RENDERTARGET_UI3D_PING_PONG);
             RB_GaussianFilterImage(rbUI3D->blurRadius, R_RENDERTARGET_UI3D_PING_PONG, R_RENDERTARGET_UI3D);
           }
-#if BO1_MACOS
+#if BO1_PORT
           // the mip levels of what was just drawn (the texture has them: Image_Create2DTexture_PC)
           if ( gfxRenderTargets[R_RENDERTARGET_UI3D].image && gfxRenderTargets[R_RENDERTARGET_UI3D].image->texture.map )
             gfxRenderTargets[R_RENDERTARGET_UI3D].image->texture.map->GenerateMipSubLevels();

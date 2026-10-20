@@ -1,7 +1,7 @@
 # FFmpeg (LGPL 2.1+), built as a minimal static library set for the macOS and Linux ports. Two of the game's media
 # formats have no system decoder there:
-#   - xWMA (WMA v2) sound assets, which XAudio2 decodes on Windows (src/platform/macos/xaudio2_coreaudio.cpp)
-#   - Bink 1 (.bik) cinematics, which binkw32.dll decodes on Windows (src/platform/macos/bink_mac.cpp)
+#   - xWMA (WMA v2) sound assets, which XAudio2 decodes on Windows (src/platform/common/xaudio2_soft.cpp)
+#   - Bink 1 (.bik) cinematics, which binkw32.dll decodes on Windows (src/platform/common/bink_ffmpeg.cpp)
 # Only those decoders and the Bink demuxer are enabled; nothing else of FFmpeg is built or linked.
 #
 # The source is fetched from the official repository at build time. For offline builds point
@@ -30,6 +30,10 @@ endif()
 set(BO1_FFMPEG_ASM_ARGS "")
 if(BO1_DEP_ARCH STREQUAL "x86_64" OR BO1_DEP_ARCH STREQUAL "x86")
     set(BO1_FFMPEG_ASM_ARGS --disable-x86asm)
+endif()
+# (32-bit x86 position-independent code has too few registers for FFmpeg's inline assembly)
+if(BO1_DEP_ARCH STREQUAL "x86")
+    list(APPEND BO1_FFMPEG_ASM_ARGS --disable-inline-asm)
 endif()
 
 set(BO1_FFMPEG_CONFIGURE_ARGS

@@ -411,7 +411,7 @@ struct __declspec(align(4)) serverInfo_t // sizeof=0x178
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 nonce;                         // XREF: SND_SurfaceTypeToReflectance+164/o
+        BO1_ALIGN8 unsigned __int64 nonce;                         // XREF: SND_SurfaceTypeToReflectance+164/o
                                                                                 // .rdata:bits_ac_luminance/o ...
         netadr_t adr;                                             // XREF: CL_LanConnect_f+138/w
                                                                                 // G_InitGrenadeEntity(gentity_s *,gentity_s *)+355/o ...
@@ -451,7 +451,7 @@ struct __declspec(align(4)) serverInfo_t // sizeof=0x178
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 bdUserID;                    // XREF: CG_CanSeeFriendlyHead(int,centity_s const *)+3D2/o
+        BO1_ALIGN8 unsigned __int64 bdUserID;                    // XREF: CG_CanSeeFriendlyHead(int,centity_s const *)+3D2/o
                                                                                 // CG_ScanForCrosshairEntityInternal+30A/o ...
         int lastRequestTime;                                // XREF: CL_CACValidate_Frame(void)+25B/r
                                                                                 // CL_CACValidate_Frame(void)+29C/w
@@ -588,7 +588,7 @@ struct clientStatic_t // sizeof=0x1CF2800
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 serveruid;                 // XREF: CL_Connect(serverInfo_t *)+34D/w
+        BO1_ALIGN8 unsigned __int64 serveruid;                 // XREF: CL_Connect(serverInfo_t *)+34D/w
                                                                                 // CL_Connect(serverInfo_t *)+359/w ...
         int rendererStarted;                                // XREF: CL_AddDebugString(float const * const,float const * const,float,char const *,int)+6/r
                                                                                 // CL_AddDebugSphere(float const * const,float,float const * const,int,int,int)+6/r ...
@@ -785,7 +785,7 @@ struct __declspec(align(8)) clientConnection_t // sizeof=0xAFF48
         // padding byte
         // padding byte
         // padding byte
-        __int64 statPacketsToSend;
+        BO1_ALIGN8 __int64 statPacketsToSend;
         int statPacketSendTime[34];
         unsigned int serverChallenge;
         unsigned int clientChallenge;

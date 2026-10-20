@@ -1,4 +1,4 @@
-// MSVC CRT / intrinsic compatibility for the macOS (arm64) port.
+// MSVC CRT / intrinsic compatibility for the macOS and Linux ports.
 // Force-included (via -include bo1_platform_prefix.h) into every engine translation unit, the way MSVC makes
 // these names available from its standard headers.
 #pragma once
@@ -28,7 +28,11 @@ extern "C" {
 #endif
 
 // MSVC names for CRT internals that decompiled code spells out
+#if defined(__APPLE__)
 #define _iobuf __sFILE
+#else
+#define _iobuf _IO_FILE
+#endif
 static inline int *_errno(void) { return &errno; }
 typedef int (*_CoreCrtNonSecureSearchSortCompareFunction)(const void *, const void *);
 typedef int (*_CoreCrtSecureSearchSortCompareFunction)(void *, const void *, const void *);

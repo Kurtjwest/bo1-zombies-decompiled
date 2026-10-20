@@ -155,15 +155,15 @@ struct PhysGlob // sizeof=0x480
 struct cdl_proftimer // sizeof=0x60
 {                                       // XREF: .data:cdl_proftimer proftimer_physics_frame_advance/r
                                         // .data:cdl_proftimer cl_flame_proftimer/r ...
-    unsigned __int64 stamp;             // XREF: Phys_RunToTime(int)+B/w
+    BO1_ALIGN8 unsigned __int64 stamp;             // XREF: Phys_RunToTime(int)+B/w
                                         // Phys_RunToTime(int)+10/w ...
-    unsigned __int64 value;             // XREF: Phys_RunToTime(int)+1A4/r
+    BO1_ALIGN8 unsigned __int64 value;             // XREF: Phys_RunToTime(int)+1A4/r
                                         // Phys_RunToTime(int)+1AA/r ...
-    unsigned __int64 avr;               // XREF: CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+CE9/r
+    BO1_ALIGN8 unsigned __int64 avr;               // XREF: CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+CE9/r
                                         // CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+CEF/r ...
-    unsigned __int64 tot;
-    unsigned __int64 capture_count;
-    unsigned __int64 calls;             // XREF: CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+D9B/r
+    BO1_ALIGN8 unsigned __int64 tot;
+    BO1_ALIGN8 unsigned __int64 capture_count;
+    BO1_ALIGN8 unsigned __int64 calls;             // XREF: CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+D9B/r
                                         // CG_DrawFPS(int,ScreenPlacement const *,float,meminfo_t *)+DA2/r ...
     bool capture;
     // padding byte
@@ -173,7 +173,7 @@ struct cdl_proftimer // sizeof=0x60
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 mx[5];
+    BO1_ALIGN8 unsigned __int64 mx[5];
 
 
     cdl_proftimer();

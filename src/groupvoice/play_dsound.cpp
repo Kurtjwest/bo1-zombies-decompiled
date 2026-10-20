@@ -353,7 +353,7 @@ HRESULT __cdecl CreateBasicBuffer(
     wfx.nAvgBytesPerSec = sampleRate * wfx.nBlockAlign;
     dsbdesc.dwReserved = 0;
     memset((void *)&dsbdesc.guid3DAlgorithm, 0, sizeof(dsbdesc.guid3DAlgorithm));
-    dsbdesc.dwSize = 36;
+    dsbdesc.dwSize = sizeof(dsbdesc); // (36 in the 32-bit exe)
     dsbdesc.dwFlags = 33000;
     dsbdesc.dwBufferBytes = bufferSize;
     dsbdesc.lpwfxFormat = &wfx;
@@ -363,7 +363,7 @@ HRESULT __cdecl CreateBasicBuffer(
     //             &dsbdesc,
     //             ppDsb,
     //             0);
-    hr = lpds->CreateSoundBuffer(&dsbdesc, ppDsb, 0);
+    hr = lpds->CreateSoundBuffer(&dsbdesc, BO1_OUT(ppDsb), 0);
     if ( hr < 0 )
         Com_Printf(9, "Failed to create sound buffer!\n");
     return hr;

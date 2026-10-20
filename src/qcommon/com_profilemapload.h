@@ -12,18 +12,18 @@ enum MapProfileTrackedValue : __int32
 
 struct MapProfileElement // sizeof=0x18
 {                                       // XREF: MapProfileEntry/r
-    unsigned __int64 ticksStart;
-    unsigned __int64 ticksTotal;
-    unsigned __int64 ticksSelf;
+    BO1_ALIGN8 unsigned __int64 ticksStart;
+    BO1_ALIGN8 unsigned __int64 ticksTotal;
+    BO1_ALIGN8 unsigned __int64 ticksSelf;
 };
 
 struct MapProfileEntry // sizeof=0x70
 {                                       // XREF: mapLoadProfile_t/r
     Ptr32<const char> label;
     int accessCount;
-    unsigned __int64 ticksStart;
-    unsigned __int64 ticksTotal;
-    unsigned __int64 ticksSelf;
+    BO1_ALIGN8 unsigned __int64 ticksStart;
+    BO1_ALIGN8 unsigned __int64 ticksTotal;
+    BO1_ALIGN8 unsigned __int64 ticksSelf;
     int indent;
     Ptr32<MapProfileEntry> parent;
     MapProfileElement elements[3];
@@ -33,8 +33,8 @@ struct MapProfileHotSpot // sizeof=0x18
 {                                       // XREF: ??$_Insertion_sort1@PAUMapProfileHotSpot@@P6A_NABU1@0@ZU1@@std@@YAXPAUMapProfileHotSpot@@0P6A_NABU1@1@Z0@Z/r
     Ptr32<const char> label;                  // XREF: std::_Insertion_sort1<MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot>(MapProfileHotSpot *,MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot *)+38/w
     int accessCount;                    // XREF: std::_Insertion_sort1<MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot>(MapProfileHotSpot *,MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot *)+3E/w
-    __int64 ticksSelf;                  // XREF: std::_Insertion_sort1<MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot>(MapProfileHotSpot *,MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot *)+44/w
-    __int64 ticksFile;                  // XREF: std::_Insertion_sort1<MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot>(MapProfileHotSpot *,MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot *)+50/w
+    BO1_ALIGN8 __int64 ticksSelf;                  // XREF: std::_Insertion_sort1<MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot>(MapProfileHotSpot *,MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot *)+44/w
+    BO1_ALIGN8 __int64 ticksFile;                  // XREF: std::_Insertion_sort1<MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot>(MapProfileHotSpot *,MapProfileHotSpot *,bool (*)(MapProfileHotSpot const &,MapProfileHotSpot const &),MapProfileHotSpot *)+50/w
 };
 
 struct mapLoadProfile_t // sizeof=0xA880
@@ -55,11 +55,11 @@ struct mapLoadProfile_t // sizeof=0xA880
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 ticksStart;        // XREF: ProfLoad_Activate(void)+5F/w
+    BO1_ALIGN8 unsigned __int64 ticksStart;        // XREF: ProfLoad_Activate(void)+5F/w
                                         // ProfLoad_Activate(void)+68/w ...
-    unsigned __int64 ticksFinish;       // XREF: ProfLoad_Activate(void)+73/w
+    BO1_ALIGN8 unsigned __int64 ticksFinish;       // XREF: ProfLoad_Activate(void)+73/w
                                         // ProfLoad_Activate(void)+7E/w ...
-    unsigned __int64 ticksProfiled;     // XREF: ProfLoad_Print+A7/r
+    BO1_ALIGN8 unsigned __int64 ticksProfiled;     // XREF: ProfLoad_Print+A7/r
                                         // ProfLoad_Print+AC/r ...
     int elementAccessCount[3];          // XREF: ProfLoad_BeginTrackedValue(MapProfileTrackedValue)+68/r
                                         // ProfLoad_BeginTrackedValue(MapProfileTrackedValue)+75/w ...

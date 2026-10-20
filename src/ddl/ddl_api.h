@@ -12,7 +12,7 @@ union ddlResult_t // sizeof=0x40
 {                                       // XREF: SV_SetClientDIntStat(int,ddlState_t *,uint)+171/r
                                         // SV_SetClientDInt64Stat(int,ddlState_t *,unsigned __int64)+174/r ...
     unsigned int intValue;
-    unsigned __int64 int64Value;
+    BO1_ALIGN8 unsigned __int64 int64Value;
     float floatValue;
     char stringValue[64];
 };

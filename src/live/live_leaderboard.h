@@ -126,7 +126,7 @@ struct LbPlayerStat // sizeof=0x58
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 userID;            // XREF: LB_UploadPlayerStats(int)+2E4/r
+    BO1_ALIGN8 unsigned __int64 userID;            // XREF: LB_UploadPlayerStats(int)+2E4/r
                                         // LB_UploadPlayerStats(int)+2EB/r ...
 };
 
@@ -268,7 +268,7 @@ struct __declspec(align(8)) Leaderboard // sizeof=0x3CA0
 
 struct LBSelectedPlayerInfo // sizeof=0x48
 {                                       // XREF: .data:info_2/r
-    unsigned __int64 playerXuid;        // XREF: UI_FeederDataExtended(int,itemDef_s *,char const *,char const * *,float *)+22B/r
+    BO1_ALIGN8 unsigned __int64 playerXuid;        // XREF: UI_FeederDataExtended(int,itemDef_s *,char const *,char const * *,float *)+22B/r
                                         // UI_FeederDataExtended(int,itemDef_s *,char const *,char const * *,float *)+232/r
     char gamerTag[64];                  // XREF: UI_FeederDataExtended(int,itemDef_s *,char const *,char const * *,float *)+268/o
 };
@@ -290,7 +290,7 @@ struct LbGlob // sizeof=0x3D528
                                         // LB_UpdateLeaderboard(int,LbType,int)+F/o ...
     char feederText[32];                // XREF: LB_FeederItemText(int,int,int,Material * *):loc_96B5A2/w
                                         // LB_FeederItemText(int,int,int,Material * *)+141/o ...
-    unsigned __int64 xuids[101];        // XREF: LB_GetStatsByXuids(int,Leaderboard *)+DA/o
+    BO1_ALIGN8 unsigned __int64 xuids[101];        // XREF: LB_GetStatsByXuids(int,Leaderboard *)+DA/o
                                         // LB_GetPlayerStats(int,Leaderboard *)+48/w ...
     unsigned int numXuids;              // XREF: LB_GetStatsByXuids(int,Leaderboard *)+6/r
                                         // LB_GetStatsByXuids(int,Leaderboard *):loc_967EA5/r ...

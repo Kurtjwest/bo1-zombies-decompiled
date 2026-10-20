@@ -470,7 +470,7 @@ LABEL_60:
                 return DefWindowProcA(hWnd, uMsg, wParamNative, lParam);
             case 0x7Eu:
                 monitorHandle = MonitorFromWindow(hWnd, 2u);
-                monitorInfo.cbSize = 40;
+                monitorInfo.cbSize = sizeof(monitorInfo);
                 GetMonitorInfoA(monitorHandle, &monitorInfo);
                 GetWindowRect(hWnd, &rc);
                 if ( rc.right - rc.left == monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left

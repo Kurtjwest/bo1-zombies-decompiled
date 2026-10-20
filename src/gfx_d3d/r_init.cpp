@@ -479,9 +479,9 @@ HRESULT __cdecl R_CreateDeviceInternal(HWND__ *hwnd, unsigned int behavior, _D3D
         //             d3dpp,
         //             &dx.device);
         if ( Sys_IsHeadlessClient() ) // zombies: a 9Ex device (see R_PreCreateWindow); windowed, so no display mode
-            hr = ((IDirect3D9Ex *)dx.d3d9)->CreateDeviceEx(dx.adapterIndex, (D3DDEVTYPE)DeviceType, hwnd, behavior, d3dpp, NULL, (Ptr32<IDirect3DDevice9Ex> *)&dx.device);
+            hr = ((IDirect3D9Ex *)dx.d3d9)->CreateDeviceEx(dx.adapterIndex, (D3DDEVTYPE)DeviceType, hwnd, behavior, d3dpp, NULL, BO1_OUT((Ptr32<IDirect3DDevice9Ex> *)&dx.device));
         else
-        hr = dx.d3d9->CreateDevice(dx.adapterIndex, (D3DDEVTYPE)DeviceType, hwnd, behavior, d3dpp, &dx.device);
+        hr = dx.d3d9->CreateDevice(dx.adapterIndex, (D3DDEVTYPE)DeviceType, hwnd, behavior, d3dpp, BO1_OUT(&dx.device));
         if ( hr >= 0 )
             break;
         Sleep(0x64u);
@@ -523,7 +523,7 @@ bool __cdecl R_GetMonitorDimensions(int *width, int *height)
     HMONITOR__ *adapterMonitor; // [esp+28h] [ebp-4h]
 
     adapterMonitor = dx.d3d9->GetAdapterMonitor(dx.adapterIndex);
-    mi.cbSize = 40;
+    mi.cbSize = sizeof(mi);
     if ( GetMonitorInfoA(adapterMonitor, &mi) )
     {
         *width = mi.rcMonitor.right - mi.rcMonitor.left;
@@ -1419,9 +1419,10 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
             defaultResolutionIndex = resolutionIndex;
     }
     dx.resolutionNameTable[resolutionIndex] = 0;
-#if BO1_MACOS
-    // macOS: by default the game draws at the screen's size in points (the resolution the desktop looks like; the
-    // list goes up to the screen's pixels for a sharper picture at a higher cost)
+#if BO1_PORT
+    // macOS and Linux: by default the game draws at the desktop's size (on macOS the screen's size in points, the
+    // resolution the desktop looks like; the list goes up to the screen's pixels for a sharper picture at a higher
+    // cost)
     {
         char screenMode[32];
         Com_sprintf(screenMode, sizeof(screenMode), "%ix%i", GetSystemMetrics(SM_CXSCREEN), GetSystemMetrics(SM_CYSCREEN));
@@ -1723,13 +1724,13 @@ char __cdecl R_CreateForInitOrReset()
 
 
     //hr = dx.device->CreateQuery(D3DQUERYTYPE_EVENT, &dx.gpuSyncDelay);
-    hr = dx.device->CreateQuery(D3DQUERYTYPE_EVENT, &dx.flushGpuQuery);
+    hr = dx.device->CreateQuery(D3DQUERYTYPE_EVENT, BO1_OUT(&dx.flushGpuQuery));
 
     if ( hr >= 0 )
     {
         for (fenceIter = 0; fenceIter < 8; ++fenceIter)
         {
-            hr = dx.device->CreateQuery(D3DQUERYTYPE_EVENT, &dx.fencePool[fenceIter]);
+            hr = dx.device->CreateQuery(D3DQUERYTYPE_EVENT, BO1_OUT(&dx.fencePool[fenceIter]));
             iassert(hr >= 0); // ADD
         }
             

@@ -1,5 +1,5 @@
-// XAPO (audio processing object) interfaces for the macOS port; effects are driven by the software XAudio2
-// engine in src/platform/macos/xaudio2_coreaudio.cpp.
+// XAPO (audio processing object) interfaces for the builds without Microsoft's XAudio2 (xaudio2.h); effects are driven
+// by the software XAudio2 engine in src/platform/common/xaudio2_soft.cpp.
 #pragma once
 #include "xaudio2.h"
 
@@ -63,5 +63,11 @@ struct IXAPOParameters : public IUnknown
     STDMETHOD_(void, GetParameters)(THIS_ void *pParameters, UINT32 ParameterByteSize) PURE;
 };
 
+#if defined(_WIN32)
+// (defined, not only declared as Windows' DEFINE_GUID does: no Windows library has the 2.7 SDK's XAPO GUIDs)
+static const GUID IID_IXAPO = {0xA90BC001, 0xE897, 0xE897, {0x55, 0xE4, 0x9E, 0x47, 0x00, 0x00, 0x00, 0x00}};
+static const GUID IID_IXAPOParameters = {0xA90BC001, 0xE897, 0xE897, {0x55, 0xE4, 0x9E, 0x47, 0x00, 0x00, 0x00, 0x01}};
+#else
 DEFINE_GUID(IID_IXAPO, 0xA90BC001, 0xE897, 0xE897, 0x55, 0xE4, 0x9E, 0x47, 0x00, 0x00, 0x00, 0x00);
 DEFINE_GUID(IID_IXAPOParameters, 0xA90BC001, 0xE897, 0xE897, 0x55, 0xE4, 0x9E, 0x47, 0x00, 0x00, 0x00, 0x01);
+#endif

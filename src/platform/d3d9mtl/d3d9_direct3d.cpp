@@ -1,7 +1,7 @@
 // IDirect3D9: the adapter (the Mac's GPU through Metal), its display modes, capabilities and format support.
 #include "d3d9_internal.h"
 
-#include "../macos/cocoa_bridge.h"
+#include "../common/platform_bridge.h"
 
 #include <algorithm>
 #include <cstdio>

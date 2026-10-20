@@ -77,7 +77,7 @@ struct GfxLightGrid // sizeof=0x38
 
 struct __declspec(align(8)) htab // sizeof=0x10
 {
-    unsigned __int64 value;
+    BO1_ALIGN8 unsigned __int64 value;
     Ptr32<htab> next;
     // padding byte
     // padding byte

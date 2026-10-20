@@ -75,8 +75,9 @@ AVCodecContext *OpenDecoder(const AVCodec *codec, const AVCodecParameters *par)
 
 void Quiet()
 {
-    static std::once_flag once;
-    std::call_once(once, [] { av_log_set_level(AV_LOG_ERROR); });
+    // (a function-local static rather than std::call_once, which MinGW's win32-thread libstdc++ lacks)
+    static const bool quiet = (av_log_set_level(AV_LOG_ERROR), true);
+    (void)quiet;
 }
 } // namespace
 

@@ -1,4 +1,4 @@
-// Win32 file API on POSIX for the macOS port: CreateFile/ReadFile(Ex)/WriteFile, overlapped I/O with completion
+// Win32 file API on POSIX for the macOS and Linux ports: CreateFile/ReadFile(Ex)/WriteFile, overlapped I/O with completion
 // routines (delivered as APCs in alertable waits, as on Windows), directory enumeration with wildcards, and
 // Windows path handling (backslashes, drive letters, case-insensitive name resolution).
 
@@ -9,8 +9,12 @@
 #include <dirent.h>
 #include <fcntl.h>
 #include <fnmatch.h>
+#if defined(__APPLE__)
 #include <copyfile.h>
 #include <sys/mount.h>
+#else
+#include <sys/statfs.h>
+#endif
 #include <sys/mman.h>
 #include <sys/stat.h>
 #include <sys/time.h>
@@ -19,6 +23,86 @@
 #include <cstring>
 #include <string>
 #include <vector>
+
+// struct stat's time stamps (Linux has no creation time in it: the last status change stands in)
+#if defined(__APPLE__)
+#define BO1_ST_CTIME(st) ((st).st_birthtimespec)
+#define BO1_ST_ATIME(st) ((st).st_atimespec)
+#define BO1_ST_MTIME(st) ((st).st_mtimespec)
+#else
+#define BO1_ST_CTIME(st) ((st).st_ctim)
+#define BO1_ST_ATIME(st) ((st).st_atim)
+#define BO1_ST_MTIME(st) ((st).st_mtim)
+#endif
+
+namespace
+{
+// a copy of the file's contents, permissions and modification time
+bool CopyFileData(const char *from, const char *to)
+{
+#if defined(__APPLE__)
+    return copyfile(from, to, nullptr, COPYFILE_ALL) == 0;
+#else
+    const int in = open(from, O_RDONLY | O_CLOEXEC);
+    if (in < 0)
+        return false;
+    struct stat st;
+    if (fstat(in, &st) != 0)
+    {
+        close(in);
+        return false;
+    }
+    const int out = open(to, O_WRONLY | O_CREAT | O_TRUNC | O_CLOEXEC, st.st_mode & 0777);
+    if (out < 0)
+    {
+        const int e = errno;
+        close(in);
+        errno = e;
+        return false;
+    }
+    std::vector<char> buf(1 << 20);
+    bool ok = true;
+    for (;;)
+    {
+        const ssize_t n = read(in, buf.data(), buf.size());
+        if (n == 0)
+            break;
+        if (n < 0)
+        {
+            if (errno == EINTR)
+                continue;
+            ok = false;
+            break;
+        }
+        for (ssize_t done = 0; done < n;)
+        {
+            const ssize_t w = write(out, buf.data() + done, (size_t)(n - done));
+            if (w < 0 && errno == EINTR)
+                continue;
+            if (w <= 0)
+            {
+                ok = false;
+                break;
+            }
+            done += w;
+        }
+        if (!ok)
+            break;
+    }
+    const int e = errno;
+    if (ok)
+    {
+        const struct timespec times[2] = {st.st_atim, st.st_mtim};
+        futimens(out, times);
+    }
+    close(in);
+    if (close(out) != 0)
+        ok = false;
+    errno = e;
+    return ok;
+#endif
+}
+} // namespace
 
 namespace w32
 {
@@ -189,9 +273,9 @@ static void FillFindData(const std::string &dir, const std::string &name, WIN32_
         fd->dwFileAttributes = AttributesFromStat(st, name.c_str());
         fd->nFileSizeLow = (DWORD)st.st_size;
         fd->nFileSizeHigh = (DWORD)((unsigned long long)st.st_size >> 32);
-        UnixToFileTime(st.st_birthtimespec, &fd->ftCreationTime);
-        UnixToFileTime(st.st_atimespec, &fd->ftLastAccessTime);
-        UnixToFileTime(st.st_mtimespec, &fd->ftLastWriteTime);
+        UnixToFileTime(BO1_ST_CTIME(st), &fd->ftCreationTime);
+        UnixToFileTime(BO1_ST_ATIME(st), &fd->ftLastAccessTime);
+        UnixToFileTime(BO1_ST_MTIME(st), &fd->ftLastWriteTime);
     }
     else
     {
@@ -283,7 +367,13 @@ HANDLE CreateFileA(LPCSTR name, DWORD access, DWORD share, LPSECURITY_ATTRIBUTES
         return INVALID_HANDLE_VALUE;
     }
     if (flags & FILE_FLAG_NO_BUFFERING)
+    {
+#if defined(__APPLE__)
         fcntl(fd, F_NOCACHE, 1);
+#else
+        posix_fadvise(fd, 0, 0, POSIX_FADV_NOREUSE);
+#endif
+    }
     KFile *f = new KFile();
     f->fd = fd;
     f->path = path;
@@ -546,11 +636,11 @@ BOOL GetFileTime(HANDLE h, LPFILETIME c, LPFILETIME a, LPFILETIME w)
     if (!f || fstat(f->fd, &st) != 0)
         return FALSE;
     if (c)
-        UnixToFileTime(st.st_birthtimespec, c);
+        UnixToFileTime(BO1_ST_CTIME(st), c);
     if (a)
-        UnixToFileTime(st.st_atimespec, a);
+        UnixToFileTime(BO1_ST_ATIME(st), a);
     if (w)
-        UnixToFileTime(st.st_mtimespec, w);
+        UnixToFileTime(BO1_ST_MTIME(st), w);
     return TRUE;
 }
 BOOL SetFileTime(HANDLE, const FILETIME *, const FILETIME *, const FILETIME *) { return TRUE; }
@@ -562,9 +652,9 @@ BOOL GetFileInformationByHandle(HANDLE h, LPBY_HANDLE_FILE_INFORMATION info)
         return FALSE;
     memset(info, 0, sizeof(*info));
     info->dwFileAttributes = AttributesFromStat(st, nullptr);
-    UnixToFileTime(st.st_birthtimespec, &info->ftCreationTime);
-    UnixToFileTime(st.st_atimespec, &info->ftLastAccessTime);
-    UnixToFileTime(st.st_mtimespec, &info->ftLastWriteTime);
+    UnixToFileTime(BO1_ST_CTIME(st), &info->ftCreationTime);
+    UnixToFileTime(BO1_ST_ATIME(st), &info->ftLastAccessTime);
+    UnixToFileTime(BO1_ST_MTIME(st), &info->ftLastWriteTime);
     info->dwVolumeSerialNumber = (DWORD)st.st_dev;
     info->nFileSizeHigh = (DWORD)((unsigned long long)st.st_size >> 32);
     info->nFileSizeLow = (DWORD)st.st_size;
@@ -603,9 +693,9 @@ BOOL GetFileAttributesExA(LPCSTR name, GET_FILEEX_INFO_LEVELS, LPVOID out)
     }
     WIN32_FILE_ATTRIBUTE_DATA *d = (WIN32_FILE_ATTRIBUTE_DATA *)out;
     d->dwFileAttributes = AttributesFromStat(st, nullptr);
-    UnixToFileTime(st.st_birthtimespec, &d->ftCreationTime);
-    UnixToFileTime(st.st_atimespec, &d->ftLastAccessTime);
-    UnixToFileTime(st.st_mtimespec, &d->ftLastWriteTime);
+    UnixToFileTime(BO1_ST_CTIME(st), &d->ftCreationTime);
+    UnixToFileTime(BO1_ST_ATIME(st), &d->ftLastAccessTime);
+    UnixToFileTime(BO1_ST_MTIME(st), &d->ftLastWriteTime);
     d->nFileSizeHigh = (DWORD)((unsigned long long)st.st_size >> 32);
     d->nFileSizeLow = (DWORD)st.st_size;
     return TRUE;
@@ -648,7 +738,7 @@ BOOL CopyFileA(LPCSTR from, LPCSTR to, BOOL failIfExists)
         SetError(ERROR_FILE_EXISTS);
         return FALSE;
     }
-    if (copyfile(s.c_str(), d.c_str(), nullptr, COPYFILE_ALL) != 0)
+    if (!CopyFileData(s.c_str(), d.c_str()))
     {
         SetError(ErrnoToWin32(errno));
         return FALSE;
@@ -682,7 +772,7 @@ BOOL MoveFileExA(LPCSTR from, LPCSTR to, DWORD flags)
     }
     if (rename(s.c_str(), d.c_str()) != 0)
     {
-        if (errno == EXDEV && (flags & MOVEFILE_COPY_ALLOWED) && copyfile(s.c_str(), d.c_str(), nullptr, COPYFILE_ALL) == 0)
+        if (errno == EXDEV && (flags & MOVEFILE_COPY_ALLOWED) && CopyFileData(s.c_str(), d.c_str()))
         {
             unlink(s.c_str());
             return TRUE;

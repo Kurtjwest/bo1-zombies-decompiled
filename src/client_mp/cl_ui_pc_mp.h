@@ -10,9 +10,9 @@ struct FriendInfo // sizeof=0xB8
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 dwid;              // XREF: UI_FeederItemText_CommmonPlayerListHandler+81/r
+    BO1_ALIGN8 unsigned __int64 dwid;              // XREF: UI_FeederItemText_CommmonPlayerListHandler+81/r
                                         // UI_FeederItemText_CommmonPlayerListHandler+8A/r ...
-    unsigned __int64 steamid;
+    BO1_ALIGN8 unsigned __int64 steamid;
     char name[32];                      // XREF: LAN_GetServerInfo(int,int,char *,int)+602/o
                                         // SV_BotNameRandomFriend(int,char *,int):loc_7030D4/o ...
     char presence[128];                 // XREF: UI_FeederItemText_CommmonPlayerListHandler+295/o

@@ -11,7 +11,7 @@
 #include "kernel32_internal.h"
 #include "main_thread.h"
 #include "w32_platform.h"
-#include "../macos/cocoa_bridge.h"
+#include "../common/platform_bridge.h"
 
 #include "mac_keycodes.h"
 #include <algorithm>
@@ -133,7 +133,13 @@ std::string Lower(const char *s)
     return r;
 }
 
+#if defined(__APPLE__)
 const int kTitleBar = 28; // macOS standard title bar height (points)
+#else
+// Linux: the window manager draws (and sizes) the decorations around the client area SDL positions, so a window's
+// rectangle is its client rectangle as far as the engine's sizing arithmetic goes
+const int kTitleBar = 0;
+#endif
 
 int TitleBarUnits(DWORD style)
 {

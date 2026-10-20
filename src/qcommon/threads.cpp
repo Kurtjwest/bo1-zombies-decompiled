@@ -127,10 +127,10 @@ unsigned int Win_InitThreads()
     HANDLE CurrentProcess; // eax
     DWORD result; // eax
     DWORD cpuCount; // [esp+0h] [ebp-94h]
-    DWORD systemAffinityMask; // [esp+4h] [ebp-90h] BYREF
+    DWORD_PTR systemAffinityMask; // [esp+4h] [ebp-90h] BYREF
     DWORD threadAffinityMask; // [esp+8h] [ebp-8Ch]
     DWORD affinityMaskBits[33]; // [esp+Ch] [ebp-88h]
-    DWORD processAffinityMask; // [esp+90h] [ebp-4h] BYREF
+    DWORD_PTR processAffinityMask; // [esp+90h] [ebp-4h] BYREF
 
     CurrentProcess = GetCurrentProcess();
     result = GetProcessAffinityMask(CurrentProcess, &processAffinityMask, &systemAffinityMask);
@@ -256,6 +256,13 @@ void __cdecl Sys_CreateThread(void (__cdecl *function)(unsigned int), unsigned i
     SetThreadName(threadId[threadContext], s_threadNames[threadContext]);
 }
 
+#if defined(_WIN32) && !defined(_MSC_VER)
+static LONG WINAPI Sys_ThreadNameContinue(EXCEPTION_POINTERS *e)
+{
+    return e->ExceptionRecord->ExceptionCode == 0x406D1388 ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
+}
+#endif
+
 void __cdecl SetThreadName(unsigned int dwThreadID, const char *szThreadName)
 {
     tagTHREADNAME_INFO info; // [esp+10h] [ebp-28h] BYREF
@@ -271,12 +278,47 @@ void __cdecl SetThreadName(unsigned int dwThreadID, const char *szThreadName)
     if ( dwThreadID == 0xFFFFFFFF || dwThreadID == GetCurrentThreadId() )
         PROF_THREADNAME(szThreadName);
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
     // this try/except needs to be here, otherwise it wont run without a debugger :D
     __try {
         RaiseException(0x406D1388, 0, sizeof(info) / sizeof(DWORD), (ULONG_PTR *)&info);
     }
     __except (EXCEPTION_EXECUTE_HANDLER) {
+    }
+#elif defined(_WIN32)
+    // clang and MinGW (cmake/windows.cmake): the thread's description (Windows 10 1607 and later: debuggers,
+    // profilers, crash dumps), and the old debugger exception only with a debugger attached, which takes it first;
+    // without __try a vectored handler then continues past it. (A native layout: info's szName is a 32-bit handle on
+    // x64.)
+    typedef HRESULT(WINAPI * SetThreadDescriptionFn)(HANDLE, PCWSTR);
+    static const SetThreadDescriptionFn setThreadDescription =
+        (SetThreadDescriptionFn)(void *)GetProcAddress(GetModuleHandleA("kernel32.dll"), "SetThreadDescription");
+    if (setThreadDescription && szThreadName)
+    {
+        const bool self = dwThreadID == 0xFFFFFFFF || dwThreadID == GetCurrentThreadId();
+        HANDLE thread = self ? GetCurrentThread() : OpenThread(THREAD_SET_LIMITED_INFORMATION, FALSE, dwThreadID);
+        if (thread)
+        {
+            wchar_t wideName[64];
+            MultiByteToWideChar(CP_ACP, 0, szThreadName, -1, wideName, 64);
+            wideName[63] = 0;
+            setThreadDescription(thread, wideName);
+            if (!self)
+                CloseHandle(thread);
+        }
+    }
+    if (IsDebuggerPresent())
+    {
+        static PVOID continueHandler = AddVectoredExceptionHandler(1, Sys_ThreadNameContinue);
+        (void)continueHandler;
+        struct
+        {
+            DWORD dwType;
+            LPCSTR szName;
+            DWORD dwThreadID;
+            DWORD dwFlags;
+        } native = {0x1000, szThreadName, dwThreadID, 0};
+        RaiseException(0x406D1388, 0, sizeof(native) / sizeof(ULONG_PTR), (const ULONG_PTR *)&native);
     }
 #else
     // the compatibility layer's RaiseException names the thread (pthread_setname_np) and returns

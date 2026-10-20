@@ -128,7 +128,7 @@ struct GfxViewParms // sizeof=0x140
     float zFar;
 };
 
-struct GfxDrawSurfFields // sizeof=0x8
+struct BO1_ALIGN8 GfxDrawSurfFields // sizeof=0x8
 {                                                                             // XREF: GfxDrawSurf/r
         unsigned __int64 objectId : 16;
         unsigned __int64 fade : 4;
@@ -165,7 +165,7 @@ union GfxDrawSurf // sizeof=0x8
 {                                                                             // XREF: R_AddBModelSurfacesCamera(BModelDrawInfo restrict *,GfxBrushModel const restrict *,GfxDrawSurf restrict * * const,GfxDrawSurf restrict * * const,uint,float,float,uint)+1FC/w
                                                                                 // R_AddBModelSurfacesCamera(BModelDrawInfo restrict *,GfxBrushModel const restrict *,GfxDrawSurf restrict * * const,GfxDrawSurf restrict * * const,uint,float,float,uint)+1FF/w ...
         GfxDrawSurfFields fields;
-        unsigned __int64 packed;
+        BO1_ALIGN8 unsigned __int64 packed;
 };
 
 struct GfxDelayedCmdBuf // sizeof=0x10

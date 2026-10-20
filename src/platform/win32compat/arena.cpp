@@ -2,32 +2,267 @@
 //
 // The engine was written for (and decompiled from) a 32-bit program: asset structures keep 32-bit pointer fields,
 // and plenty of code keeps addresses in 32-bit integers and does arithmetic on them. A 64-bit macOS process cannot
-// map anything below 4 GB, so instead every address the engine produces is given a 32-bit handle such that handle
-// arithmetic is address arithmetic:
+// map anything below 4 GB (Linux keeps the low 4 GB for the executable and its first mappings, not for us either, and
+// 64-bit Windows hands out memory anywhere too), so instead every address the engine produces is given a 32-bit
+// handle such that handle arithmetic is address arithmetic:
 //   - the arena: one contiguous 3.25 GB reservation. VirtualAlloc (hunk, fastfile blocks, PMem), the C heap of the
-//     executable (arena_malloc.cpp) and the stacks of CreateThread threads are carved out of it; a handle is the
-//     offset from its base.
-//   - windows: the executable image (globals, string literals, code) and the main thread's stack, mapped linearly
-//     onto a handle range of their own.
+//     executable (arena_malloc.cpp) and, on macOS and Linux, the stacks of CreateThread threads are carved out of
+//     it; a handle is the offset from its base.
+//   - windows: the executable image (globals, string literals, code) and the main thread's stack (on Windows every
+//     thread's stack: src/platform/windows/win64_memory.cpp), mapped linearly onto a handle range of their own.
 //   - an escape table for any other address (system heaps, other images): such handles round-trip exactly.
 // See the handle layout in ptr32.h.
 
 #include <universal/ptr32.h>
 #include "arena.h"
 
+#if defined(_WIN32)
+// 64-bit Windows (cmake/windows.cmake): the same arena, reserved with VirtualAlloc; the executable's malloc family and
+// VirtualAlloc calls are routed into it (arena_malloc.cpp, src/platform/windows/win64_memory.cpp)
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#else
+#if defined(__APPLE__)
 #include <mach-o/dyld.h>
 #include <mach-o/getsect.h>
 #include <mach-o/loader.h>
+#else
+#include <link.h>
+#endif
 #include <sys/mman.h>
 #include <unistd.h>
 #include <pthread.h>
+#include <sched.h>
+#endif
 #include <atomic>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <map>
+#include <new>
 
+#if defined(__APPLE__)
 extern "C" const struct mach_header_64 _mh_execute_header;
+#endif
+
+namespace
+{
+// Locks usable before the C runtime has started: on Windows the arena serves the runtime's own first allocations.
+#if defined(_WIN32)
+struct ArenaLock
+{
+    SRWLOCK l = SRWLOCK_INIT;
+    void lock() { AcquireSRWLockExclusive(&l); }
+    void unlock() { ReleaseSRWLockExclusive(&l); }
+};
+inline void YieldThread() { SwitchToThread(); }
+size_t SystemPageSize()
+{
+    SYSTEM_INFO si;
+    GetSystemInfo(&si);
+    return si.dwPageSize;
+}
+#else
+struct ArenaLock
+{
+    pthread_mutex_t m = PTHREAD_MUTEX_INITIALIZER;
+    void lock() { pthread_mutex_lock(&m); }
+    void unlock() { pthread_mutex_unlock(&m); }
+};
+inline void YieldThread() { sched_yield(); }
+size_t SystemPageSize() { return (size_t)sysconf(_SC_PAGESIZE); }
+#endif
+
+// The bookkeeping maps: on Windows their nodes come from the process heap, never from the arena's own heap (all of
+// the executable's allocations land there, these maps' own included otherwise, while the region lock is held). On
+// macOS and Linux the C++ allocator is the system's already.
+#if defined(_WIN32)
+template <typename T> struct SystemAllocator
+{
+    using value_type = T;
+    SystemAllocator() = default;
+    template <typename U> SystemAllocator(const SystemAllocator<U> &) {}
+    T *allocate(size_t n)
+    {
+        void *p = HeapAlloc(GetProcessHeap(), 0, n * sizeof(T));
+        if (!p)
+            abort();
+        return (T *)p;
+    }
+    void deallocate(T *p, size_t) { HeapFree(GetProcessHeap(), 0, p); }
+    template <typename U> bool operator==(const SystemAllocator<U> &) const { return true; }
+    template <typename U> bool operator!=(const SystemAllocator<U> &) const { return false; }
+};
+using RangeMap = std::map<uintptr_t, uintptr_t, std::less<uintptr_t>, SystemAllocator<std::pair<const uintptr_t, uintptr_t>>>;
+#else
+using RangeMap = std::map<uintptr_t, uintptr_t>;
+#endif
+
+// ---- address space ----
+#if defined(_WIN32)
+// (the Ex calls: the executable's VirtualAlloc, VirtualFree and VirtualQuery come back here, win64_memory.cpp)
+void *ReserveVirtual(size_t size) { return VirtualAllocEx(GetCurrentProcess(), nullptr, size, MEM_RESERVE, PAGE_NOACCESS); }
+void *CommitAnywhere(size_t size)
+{
+    return VirtualAllocEx(GetCurrentProcess(), nullptr, size, MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+}
+bool CommitPages(void *addr, size_t size)
+{
+    return VirtualAllocEx(GetCurrentProcess(), addr, size, MEM_COMMIT, PAGE_READWRITE) != nullptr;
+}
+// the pages read back as zero when they are committed again
+bool DecommitPages(void *addr, size_t size) { return VirtualFreeEx(GetCurrentProcess(), addr, size, MEM_DECOMMIT) != 0; }
+void ProtectNoAccess(void *addr, size_t size)
+{
+    DWORD old;
+    VirtualProtectEx(GetCurrentProcess(), addr, size, PAGE_NOACCESS, &old);
+}
+#else
+void *ReserveVirtual(size_t size)
+{
+    void *p = mmap(nullptr, size, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0);
+    return p == MAP_FAILED ? nullptr : p;
+}
+
+void *CommitAnywhere(size_t size)
+{
+    void *p = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
+    return p == MAP_FAILED ? nullptr : p;
+}
+bool CommitPages(void *addr, size_t size) { return mprotect(addr, size, PROT_READ | PROT_WRITE) == 0; }
+bool DecommitPages(void *addr, size_t size)
+{
+    return mmap(addr, size, PROT_NONE, MAP_FIXED | MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0) != MAP_FAILED;
+}
+void ProtectNoAccess(void *addr, size_t size) { mprotect(addr, size, PROT_NONE); }
+#endif
+} // namespace
+
+#if BO1_PTR32_IDENTITY
+// ---------------------------------------------------------------------------------------------------------------
+// 32-bit processes (x86, 32-bit ARM): every address is its own 32-bit handle (ptr32.h), so there is no arena to
+// reserve: the regions below are mapped anywhere, and the heap further down carves its blocks out of them.
+// ---------------------------------------------------------------------------------------------------------------
+namespace
+{
+constexpr uintptr_t kGranule = 0x10000; // Windows allocation granularity
+constinit ArenaLock g_regionLock;
+RangeMap *g_reserved; // live reservations: start -> size
+size_t g_pageSize = 4096;
+
+uintptr_t AlignUp(uintptr_t v, uintptr_t a) { return (v + a - 1) & ~(a - 1); }
+uintptr_t AlignDown(uintptr_t v, uintptr_t a) { return v & ~(a - 1); }
+} // namespace
+
+namespace bo1ptr
+{
+void InitArena()
+{
+    static std::atomic<int> once{0};
+    int expected = 0;
+    if (once.compare_exchange_strong(expected, 1))
+    {
+        g_pageSize = SystemPageSize();
+        alignas(RangeMap) static unsigned char reservedStorage[sizeof(RangeMap)];
+        g_reserved = new (reservedStorage) RangeMap();
+        once.store(2, std::memory_order_release);
+    }
+    else
+    {
+        while (once.load(std::memory_order_acquire) != 2)
+            YieldThread();
+    }
+}
+
+bool InArena(const volatile void *) { return true; }
+
+uint32_t RegisterWindow(const void *addr, size_t) { return (uint32_t)(uintptr_t)addr; }
+void UnregisterWindow(const void *) {}
+} // namespace bo1ptr
+
+void *Arena_Reserve(size_t size, bool commit)
+{
+    bo1ptr::InitArena();
+    size = AlignUp(size ? size : 1, kGranule);
+    // 64 KB aligned, as VirtualAlloc's reservations are: map a granule more and trim
+    char *raw = (char *)mmap(nullptr, size + kGranule, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0);
+    if (raw == MAP_FAILED)
+        return nullptr;
+    char *base = (char *)AlignUp((uintptr_t)raw, kGranule);
+    if (base > raw)
+        munmap(raw, (size_t)(base - raw));
+    const size_t tail = (size_t)(raw + size + kGranule - (base + size));
+    if (tail)
+        munmap(base + size, tail);
+    if (commit && mprotect(base, size, PROT_READ | PROT_WRITE) != 0)
+    {
+        munmap(base, size);
+        return nullptr;
+    }
+    g_regionLock.lock();
+    (*g_reserved)[(uintptr_t)base] = size;
+    g_regionLock.unlock();
+    return base;
+}
+
+bool Arena_Commit(void *addr, size_t size)
+{
+    const uintptr_t a = AlignDown((uintptr_t)addr, g_pageSize);
+    const uintptr_t e = AlignUp((uintptr_t)addr + size, g_pageSize);
+    return mprotect((void *)a, e - a, PROT_READ | PROT_WRITE) == 0;
+}
+
+bool Arena_Decommit(void *addr, size_t size)
+{
+    const uintptr_t a = AlignUp((uintptr_t)addr, g_pageSize);
+    const uintptr_t e = AlignDown((uintptr_t)addr + size, g_pageSize);
+    if (e <= a)
+        return true;
+    void *r = mmap((void *)a, e - a, PROT_NONE, MAP_FIXED | MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0);
+    return r != MAP_FAILED;
+}
+
+bool Arena_Release(void *addr)
+{
+    bo1ptr::InitArena();
+    g_regionLock.lock();
+    auto it = g_reserved->find((uintptr_t)addr);
+    if (it == g_reserved->end())
+    {
+        g_regionLock.unlock();
+        return false;
+    }
+    const size_t size = it->second;
+    g_reserved->erase(it);
+    g_regionLock.unlock();
+    munmap(addr, size);
+    return true;
+}
+
+bool Arena_QueryReservation(const void *addr, void **base, size_t *size)
+{
+    bo1ptr::InitArena();
+    const uintptr_t a = (uintptr_t)addr;
+    g_regionLock.lock();
+    bool found = false;
+    auto it = g_reserved->upper_bound(a);
+    if (it != g_reserved->begin())
+    {
+        --it;
+        if (a < it->first + it->second)
+        {
+            *base = (void *)it->first;
+            *size = it->second;
+            found = true;
+        }
+    }
+    g_regionLock.unlock();
+    return found;
+}
+
+#else // !BO1_PTR32_IDENTITY: 64-bit processes, the arena
 
 namespace bo1ptr
 {
@@ -42,45 +277,108 @@ constexpr uintptr_t kGranule = 0x10000; // Windows allocation granularity; also 
 constexpr uint32_t kEscapeCapacity = bo1ptr::kNegativeBase - bo1ptr::kEscapeBase;
 constexpr uint32_t kEscapeHashBits = 24; // 16M slots (pages are committed on first touch)
 
-std::atomic<int> g_arenaInitState{0}; // 0 = no, 1 = in progress, 2 = done
-pthread_mutex_t g_regionLock = PTHREAD_MUTEX_INITIALIZER;
+// (constinit, here and below: the arena is in use before the program's static constructors run, from the first malloc
+// or a TLS callback on Windows, so none of its state may have a constructor that would reset it afterwards)
+constinit std::atomic<int> g_arenaInitState{0}; // 0 = no, 1 = in progress, 2 = done
+constinit ArenaLock g_regionLock;
 
 // free ranges [start, end) as offsets from the arena base, keyed by start
-std::map<uintptr_t, uintptr_t> *g_free;
+RangeMap *g_free;
 // live reservations: start -> size
-std::map<uintptr_t, uintptr_t> *g_reserved;
+RangeMap *g_reserved;
 size_t g_pageSize = 16384;
 
-// windows: [addr, addr + size) <-> [handle, handle + size)
+// windows: [addr, addr + size) <-> [handle, handle + size). A slot keeps its handle range for good; a window that
+// goes away (an exited thread's stack, UnregisterWindow) leaves the slot free for the next one that fits in it.
+// Readers take no lock: a slot that changes is bracketed by g_windowSeq going odd and even again (a sequence lock),
+// and new slots are published through g_windowCount.
 struct Window
 {
-    uintptr_t addr;
-    uint32_t handle;
-    uint32_t size;
+    std::atomic<uintptr_t> addr{0};
+    std::atomic<uint32_t> size{0}; // 0: free
+    uint32_t handle = 0;           // first handle of the slot (fixed)
+    uint32_t capacity = 0;         // handles the slot owns (fixed)
 };
+#if defined(_WIN32)
+// every thread's stack is a window there (src/platform/windows/win64_memory.cpp)
+constexpr int kMaxWindows = 1024;
+#else
 constexpr int kMaxWindows = 16;
-Window g_windows[kMaxWindows];
-std::atomic<int> g_windowCount{0};
-uint32_t g_nextWindowHandle = bo1ptr::kWindowBase;
-pthread_mutex_t g_windowLock = PTHREAD_MUTEX_INITIALIZER;
+#endif
+constinit Window g_windows[kMaxWindows];
+constinit std::atomic<int> g_windowCount{0};
+constinit std::atomic<uint32_t> g_windowSeq{0};
+constinit uint32_t g_nextWindowHandle = bo1ptr::kWindowBase;
+constinit ArenaLock g_windowLock;
 
 // escape table
-pthread_mutex_t g_escapeLock = PTHREAD_MUTEX_INITIALIZER;
-std::atomic<uint32_t> g_escapeCount{0};
+constinit ArenaLock g_escapeLock;
+constinit std::atomic<uint32_t> g_escapeCount{0};
 void *volatile *g_escapeTable; // escape index -> address
 uintptr_t *g_escapeHashKeys;   // address, 0 = empty
 uint32_t *g_escapeHashValues;  // escape index
 
-void *ReserveVirtual(size_t size)
+// ---- windows: lock-free lookups ----
+bool WindowHandleOf(uintptr_t a, uint32_t *handle)
 {
-    void *p = mmap(nullptr, size, PROT_NONE, MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0);
-    return p == MAP_FAILED ? nullptr : p;
+    for (;;)
+    {
+        const uint32_t seq = g_windowSeq.load(std::memory_order_acquire);
+        if (!(seq & 1))
+        {
+            bool found = false;
+            uint32_t h = 0;
+            const int nw = g_windowCount.load(std::memory_order_acquire);
+            for (int i = 0; i < nw; ++i)
+            {
+                const uintptr_t d = a - g_windows[i].addr.load(std::memory_order_relaxed);
+                if (d < g_windows[i].size.load(std::memory_order_relaxed))
+                {
+                    h = g_windows[i].handle + (uint32_t)d;
+                    found = true;
+                    break;
+                }
+            }
+            std::atomic_thread_fence(std::memory_order_acquire);
+            if (g_windowSeq.load(std::memory_order_relaxed) == seq)
+            {
+                *handle = h;
+                return found;
+            }
+        }
+        YieldThread();
+    }
 }
 
-void *CommitAnywhere(size_t size)
+bool WindowAddressOf(uint32_t v, uintptr_t *addr)
 {
-    void *p = mmap(nullptr, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANON, -1, 0);
-    return p == MAP_FAILED ? nullptr : p;
+    for (;;)
+    {
+        const uint32_t seq = g_windowSeq.load(std::memory_order_acquire);
+        if (!(seq & 1))
+        {
+            bool found = false;
+            uintptr_t r = 0;
+            const int nw = g_windowCount.load(std::memory_order_acquire);
+            for (int i = 0; i < nw; ++i)
+            {
+                const uint32_t d = v - g_windows[i].handle;
+                if (d < g_windows[i].size.load(std::memory_order_relaxed))
+                {
+                    r = g_windows[i].addr.load(std::memory_order_relaxed) + d;
+                    found = true;
+                    break;
+                }
+            }
+            std::atomic_thread_fence(std::memory_order_acquire);
+            if (g_windowSeq.load(std::memory_order_relaxed) == seq)
+            {
+                *addr = r;
+                return found;
+            }
+        }
+        YieldThread();
+    }
 }
 
 uintptr_t AlignUp(uintptr_t v, uintptr_t a) { return (v + a - 1) & ~(a - 1); }
@@ -98,6 +396,27 @@ void InitEscapeTable()
     }
 }
 
+#if defined(_WIN32)
+// The executable's image: its headers and sections (code, read-only data, data and bss), as the loader mapped them,
+// without the discardable ones at its end (relocations, and the DWARF debug information a MinGW build keeps there).
+void RegisterImageWindow()
+{
+    const char *base = (const char *)GetModuleHandleW(nullptr);
+    const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)(base + ((const IMAGE_DOS_HEADER *)base)->e_lfanew);
+    const IMAGE_SECTION_HEADER *sec = IMAGE_FIRST_SECTION(nt);
+    uintptr_t end = nt->OptionalHeader.SizeOfHeaders;
+    for (unsigned i = 0; i < nt->FileHeader.NumberOfSections; ++i)
+    {
+        if (sec[i].Characteristics & IMAGE_SCN_MEM_DISCARDABLE)
+            continue;
+        const uintptr_t size = sec[i].Misc.VirtualSize ? sec[i].Misc.VirtualSize : sec[i].SizeOfRawData;
+        if (sec[i].VirtualAddress + size > end)
+            end = sec[i].VirtualAddress + size;
+    }
+    if (!bo1ptr::RegisterWindow(base, end))
+        fprintf(stderr, "[arena] cannot map the executable image (%zu bytes) to handles\n", (size_t)end);
+}
+#elif defined(__APPLE__)
 // The main executable's mapped segments (__TEXT .. __DATA), without __PAGEZERO and __LINKEDIT.
 void RegisterImageWindow()
 {
@@ -128,6 +447,31 @@ void RegisterImageWindow()
     if (lo < hi && !bo1ptr::RegisterWindow((const void *)lo, hi - lo))
         fprintf(stderr, "[arena] cannot map the executable image (%zu bytes) to handles\n", (size_t)(hi - lo));
 }
+#else
+// The main executable's loadable segments (text, read-only data, data and bss), from its ELF program headers.
+int ImageSegments(struct dl_phdr_info *info, size_t, void *data)
+{
+    uintptr_t *lohi = (uintptr_t *)data;
+    for (int i = 0; i < info->dlpi_phnum; ++i)
+    {
+        const ElfW(Phdr) &ph = info->dlpi_phdr[i];
+        if (ph.p_type != PT_LOAD || !ph.p_memsz)
+            continue;
+        const uintptr_t lo = info->dlpi_addr + ph.p_vaddr, hi = lo + ph.p_memsz;
+        lohi[0] = lo < lohi[0] ? lo : lohi[0];
+        lohi[1] = hi > lohi[1] ? hi : lohi[1];
+    }
+    return 1; // the main program is the first object dl_iterate_phdr reports
+}
+
+void RegisterImageWindow()
+{
+    uintptr_t lohi[2] = {UINTPTR_MAX, 0};
+    dl_iterate_phdr(ImageSegments, lohi);
+    if (lohi[0] < lohi[1] && !bo1ptr::RegisterWindow((const void *)lohi[0], lohi[1] - lohi[0]))
+        fprintf(stderr, "[arena] cannot map the executable image (%zu bytes) to handles\n", (size_t)(lohi[1] - lohi[0]));
+}
+#endif
 } // namespace
 
 namespace bo1ptr
@@ -140,10 +484,10 @@ void InitArena()
     if (!g_arenaInitState.compare_exchange_strong(expected, 1))
     {
         while (g_arenaInitState.load(std::memory_order_acquire) != 2)
-            sched_yield();
+            YieldThread();
         return;
     }
-    g_pageSize = (size_t)sysconf(_SC_PAGESIZE);
+    g_pageSize = SystemPageSize();
     // Reserve the arena plus one granule of slack so the base can be aligned.
     const size_t want = (size_t)kArenaSize + kGranule;
     char *raw = (char *)ReserveVirtual(want);
@@ -153,9 +497,10 @@ void InitArena()
         abort();
     }
     char *base = (char *)AlignUp((uintptr_t)raw, kGranule);
-    // the maps' nodes come from the system heap (the C++ allocator), never from the arena's own malloc
-    g_free = new std::map<uintptr_t, uintptr_t>();
-    g_reserved = new std::map<uintptr_t, uintptr_t>();
+    // the maps' nodes come from the system heap (RangeMap), never from the arena's own malloc
+    alignas(RangeMap) static unsigned char freeStorage[sizeof(RangeMap)], reservedStorage[sizeof(RangeMap)];
+    g_free = new (freeStorage) RangeMap();
+    g_reserved = new (reservedStorage) RangeMap();
     // Handles below kSmallLimit are plain integers: the first granule is never handed out.
     (*g_free)[kSmallLimit] = (uintptr_t)kArenaSize;
     InitEscapeTable();
@@ -175,25 +520,69 @@ uint32_t RegisterWindow(const void *addr, size_t size)
 {
     const uintptr_t start = AlignDown((uintptr_t)addr, kGranule);
     const uintptr_t end = AlignUp((uintptr_t)addr + size, kGranule);
-    pthread_mutex_lock(&g_windowLock);
+    if (end - start > (uintptr_t)(kEscapeBase - kWindowBase))
+        return 0;
+    const uint32_t need = (uint32_t)(end - start);
+    g_windowLock.lock();
     const int n = g_windowCount.load(std::memory_order_relaxed);
+    // the smallest free slot it fits in
+    int slot = -1;
+    for (int i = 0; i < n; ++i)
+        if (!g_windows[i].size.load(std::memory_order_relaxed) && g_windows[i].capacity >= need &&
+            (slot < 0 || g_windows[i].capacity < g_windows[slot].capacity))
+            slot = i;
     uint32_t handle = 0;
-    if (n < kMaxWindows && end - start <= (uintptr_t)(kEscapeBase - g_nextWindowHandle))
+    if (slot >= 0)
     {
+        Window &w = g_windows[slot];
+        handle = w.handle;
+        g_windowSeq.fetch_add(1, std::memory_order_relaxed); // odd: readers retry
+        std::atomic_thread_fence(std::memory_order_release);
+        w.addr.store(start, std::memory_order_relaxed);
+        w.size.store(need, std::memory_order_relaxed);
+        g_windowSeq.fetch_add(1, std::memory_order_release);
+    }
+    else if (n < kMaxWindows && need <= (uint32_t)(kEscapeBase - g_nextWindowHandle))
+    {
+        Window &w = g_windows[n];
         handle = g_nextWindowHandle;
-        g_windows[n] = { start, handle, (uint32_t)(end - start) };
-        g_nextWindowHandle += (uint32_t)(end - start);
+        w.handle = handle;
+        w.capacity = need;
+        w.addr.store(start, std::memory_order_relaxed);
+        w.size.store(need, std::memory_order_relaxed);
+        g_nextWindowHandle += need;
         if (handle == kWindowBase)
         {
             // the first window (the executable image, RegisterImageWindow): also decoded inline (ptr32.h); set
             // before the arena is published, so before any other thread exists
             g_imageWindowStart = start;
-            g_imageWindowSize = (uint32_t)(end - start);
+            g_imageWindowSize = need;
         }
         g_windowCount.store(n + 1, std::memory_order_release);
     }
-    pthread_mutex_unlock(&g_windowLock);
+    g_windowLock.unlock();
     return handle ? handle + (uint32_t)((uintptr_t)addr - start) : 0;
+}
+
+void UnregisterWindow(const void *addr)
+{
+    const uintptr_t start = AlignDown((uintptr_t)addr, kGranule);
+    g_windowLock.lock();
+    const int n = g_windowCount.load(std::memory_order_relaxed);
+    for (int i = 0; i < n; ++i)
+    {
+        Window &w = g_windows[i];
+        // (the image window, the first, stays)
+        if (w.handle != kWindowBase && w.size.load(std::memory_order_relaxed) && w.addr.load(std::memory_order_relaxed) == start)
+        {
+            g_windowSeq.fetch_add(1, std::memory_order_relaxed);
+            std::atomic_thread_fence(std::memory_order_release);
+            w.size.store(0, std::memory_order_relaxed);
+            g_windowSeq.fetch_add(1, std::memory_order_release);
+            break;
+        }
+    }
+    g_windowLock.unlock();
 }
 
 uint32_t EncodeSlow(const volatile void *p)
@@ -210,24 +599,20 @@ uint32_t EncodeSlow(const volatile void *p)
         if (d - kSmallLimit < kArenaSize - kSmallLimit)
             return (uint32_t)d;
     }
-    const int nw = g_windowCount.load(std::memory_order_acquire);
-    for (int i = 0; i < nw; ++i)
-    {
-        const uintptr_t d = a - g_windows[i].addr;
-        if (d < g_windows[i].size)
-            return g_windows[i].handle + (uint32_t)d;
-    }
+    uint32_t windowHandle;
+    if (WindowHandleOf(a, &windowHandle))
+        return windowHandle;
     // escape table
     const uint32_t mask = (1u << kEscapeHashBits) - 1u;
     uint32_t h = (uint32_t)((a >> 3) * 0x9E3779B97F4A7C15ull >> (64 - kEscapeHashBits));
-    pthread_mutex_lock(&g_escapeLock);
+    g_escapeLock.lock();
     for (;;)
     {
         const uintptr_t k = g_escapeHashKeys[h];
         if (k == a)
         {
             const uint32_t v = g_escapeHashValues[h];
-            pthread_mutex_unlock(&g_escapeLock);
+            g_escapeLock.unlock();
             return kEscapeBase + v;
         }
         if (k == 0)
@@ -237,7 +622,7 @@ uint32_t EncodeSlow(const volatile void *p)
     const uint32_t idx = g_escapeCount.load(std::memory_order_relaxed);
     if (idx >= kEscapeCapacity || idx >= (1u << kEscapeHashBits) / 2)
     {
-        pthread_mutex_unlock(&g_escapeLock);
+        g_escapeLock.unlock();
         fprintf(stderr, "[arena] Ptr32 escape table exhausted\n");
         abort();
     }
@@ -248,7 +633,7 @@ uint32_t EncodeSlow(const volatile void *p)
     g_escapeCount.store(idx + 1, std::memory_order_release);
     if (idx && (idx & (idx - 1)) == 0 && idx >= 4096)
         fprintf(stderr, "[arena] %u escaped pointers\n", idx);
-    pthread_mutex_unlock(&g_escapeLock);
+    g_escapeLock.unlock();
     return kEscapeBase + idx;
 }
 
@@ -265,14 +650,8 @@ void *DecodeSlow(uint32_t v)
     }
     if (v < kWindowBase) // arena handle before the arena exists: cannot have been produced by Encode
         return g_arenaBase ? g_arenaBase + v : nullptr;
-    const int nw = g_windowCount.load(std::memory_order_acquire);
-    for (int i = 0; i < nw; ++i)
-    {
-        const uint32_t d = v - g_windows[i].handle;
-        if (d < g_windows[i].size)
-            return (void *)(g_windows[i].addr + d);
-    }
-    return nullptr;
+    uintptr_t windowAddr;
+    return WindowAddressOf(v, &windowAddr) ? (void *)windowAddr : nullptr;
 }
 } // namespace bo1ptr
 
@@ -284,7 +663,7 @@ void *Arena_Reserve(size_t size, bool commit)
 {
     bo1ptr::InitArena();
     size = AlignUp(size ? size : 1, kGranule);
-    pthread_mutex_lock(&g_regionLock);
+    g_regionLock.lock();
     void *result = nullptr;
     for (auto it = g_free->begin(); it != g_free->end(); ++it)
     {
@@ -299,13 +678,13 @@ void *Arena_Reserve(size_t size, bool commit)
             break;
         }
     }
-    pthread_mutex_unlock(&g_regionLock);
+    g_regionLock.unlock();
     if (!result)
     {
         fprintf(stderr, "[arena] out of arena address space for a %zu-byte reservation; using system memory\n", size);
         return commit ? CommitAnywhere(size) : ReserveVirtual(size);
     }
-    if (commit && mprotect(result, size, PROT_READ | PROT_WRITE) != 0)
+    if (commit && !CommitPages(result, size))
     {
         Arena_Release(result);
         return nullptr;
@@ -317,7 +696,7 @@ bool Arena_Commit(void *addr, size_t size)
 {
     const uintptr_t a = AlignDown((uintptr_t)addr, g_pageSize);
     const uintptr_t e = AlignUp((uintptr_t)addr + size, g_pageSize);
-    return mprotect((void *)a, e - a, PROT_READ | PROT_WRITE) == 0;
+    return CommitPages((void *)a, e - a);
 }
 
 bool Arena_Decommit(void *addr, size_t size)
@@ -327,8 +706,7 @@ bool Arena_Decommit(void *addr, size_t size)
     const uintptr_t e = AlignDown((uintptr_t)addr + size, g_pageSize);
     if (e <= a)
         return true;
-    void *r = mmap((void *)a, e - a, PROT_NONE, MAP_FIXED | MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0);
-    return r != MAP_FAILED;
+    return DecommitPages((void *)a, e - a);
 }
 
 bool Arena_Release(void *addr)
@@ -336,16 +714,16 @@ bool Arena_Release(void *addr)
     if (!bo1ptr::InArena(addr))
         return false;
     const uintptr_t start = (uintptr_t)addr - (uintptr_t)bo1ptr::g_arenaBase;
-    pthread_mutex_lock(&g_regionLock);
+    g_regionLock.lock();
     auto it = g_reserved->find(start);
     if (it == g_reserved->end())
     {
-        pthread_mutex_unlock(&g_regionLock);
+        g_regionLock.unlock();
         return false;
     }
     const uintptr_t size = it->second;
     g_reserved->erase(it);
-    mmap(addr, size, PROT_NONE, MAP_FIXED | MAP_PRIVATE | MAP_ANON | MAP_NORESERVE, -1, 0);
+    DecommitPages(addr, size);
     // return to the free list, coalescing with neighbours
     uintptr_t s = start, e = start + size;
     auto next = g_free->lower_bound(s);
@@ -364,7 +742,7 @@ bool Arena_Release(void *addr)
         }
     }
     (*g_free)[s] = e;
-    pthread_mutex_unlock(&g_regionLock);
+    g_regionLock.unlock();
     return true;
 }
 
@@ -373,7 +751,7 @@ bool Arena_QueryReservation(const void *addr, void **base, size_t *size)
     if (!bo1ptr::InArena(addr))
         return false;
     const uintptr_t off = (uintptr_t)addr - (uintptr_t)bo1ptr::g_arenaBase;
-    pthread_mutex_lock(&g_regionLock);
+    g_regionLock.lock();
     auto it = g_reserved->upper_bound(off);
     bool found = false;
     if (it != g_reserved->begin())
@@ -386,9 +764,11 @@ bool Arena_QueryReservation(const void *addr, void **base, size_t *size)
             found = true;
         }
     }
-    pthread_mutex_unlock(&g_regionLock);
+    g_regionLock.unlock();
     return found;
 }
+
+#endif // BO1_PTR32_IDENTITY
 
 // ---------------------------------------------------------------------------------------------------------------
 // Thread stacks
@@ -401,7 +781,7 @@ void *Arena_AllocStack(size_t size, size_t *usable)
     char *p = (char *)Arena_Reserve(size + g_pageSize, true);
     if (!p)
         return nullptr;
-    mprotect(p, g_pageSize, PROT_NONE);
+    ProtectNoAccess(p, g_pageSize);
     *usable = size;
     return p + g_pageSize;
 }
@@ -444,7 +824,7 @@ struct FreeNode
 {
     FreeNode *next;
 };
-pthread_mutex_t g_heapLock = PTHREAD_MUTEX_INITIALIZER;
+constinit ArenaLock g_heapLock;
 FreeNode *g_classFree[kClasses];
 char *g_chunkPos;
 char *g_chunkEnd;
@@ -493,7 +873,7 @@ void *Arena_Malloc(size_t n)
         h->size = sz;
         return h + 1;
     }
-    pthread_mutex_lock(&g_heapLock);
+    g_heapLock.lock();
     if (!g_classInit)
         InitClasses();
     const int c = SizeClass(total);
@@ -512,7 +892,7 @@ void *Arena_Malloc(size_t n)
             char *chunk = (char *)Arena_Reserve(kChunk, true);
             if (!chunk || !bo1ptr::InArena(chunk))
             {
-                pthread_mutex_unlock(&g_heapLock);
+                g_heapLock.unlock();
                 fprintf(stderr, "[arena] heap exhausted\n");
                 abort();
             }
@@ -522,7 +902,7 @@ void *Arena_Malloc(size_t n)
         p = g_chunkPos;
         g_chunkPos += sz;
     }
-    pthread_mutex_unlock(&g_heapLock);
+    g_heapLock.unlock();
     BlockHeader *h = (BlockHeader *)p;
     h->magic = kHeapMagic;
     h->cls = (uint32_t)c;
@@ -563,10 +943,10 @@ void Arena_Free(void *ptr)
     }
     const uint32_t c = h->cls;
     h->magic = 0;
-    pthread_mutex_lock(&g_heapLock);
+    g_heapLock.lock();
     ((FreeNode *)h)->next = g_classFree[c];
     g_classFree[c] = (FreeNode *)h;
-    pthread_mutex_unlock(&g_heapLock);
+    g_heapLock.unlock();
 }
 
 size_t Arena_UsableSize(void *ptr)

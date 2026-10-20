@@ -15,6 +15,11 @@ void *Arena_Memalign(size_t alignment, size_t n); // alignment: a power of two
 void Arena_Free(void *p);
 size_t Arena_UsableSize(void *p);
 
+#if !defined(__APPLE__)
+// The usable size of any heap block (the arena's, or the C library's): macOS's malloc_size (arena_malloc.cpp).
+extern "C" size_t malloc_size(const void *p);
+#endif
+
 void *Arena_AllocStack(size_t size, size_t *usable); // thread stack (guard page below), for CreateThread
 void Arena_FreeStack(void *stack);
 

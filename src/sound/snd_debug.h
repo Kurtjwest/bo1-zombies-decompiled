@@ -24,7 +24,7 @@ struct snd_overlay_info // sizeof=0xF0
     int iEntity;                        // XREF: CG_DrawSoundOverlay+270/r
     int group;
     int pan;
-    __int64 played;
+    BO1_ALIGN8 __int64 played;
 };
 
 struct snd_listener;

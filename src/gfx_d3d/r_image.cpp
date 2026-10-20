@@ -412,7 +412,7 @@ void __cdecl Image_Create2DTexture_PC(
     image->depth = 1;
     image->mapType = 3;
     usage = Image_GetUsage(imageFlags, imageFormat);
-#if BO1_MACOS
+#if BO1_PORT
     // The UI3D texture (the SP front end's TV screen) is minified on the TV through a trilinear sampler: with mip
     // levels, regenerated after each frame's drawing into it (RB_UI3D_RenderToTexture), its menus are filtered
     // instead of aliased.
@@ -448,7 +448,7 @@ void __cdecl Image_Create2DTexture_PC(
                  usage,
                  imageFormat,
                  memPool,
-                 (Ptr32<IDirect3DTexture9> *)image,
+                 BO1_OUT((Ptr32<IDirect3DTexture9> *)image),
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)width * height >> 10));
@@ -539,7 +539,7 @@ void __cdecl Image_Create3DTexture_PC(
                  volumeUsage,
                  imageFormat,
                  volumePool,
-                 (Ptr32<IDirect3DVolumeTexture9> *)image,
+                 BO1_OUT((Ptr32<IDirect3DVolumeTexture9> *)image),
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)width * height * depth >> 10));
@@ -607,7 +607,7 @@ void __cdecl Image_CreateCubeTexture_PC(
                  cubeUsage,
                  imageFormat,
                  cubePool,
-                 (Ptr32<IDirect3DCubeTexture9> *)image,
+                 BO1_OUT((Ptr32<IDirect3DCubeTexture9> *)image),
                  0);
     BO1_RenderCount(BO1_RC_TEX_CREATE, 1); // p1: bo1_frameperf (measurement only)
     BO1_RenderCount(BO1_RC_TEX_CREATE_KT, (long)((unsigned int)edgeLen * edgeLen * 6 >> 10));

@@ -94,7 +94,7 @@ void *__cdecl R_AllocDynamicVertexBuffer(Ptr32<IDirect3DVertexBuffer9> *vb, int 
     if ( !r_loadForRenderer->current.enabled )
         return 0;
     BO1_RenderCount(BO1_RC_BUF_CREATE, 1); // p1: bo1_frameperf (measurement only)
-    hr = dx.device->CreateVertexBuffer(sizeInBytes, 520u, 0, D3DPOOL_DEFAULT, vb, 0);
+    hr = dx.device->CreateVertexBuffer(sizeInBytes, 520u, 0, D3DPOOL_DEFAULT, BO1_OUT(vb), 0);
     if ( hr < 0 )
     {
         v3 = R_ErrorDescription(hr);
@@ -197,7 +197,7 @@ void *__cdecl R_AllocDynamicIndexBuffer(Ptr32<IDirect3DIndexBuffer9> *ib, unsign
     if ( !r_loadForRenderer->current.enabled )
         return 0;
     BO1_RenderCount(BO1_RC_BUF_CREATE, 1); // p1: bo1_frameperf (measurement only)
-    hr = dx.device->CreateIndexBuffer(sizeInBytes, 520u, D3DFMT_INDEX16, D3DPOOL_DEFAULT, ib, 0);
+    hr = dx.device->CreateIndexBuffer(sizeInBytes, 520u, D3DFMT_INDEX16, D3DPOOL_DEFAULT, BO1_OUT(ib), 0);
     if ( hr < 0 )
     {
         v3 = R_ErrorDescription(hr);

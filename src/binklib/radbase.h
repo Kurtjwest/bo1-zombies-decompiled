@@ -46,7 +46,7 @@
 
       // macOS / Linux ports: the engine is Windows code, so the RAD headers present their Windows API
       // (DirectSound/Direct3D 9 sound and texture interfaces); the Bink calls behind it are implemented natively in
-      // src/platform/macos/bink_mac.cpp.
+      // src/platform/common/bink_ffmpeg.cpp.
       #define __RADWIN__
       #define __RADNT__
       #define __RADINEXE__

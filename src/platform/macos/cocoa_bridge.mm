@@ -1,4 +1,4 @@
-// Cocoa implementation of the window/input/system bridge (see cocoa_bridge.h).
+// Cocoa implementation of the window/input/system bridge (see ../common/platform_bridge.h).
 // The engine keeps its own main loop on the main thread; Bridge_PumpEvents drains the Cocoa event queue from it.
 
 #import <AppKit/AppKit.h>
@@ -9,7 +9,7 @@
 #import <QuartzCore/CATransaction.h>
 #import <objc/runtime.h>
 
-#include "cocoa_bridge.h"
+#include "../common/platform_bridge.h"
 #include "../win32compat/main_thread.h"
 #include <stdio.h>
 #include <stdlib.h>

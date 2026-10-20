@@ -179,7 +179,7 @@ struct __declspec(align(8)) animation_s // sizeof=0x78
     int duration;
     int nameHash;
     int flags;
-    __int64 movetype;
+    BO1_ALIGN8 __int64 movetype;
     int stance;
     int movestatus;
     int noteType;

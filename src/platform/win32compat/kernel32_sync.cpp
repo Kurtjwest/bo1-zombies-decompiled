@@ -1,4 +1,4 @@
-// Win32 kernel objects on POSIX/Mach for the macOS port: handles, events, mutexes, semaphores, waits, threads,
+// Win32 kernel objects on POSIX (and Mach on macOS) for the macOS and Linux ports: handles, events, mutexes, semaphores, waits, threads,
 // thread-local storage, critical sections, SRW locks, condition variables and user-mode APCs.
 
 #include <windows.h>
@@ -6,9 +6,17 @@
 #include "arena.h"
 #include "main_thread.h"
 
+#if defined(__APPLE__)
 #include <mach/mach.h>
 #include <mach/thread_act.h>
 #include <mach/thread_policy.h>
+#else
+#include <cerrno>
+#include <signal.h>
+#include <sys/resource.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+#endif
 #include <pthread.h>
 #include <sched.h>
 #include <sys/time.h>
@@ -16,6 +24,7 @@
 #include <algorithm>
 #include <atomic>
 #include <condition_variable>
+#include <cstring>
 #include <deque>
 #include <mutex>
 #include <unordered_map>
@@ -77,7 +86,11 @@ KThread *CurrentThread()
         // A thread not created through CreateThread (the main thread, or one created by a system library).
         KThread *t = new KThread();
         t->pthread = pthread_self();
+#if defined(__APPLE__)
         t->machThread = pthread_mach_thread_np(pthread_self());
+#else
+        t->tid = (pid_t)syscall(SYS_gettid);
+#endif
         t->id = g_nextThreadId.fetch_add(4);
         t->started = true;
         t->adopted = true;
@@ -397,8 +410,11 @@ static void ReapDeadThreads()
 // silicon: the render thread (above normal) and anything higher are user-interactive, first in line for the
 // performance cores, as the main thread is; normal threads (the job queue's workers, the server, streaming,
 // loading) are user-initiated, also kept on the performance cores while they have room; the lowest ones utility.
+// On Linux, the priorities below normal become a higher nice value of the thread (raising one above the process's
+// needs privileges the game does not have, so normal and above keep the process's).
 static void ApplyThreadQos(int prio)
 {
+#if defined(__APPLE__)
     qos_class_t q = QOS_CLASS_USER_INITIATED;
     int relative = 0;
     if (prio >= THREAD_PRIORITY_ABOVE_NORMAL)
@@ -408,12 +424,26 @@ static void ApplyThreadQos(int prio)
     else if (prio < THREAD_PRIORITY_NORMAL)
         relative = -4; // below normal: user-initiated, behind the normal ones
     pthread_set_qos_class_self_np(q, relative);
+#else
+    int nice = 0;
+    if (prio <= THREAD_PRIORITY_IDLE)
+        nice = 10;
+    else if (prio <= THREAD_PRIORITY_LOWEST)
+        nice = 5;
+    else if (prio < THREAD_PRIORITY_NORMAL)
+        nice = 2;
+    if (nice)
+        setpriority(PRIO_PROCESS, (id_t)syscall(SYS_gettid), getpriority(PRIO_PROCESS, 0) + nice);
+#endif
 }
 
 static void *ThreadTrampoline(void *arg)
 {
     KThread *t = (KThread *)arg;
     t_self = t;
+#if !defined(__APPLE__)
+    t->tid = (pid_t)syscall(SYS_gettid);
+#endif
     {
         std::unique_lock<std::mutex> lk(g_waitLock);
         while (t->suspendCount > 0)
@@ -434,6 +464,63 @@ static void *ThreadTrampoline(void *arg)
     }
     t->Unref(); // the running thread's own reference
     return nullptr;
+}
+#if !defined(__APPLE__)
+// SuspendThread on Linux: the thread is sent a signal whose handler saves its registers and waits there until
+// ResumeThread. (Only the engine's diagnostics suspend other threads: the error path, thread dumps, the profiler.)
+static int SuspendSignal() { return SIGRTMIN + 4; }
+
+static void SuspendSignalHandler(int, siginfo_t *, void *uctx)
+{
+    KThread *t = t_self;
+    if (!t || !t->suspendSemsReady)
+        return;
+    const int savedErrno = errno;
+    memcpy(&t->parkedContext, uctx, sizeof(ucontext_t));
+    sem_post(&t->parked);
+    while (sem_wait(&t->resume) != 0 && errno == EINTR)
+    {
+    }
+    errno = savedErrno;
+}
+
+static bool ParkThread(KThread *t)
+{
+    static std::once_flag once;
+    std::call_once(once, [] {
+        struct sigaction sa;
+        memset(&sa, 0, sizeof(sa));
+        sa.sa_sigaction = SuspendSignalHandler;
+        sa.sa_flags = SA_SIGINFO | SA_RESTART;
+        sigfillset(&sa.sa_mask);
+        sigaction(SuspendSignal(), &sa, nullptr);
+    });
+    if (!t->suspendSemsReady)
+    {
+        sem_init(&t->parked, 0, 0);
+        sem_init(&t->resume, 0, 0);
+        t->suspendSemsReady = true;
+    }
+    if (pthread_kill(t->pthread, SuspendSignal()) != 0)
+        return false;
+    // the thread is stopped once its handler has saved its registers
+    struct timespec deadline;
+    clock_gettime(CLOCK_REALTIME, &deadline);
+    deadline.tv_sec += 1;
+    while (sem_timedwait(&t->parked, &deadline) != 0)
+    {
+        if (errno != EINTR)
+            return false; // (it exited, or blocks the signal; a later post of 'resume' is harmless)
+    }
+    return true;
+}
+#endif
+
+static uint64_t ThreadCpuNs()
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+    return (uint64_t)ts.tv_sec * 1000000000ull + (uint64_t)ts.tv_nsec;
 }
 } // namespace w32
 
@@ -865,7 +952,9 @@ HANDLE CreateThread(LPSECURITY_ATTRIBUTES, SIZE_T stackSize, LPTHREAD_START_ROUT
         return nullptr;
     }
     pthread_attr_destroy(&attr);
+#if defined(__APPLE__)
     t->machThread = pthread_mach_thread_np(t->pthread);
+#endif
     // joinable: ReapDeadThreads joins finished threads before their stacks are reused
     if (tid)
         *tid = t->id;
@@ -907,7 +996,12 @@ DWORD ResumeThread(HANDLE h)
     if (t->started && !t->finished && prev > 0 && t->machSuspended > 0)
     {
         t->machSuspended--;
+#if defined(__APPLE__)
         thread_resume(t->machThread);
+#else
+        if (t->machSuspended == 0)
+            sem_post(&t->resume); // (parked once, however many times it was suspended)
+#endif
     }
     return prev;
 }
@@ -925,8 +1019,13 @@ DWORD SuspendThread(HANDLE h)
     }
     if (t->started && !t->finished && t != CurrentThread())
     {
+#if defined(__APPLE__)
         if (thread_suspend(t->machThread) == KERN_SUCCESS)
             t->machSuspended++;
+#else
+        if (t->machSuspended == 0 ? ParkThread(t) : true)
+            t->machSuspended++;
+#endif
     }
     return prev;
 }
@@ -987,9 +1086,9 @@ BOOL GetThreadContext(HANDLE h, LPCONTEXT ctx)
         return FALSE;
     KThread *t = static_cast<KThread *>(o);
 #if defined(__linux__)
-    // (another thread's registers: Mach only)
-    (void)t;
-    return FALSE;
+    // the registers a suspended thread was parked with (ParkThread)
+    if (t->machSuspended <= 0 || !ReadSignalContext(&t->parkedContext, *ctx))
+        return FALSE;
 #elif defined(__APPLE__) && defined(__aarch64__)
     arm_thread_state64_t st;
     mach_msg_type_number_t count = ARM_THREAD_STATE64_COUNT;
@@ -1025,12 +1124,12 @@ BOOL SetThreadContext(HANDLE, const CONTEXT *) { return FALSE; }
 BOOL QueryThreadCycleTime(HANDLE, PULONG64 cycles)
 {
     if (cycles)
-        *cycles = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID);
+        *cycles = ThreadCpuNs();
     return TRUE;
 }
 BOOL GetThreadTimes(HANDLE, LPFILETIME c, LPFILETIME e, LPFILETIME k, LPFILETIME u)
 {
-    uint64_t t = clock_gettime_nsec_np(CLOCK_THREAD_CPUTIME_ID) / 100;
+    uint64_t t = ThreadCpuNs() / 100;
     if (c) c->dwLowDateTime = c->dwHighDateTime = 0;
     if (e) e->dwLowDateTime = e->dwHighDateTime = 0;
     if (k) k->dwLowDateTime = k->dwHighDateTime = 0;
@@ -1050,7 +1149,7 @@ HRESULT SetThreadDescription(HANDLE h, PCWSTR name)
         for (; name[i] && i < sizeof(buf) - 1; ++i)
             buf[i] = (char)(name[i] < 128 ? name[i] : '?');
         buf[i] = 0;
-        pthread_setname_np(buf);
+        SetCurrentThreadName(buf);
     }
     return S_OK;
 }

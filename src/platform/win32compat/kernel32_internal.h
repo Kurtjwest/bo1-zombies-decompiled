@@ -1,7 +1,13 @@
 #pragma once
 // Internal kernel-object model of the Win32 compatibility layer.
 #include <windows.h>
+#if defined(__APPLE__)
 #include <mach/mach.h>
+#else
+#include <semaphore.h>
+#include <signal.h>
+#include <ucontext.h>
+#endif
 #include <pthread.h>
 #include <atomic>
 #include <condition_variable>
@@ -81,7 +87,17 @@ struct Apc
 struct KThread : KObject
 {
     pthread_t pthread{};
+#if defined(__APPLE__)
     mach_port_t machThread = MACH_PORT_NULL;
+#else
+    // SuspendThread of another thread (kernel32_sync.cpp): a signal parks it in its handler, which saves its
+    // registers here for GetThreadContext, until ResumeThread posts 'resume'
+    pid_t tid = 0;
+    sem_t parked;
+    sem_t resume;
+    bool suspendSemsReady = false;
+    ucontext_t parkedContext;
+#endif
     DWORD id = 0;
     LPTHREAD_START_ROUTINE start = nullptr;
     void *param = nullptr;
@@ -138,6 +154,12 @@ struct KGeneric : KObject
 };
 
 DWORD ThreadSelfId();
+// Names the calling thread for debuggers and crash reports (truncated to the system's limit).
+void SetCurrentThreadName(const char *name);
+#if !defined(__APPLE__)
+// The registers of a signal context (kernel32_misc.cpp), for the crash handler and GetThreadContext.
+bool ReadSignalContext(const ucontext_t *uc, CONTEXT &ctx);
+#endif
 KThread *CurrentThread();
 KThread *FindThread(DWORD id);
 void ForEachThread(void (*fn)(KThread *, void *), void *ctx);

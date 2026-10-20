@@ -53,8 +53,8 @@ struct bdTag : bdTaskResult // sizeof=0x18
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 m_priTag;
-        unsigned __int64 m_secTag;
+        BO1_ALIGN8 unsigned __int64 m_priTag;
+        BO1_ALIGN8 unsigned __int64 m_secTag;
 
         bdTag() : bdTaskResult()
         {
@@ -92,7 +92,7 @@ struct bdFileMetaData : bdTaskResult // sizeof=0x838
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 m_fileID;                    // XREF: Live_FileShare_GetLastPlayedGameDetails(int)+52/r
+        BO1_ALIGN8 unsigned __int64 m_fileID;                    // XREF: Live_FileShare_GetLastPlayedGameDetails(int)+52/r
                                                                                 // Live_FileShare_GetLastPlayedGameDetails(int)+60/r ...
         unsigned int m_createTime;
         unsigned int m_modifedTime;
@@ -102,7 +102,7 @@ struct bdFileMetaData : bdTaskResult // sizeof=0x838
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 m_ownerID;
+        BO1_ALIGN8 unsigned __int64 m_ownerID;
         char m_ownerName[64];
         unsigned __int16 m_fileSlot;
         char m_fileName[128];                             // XREF: LiveStorage_FileShare_TransferFromPooled(int,unsigned __int64,uint)+189/o
@@ -206,7 +206,7 @@ struct demoConnectedPlayersInfo // sizeof=0x18
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 xuid;                            // XREF: Demo_TagPlayers+55/r
+        BO1_ALIGN8 unsigned __int64 xuid;                            // XREF: Demo_TagPlayers+55/r
                                                                                 // Demo_TagPlayers+5C/r ...
         int connectTime;                                        // XREF: Demo_SetDefaultClient(int,int)+115/r
                                                                                 // Demo_InfoPlayerConnected(int)+41/w ...
@@ -319,7 +319,7 @@ struct demoTagPlayers // sizeof=0xF8
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 playerXuids[30];
+        BO1_ALIGN8 unsigned __int64 playerXuids[30];
 };
 
 struct __declspec(align(8)) screenshotMetaInfo // sizeof=0x348
@@ -848,7 +848,7 @@ struct dwFileShareReadFileTask // sizeof=0x878
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 fileID;
+        BO1_ALIGN8 unsigned __int64 fileID;
         unsigned int fileSize;
         // padding byte
         // padding byte
@@ -872,7 +872,7 @@ struct dwFileShareReadFileTask // sizeof=0x878
 
 struct __declspec(align(8)) demoRecordedFileUploadInfo // sizeof=0x5D8
 {
-    unsigned __int64 fileID;
+    BO1_ALIGN8 unsigned __int64 fileID;
     char metaData[512];                 // XREF: Demo_StreamingSuccessCallback(int,unsigned __int64)+205/o
                                         // Demo_StreamingSuccessCallback(int,unsigned __int64)+220/o ...
     int metaDataSize;                   // XREF: Demo_StreamingSuccessCallback(int,unsigned __int64)+25A/w

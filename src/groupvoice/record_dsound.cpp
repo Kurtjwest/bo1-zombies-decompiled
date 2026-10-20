@@ -177,7 +177,7 @@ HRESULT __cdecl DSOUNDRecord_Start(dsound_sample_t *pRecSample)
     wfx.nAvgBytesPerSec = 2 * g_sound_channels * g_sound_recordFrequency;
     wfx.nBlockAlign = 2 * g_sound_channels;
     wfx.cbSize = 0;
-    dscbd.dwSize = 28;
+    dscbd.dwSize = sizeof(dscbd); // (28 in the 32-bit exe)
     dscbd.dwFlags = 0;
     dscbd.dwBufferBytes = g_sound_recordBufferSize;
     dscbd.dwReserved = 0;
@@ -187,7 +187,7 @@ HRESULT __cdecl DSOUNDRecord_Start(dsound_sample_t *pRecSample)
     //if ( pRecSample->DSCB || (hr = ((int (__thiscall *)(LPDIRECTSOUNDCAPTURE, LPDIRECTSOUNDCAPTURE, _DSCBUFFERDESC *, dsound_sample_t *, unsigned int))g_pDSCaptureInstance->CreateCaptureBuffer)(
     if ( pRecSample->DSCB || (hr = g_pDSCaptureInstance->CreateCaptureBuffer(
                              &dscbd,
-                             &pRecSample->DSCB,
+                             BO1_OUT(&pRecSample->DSCB),
                              0),
                 hr >= 0) )
     {

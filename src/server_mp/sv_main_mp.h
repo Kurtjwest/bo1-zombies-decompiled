@@ -64,7 +64,7 @@ struct __declspec(align(4)) challenge_t // sizeof=0x70
                                         // SV_DirectConnect(netadr_t)+3E7/w ...
     int connected;                      // XREF: SV_DirectConnect(netadr_t)+446/w
     int guid;                           // XREF: SV_DirectConnect(netadr_t)+333/r
-    uint64_t steamID64; // ADD 
+    BO1_ALIGN8 uint64_t steamID64; // ADD 
     char PBguid[33];                    // XREF: SV_DirectConnect(netadr_t)+344/o
     char clientPBguid[33];              // XREF: SV_DirectConnect(netadr_t)+362/o
     // padding byte
@@ -158,7 +158,7 @@ struct __declspec(align(128)) serverStatic_t // sizeof=0x1C880
                                         // SV_Netchan_AddOOBProfilePacket(int)+21/o
     tempBanSlot_t tempBans[16];         // XREF: SV_IsTempBannedGuid(int)+29/r
                                         // SV_IsTempBannedGuid(int)+40/r ...
-    unsigned __int64 xuids[32];         // XREF: PlayerCmd_IsLocalToHost+154/r
+    BO1_ALIGN8 unsigned __int64 xuids[32];         // XREF: PlayerCmd_IsLocalToHost+154/r
                                         // PlayerCmd_IsLocalToHost+15E/r ...
     float mapCenter[3];                 // XREF: G_PopulateMatchState+48/r
                                         // G_PopulateMatchState+58/r ...

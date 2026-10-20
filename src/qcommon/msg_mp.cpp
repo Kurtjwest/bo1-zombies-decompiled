@@ -2460,7 +2460,7 @@ float (*__cdecl MSG_GetMapCenter())[3]
 
 int __cdecl GetMinBitCountForNum(unsigned int num)
 {
-    int v2; // eax
+    unsigned long v2; // eax
 
     if (!_BitScanReverse(&v2, num))
     {

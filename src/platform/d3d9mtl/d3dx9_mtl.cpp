@@ -12,7 +12,7 @@
 
 #include <d3dx9.h>
 
-#include "../macos/image_writer.h"
+#include "../common/image_writer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -974,11 +974,17 @@ HRESULT SaveRGBA(LPCSTR path, D3DXIMAGE_FILEFORMAT format, const std::vector<uin
         ok = WriteDDS(path, rgba.data(), w, h);
         break;
     case D3DXIFF_JPG:
-        ok = Mac_WriteImage(path, MAC_IMAGE_JPEG, rgba.data(), (int)w, (int)h, (int)w * 4, 0, 0.9f) == 0;
-        break;
     case D3DXIFF_PNG:
-        ok = Mac_WriteImage(path, MAC_IMAGE_PNG, rgba.data(), (int)w, (int)h, (int)w * 4, alpha ? 1 : 0, 1.0f) == 0;
+    {
+        // (the encoder opens the file itself: the engine's path, backslashes and all, as a host path first)
+        char host[1024];
+        const char *hp = bo1_hostpath(path, host, sizeof(host));
+        if (format == D3DXIFF_JPG)
+            ok = Mac_WriteImage(hp, MAC_IMAGE_JPEG, rgba.data(), (int)w, (int)h, (int)w * 4, 0, 0.9f) == 0;
+        else
+            ok = Mac_WriteImage(hp, MAC_IMAGE_PNG, rgba.data(), (int)w, (int)h, (int)w * 4, alpha ? 1 : 0, 1.0f) == 0;
         break;
+    }
     default:
         LogOnce("d3dxsaveformat", "D3DXSaveSurfaceToFile: file format %d is not supported", (int)format);
         return D3DERR_INVALIDCALL;

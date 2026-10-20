@@ -761,7 +761,7 @@ void __cdecl yuv_init_internal()
                  1u,
                  D3DFMT_A8R8G8B8,
                  D3DPOOL_DEFAULT,
-                 &yuv_globals.renderTarget1,
+                 BO1_OUT(&yuv_globals.renderTarget1),
                  0);
     if ( hr < 0 )
     {
@@ -790,7 +790,7 @@ void __cdecl yuv_init_internal()
         //                0,
         //                &yuv_globals.renderTarget2,
         //                0);
-        v27 = dx.device->CreateTexture(width, height, 1, 1, (D3DFORMAT)21, D3DPOOL_DEFAULT, &yuv_globals.renderTarget2, NULL);
+        v27 = dx.device->CreateTexture(width, height, 1, 1, (D3DFORMAT)21, D3DPOOL_DEFAULT, BO1_OUT(&yuv_globals.renderTarget2), NULL);
         if ( v27 < 0 )
         {
             ++g_disableRendering;
@@ -813,7 +813,7 @@ void __cdecl yuv_init_internal()
                     1u,
                     D3DFMT_A8R8G8B8,
                     D3DPOOL_DEFAULT,
-                    &yuv_globals.srcTexture,
+                    BO1_OUT(&yuv_globals.srcTexture),
                     0);
     if ( v25 < 0 )
     {
@@ -835,7 +835,7 @@ void __cdecl yuv_init_internal()
                     0,
                     D3DFMT_A8R8G8B8,
                     D3DPOOL_SYSTEMMEM,
-                    &yuv_globals.dstTexture,
+                    BO1_OUT(&yuv_globals.dstTexture),
                     0);
     if ( v23 < 0 )
     {
@@ -850,7 +850,7 @@ void __cdecl yuv_init_internal()
     }
     if ( r_logFile && r_logFile->current.integer )
         RB_LogPrint("dx.device->CreateVertexBuffer(24 * 4, 0, 0, D3DPOOL_MANAGED, &yuv_globals.vertexBuffer, 0)\n");
-    v21 = dx.device->CreateVertexBuffer(96u, 0, 0, D3DPOOL_MANAGED, &yuv_globals.vertexBuffer, 0);
+    v21 = dx.device->CreateVertexBuffer(96u, 0, 0, D3DPOOL_MANAGED, BO1_OUT(&yuv_globals.vertexBuffer), 0);
     if ( v21 < 0 )
     {
         ++g_disableRendering;
@@ -940,7 +940,7 @@ void __cdecl yuv_init_internal()
     //                dx.device,
     //                VertexElements,
     //                &yuv_globals.vertexDeclaration);
-    v15 = dx.device->CreateVertexDeclaration(VertexElements, &yuv_globals.vertexDeclaration);
+    v15 = dx.device->CreateVertexDeclaration(VertexElements, BO1_OUT(&yuv_globals.vertexDeclaration));
     if ( v15 < 0 )
     {
         ++g_disableRendering;
@@ -954,7 +954,7 @@ void __cdecl yuv_init_internal()
     }
     if ( r_logFile && r_logFile->current.integer )
         RB_LogPrint("dx.device->CreateVertexShader((DWORD*)g_vs30_mjpeg_shader_vtx, &yuv_globals.vertexShader)\n");
-    v13 = dx.device->CreateVertexShader((const DWORD*)g_vs30_mjpeg_shader_vtx, &yuv_globals.vertexShader);
+    v13 = dx.device->CreateVertexShader((const DWORD*)g_vs30_mjpeg_shader_vtx, BO1_OUT(&yuv_globals.vertexShader));
     if ( v13 < 0 )
     {
         ++g_disableRendering;
@@ -968,7 +968,7 @@ void __cdecl yuv_init_internal()
     }
     if ( r_logFile && r_logFile->current.integer )
         RB_LogPrint("dx.device->CreatePixelShader((DWORD*)g_ps30_mjpeg_shader_yuv, &yuv_globals.pixelShader)\n");
-    v11 = dx.device->CreatePixelShader((const DWORD*)g_ps30_mjpeg_shader_yuv, &yuv_globals.pixelShader);
+    v11 = dx.device->CreatePixelShader((const DWORD*)g_ps30_mjpeg_shader_yuv, BO1_OUT(&yuv_globals.pixelShader));
     if ( v11 < 0 )
     {
         ++g_disableRendering;

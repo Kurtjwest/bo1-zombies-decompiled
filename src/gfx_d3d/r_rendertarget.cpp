@@ -410,7 +410,7 @@ IDirect3DSurface9 *R_AssignSingleSampleDepthStencilSurface()
             D3DMULTISAMPLE_NONE,
             0,
             0,
-            &dx.singleSampleDepthStencilSurface,
+            BO1_OUT(&dx.singleSampleDepthStencilSurface),
             0);
         if (hr < 0)
         {
@@ -600,7 +600,7 @@ void __cdecl R_InitShadowmapRenderTarget(
         //             &renderTarget->surface.depthStencil,
         //             0);
 
-        v8 = dx.device->CreateDepthStencilSurface(totalWidth, totalHeight, gfxMetrics.shadowmapFormatSecondary, D3DMULTISAMPLE_NONE, 0, 0, &renderTarget->surface.depthStencil, 0);
+        v8 = dx.device->CreateDepthStencilSurface(totalWidth, totalHeight, gfxMetrics.shadowmapFormatSecondary, D3DMULTISAMPLE_NONE, 0, 0, BO1_OUT(&renderTarget->surface.depthStencil), 0);
         if ( v8 < 0 )
         {
             ++g_disableRendering;
@@ -633,7 +633,7 @@ void __cdecl R_InitShadowmapRenderTarget(
         //             &renderTarget->surface,
         //             0);
 
-        hr = dx.device->CreateRenderTarget(totalWidth, totalHeight, gfxMetrics.shadowmapFormatSecondary, D3DMULTISAMPLE_NONE, 0, 0, &renderTarget->surface.color, 0);
+        hr = dx.device->CreateRenderTarget(totalWidth, totalHeight, gfxMetrics.shadowmapFormatSecondary, D3DMULTISAMPLE_NONE, 0, 0, BO1_OUT(&renderTarget->surface.color), 0);
         if ( hr < 0 )
         {
             ++g_disableRendering;
@@ -788,7 +788,7 @@ void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *renderTarget)
     if ( r_logFile && r_logFile->current.integer )
         RB_LogPrint("dx.device->GetSwapChain( 0, &dx.windows[0].swapChain )\n");
 
-    hr = dx.device->GetSwapChain(0, &dx.windows[0].swapChain);
+    hr = dx.device->GetSwapChain(0, BO1_OUT(&dx.windows[0].swapChain));
     //hr = ((int (__thiscall *)(IDirect3DDevice9 *, IDirect3DDevice9 *, unsigned int, int *))dx.device->GetSwapChain)(
     //             dx.device,
     //             dx.device,
@@ -808,7 +808,7 @@ void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *renderTarget)
     if ( r_logFile && r_logFile->current.integer )
         RB_LogPrint("dx.device->GetBackBuffer( 0, 0, D3DBACKBUFFER_TYPE_MONO, &renderTarget->surface.color )\n");
 
-    v9 = dx.device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &renderTarget->surface.color);
+    v9 = dx.device->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, BO1_OUT(&renderTarget->surface.color));
     //v9 = ((int (__thiscall *)(IDirect3DDevice9 *, IDirect3DDevice9 *, unsigned int, unsigned int, unsigned int, GfxRenderTargetSurface *))dx.device->GetBackBuffer)(
     //             dx.device,
     //             dx.device,
@@ -860,7 +860,7 @@ void __cdecl R_InitFrameBufferRenderTarget_Win32(GfxRenderTarget *renderTarget)
         //             &renderTarget->surface.depthStencil,
         //             0);
 
-        v5 = dx.device->CreateDepthStencilSurface(depthStencilWidth, depthStencilHeight, dx.depthStencilFormat, dx.multiSampleType, dx.multiSampleQuality, 0, &renderTarget->surface.depthStencil, 0);
+        v5 = dx.device->CreateDepthStencilSurface(depthStencilWidth, depthStencilHeight, dx.depthStencilFormat, dx.multiSampleType, dx.multiSampleQuality, 0, BO1_OUT(&renderTarget->surface.depthStencil), 0);
         if ( v5 < 0 )
         {
             ++g_disableRendering;
@@ -1239,7 +1239,7 @@ void R_InitSizedRenderTargetImage(
             D3DMULTISAMPLE_NONE,
             0,
             0,
-            &renderTarget->surface.depthStencil,
+            BO1_OUT(&renderTarget->surface.depthStencil),
             0);
         if (hr < 0)
         {

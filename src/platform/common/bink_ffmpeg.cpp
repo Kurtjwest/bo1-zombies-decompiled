@@ -1,19 +1,19 @@
 // The Bink API used by the engine's cinematics (src/gfx_d3d/r_cinematic.cpp), implemented on FFmpeg's Bink 1
-// decoder (ffmpeg_media.cpp) with sound played through CoreAudio (coreaudio_out.mm).
+// decoder (ffmpeg_media.cpp) with sound played through the platform's audio output (audio_out.h).
 //
 // On Windows binkw32.dll decodes the movie into the YCrCb planes the engine registers (BinkRegisterFrameBuffers) and
 // plays its sound tracks through DirectSound. Here BinkDoFrame decodes with libavcodec and writes the same planes; the
-// selected sound tracks are mixed into a CoreAudio output, and that output's playback position is the movie clock,
+// selected sound tracks are mixed into an audio output (audio_out.h), and that output's playback position is the movie clock,
 // as Bink's own sound track is on Windows.
 
 #include <binklib/bink.h>
 
-#include "coreaudio_out.h"
+#include "audio_out.h"
 #include "ffmpeg_media.h"
 
 #include <universal/ptr32.h>
 
-#include <mach/mach_time.h>
+#include <chrono>
 #include <algorithm>
 #include <atomic>
 #include <cmath>
@@ -25,8 +25,8 @@
 #include <string>
 #include <vector>
 
-// dsound_mac.cpp: the output device a DirectSound object was created for ("" is the system default)
-extern "C" const char *DSoundMac_DeviceUID(const void *directSound);
+// dsound_soft.cpp: the output device a DirectSound object was created for ("" is the system default)
+extern "C" const char *DSoundSoft_DeviceUID(const void *directSound);
 
 namespace
 {
@@ -50,10 +50,7 @@ std::string g_deviceUID; // BinkSetSoundSystem: the device the engine's sound pl
 
 double Now()
 {
-    static mach_timebase_info_data_t tb;
-    if (!tb.denom)
-        mach_timebase_info(&tb);
-    return (double)mach_absolute_time() * tb.numer / tb.denom * 1e-9;
+    return std::chrono::duration<double>(std::chrono::steady_clock::now().time_since_epoch()).count();
 }
 
 constexpr int kAudioQuantum = 480;
@@ -316,11 +313,12 @@ void BinkSetSoundTrack(U32 total_tracks, U32 *tracks)
 
 S32 BinkSetSoundSystem(BINKSNDSYSOPEN, UINTa param)
 {
-    // Sound always goes to CoreAudio. The parameter is the engine's DirectSound object, created for the device
-    // picked in the sound options (R_CinematicInitSound): movies play on that device too. The engine passes it as a
+    // Sound always goes to the platform's audio output (audio_out.h). The parameter is the engine's DirectSound
+    // object, created for the device picked in the sound options (R_CinematicInitSound): movies play on that device
+    // too (on Windows, whose DirectSound is the system's, on the default output). The engine passes it as a
     // 32-bit integer (r_cinematic.cpp: BO1_P2I), so it is a Ptr32 handle here, not an address.
     const void *ds = param ? bo1ptr::Decode((uint32_t)param) : nullptr;
-    const char *uid = ds ? DSoundMac_DeviceUID(ds) : nullptr;
+    const char *uid = ds ? DSoundSoft_DeviceUID(ds) : nullptr;
     g_deviceUID = uid ? uid : "";
     return 1;
 }
@@ -350,9 +348,13 @@ HBINK BinkOpen(const char *name, U32 flags)
     }
     else
     {
+#if defined(_WIN32)
+        b->file = fopen(name, "rb");
+#else
         // engine paths use backslashes: the compatibility layer's fopen translates them (this file is built as part
         // of that layer, so plain fopen is the C library's)
         b->file = bo1_fopen(name, "rb");
+#endif
         if (!b->file)
         {
             SetError("BinkOpen: can't open '%s'", name ? name : "(null)");

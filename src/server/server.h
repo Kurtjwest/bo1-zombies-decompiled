@@ -81,7 +81,7 @@ struct client_t // sizeof=0x84D00
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 xuid;
+    BO1_ALIGN8 unsigned __int64 xuid;
     int downloading;
     char downloadName[64];
     int download;
@@ -139,13 +139,13 @@ struct client_t // sizeof=0x84D00
     // padding byte
     int statsSentIndex;
     int statsModified;
-    __int64 statPacketsReceived; // ctrl-f "BO1_STATS"
+    BO1_ALIGN8 __int64 statPacketsReceived; // ctrl-f "BO1_STATS"
     int statsValidated;
     char PBguid[33];
     char clientPBguid[33];
     bool steamAuthorized;
     unsigned __int8 steamAuthFailCount;
-    unsigned __int64 steamID;
+    BO1_ALIGN8 unsigned __int64 steamID;
     bool tempPacketDebugging;
     // zombies: SP client_t +4 (SP 0x005C0318): the client's connstate_t, sent in the top 4 bits of the
     // reliableAcknowledge long of every client packet (SP CL_WritePacket 0x0067E41A). Kept in a padding
@@ -156,7 +156,7 @@ struct client_t // sizeof=0x84D00
     int snapshotHistoryTime;
     int snapshotHistoryFrames;
     int messageHistorySize;
-    unsigned __int64 dw_userID;
+    BO1_ALIGN8 unsigned __int64 dw_userID;
     int notifyJoin;
     unsigned int dwchallenge;
 };

@@ -352,7 +352,7 @@ struct snd_voice_t // sizeof=0x1D8
         // padding byte
         // padding byte
         // padding byte
-        __int64 played;
+        BO1_ALIGN8 __int64 played;
 };
 
 struct snd_curve // sizeof=0x64

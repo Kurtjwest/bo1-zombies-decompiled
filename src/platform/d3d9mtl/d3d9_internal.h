@@ -13,7 +13,9 @@
 #include "../win32compat/arena.h"
 #include "../win32compat/main_thread.h"
 
+#if defined(__APPLE__)
 #include <os/lock.h>
+#endif
 #include <pthread.h>
 #include <atomic>
 #include <cstddef>
@@ -36,7 +38,7 @@ namespace d3d9mtl
 // Every Direct3D call takes the device lock (the engine creates and fills resources on its loading and streaming
 // threads while the render thread draws): tens of thousands of times a frame, almost always uncontended. A recursive
 // lock of its own: re-entry is an owner check, taking it one os_unfair_lock (a std::recursive_mutex cost a tenth of
-// the render thread).
+// the render thread); on Linux a plain pthread mutex (a futex, as cheap uncontended).
 class DeviceMutexType
 {
 public:
@@ -48,7 +50,7 @@ public:
             ++m_depth;
             return;
         }
-        os_unfair_lock_lock(&m_lock);
+        RawLock();
         m_owner.store(self, std::memory_order_relaxed);
         m_depth = 1;
     }
@@ -60,7 +62,7 @@ public:
             ++m_depth;
             return true;
         }
-        if (!os_unfair_lock_trylock(&m_lock))
+        if (!RawTryLock())
             return false;
         m_owner.store(self, std::memory_order_relaxed);
         m_depth = 1;
@@ -71,12 +73,22 @@ public:
         if (--m_depth == 0)
         {
             m_owner.store(pthread_t(), std::memory_order_relaxed);
-            os_unfair_lock_unlock(&m_lock);
+            RawUnlock();
         }
     }
 
 private:
+#if defined(__APPLE__)
     os_unfair_lock m_lock = OS_UNFAIR_LOCK_INIT;
+    void RawLock() { os_unfair_lock_lock(&m_lock); }
+    bool RawTryLock() { return os_unfair_lock_trylock(&m_lock); }
+    void RawUnlock() { os_unfair_lock_unlock(&m_lock); }
+#else
+    pthread_mutex_t m_lock = PTHREAD_MUTEX_INITIALIZER;
+    void RawLock() { pthread_mutex_lock(&m_lock); }
+    bool RawTryLock() { return pthread_mutex_trylock(&m_lock) == 0; }
+    void RawUnlock() { pthread_mutex_unlock(&m_lock); }
+#endif
     std::atomic<pthread_t> m_owner{pthread_t()}; // only the owner stores itself here, so only it can match
     uint32_t m_depth = 0;                        // the owner's
 };
@@ -436,6 +448,8 @@ struct BufferStorage
     BufferAlloc cur;
     uint64_t lastUse = 0;
     bool locked = false;
+    // the bytes of 'cur' the CPU may have written since the lock (rhi::BufferWritten at Unlock)
+    UINT dirtyStart = 0, dirtyEnd = 0;
 
     bool Init(UINT length, DWORD usage, D3DPOOL pool);
     void Destroy();

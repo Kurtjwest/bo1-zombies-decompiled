@@ -94,7 +94,7 @@ struct bdRemoteTask : bdReferencable // sizeof=0x40
     unsigned int m_numResults;
     unsigned int m_maxNumResults;
     unsigned int m_totalNumResults;
-    unsigned __int64 m_transactionID;
+    BO1_ALIGN8 unsigned __int64 m_transactionID;
     bdLobbyErrorCode m_errorCode;
     Ptr32<bdTaskResultProcessor> m_taskResultProcessor;
                                         // XREF: bdHTTPClient::resolveHostIP(bdAddr &)+72/o
@@ -200,7 +200,7 @@ struct bdStatsInfo : bdTaskResult // sizeof=0x70
                                         // LeaderBoardRow<10>/r ...
     unsigned int m_leaderboardID;       // XREF: LB_IncrementEscrow(void)+F4/w
                                         // LB_IncrementEscrow(void)+14A/w ...
-    unsigned __int64 m_entityID;        // XREF: LB_IncrementEscrow(void)+E2/w
+    BO1_ALIGN8 unsigned __int64 m_entityID;        // XREF: LB_IncrementEscrow(void)+E2/w
                                         // LB_IncrementEscrow(void)+EE/w ...
     //bdStats::bdWriteType m_writeType;   // XREF: LB_IncrementEscrow(void)+FE/w
     bdWriteType m_writeType;   // XREF: LB_IncrementEscrow(void)+FE/w
@@ -209,9 +209,9 @@ struct bdStatsInfo : bdTaskResult // sizeof=0x70
     // padding byte
     // padding byte
     // padding byte
-    __int64 m_rating;                   // XREF: LB_IncrementEscrow(void)+108/w
+    BO1_ALIGN8 __int64 m_rating;                   // XREF: LB_IncrementEscrow(void)+108/w
                                         // LB_IncrementEscrow(void)+112/w ...
-    unsigned __int64 m_rank;
+    BO1_ALIGN8 unsigned __int64 m_rank;
     char m_entityName[65];              // XREF: LB_ReadHiddenLeaderboardComplete(int)+572/o
     // padding byte
     // padding byte
@@ -255,7 +255,7 @@ struct bdStatsInfo : bdTaskResult // sizeof=0x70
 struct __declspec(align(8)) bdVoteRankStatsInfo : bdStatsInfo // sizeof=0xC8
 {                                       // XREF: fileSharePrivateData/r
                                         // fileShareSearchResults/r ...
-    unsigned __int64 m_fileOwnerID;
+    BO1_ALIGN8 unsigned __int64 m_fileOwnerID;
     char m_fileOwnerName[65];
     // padding byte
     // padding byte
@@ -289,7 +289,7 @@ struct __declspec(align(8)) fileSharePrivateData // sizeof=0xB418
     // padding byte
     // padding byte
     int lastRead;
-    unsigned __int64 playerXuid;
+    BO1_ALIGN8 unsigned __int64 playerXuid;
     bdFileMetaData descriptors[20];
     bdVoteRankStatsInfo fileRatings[20];
     int descriptorCount;
@@ -344,7 +344,7 @@ struct __declspec(align(8)) dwFileOperationInfo // sizeof=0x120
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 ownerID;
+    BO1_ALIGN8 unsigned __int64 ownerID;
     Ptr32<bool> alreadyUploaded;
     // padding byte
     // padding byte
@@ -373,7 +373,7 @@ struct bdFileID : bdTaskResult // sizeof=0x10
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_fileID;          // XREF: Live_FileShare_GetLastPlayedGameDetails(int)+34/w
+    BO1_ALIGN8 unsigned __int64 m_fileID;          // XREF: Live_FileShare_GetLastPlayedGameDetails(int)+34/w
                                         // Live_FileShare_GetLastPlayedGameDetails(int)+39/w ...
 };
 
@@ -412,7 +412,7 @@ struct fileShareSearchInfo_t // sizeof=0x30
 struct __declspec(align(8)) fileShareReadFileInfo // sizeof=0x30
 {                                       // XREF: ?Demo_DownloadFile@@YAXHPAD_KH_N2@Z/r
                                         // ?UI_ScreenshotDownload@@YAXHH_KI@Z/r ...
-    unsigned __int64 fileID;            // XREF: UI_Gametype_DownloadFromFileShare_f(void)+56/w
+    BO1_ALIGN8 unsigned __int64 fileID;            // XREF: UI_Gametype_DownloadFromFileShare_f(void)+56/w
                                         // UI_Gametype_DownloadFromFileShare_f(void)+5C/w ...
     unsigned int fileSize;              // XREF: UI_Gametype_DownloadFromFileShare_f(void)+62/w
                                         // SV_GameType_DownloadFromFileshare_f(void)+10D/w ...
@@ -491,7 +491,7 @@ struct __declspec(align(8)) dwFileShareWriteFileTask // sizeof=0x50
 
 struct __declspec(align(8)) dwFileShareListTask // sizeof=0x28
 {                                       // XREF: playerFileOperations/r
-    unsigned __int64 ownerID;
+    BO1_ALIGN8 unsigned __int64 ownerID;
     int startDate;
     int bufferLocation;
     unsigned __int16 category;
@@ -538,12 +538,12 @@ struct dwFileShareTagTask // sizeof=0x18
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 entityID;
+    BO1_ALIGN8 unsigned __int64 entityID;
 };
 
 struct dwFileShareTransferTask // sizeof=0x138
 {                                       // XREF: playerFileOperations/r
-    unsigned __int64 fileID;
+    BO1_ALIGN8 unsigned __int64 fileID;
     fileShareLocation location;
     unsigned __int16 fileSlot;
     // padding byte
@@ -571,7 +571,7 @@ struct dwFileShareRemoveTask // sizeof=0x4
 
 struct dwFileShareSummaryTask // sizeof=0x30
 {                                       // XREF: playerFileOperations/r
-    unsigned __int64 fileID;
+    BO1_ALIGN8 unsigned __int64 fileID;
     Ptr32<void> summaryData;
     unsigned int summaryDataSize;
     Ptr32<const void> metaData;
@@ -593,7 +593,7 @@ struct __declspec(align(8)) bdRatingInfo : bdTaskResult // sizeof=0x18
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_entityID;
+    BO1_ALIGN8 unsigned __int64 m_entityID;
     unsigned __int8 m_rating;
     // padding byte
     // padding byte
@@ -616,7 +616,7 @@ struct __declspec(align(8)) dwFileShareSubmitRatingTask // sizeof=0x20
 
 struct __declspec(align(8)) dwFileShareGetTopRatedTask // sizeof=0x4E48
 {                                       // XREF: playerFileOperations/r
-    unsigned __int64 startRank;
+    BO1_ALIGN8 unsigned __int64 startRank;
     int maxFiles;
     unsigned int leaderboardID;
     bdVoteRankStatsInfo statsInfo[100];

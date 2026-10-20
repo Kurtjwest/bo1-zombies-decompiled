@@ -23,7 +23,7 @@ union GfxPixelCostKey // sizeof=0x8
         Ptr32<const Material> material;
         unsigned __int8 techType;
     } mtl;
-    unsigned __int64 packed;
+    BO1_ALIGN8 unsigned __int64 packed;
 };
 
 struct GfxPixelCostRecord // sizeof=0x20

@@ -771,7 +771,7 @@ struct __declspec(align(4)) clientInfo_t // sizeof=0x5C8
         // padding byte
         // padding byte
         // padding byte
-        unsigned __int64 xuid;
+        BO1_ALIGN8 unsigned __int64 xuid;
         char clanAbbrev[8];
         score_s score;
         Ptr32<Material> hStatusIcon;
@@ -791,8 +791,8 @@ struct __declspec(align(4)) clientInfo_t // sizeof=0x5C8
         clientControllers_t control;
         int lastDamageTime;
         int lastStandStartTime;
-        __int64 moveType;
-        __int64 eventType;
+        BO1_ALIGN8 __int64 moveType;
+        BO1_ALIGN8 __int64 eventType;
         unsigned int clientConditions[23];
         Ptr32<XAnimTree_s> pXAnimTree;                        // XREF: G_FreeAnimTreeInstances+2D/r
                                                                                 // G_FreeAnimTreeInstances+43/r ...

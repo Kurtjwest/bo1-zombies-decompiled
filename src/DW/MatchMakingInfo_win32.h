@@ -31,7 +31,7 @@ struct MatchMakingInfo : bdMatchMakingInfo // sizeof=0x228
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_membermaprotation;
+    BO1_ALIGN8 unsigned __int64 m_membermaprotation;
     char m_membermapname[33];
     // padding byte
     // padding byte
@@ -50,7 +50,7 @@ struct MatchMakingInfo : bdMatchMakingInfo // sizeof=0x228
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_memberdemonwareID;
+    BO1_ALIGN8 unsigned __int64 m_memberdemonwareID;
     int m_memberserverType;             // XREF: Live_JoinSessionInProgressComplete(TaskRecord *)+141/r
                                         // Live_JoinSessionInProgressComplete(TaskRecord *)+14E/r
     int m_memberroundTime;
@@ -62,7 +62,7 @@ struct MatchMakingInfo : bdMatchMakingInfo // sizeof=0x228
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_memberaddressport;
+    BO1_ALIGN8 unsigned __int64 m_memberaddressport;
     unsigned int m_memberDDL_VERSION;
     unsigned int m_memberLICENSE;
     unsigned int m_pingedtime;

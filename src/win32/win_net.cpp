@@ -84,7 +84,7 @@ unsigned int __cdecl NET_IPSocket(const char *net_interface, int port)
         Com_PrintWarning(16, "WARNING: UDP_OpenSocket: ioctl FIONBIO: %s\n", v4);
         return 0;
     }
-    else if (setsockopt(newsocket, 0xFFFF, 32, (const char *)&i, 4) == -1)
+    else if (setsockopt(newsocket, SOL_SOCKET, SO_BROADCAST, (const char *)&i, 4) == -1)
     {
         v5 = NET_ErrorString();
         Com_PrintWarning(16, "WARNING: UDP_OpenSocket: setsockopt SO_BROADCAST: %s\n", v5);
@@ -522,7 +522,7 @@ char __cdecl Sys_SendPacket(unsigned int length, unsigned __int8 *data, netadr_t
     //}
     //else
     {
-        ret = sendto(net_socket, (const char *)data, length, 0, &addr, 16);
+        ret = sendto(net_socket, (const char *)data, (int)length, 0, &addr, 16);
     }
     if (ret != -1)
         return 1;

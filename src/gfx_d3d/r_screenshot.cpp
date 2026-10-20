@@ -280,7 +280,7 @@ char __cdecl R_GetFrontBufferData(int x, int y, int width, int height, int bytes
     else
     {
         monitor = MonitorFromWindow(dx.windows[0].hwnd, 2u); // zombies: KB read the HWND from .swapChain
-        monitorInfo.cbSize = 40;
+        monitorInfo.cbSize = sizeof(monitorInfo);
         if ( !GetMonitorInfoA(monitor, &monitorInfo) )
         {
             Com_PrintError(8, "ERROR: cannot take screenshot: couldn't get screen dimensions\n");
@@ -502,7 +502,7 @@ char __cdecl R_TakeScreenshot(char *filename, int format)
     else
     {
         monitor = MonitorFromWindow(dx.windows[0].hwnd, 2u); // zombies: KB read the HWND from .swapChain
-        monitorInfo.cbSize = 40;
+        monitorInfo.cbSize = sizeof(monitorInfo);
         if ( !GetMonitorInfoA(monitor, &monitorInfo) )
         {
             Com_PrintError(8, "ERROR: cannot take screenshot: couldn't get screen dimensions\n");

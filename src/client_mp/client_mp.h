@@ -5,7 +5,7 @@
 
 union $4EE974FEE7F16CD9507A14B5D3A2E3FF // sizeof=0x8
 {                                                                             // XREF: clientState_s/r
-        unsigned __int64 xuid;
+        BO1_ALIGN8 unsigned __int64 xuid;
         unsigned int xuid32[2];
 };
 

@@ -68,7 +68,7 @@ struct matchClientScoreData_t // sizeof=0x70
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 xuid;              // XREF: CG_UpdateMatchScoreboard(int)+13B/w
+    BO1_ALIGN8 unsigned __int64 xuid;              // XREF: CG_UpdateMatchScoreboard(int)+13B/w
                                         // CG_UpdateMatchScoreboard(int)+149/w ...
     int clientNum;                      // XREF: CG_UpdateMatchScoreboard(int)+112/w
                                         // CG_GetInGamePlayerListIcon(int,int,int,team_t,Material * *)+B1/r ...

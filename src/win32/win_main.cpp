@@ -280,6 +280,32 @@ static LONG __stdcall Sys_HeadlessExceptionFilter(_EXCEPTION_POINTERS *info)
         }
         Sys_HeadlessEmergencyLog("%s\n", line);
     }
+#elif defined(_WIN64)
+    // 64-bit Windows: the filter runs on the faulting thread's stack, so the call stack it is on goes on through the
+    // exception dispatcher into the frames that faulted; listed as module offsets (for llvm-symbolizer)
+    {
+        void *frames[48];
+        const USHORT n = RtlCaptureStackBackTrace(0, 48, frames, NULL);
+        char line[1024];
+        int len = _snprintf(line, sizeof(line), "BO1_HEADLESS FRAMES:");
+        for (USHORT i = 0; i < n && len < (int)sizeof(line) - 48; ++i)
+        {
+            HMODULE frameModule = NULL;
+            char framePath[MAX_PATH] = "?";
+            if (GetModuleHandleExA(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                    (LPCSTR)frames[i], &frameModule) && frameModule)
+            {
+                GetModuleFileNameA(frameModule, framePath, sizeof(framePath));
+                const char *slash = strrchr(framePath, '\\');
+                len += _snprintf(line + len, sizeof(line) - len, " %s+0x%llX", slash ? slash + 1 : framePath,
+                                 (unsigned long long)((const char *)frames[i] - (const char *)frameModule));
+            }
+        }
+        Sys_HeadlessEmergencyLog("%s\n", line);
+    }
+#endif
+#if !defined(_WIN64)
+#if !defined(_WIN32)
     if (0)
 #else
     // the return addresses on the faulting stack that point into this module, innermost first (a stack scan, so
@@ -324,6 +350,7 @@ static LONG __stdcall Sys_HeadlessExceptionFilter(_EXCEPTION_POINTERS *info)
         }
         Sys_HeadlessEmergencyLog("%s\n", line);
     }
+#endif // !_WIN64
     return EXCEPTION_CONTINUE_SEARCH;
 }
 
@@ -427,11 +454,12 @@ static bool Sys_HeadlessWalkInit()
 
 static void Sys_HeadlessDumpThreads(int pass)
 {
-#if !defined(_WIN32)
-    // reads other threads' x86 stacks against the PE image: Windows-only evidence for headless hangs
+#if !defined(_WIN32) || defined(_WIN64)
+    // reads other threads' 32-bit x86 stacks against the PE image: 32-bit Windows-only evidence for headless hangs
     Sys_HeadlessThreadLog("BO1_HEADLESS THREADDUMP %d: not available on this platform\n", pass);
     return;
 #endif
+#if !defined(_WIN64)
     HMODULE module = GetModuleHandleA(NULL);
     const IMAGE_NT_HEADERS *nt = (const IMAGE_NT_HEADERS *)((const char *)module + ((const IMAGE_DOS_HEADER *)module)->e_lfanew);
     unsigned int base = (unsigned int)BO1_P2I(module);
@@ -539,6 +567,7 @@ static void Sys_HeadlessDumpThreads(int pass)
         }
     }
     CloseHandle(snap);
+#endif // !_WIN64
 }
 
 static DWORD __stdcall Sys_HeadlessThreadDumpThread(void *)
@@ -1476,7 +1505,7 @@ void    Sys_Error(char *error, ...)
         }
     }
     //BLOPS_NULLSUB();
-#if BO1_MACOS
+#if BO1_PORT
     ExitProcess(0);
 #else
     exit(0);
@@ -1506,7 +1535,7 @@ void __cdecl    Sys_Quit()
     if ( !com_errorEntered )
         track_shutdown(0);
     Con_ShutdownChannels();
-#if BO1_MACOS
+#if BO1_PORT
     ExitProcess(0); // (not exit(): the engine's threads are still running, see ExitProcess in kernel32_misc.cpp)
 #else
     exit(0);
@@ -1950,7 +1979,7 @@ void __cdecl Sys_Init()
     Cmd_AddCommandInternal("movie_stop", Sys_MjpegClose, &Sys_MjpegClose_VAR);
     Cmd_AddCommandInternal("net_listen", Sys_Listen_f, &Sys_Listen_f_VAR);
     Cmd_AddCommandInternal("net_connect", Sys_Connect_f, &Sys_Connect_f_VAR);
-    osversion.dwOSVersionInfoSize = 148;
+    osversion.dwOSVersionInfoSize = sizeof(osversion);
 #pragma warning(push)
 #pragma warning(disable : 4996) // cannot call GetVersionExA nowadays without this warning suppression
     if ( !GetVersionExA(&osversion) )
@@ -2098,7 +2127,7 @@ int __cdecl Sys_IsGameProcess(unsigned int id)
     if ( snapshot == (void *)BO1_I2P(-1) )
         return 0;
     isGame = 0;
-    me.dwSize = 548;
+    me.dwSize = sizeof(me); // (548 in the 32-bit exe)
     if ( Module32First(snapshot, &me) )
     {
         GetModuleFileNameA(0, modulePath, 0x104u);
@@ -2219,6 +2248,44 @@ int __cdecl PrivateUnhandledExceptionFilter(_EXCEPTION_POINTERS *ExceptionInfo)
         &g_ExceptionStr[strlen(g_ExceptionStr)],
         "Exception Address: %08x\n\n",
         ExceptionInfo->ExceptionRecord->ExceptionAddress);
+#if defined(_WIN64)
+    {
+        // 64-bit Windows: the x64 registers, and the stack bytes from RSP
+        const CONTEXT *c = ExceptionInfo->ContextRecord;
+        if ((c->ContextFlags & CONTEXT_CONTROL) == CONTEXT_CONTROL)
+            sprintf(&g_ExceptionStr[strlen(g_ExceptionStr)],
+                    "RIP: %016llx\tRSP: %016llx\tRBP: %016llx\tEFLAGS: %08x\n\n", (unsigned long long)c->Rip,
+                    (unsigned long long)c->Rsp, (unsigned long long)c->Rbp, (unsigned int)c->EFlags);
+        if ((c->ContextFlags & CONTEXT_INTEGER) == CONTEXT_INTEGER)
+            sprintf(&g_ExceptionStr[strlen(g_ExceptionStr)],
+                    "RAX: %016llx\tRBX: %016llx\nRCX: %016llx\tRDX: %016llx\nRSI: %016llx\tRDI: %016llx\n"
+                    "R8:  %016llx\tR9:  %016llx\nR10: %016llx\tR11: %016llx\nR12: %016llx\tR13: %016llx\n"
+                    "R14: %016llx\tR15: %016llx\n\n",
+                    (unsigned long long)c->Rax, (unsigned long long)c->Rbx, (unsigned long long)c->Rcx,
+                    (unsigned long long)c->Rdx, (unsigned long long)c->Rsi, (unsigned long long)c->Rdi,
+                    (unsigned long long)c->R8, (unsigned long long)c->R9, (unsigned long long)c->R10,
+                    (unsigned long long)c->R11, (unsigned long long)c->R12, (unsigned long long)c->R13,
+                    (unsigned long long)c->R14, (unsigned long long)c->R15);
+        if ((c->ContextFlags & CONTEXT_CONTROL) == CONTEXT_CONTROL && !IsBadReadPtr((const void *)c->Rsp, 1024))
+        {
+            strcat(g_ExceptionStr, "Stack Bytes: \n");
+            const unsigned __int8 *sp = (const unsigned __int8 *)c->Rsp;
+            for (i = 0; i < 128; ++i)
+            {
+                for (j = 0; j < 8; ++j)
+                {
+                    sprintf(&g_ExceptionStr[strlen(g_ExceptionStr)], "%02x", sp[j + 8 * i]);
+                    strcat(g_ExceptionStr, " ");
+                }
+                strcat(g_ExceptionStr, "\t[");
+                for (ja = 0; ja < 8; ++ja)
+                    sprintf(&g_ExceptionStr[strlen(g_ExceptionStr)], sp[ja + 8 * i] >= 0x21u ? "%c" : ".", sp[ja + 8 * i]);
+                strcat(g_ExceptionStr, "]\n");
+            }
+            strcat(g_ExceptionStr, "\n");
+        }
+    }
+#else
     if ((ExceptionInfo->ContextRecord->ContextFlags & 0x10001) != 0)
         sprintf(
             &g_ExceptionStr[strlen(g_ExceptionStr)],
@@ -2275,6 +2342,7 @@ int __cdecl PrivateUnhandledExceptionFilter(_EXCEPTION_POINTERS *ExceptionInfo)
         }
         strcat(g_ExceptionStr, "\n");
     }
+#endif // _WIN64
     v2 = Win_LocalizeRef("WIN_ERROR");
     Com_Error(ERR_FATAL, v2);
     return 1;
@@ -2298,7 +2366,9 @@ int __stdcall WinMain(HINSTANCE__ *hInstance, HINSTANCE__ *hPrevInstance, char *
             werSetFlags(32); // WER_FAULT_REPORTING_NO_UI: a crash is still reported (Application Error 1000), silently
         SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOOPENFILEERRORBOX);
         _set_error_mode(_OUT_TO_STDERR); // CRT runtime errors: no message box
+#if !defined(__MINGW32__) || defined(_UCRT) // (msvcrt.dll, MinGW's default C runtime, has no abort settings)
         _set_abort_behavior(0, _WRITE_ABORT_MSG);
+#endif
         // headless client: its window gets no keyboard, so no IME / text services either (their floating language
         // bar, class CiceroUIWndFrame, is a visible window of this process); before any window exists
         HMODULE imm = LoadLibraryA("imm32.dll");
@@ -2517,7 +2587,7 @@ void Win_RegisterClass()
     tagWNDCLASSEXA wce; // [esp+0h] [ebp-30h] BYREF
 
     memset((unsigned __int8 *)&wce, 0, sizeof(wce));
-    wce.cbSize = 48;
+    wce.cbSize = sizeof(wce); // (48 in the 32-bit exe)
     wce.lpfnWndProc = MainWndProc;
     wce.hInstance = g_wv.hInstance;
     wce.hIcon = LoadIconA(g_wv.hInstance, (LPCSTR)BO1_I2P(1));

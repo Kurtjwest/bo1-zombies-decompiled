@@ -1,5 +1,5 @@
 #pragma once
-// Start-up entry points of the Win32 compatibility layer, called by the macOS main() (src/platform/macos/main_mac.cpp)
+// Start-up entry points of the Win32 compatibility layer, called by the macOS main() (src/platform/common/main_posix.cpp)
 // before the engine's WinMain runs.
 struct HWND__;
 

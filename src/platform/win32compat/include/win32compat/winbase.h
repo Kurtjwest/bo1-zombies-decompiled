@@ -414,8 +414,9 @@ LSTATUS RegGetValueA(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, 
 }
 #endif
 
-#ifdef __cplusplus
-// Win32 code passes DWORD* (32-bit there, like DWORD_PTR) for the affinity masks.
+#if defined(__cplusplus) && __SIZEOF_POINTER__ == 8
+// Win32 code passes DWORD* (32-bit there, like DWORD_PTR) for the affinity masks. (In 32-bit processes DWORD_PTR is
+// DWORD.)
 static inline BOOL GetProcessAffinityMask(HANDLE hProcess, DWORD *lpProcessAffinityMask, DWORD *lpSystemAffinityMask)
 {
     DWORD_PTR p = 0, s = 0;

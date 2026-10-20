@@ -1,11 +1,27 @@
-// XAudio2 (2.7 API level) for the macOS (arm64) port.
+// XAudio2 (2.7 API level) for the builds without Microsoft's XAudio2: the macOS and Linux ports, and the Windows
+// builds made with clang and MinGW (cmake/windows.cmake), which have no DirectX SDK.
 // The engine's sound driver (src/sound/snd_driver_xaudio2.cpp) is written against XAudio2; this header declares
-// that interface and src/platform/macos/xaudio2_coreaudio.cpp implements it as a software voice graph
-// (source voices -> submix voices with XAPO effect chains -> mastering voice) rendered through CoreAudio.
+// that interface and src/platform/common/xaudio2_soft.cpp implements it as a software voice graph
+// (source voices -> submix voices with XAPO effect chains -> mastering voice) rendered through the platform's audio
+// output (src/platform/common/audio_out.h).
 #pragma once
 #include <windows.h>
 #include <universal/ptr32.h>
+#include <math.h>
 
+#if defined(_WIN32)
+// Windows' own headers declare the wave formats, speaker masks and COM plumbing (IUnknown, STDMETHOD, GUIDs)
+#include <mmreg.h>
+#include <objbase.h>
+#ifndef WAVE_FORMAT_XMA2
+#define WAVE_FORMAT_XMA2 0x0166
+#endif
+#ifndef WAVE_FORMAT_WMAUDIO3
+#define WAVE_FORMAT_WMAUDIO3 0x0162
+#endif
+// (<ksmedia.h>'s; the subtype GUIDs are in MinGW's ksguid library)
+EXTERN_C const GUID KSDATAFORMAT_SUBTYPE_ADPCM;
+#else
 #ifndef STDMETHOD
 #define STDMETHOD(method) virtual HRESULT STDMETHODCALLTYPE method
 #define STDMETHOD_(type, method) virtual type STDMETHODCALLTYPE method
@@ -71,6 +87,15 @@ static_assert(sizeof(WAVEFORMATEXTENSIBLE) == 40, "WAVEFORMATEXTENSIBLE is packe
 #define SPEAKER_SIDE_LEFT 0x200
 #define SPEAKER_SIDE_RIGHT 0x400
 #define SPEAKER_TOP_CENTER 0x800
+
+DEFINE_GUID(KSDATAFORMAT_SUBTYPE_PCM, 0x00000001, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, 0x00000003, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID(KSDATAFORMAT_SUBTYPE_ADPCM, 0x00000002, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
+DEFINE_GUID(IID_IUnknown, 0x00000000, 0x0000, 0x0000, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46);
+#endif // !_WIN32
+
+// the speaker layouts of the SDK's audiodefs.h
+#ifndef SPEAKER_STEREO
 #define SPEAKER_MONO SPEAKER_FRONT_CENTER
 #define SPEAKER_STEREO (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT)
 #define SPEAKER_QUAD (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT)
@@ -78,11 +103,7 @@ static_assert(sizeof(WAVEFORMATEXTENSIBLE) == 40, "WAVEFORMATEXTENSIBLE is packe
 #define SPEAKER_7POINT1 (SPEAKER_5POINT1 | SPEAKER_FRONT_LEFT_OF_CENTER | SPEAKER_FRONT_RIGHT_OF_CENTER)
 #define SPEAKER_5POINT1_SURROUND (SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_LOW_FREQUENCY | SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT)
 #define SPEAKER_7POINT1_SURROUND (SPEAKER_5POINT1_SURROUND | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT)
-
-DEFINE_GUID(KSDATAFORMAT_SUBTYPE_PCM, 0x00000001, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
-DEFINE_GUID(KSDATAFORMAT_SUBTYPE_IEEE_FLOAT, 0x00000003, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
-DEFINE_GUID(KSDATAFORMAT_SUBTYPE_ADPCM, 0x00000002, 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71);
-DEFINE_GUID(IID_IUnknown, 0x00000000, 0x0000, 0x0000, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x46);
+#endif
 
 // ---- XAudio2 constants ----
 #define XAUDIO2_MAX_BUFFER_BYTES 0x80000000
@@ -344,18 +365,18 @@ struct IXAudio2 : public IUnknown
 #endif
 };
 
-// Creates the CoreAudio-backed engine (implemented in src/platform/macos/xaudio2_coreaudio.cpp).
-extern "C" HRESULT XAudio2CreateMac(IXAudio2 **ppXAudio2, UINT32 Flags, XAUDIO2_PROCESSOR XAudio2Processor);
+// Creates the CoreAudio-backed engine (implemented in src/platform/common/xaudio2_soft.cpp).
+extern "C" HRESULT XAudio2CreateSoft(IXAudio2 **ppXAudio2, UINT32 Flags, XAUDIO2_PROCESSOR XAudio2Processor);
 // The SDK's XAudio2Create (an inline that instantiates the engine through COM on Windows).
 inline HRESULT XAudio2Create(IXAudio2 **ppXAudio2, UINT32 Flags = 0, XAUDIO2_PROCESSOR XAudio2Processor = XAUDIO2_DEFAULT_PROCESSOR)
 {
-    return XAudio2CreateMac(ppXAudio2, Flags, XAudio2Processor);
+    return XAudio2CreateSoft(ppXAudio2, Flags, XAudio2Processor);
 }
 #if BO1_PTR32_IS_CLASS
 inline HRESULT XAudio2Create(Ptr32<IXAudio2> *ppXAudio2, UINT32 Flags = 0, XAUDIO2_PROCESSOR XAudio2Processor = XAUDIO2_DEFAULT_PROCESSOR)
 {
     IXAudio2 *bo1_out = nullptr;
-    HRESULT hr = XAudio2CreateMac(&bo1_out, Flags, XAudio2Processor);
+    HRESULT hr = XAudio2CreateSoft(&bo1_out, Flags, XAudio2Processor);
     if (ppXAudio2)
         *ppXAudio2 = bo1_out;
     return hr;

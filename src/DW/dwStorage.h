@@ -355,7 +355,7 @@ struct __declspec(align(8)) bdFileInfo : bdTaskResult // sizeof=0xB0
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_fileID;
+    BO1_ALIGN8 unsigned __int64 m_fileID;
     unsigned int m_createTime;
     unsigned int m_modifedTime;
     bdFileInfo::bdVisibility m_visibility;
@@ -363,7 +363,7 @@ struct __declspec(align(8)) bdFileInfo : bdTaskResult // sizeof=0xB0
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_ownerID;
+    BO1_ALIGN8 unsigned __int64 m_ownerID;
     char m_fileName[128];
     unsigned int m_fileSize;
     // padding byte
@@ -396,7 +396,7 @@ struct __declspec(align(4)) dwFileTask // sizeof=0xE0
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_fileID;
+    BO1_ALIGN8 unsigned __int64 m_fileID;
     unsigned int m_fileSize;
     unsigned int m_bufferSize;
     bdFileInfo m_fileInfo;              // XREF: _dynamic_atexit_destructor_for__s_finfo__+3/o

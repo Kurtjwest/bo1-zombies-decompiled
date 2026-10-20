@@ -3159,7 +3159,7 @@ static void destroy_context(Context *ctx)
         buffer_destroy(ctx->mainline);
         buffer_destroy(ctx->postflight);
         buffer_destroy(ctx->ignore);
-#if SUPPORT_PROFILE_METAL
+#if SUPPORT_PROFILE_METAL || SUPPORT_PROFILE_GLSL
         {
             size_t label;
             for (label = 0; label < STATICARRAYLEN(ctx->metal_label_bodies); label++)

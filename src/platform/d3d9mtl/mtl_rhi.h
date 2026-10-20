@@ -187,6 +187,9 @@ void FillTexture(Texture *dst, uint32_t slice, uint32_t level, int x0, int y0, i
 Buffer *CreateBufferNoCopy(void *ptr, size_t length, void (*release)(void *ptr, size_t len, void *user), void *user);
 Buffer *CreateBuffer(size_t length); // shared storage
 void *BufferContents(Buffer *buf);
+// The CPU wrote [offset, offset + length) of the buffer's memory (an Unlock): Metal reads that memory itself; the
+// OpenGL renderer copies the bytes to its own buffer before the next draw. Any thread.
+void BufferWritten(Buffer *buf, size_t offset, size_t length);
 void ReleaseBuffer(Buffer *buf);
 
 // ---- shaders ----

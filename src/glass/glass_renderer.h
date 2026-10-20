@@ -139,20 +139,20 @@ struct GlassRenderer // sizeof=0x4DF8
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 shatterTimer;
+    BO1_ALIGN8 unsigned __int64 shatterTimer;
     unsigned int numSplits;
     // padding byte
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 splitTimer;
-    unsigned __int64 triangulateTimer;
+    BO1_ALIGN8 unsigned __int64 splitTimer;
+    BO1_ALIGN8 unsigned __int64 triangulateTimer;
     unsigned int genVertsCount;
     // padding byte
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 genVertsTimer;
+    BO1_ALIGN8 unsigned __int64 genVertsTimer;
     Ptr32<const dvar_s> maxShardSplit;
     Ptr32<const dvar_s> shardShatterSizeLimitScale;
     Ptr32<const dvar_s> defragMemory;

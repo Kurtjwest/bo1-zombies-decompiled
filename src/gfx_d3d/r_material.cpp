@@ -472,7 +472,7 @@ void __cdecl Load_CreateMaterialPixelShader(GfxPixelShaderLoadDef *loadDef, Mate
         ProfLoad_Begin("Create pixel shader");
         if ( Sys_IsRenderThread() )
         {
-            hr = dx.device->CreatePixelShader((DWORD*)loadDef->program, (Ptr32<IDirect3DPixelShader9> *)&mtlShader->prog);
+            hr = dx.device->CreatePixelShader((DWORD*)loadDef->program, BO1_OUT((Ptr32<IDirect3DPixelShader9> *)&mtlShader->prog));
             if ( hr < 0 )
             {
                 g_hr = hr;
@@ -515,7 +515,7 @@ void __cdecl Load_CreateMaterialVertexShader(GfxVertexShaderLoadDef *loadDef, Ma
         {
             if ( r_logFile && r_logFile->current.integer )
                 RB_LogPrint("dx.device->CreateVertexShader( loadDef->program, &mtlShader->prog.vs )\n");
-            hr = dx.device->CreateVertexShader(loadDef->program, (Ptr32<IDirect3DVertexShader9> *)&mtlShader->prog);
+            hr = dx.device->CreateVertexShader(loadDef->program, BO1_OUT((Ptr32<IDirect3DVertexShader9> *)&mtlShader->prog));
             if ( hr < 0 )
             {
                 ++g_disableRendering;

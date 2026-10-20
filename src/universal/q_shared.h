@@ -20,8 +20,8 @@
 #include <cmath>
 
 //======================= WIN32 DEFINES =================================
-// (the macOS arm64 build shares these: same compiler model, MSVC extensions enabled with -fms-extensions)
-#if defined(WIN32) || defined(__APPLE__)
+// (the macOS and Linux builds share these: same compiler model, MSVC extensions enabled with -fms-extensions)
+#if defined(WIN32) || defined(BO1_PORT)
 
 #define	MAC_STATIC
 

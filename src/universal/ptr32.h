@@ -22,6 +22,14 @@
 #include <cstddef>
 #include <type_traits>
 
+// 8-byte members (__int64, double) of the fixed-layout structures: MSVC aligns them to 8 bytes in a structure, the
+// 32-bit x86 System V ABI (32-bit x86 Linux) to 4. Marked so, they keep the Windows layout the game's files have.
+#if defined(__i386__) && !defined(_WIN32)
+#define BO1_ALIGN8 alignas(8)
+#else
+#define BO1_ALIGN8
+#endif
+
 #if defined(_WIN32) && !defined(_WIN64)
 
 // Ptr32<T> is T* itself: overloads written for the class form must not be declared
@@ -34,6 +42,7 @@ inline uint32_t Ptr32_Encode(const volatile void *p) { return (uint32_t)p; }
 inline void *Ptr32_Decode(uint32_t v) { return (void *)v; }
 #define BO1_NATIVE_ARRAY(a, n) (a)
 #define BO1_VA(x) (x)
+#define BO1_OUT(p) (p)
 
 #else
 
@@ -48,7 +57,23 @@ constexpr uint32_t kNegativeBase = 0xFFFF0000u; // sign-extended small negative 
 constexpr uint32_t kMarkerAlias = 0xFFFFFFFEu;
 constexpr uint32_t kMarkerInline = 0xFFFFFFFFu;
 constexpr uintptr_t kArenaSize = kWindowBase;
+} // namespace bo1ptr
 
+#if defined(__SIZEOF_POINTER__) && __SIZEOF_POINTER__ == 4
+// 32-bit processes (the x86 and 32-bit ARM Linux builds): every address fits in 32 bits, so a handle is the address
+// itself. The class form is kept, so the engine compiles as in the 64-bit builds; the arena is only an allocator
+// there (src/platform/win32compat/arena.cpp).
+#define BO1_PTR32_IDENTITY 1
+namespace bo1ptr
+{
+inline uint32_t Encode(const volatile void *p) { return (uint32_t)(uintptr_t)p; }
+inline void *Decode(uint32_t v) { return (void *)(uintptr_t)v; }
+void InitArena(); // idempotent
+} // namespace bo1ptr
+#else
+#define BO1_PTR32_IDENTITY 0
+namespace bo1ptr
+{
 extern char *g_arenaBase; // base of the arena reservation (its first 64 KB are never mapped)
 // The executable image's window, the first one (handles [kWindowBase, kWindowBase + g_imageWindowSize) for addresses
 // from g_imageWindowStart): the engine's globals and string literals are reached through it all the time, so it is
@@ -79,6 +104,11 @@ inline void *Decode(uint32_t v)
         return (void *)(g_imageWindowStart + (v - kWindowBase));
     return DecodeSlow(v);
 }
+} // namespace bo1ptr
+#endif // BO1_PTR32_IDENTITY
+
+namespace bo1ptr
+{
 
 // Integer -> pointer for decompiled code that keeps pointers in 32-bit integers: signed values are sign-extended,
 // as a 32-bit build would (so (T*)(short)-1 is still (T*)-1).
@@ -99,8 +129,11 @@ inline uint32_t EncodeAny(std::nullptr_t) { return 0; }
 
 bool InArena(const volatile void *p);
 
-// Maps [addr, addr + size) onto a range of window handles (startup: the executable image, the main thread stack).
+// Maps [addr, addr + size) onto a range of window handles (startup: the executable image, the main thread stack;
+// on Windows every thread's stack). 0 if there is no room.
 uint32_t RegisterWindow(const void *addr, size_t size);
+// Ends the window starting at addr (a thread's stack when the thread exits); its handles can map a later window.
+void UnregisterWindow(const void *addr);
 } // namespace bo1ptr
 
 inline uint32_t Ptr32_Encode(const volatile void *p) { return bo1ptr::Encode(p); }
@@ -227,6 +260,33 @@ template <typename T> inline T *VaArg(const Ptr32<T> &p) { return p.get(); }
 template <typename T> inline T *VaArg(const volatile Ptr32<T> &p) { return p.get(); }
 } // namespace bo1ptr
 #define BO1_VA(x) (::bo1ptr::VaArg(x))
+
+namespace bo1ptr
+{
+// The out-parameter of a system API (T **: Direct3D's CreateTexture, DirectSound's CreateSoundBuffer, ...) that
+// fills a 32-bit pointer field: the API writes a native pointer, which goes into the field when the full expression
+// the call is in ends. (On macOS and Linux the compatibility layer's interfaces take Ptr32 out-parameters themselves;
+// Windows' own headers are what this is for.)
+template <typename T> struct OutParam
+{
+    Ptr32<T> *field;
+    T *value;
+    explicit OutParam(Ptr32<T> *f) : field(f), value(f ? f->get() : nullptr) {}
+    OutParam(const OutParam &) = delete;
+    OutParam &operator=(const OutParam &) = delete;
+    ~OutParam()
+    {
+        if (field)
+            *field = value;
+    }
+    operator T **() { return &value; }
+};
+template <typename T> inline OutParam<T> Out(Ptr32<T> *field) { return OutParam<T>(field); }
+// a native pointer variable is its own out-parameter
+template <typename T> inline T **Out(T **p) { return p; }
+} // namespace bo1ptr
+// BO1_OUT(&ptr32Field) where a system API takes a T ** out-parameter
+#define BO1_OUT(p) (::bo1ptr::Out(p))
 
 static_assert(sizeof(Ptr32<int>) == 4, "Ptr32 must be 4 bytes");
 static_assert(std::is_trivially_copyable_v<Ptr32<int>>, "Ptr32 must be trivially copyable");

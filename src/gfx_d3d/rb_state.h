@@ -160,8 +160,8 @@ struct GfxCmdBufState // sizeof=0x13D0
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 vertexShaderConstState[256];
-    unsigned __int64 pixelShaderConstState[256];
+    BO1_ALIGN8 unsigned __int64 vertexShaderConstState[256];
+    BO1_ALIGN8 unsigned __int64 pixelShaderConstState[256];
     unsigned __int8 alphaRef;           // XREF: RB_SetInitialState(void):loc_AC7BFD/r
     // padding byte
     // padding byte
@@ -201,7 +201,7 @@ struct GfxCodeMatrices // sizeof=0x800
     GfxMatrix matrix[32];
 };
 
-struct GfxCodeImageRenderTargetFields // sizeof=0x8
+struct BO1_ALIGN8 GfxCodeImageRenderTargetFields // sizeof=0x8
 {                                       // XREF: GfxCodeImageRenderTarget/r
     unsigned __int64 renderTargetId : 8;
     unsigned __int64 enable : 1;

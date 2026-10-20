@@ -967,7 +967,8 @@ void __cdecl FS_ServerSetReferencedFFs(const char *FFSums, const char *FFNames)
                                                                 fs_serverReferencedFFNames);
 }
 
-char basename[64];
+// (not "basename": glibc declares a function of that name)
+static char s_mapBaseName[64];
 char *__cdecl FS_GetMapBaseName(char *mapname)
 {
     unsigned int v2; // [esp+0h] [ebp-18h]
@@ -984,15 +985,15 @@ char *__cdecl FS_GetMapBaseName(char *mapname)
     // to a read just before the string in 32-bit address arithmetic, but reads 4 GB past it on 64-bit
     if ( v2 >= 7 && !I_stricmp(&mapname[v2 - 3], "bsp") )
         len = v2 - 7;
-    if ( len >= (int)sizeof(basename) )
-        len = sizeof(basename) - 1;
-    memcpy((unsigned __int8 *)basename, (unsigned __int8 *)mapname, len);
-    basename[len] = 0;
+    if ( len >= (int)sizeof(s_mapBaseName) )
+        len = sizeof(s_mapBaseName) - 1;
+    memcpy((unsigned __int8 *)s_mapBaseName, (unsigned __int8 *)mapname, len);
+    s_mapBaseName[len] = 0;
     for ( c = 0; c < len; ++c )
     {
-        if ( basename[c] == 37 )
-            basename[c] = 95;
+        if ( s_mapBaseName[c] == 37 )
+            s_mapBaseName[c] = 95;
     }
-    return basename;
+    return s_mapBaseName;
 }
 

@@ -5,7 +5,7 @@
 #include <cstdio>
 #include <deque>
 #include <map>
-#include <mach/mach_time.h>
+#include <chrono>
 
 namespace d3d9mtl
 {
@@ -953,7 +953,8 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
         return D3DERR_INVALIDCALL;
     if (offset > length)
         return D3DERR_INVALIDCALL;
-    (void)size;
+    const UINT end = size ? std::min<UINT>(offset + size, length) : length;
+    UINT dirtyFrom = offset, dirtyTo = end;
     if (GpuMayUse(lastUse) && !(flags & (D3DLOCK_NOOVERWRITE | D3DLOCK_READONLY)))
     {
         // The GPU may still read the current contents: give the CPU fresh memory instead of waiting (DISCARD), keeping
@@ -962,7 +963,10 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
         if (AllocBufferMemory(std::max<UINT>(length, 4), &n))
         {
             if (!(flags & D3DLOCK_DISCARD))
+            {
                 memcpy(n.ptr, cur.ptr, length);
+                dirtyFrom = 0, dirtyTo = length;
+            }
             FreeBufferMemory(cur, lastUse);
             cur = n;
             lastUse = 0;
@@ -972,6 +976,14 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
             rhi::WaitForSerial(lastUse);
         }
     }
+    if (!(flags & D3DLOCK_READONLY))
+    {
+        // (nested locks widen the range)
+        if (dirtyStart == dirtyEnd)
+            dirtyStart = dirtyFrom, dirtyEnd = dirtyTo;
+        else
+            dirtyStart = std::min(dirtyStart, dirtyFrom), dirtyEnd = std::max(dirtyEnd, dirtyTo);
+    }
     *ppbData = cur.ptr + offset;
     locked = true;
     return D3D_OK;
@@ -980,6 +992,10 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
 HRESULT BufferStorage::Unlock()
 {
     locked = false;
+    // the renderer learns which bytes the CPU wrote (OpenGL copies them to its buffer; Metal reads this memory)
+    if (dirtyEnd > dirtyStart && cur.buffer)
+        rhi::BufferWritten(cur.buffer, cur.offset + dirtyStart, dirtyEnd - dirtyStart);
+    dirtyStart = dirtyEnd = 0;
     return D3D_OK;
 }
 
@@ -1095,12 +1111,9 @@ namespace
 {
 uint64_t NowNs()
 {
-    static mach_timebase_info_data_t tb = [] {
-        mach_timebase_info_data_t t;
-        mach_timebase_info(&t);
-        return t;
-    }();
-    return mach_absolute_time() * tb.numer / tb.denom;
+    return (uint64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(
+               std::chrono::steady_clock::now().time_since_epoch())
+        .count();
 }
 } // namespace
 

@@ -22,8 +22,9 @@ static inline void _m_empty(void) {}
 static inline __m64 _mm_setzero_si64(void) { return vreinterpret_m64_s64(vdup_n_s64(0)); }
 static inline __m64 _mm_cvtsi32_si64(int a) { return vreinterpret_m64_s32(vset_lane_s32(a, vdup_n_s32(0), 0)); }
 static inline int _mm_cvtsi64_si32(__m64 a) { return vget_lane_s32(vreinterpret_s32_m64(a), 0); }
-static inline __m64 _m_punpcklwd(__m64 a, __m64 b) { return vreinterpret_m64_s16(vzip1_s16(vreinterpret_s16_m64(a), vreinterpret_s16_m64(b))); }
-static inline __m64 _m_punpcklbw(__m64 a, __m64 b) { return vreinterpret_m64_s8(vzip1_s8(vreinterpret_s8_m64(a), vreinterpret_s8_m64(b))); }
+// (vzip_*.val[0]: the low halves interleaved, as AArch64's vzip1 and on 32-bit ARM's NEON too)
+static inline __m64 _m_punpcklwd(__m64 a, __m64 b) { return vreinterpret_m64_s16(vzip_s16(vreinterpret_s16_m64(a), vreinterpret_s16_m64(b)).val[0]); }
+static inline __m64 _m_punpcklbw(__m64 a, __m64 b) { return vreinterpret_m64_s8(vzip_s8(vreinterpret_s8_m64(a), vreinterpret_s8_m64(b)).val[0]); }
 static inline __m64 _m_packuswb(__m64 a, __m64 b) { return vreinterpret_m64_u8(vqmovun_s16(vcombine_s16(vreinterpret_s16_m64(a), vreinterpret_s16_m64(b)))); }
 #define _mm_unpacklo_pi16 _m_punpcklwd
 #define _mm_unpacklo_pi8 _m_punpcklbw

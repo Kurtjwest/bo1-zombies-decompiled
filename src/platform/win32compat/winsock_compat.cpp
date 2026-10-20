@@ -54,7 +54,9 @@ int ErrnoToWsa(int e)
     case EHOSTDOWN: return WSAEHOSTDOWN;
     case EHOSTUNREACH: return WSAEHOSTUNREACH;
     case ENOTEMPTY: return WSAENOTEMPTY;
+#ifdef EPROCLIM
     case EPROCLIM: return WSAEPROCLIM;
+#endif
     case EUSERS: return WSAEUSERS;
     case EDQUOT: return WSAEDQUOT;
     case ESTALE: return WSAESTALE;

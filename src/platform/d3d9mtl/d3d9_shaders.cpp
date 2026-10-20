@@ -1,8 +1,10 @@
-// Direct3D 9 shaders on Metal: Shader Model 1-3 bytecode is translated to Metal Shading Language by MojoShader
-// (src/platform/third_party/mojoshader, Metal profile with hooks for this layer) and compiled per pipeline variant.
+// Direct3D 9 shaders: Shader Model 1-3 bytecode is translated to Metal Shading Language (or GLSL for the OpenGL
+// renderer) by MojoShader (src/platform/third_party/mojoshader, the Metal profile with hooks for this layer, or the
+// GLSL profile derived from it) and compiled per pipeline variant.
 //
 // Constants: MojoShader packs the constant registers a shader uses into one uniform struct at buffer(0):
 //   struct { float4 uniforms_float4[F]; int4 uniforms_int4[I]; bool uniforms_bool[B]; }
+// (the GLSL profile's uniform block has the same bytes: its bools are packed four to a uint)
 // The float slots are, in order, the relative-addressed register arrays (each a run of slots), then every other
 // float register in the order of the parse data's uniform list; int and bool registers follow the same order.
 // Registers a shader defines itself (def) are compiled in and take precedence, as in Direct3D 9.
@@ -76,7 +78,12 @@ bool Translate(ShaderCode *c)
     info = ShaderInfo{};
     info.isPixel = pixel;
     const UINT size = (UINT)(c->code.size() * sizeof(DWORD));
-    const MOJOSHADER_parseData *pd = MOJOSHADER_parse(MOJOSHADER_PROFILE_METAL, "bo1_main",
+#if defined(BO1_RHI_OPENGL)
+    const char *profile = MOJOSHADER_PROFILE_GLSL; // (the BO1 GLSL profile: the Metal one's translation, in GLSL)
+#else
+    const char *profile = MOJOSHADER_PROFILE_METAL;
+#endif
+    const MOJOSHADER_parseData *pd = MOJOSHADER_parse(profile, "bo1_main",
                                                       (const unsigned char *)c->code.data(), size, nullptr, 0, nullptr,
                                                       0, nullptr, nullptr, nullptr);
     if (!pd)

@@ -452,7 +452,6 @@ void __cdecl CL_GamepadGenerateAPad(int localClientNum, int portIndex, unsigned 
     stick = stickForAxis[physicalAxis];
     if ( stick )
     {
-#if BO1_MACOS
         // zombies (port): the left stick's directions are the analog pad keys (K_APAD_*), which the menus move
         // through as with the d-pad (Menu_HandleKey). The PC exe's calls here were empty: it had no gamepad menus.
         // (Nothing binds them in the game.)
@@ -469,20 +468,9 @@ void __cdecl CL_GamepadGenerateAPad(int localClientNum, int portIndex, unsigned 
                     CL_GamepadButtonEventForPort(portIndex, key, 0, time, GPAD_NONE);
             }
         }
-#else
-        if (GPad_IsStickPressed(portIndex, stick, GPAD_STICK_POS) || GPad_IsStickPressed(portIndex, stick, GPAD_STICK_NEG))
-        {
-            //BLOPS_NULLSUB();
-        }
-        if ( GPad_IsStickReleased(portIndex, stick, GPAD_STICK_POS) || GPad_IsStickReleased(portIndex, stick, GPAD_STICK_NEG) )
-        {
-            //BLOPS_NULLSUB();
-        }
-#endif
     }
 }
 
-#if BO1_MACOS
 // zombies (port): a menu goes on scrolling while a d-pad direction or the left stick is held, as on the consoles. The
 // held key is sent again every frame; CL_CheckForIgnoreDueToRepeat lets one through gpad_menu_scroll_delay_first ms
 // after the press, then one every gpad_menu_scroll_delay_rest ms. (Straight to CL_GamepadButtonEvent: the per-port
@@ -503,7 +491,6 @@ void __cdecl CL_GamepadRepeatMenuScrollKeys(int portIndex, unsigned int time)
             CL_GamepadButtonEvent(localClientNum, portIndex, key, 1, time, GPAD_NONE);
     }
 }
-#endif
 
 double __cdecl CL_GamepadAxisValue(int localClientNum, unsigned int virtualAxis)
 {

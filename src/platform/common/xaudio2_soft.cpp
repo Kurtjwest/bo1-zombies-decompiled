@@ -1,10 +1,11 @@
-// XAudio2 (2.7 API) for the native macOS build: a software voice graph rendered through CoreAudio.
+// XAudio2 (2.7 API) for the macOS and Linux builds: a software voice graph rendered through the platform's audio output
+// (audio_out.h: CoreAudio on macOS, SDL on Linux).
 //
 // Graph: source voices (PCM 8/16/24/32-bit, IEEE float, MS ADPCM, xWMA) are decoded, resampled (cubic) to the
 // mastering rate, filtered, run through their XAPO effect chains, and mixed through their output matrices into
 // submix voices; submix voices run in ProcessingStage order with their own effect chains; the mastering voice sums
 // everything into the device buffer. Processing happens in 10 ms quanta (480 frames at 48 kHz, the size the engine's
-// XAPOs assert) on the audio mixer thread of coreaudio_out.mm, exactly where XAudio2 runs its callbacks.
+// XAPOs assert) on the audio mixer thread of the audio output (audio_out.h), exactly where XAudio2 runs its callbacks.
 //
 // Volume, channel-volume and matrix changes are ramped across a quantum, as XAudio2 does, so the engine's per-frame
 // panning updates don't click.
@@ -13,7 +14,7 @@
 #include <xapo.h>
 #include <xaudio2.h>
 
-#include "coreaudio_out.h"
+#include "audio_out.h"
 #include "ffmpeg_media.h"
 
 #include <algorithm>
@@ -1271,8 +1272,8 @@ static GUID GuidFromString(const char *s)
 }
 
 // The CoreAudio UID behind a device GUID from GetDeviceDetails ("" for the system default entry). DirectSound
-// (dsound_mac.cpp) gets these GUIDs from the engine and sends the cinematics' sound to the same device.
-extern "C" int XAudio2Mac_DeviceUIDForGUID(const GUID *guid, char *uid, int size)
+// (dsound_soft.cpp) gets these GUIDs from the engine and sends the cinematics' sound to the same device.
+extern "C" int XAudio2Soft_DeviceUIDForGUID(const GUID *guid, char *uid, int size)
 {
     if (!guid || !uid || size <= 0)
         return 0;
@@ -1644,7 +1645,7 @@ Engine::~Engine()
 }
 } // namespace xa2
 
-extern "C" HRESULT XAudio2CreateMac(IXAudio2 **ppXAudio2, UINT32 Flags, XAUDIO2_PROCESSOR XAudio2Processor)
+extern "C" HRESULT XAudio2CreateSoft(IXAudio2 **ppXAudio2, UINT32 Flags, XAUDIO2_PROCESSOR XAudio2Processor)
 {
     (void)Flags;
     (void)XAudio2Processor;

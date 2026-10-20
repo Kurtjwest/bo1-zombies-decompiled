@@ -1,19 +1,18 @@
-// DirectSound on CoreAudio: the voice chat playback/capture buffers (src/groupvoice/play_dsound.cpp,
+// DirectSound in software: the voice chat playback/capture buffers (src/groupvoice/play_dsound.cpp,
 // record_dsound.cpp) and the device object the cinematics hand to Bink (src/gfx_d3d/r_cinematic.cpp).
 //
-// Secondary buffers are mixed in software into one CoreAudio output (coreaudio_out.mm); capture buffers are filled
-// by an AudioQueue input in the format the caller asked for, with CoreAudio converting from the microphone's rate.
+// Secondary buffers are mixed in software into one output of the platform's audio API (audio_out.h: CoreAudio on
+// macOS, SDL on Linux); capture buffers are filled by its input (AudioIn) in the format the caller asked for, the
+// system converting from the microphone's rate.
 
 #include <windows.h>
 #include <dsound.h>
 #include <mmsystem.h>
 
-#include "coreaudio_out.h"
+#include "audio_out.h"
 
-#include <AudioToolbox/AudioToolbox.h>
-
-// xaudio2_coreaudio.cpp: the CoreAudio UID behind one of the engine's sound device GUIDs ("" for the system default)
-extern "C" int XAudio2Mac_DeviceUIDForGUID(const GUID *guid, char *uid, int size);
+// xaudio2_soft.cpp: the output device UID behind one of the engine's sound device GUIDs ("" for the system default)
+extern "C" int XAudio2Soft_DeviceUIDForGUID(const GUID *guid, char *uid, int size);
 
 #include <algorithm>
 #include <atomic>
@@ -260,7 +259,7 @@ void MixRender(void *, float *out, int frames, int channels)
 struct DSDevice final : ComObject<IDirectSound8>
 {
     // the output this object was created for (the device picked in the sound options); the cinematics play on it
-    // (bink_mac.cpp). Empty: the system default. The secondary buffers below always mix into the default output.
+    // (bink_ffmpeg.cpp). Empty: the system default. The secondary buffers below always mix into the default output.
     char deviceUID[256] = "";
 
     HRESULT STDMETHODCALLTYPE CreateSoundBuffer(LPCDSBUFFERDESC desc, IDirectSoundBuffer **out, LPUNKNOWN) override
@@ -316,78 +315,48 @@ struct DSCaptureBuffer final : ComObject<IDirectSoundCaptureBuffer>
     DWORD writePos = 0; // capture cursor (bytes)
     bool capturing = false;
     bool looping = false;
-    AudioQueueRef queue = nullptr;
-    static constexpr int kQueueBuffers = 3;
+    AudioIn *input = nullptr;
 
-    ~DSCaptureBuffer() override { StopQueue(); }
+    ~DSCaptureBuffer() override { StopInput(); }
 
-    static void InputCallback(void *user, AudioQueueRef q, AudioQueueBufferRef buf, const AudioTimeStamp *, UInt32, const AudioStreamPacketDescription *)
+    // the input's PCM (in the buffer's format) into the capture buffer, at the capture cursor
+    static void OnCapture(void *user, const void *pcm, int bytes)
     {
         DSCaptureBuffer *self = (DSCaptureBuffer *)user;
+        std::lock_guard<std::mutex> g(self->lock);
+        const uint8_t *src = (const uint8_t *)pcm;
+        DWORD n = bytes > 0 ? (DWORD)bytes : 0;
+        const DWORD size = (DWORD)self->data.size();
+        while (self->capturing && n && size)
         {
-            std::lock_guard<std::mutex> g(self->lock);
-            const uint8_t *src = (const uint8_t *)buf->mAudioData;
-            DWORD n = buf->mAudioDataByteSize;
-            const DWORD size = (DWORD)self->data.size();
-            while (self->capturing && n && size)
+            const DWORD chunk = std::min(n, size - self->writePos);
+            memcpy(self->data.data() + self->writePos, src, chunk);
+            self->writePos += chunk;
+            src += chunk;
+            n -= chunk;
+            if (self->writePos == size)
             {
-                const DWORD chunk = std::min(n, size - self->writePos);
-                memcpy(self->data.data() + self->writePos, src, chunk);
-                self->writePos += chunk;
-                src += chunk;
-                n -= chunk;
-                if (self->writePos == size)
-                {
-                    self->writePos = 0;
-                    if (!self->looping)
-                        self->capturing = false;
-                }
+                self->writePos = 0;
+                if (!self->looping)
+                    self->capturing = false;
             }
         }
-        AudioQueueEnqueueBuffer(q, buf, 0, nullptr);
     }
 
-    bool StartQueue()
+    bool StartInput()
     {
-        AudioStreamBasicDescription asbd = {};
-        asbd.mSampleRate = fmt.nSamplesPerSec;
-        asbd.mFormatID = kAudioFormatLinearPCM;
-        asbd.mFormatFlags = fmt.wBitsPerSample == 8 ? kLinearPCMFormatFlagIsPacked
-                                                     : (kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked);
-        asbd.mBitsPerChannel = fmt.wBitsPerSample;
-        asbd.mChannelsPerFrame = fmt.nChannels;
-        asbd.mBytesPerFrame = fmt.nBlockAlign;
-        asbd.mFramesPerPacket = 1;
-        asbd.mBytesPerPacket = fmt.nBlockAlign;
-        if (AudioQueueNewInput(&asbd, InputCallback, this, nullptr, nullptr, 0, &queue) != noErr)
-        {
-            queue = nullptr;
-            return false;
-        }
-        // 20 ms per queue buffer
-        const UInt32 bytes = std::max<UInt32>(fmt.nBlockAlign, (fmt.nAvgBytesPerSec / 50) / fmt.nBlockAlign * fmt.nBlockAlign);
-        for (int i = 0; i < kQueueBuffers; ++i)
-        {
-            AudioQueueBufferRef b = nullptr;
-            if (AudioQueueAllocateBuffer(queue, bytes, &b) == noErr)
-                AudioQueueEnqueueBuffer(queue, b, 0, nullptr);
-        }
-        if (AudioQueueStart(queue, nullptr) != noErr)
-        {
-            AudioQueueDispose(queue, true);
-            queue = nullptr;
-            return false;
-        }
-        return true;
+        // 20 ms per buffer the input delivers
+        const int bytes = (int)std::max<DWORD>(fmt.nBlockAlign, (fmt.nAvgBytesPerSec / 50) / fmt.nBlockAlign * fmt.nBlockAlign);
+        input = AudioIn_Open((int)fmt.nSamplesPerSec, fmt.nChannels, fmt.wBitsPerSample, bytes, OnCapture, this);
+        return input != nullptr;
     }
 
-    void StopQueue()
+    void StopInput()
     {
-        if (queue)
+        if (input)
         {
-            AudioQueueStop(queue, true);
-            AudioQueueDispose(queue, true);
-            queue = nullptr;
+            AudioIn_Close(input);
+            input = nullptr;
         }
     }
 
@@ -455,7 +424,7 @@ struct DSCaptureBuffer final : ComObject<IDirectSoundCaptureBuffer>
                 return DS_OK;
             capturing = true;
         }
-        if (!queue && !StartQueue())
+        if (!input && !StartInput())
         {
             std::lock_guard<std::mutex> g(lock);
             capturing = false;
@@ -465,7 +434,7 @@ struct DSCaptureBuffer final : ComObject<IDirectSoundCaptureBuffer>
     }
     HRESULT STDMETHODCALLTYPE Stop() override
     {
-        StopQueue();
+        StopInput();
         std::lock_guard<std::mutex> g(lock);
         capturing = false;
         return DS_OK;
@@ -518,13 +487,13 @@ HRESULT DirectSoundCreate8(LPCGUID guid, LPDIRECTSOUND8 *out, LPUNKNOWN outer)
         return DSERR_NOAGGREGATION;
     DSDevice *d = new DSDevice();
     // the engine passes the GUID of its XAudio2 device; one that names no current device means the default
-    if (guid && !XAudio2Mac_DeviceUIDForGUID(guid, d->deviceUID, (int)sizeof(d->deviceUID)))
+    if (guid && !XAudio2Soft_DeviceUIDForGUID(guid, d->deviceUID, (int)sizeof(d->deviceUID)))
         d->deviceUID[0] = 0;
     *out = d;
     return DS_OK;
 }
 
-const char *DSoundMac_DeviceUID(const void *directSound)
+const char *DSoundSoft_DeviceUID(const void *directSound)
 {
     if (!directSound)
         return "";

@@ -146,9 +146,9 @@ struct __declspec(align(8)) DxGlobals // sizeof=0x2D00
                                         // R_FinishAttachingToWindow+AD/w ...
     Ptr32<IDirect3DQuery9> gpuSyncDelay;      // XREF: R_ReleaseForShutdownOrReset(void):loc_A4EB31/r
                                         // R_ReleaseForShutdownOrReset(void):loc_A4EB5E/r ...
-    unsigned __int64 gpuSyncStart;      // XREF: RB_CallExecuteRenderCommands(void)+4EE/w
+    BO1_ALIGN8 unsigned __int64 gpuSyncStart;      // XREF: RB_CallExecuteRenderCommands(void)+4EE/w
                                         // RB_CallExecuteRenderCommands(void)+4F8/w
-    unsigned __int64 gpuSyncEnd;
+    BO1_ALIGN8 unsigned __int64 gpuSyncEnd;
     _D3DTEXTUREFILTERTYPE linearNonMippedMinFilter;
     _D3DTEXTUREFILTERTYPE linearNonMippedMagFilter;
     _D3DTEXTUREFILTERTYPE linearMippedMinFilter;

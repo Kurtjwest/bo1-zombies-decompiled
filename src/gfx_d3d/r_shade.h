@@ -10,7 +10,7 @@ struct GfxShaderConstantState_s
 union GfxShaderConstantState // sizeof=0x8
 {                                       // XREF: R_IsShaderMatrixUpToDate+C/w
     GfxShaderConstantState_s fields;
-    unsigned __int64 packed;
+    BO1_ALIGN8 unsigned __int64 packed;
 };
 
 void __cdecl R_SetupPassPerPrimArgs(GfxCmdBufContext context);

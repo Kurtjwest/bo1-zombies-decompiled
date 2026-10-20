@@ -9,7 +9,7 @@ struct bdProfileInfo : bdTaskResult // sizeof=0x10
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 m_entityID;        // XREF: PCache_GetPublicProfilesCompleted+27C/r
+    BO1_ALIGN8 unsigned __int64 m_entityID;        // XREF: PCache_GetPublicProfilesCompleted+27C/r
                                         // Live_SetPrivateProfile(void)+52/w ...
 };
 

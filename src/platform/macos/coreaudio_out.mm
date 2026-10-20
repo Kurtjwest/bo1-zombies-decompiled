@@ -1,10 +1,10 @@
-// CoreAudio output for the software XAudio2 engine (see coreaudio_out.h).
+// CoreAudio output and input for the software audio of src/platform/common (see ../common/audio_out.h).
 
 #import <AudioToolbox/AudioToolbox.h>
 #import <CoreAudio/CoreAudio.h>
 #import <Foundation/Foundation.h>
 
-#include "coreaudio_out.h"
+#include "../common/audio_out.h"
 
 #include <algorithm>
 #include <atomic>
@@ -424,5 +424,71 @@ int AudioOut_LatencyFrames(AudioOut *o)
 }
 
 uint32_t AudioOut_Glitches(AudioOut *o) { return o ? o->glitches.load() : 0; }
+
+// ---- input: an AudioQueue on the default input device, CoreAudio converting from the microphone's format ----
+struct AudioIn
+{
+    AudioQueueRef queue = nullptr;
+    AudioInCapture capture = nullptr;
+    void *user = nullptr;
+    static constexpr int kBuffers = 3;
+};
+
+static void InputCallback(void *ref, AudioQueueRef q, AudioQueueBufferRef buf, const AudioTimeStamp *, UInt32,
+                          const AudioStreamPacketDescription *)
+{
+    AudioIn *in = (AudioIn *)ref;
+    if (buf->mAudioDataByteSize)
+        in->capture(in->user, buf->mAudioData, (int)buf->mAudioDataByteSize);
+    AudioQueueEnqueueBuffer(q, buf, 0, nullptr);
+}
+
+AudioIn *AudioIn_Open(int sampleRate, int channels, int bitsPerSample, int bufferBytes, AudioInCapture capture, void *user)
+{
+    if (!capture || sampleRate <= 0 || channels <= 0 || (bitsPerSample != 8 && bitsPerSample != 16))
+        return nullptr;
+    AudioIn *in = new AudioIn();
+    in->capture = capture;
+    in->user = user;
+    const UInt32 frameBytes = (UInt32)(channels * bitsPerSample / 8);
+    AudioStreamBasicDescription asbd = {};
+    asbd.mSampleRate = sampleRate;
+    asbd.mFormatID = kAudioFormatLinearPCM;
+    asbd.mFormatFlags = bitsPerSample == 8 ? kLinearPCMFormatFlagIsPacked
+                                           : (kLinearPCMFormatFlagIsSignedInteger | kLinearPCMFormatFlagIsPacked);
+    asbd.mBitsPerChannel = (UInt32)bitsPerSample;
+    asbd.mChannelsPerFrame = (UInt32)channels;
+    asbd.mBytesPerFrame = frameBytes;
+    asbd.mFramesPerPacket = 1;
+    asbd.mBytesPerPacket = frameBytes;
+    if (AudioQueueNewInput(&asbd, InputCallback, in, nullptr, nullptr, 0, &in->queue) != noErr)
+    {
+        delete in;
+        return nullptr;
+    }
+    const UInt32 bytes = std::max<UInt32>(frameBytes, (UInt32)bufferBytes / frameBytes * frameBytes);
+    for (int i = 0; i < AudioIn::kBuffers; ++i)
+    {
+        AudioQueueBufferRef b = nullptr;
+        if (AudioQueueAllocateBuffer(in->queue, bytes, &b) == noErr)
+            AudioQueueEnqueueBuffer(in->queue, b, 0, nullptr);
+    }
+    if (AudioQueueStart(in->queue, nullptr) != noErr)
+    {
+        AudioQueueDispose(in->queue, true);
+        delete in;
+        return nullptr;
+    }
+    return in;
+}
+
+void AudioIn_Close(AudioIn *in)
+{
+    if (!in)
+        return;
+    AudioQueueStop(in->queue, true);
+    AudioQueueDispose(in->queue, true);
+    delete in;
+}
 
 } // extern "C"

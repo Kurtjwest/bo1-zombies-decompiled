@@ -15,7 +15,7 @@ enum EUserTier : __int32
 
 struct __declspec(align(8)) PlayerRank // sizeof=0x10
 {                                       // XREF: Live_UpdatePerformanceValuesComplete/r
-    unsigned __int64 xuid;              // XREF: Live_UpdatePerformanceValuesComplete+F3/r
+    BO1_ALIGN8 unsigned __int64 xuid;              // XREF: Live_UpdatePerformanceValuesComplete+F3/r
                                         // Live_UpdatePerformanceValuesComplete+FB/r
     int rank;                           // XREF: Live_UpdatePerformanceValuesComplete+139/r
     // padding byte
@@ -26,7 +26,7 @@ struct __declspec(align(8)) PlayerRank // sizeof=0x10
 
 struct __declspec(align(8)) recentServer_t // sizeof=0x10
 {                                       // XREF: .data:s_recentServers/r
-    unsigned __int64 serverID;          // XREF: Live_FindRecentServers(void)+84/r
+    BO1_ALIGN8 unsigned __int64 serverID;          // XREF: Live_FindRecentServers(void)+84/r
                                         // Live_SaveRecentServers(void)+31/r ...
     int joinTime;                       // XREF: Live_FindRecentServers(void)+6A/r
                                         // Live_SaveRecentServers(void)+74/r ...
@@ -41,7 +41,7 @@ struct favourite_t // sizeof=0x10
     unsigned __int8 addressblob[6];
     // padding byte
     // padding byte
-    unsigned __int64 uid;               // XREF: Live_DumpFavourites(void)+2A/r
+    BO1_ALIGN8 unsigned __int64 uid;               // XREF: Live_DumpFavourites(void)+2A/r
                                         // Live_FindFavouriteServers(void)+76/r ...
 };
 
@@ -53,13 +53,13 @@ struct XenonUserData // sizeof=0x50
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 xuid;
+    BO1_ALIGN8 unsigned __int64 xuid;
     char xuidString[17];
     bool isGuestUser;
     // padding byte
     // padding byte
     EUserTier tier;
-    __int64 totalGamesPlayed;
+    BO1_ALIGN8 __int64 totalGamesPlayed;
 };
 
 struct dwQoSMultiProbeListener;

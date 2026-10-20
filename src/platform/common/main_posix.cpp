@@ -1,24 +1,36 @@
-// Entry point of the native macOS build. Sets up the Win32 compatibility layer, installs the app's own game files
-// into its game folder, makes that folder the working directory, and runs the engine's own WinMain on the main thread
-// (which is also the Cocoa event thread, as the Windows message loop is there).
+// Entry point of the native macOS and Linux builds. Sets up the Win32 compatibility layer, installs the build's own
+// game files into the game folder, makes that folder the working directory, and runs the engine's own WinMain on the
+// main thread (which is also the event thread of the windowing system, as the Windows message loop is there).
 //
-// The game folder is the app's Application Support folder, ~/Library/Application Support/BO1Zombies, and the game
-// reads and writes nothing outside it:
-//   - the original game's files (zone/, main/*.iwd, ...): put there by setup-mac.sh
-//   - the repository's own files (mods/, main/playlists_sp.info): inside the app (Contents/Resources/gamedata),
-//     installed into the game folder at every start where they are missing or changed (and removed again when a
-//     later build no longer has them, unless they were changed: .bundled-files lists what the app installed)
+// The game folder is the user's data folder for the game, and the game reads and writes nothing outside it:
+//   - macOS: the app's Application Support folder, ~/Library/Application Support/BO1Zombies
+//   - Linux: $XDG_DATA_HOME/BO1Zombies, by default ~/.local/share/BO1Zombies
+// It holds
+//   - the original game's files (zone/, main/*.iwd, ...): put there by setup-mac.sh / setup-linux.sh
+//   - the repository's own files (mods/, main/playlists_sp.info): inside the app (Contents/Resources/gamedata) on
+//     macOS, in gamedata/ next to the executable on Linux, installed into the game folder at every start where they
+//     are missing or changed (and removed again when a later build no longer has them, unless they were changed:
+//     .bundled-files lists what was installed)
 //   - what the game writes: players/ (settings, profiles), main/ (console_mp.log, games_mp.log), screenshots/, the
 //     shader cache (shadercache/)
-// so BO1Zombies.app runs from any folder, with nothing next to it. --gamedir <path> (or --gamedir=<path>) runs the
-// game on another folder instead (the test builds do).
+// so the game runs from any folder, with nothing next to it but its own files. --gamedir <path> (or
+// --gamedir=<path>) runs the game on another folder instead (the test builds do).
 //
-// With no engine arguments (a Finder double-click) the game starts the way Play.bat starts it on Windows.
+// With no engine arguments (a double-click in the Finder or the file manager) the game starts the way Play.bat
+// starts it on Windows.
 
 #include <windows.h>
 
 #include "../win32compat/w32_platform.h"
-#include "cocoa_bridge.h"
+#include "platform_bridge.h"
+
+#if defined(__APPLE__)
+#define BO1_SETUP_SCRIPT "./setup-mac.sh"
+#define BO1_GAME_FOLDER_PARENT "~/Library/Application Support"
+#else
+#define BO1_SETUP_SCRIPT "./setup-linux.sh"
+#define BO1_GAME_FOLDER_PARENT "~/.local/share (or $XDG_DATA_HOME)"
+#endif
 
 #include <dirent.h>
 #include <limits.h>
@@ -232,7 +244,7 @@ void WriteInstalledFiles(const std::string &file, const InstalledFiles &m)
     FILE *f = (fopen)(tmp.c_str(), "w");
     if (!f)
         return;
-    fputs("# Written by BO1Zombies.app: the files it installed in this folder (contents' hash, path). One a later\n"
+    fputs("# Written by BO1Zombies: the files it installed in this folder (contents' hash, path). One a later\n"
           "# build no longer has is removed again, unless it was changed.\n",
           f);
     for (const auto &e : m)
@@ -396,7 +408,7 @@ void AppendArg(std::string &cmd, const std::string &arg)
 int main(int argc, char **argv)
 {
     w32::PlatformInit(argc, argv);
-    w32::User32Init(); // Cocoa application object; the message boxes below need it
+    w32::User32Init(); // the windowing system's application object; the message boxes below need it
 
     // split our own options from the engine's command line
     std::string gameDirArg;
@@ -441,7 +453,7 @@ int main(int argc, char **argv)
         gameDir = Bridge_AppSupportPath(); // (created if needed)
         if (gameDir.empty() || !IsDir(gameDir))
         {
-            Bridge_MessageBox("BO1 Zombies", "Can't create the game's folder in ~/Library/Application Support.", 0, 2);
+            Bridge_MessageBox("BO1 Zombies", "Can't create the game's folder in " BO1_GAME_FOLDER_PARENT ".", 0, 2);
             return 1;
         }
         InstallBundledGameData(gameDir);
@@ -451,10 +463,12 @@ int main(int argc, char **argv)
                 "The game's files aren't installed yet. The game runs from\n" + ShortPath(gameDir) +
                 "\nand needs the original game's zone and main folders there.\n\n"
                 "In the BO1 Zombies folder (the repository), run\n"
-                "./setup-mac.sh \"/path/to/Call of Duty Black Ops\"\n"
-                "with the folder of a Black Ops PC install (Steam or retail): it copies the files there. After an "
-                "earlier setup, which put them next to the app, ./setup-mac.sh on its own moves them there.\n\n"
-                "Open the game's folder now?";
+                BO1_SETUP_SCRIPT " \"/path/to/Call of Duty Black Ops\"\n"
+                "with the folder of a Black Ops PC install (Steam or retail): it copies the files there."
+#if defined(__APPLE__)
+                " After an earlier setup, which put them next to the app, ./setup-mac.sh on its own moves them there."
+#endif
+                "\n\nOpen the game's folder now?";
             if (Bridge_MessageBox("BO1 Zombies", msg.c_str(), 4, 1) == 0)
                 Bridge_OpenURL(gameDir.c_str());
             return 1;

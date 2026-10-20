@@ -1728,6 +1728,8 @@ Buffer *CreateBuffer(size_t length)
 
 void *BufferContents(Buffer *buf) { return buf ? buf->buf.contents : nullptr; }
 
+void BufferWritten(Buffer *, size_t, size_t) {} // (shared memory: the GPU reads what the CPU wrote)
+
 void ReleaseBuffer(Buffer *buf) { delete buf; }
 
 // ======================================================================================================================

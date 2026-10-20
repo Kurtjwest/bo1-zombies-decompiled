@@ -5,7 +5,7 @@
 
 struct XuidInfo // sizeof=0x30
 {                                       // XREF: .data:recentPlayerInfo/r
-    unsigned __int64 playerXuids;       // XREF: UI_FeederItemText_CommmonPlayerListHandler+CE/r
+    BO1_ALIGN8 unsigned __int64 playerXuids;       // XREF: UI_FeederItemText_CommmonPlayerListHandler+CE/r
                                         // UI_FeederItemText_CommmonPlayerListHandler+D6/r ...
     char gamertag[32];                  // XREF: UI_FeederItemText_CommmonPlayerListHandler+DF/o
                                         // UI_FeederDataExtended_RecentPlayers+E9/o ...

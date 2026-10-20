@@ -1,11 +1,11 @@
-// JPEG/PNG encoding with ImageIO for D3DXSaveSurfaceToFile (see image_writer.h).
+// JPEG/PNG encoding with ImageIO for D3DXSaveSurfaceToFile (see ../common/image_writer.h).
 #import <CoreFoundation/CoreFoundation.h>
 #import <CoreGraphics/CoreGraphics.h>
 #import <ImageIO/ImageIO.h>
 
 #include <string.h>
 
-#include "image_writer.h"
+#include "../common/image_writer.h"
 
 int Mac_WriteImage(const char *path, int kind, const uint8_t *rgba, int width, int height, int stride, int hasAlpha,
                    float quality)

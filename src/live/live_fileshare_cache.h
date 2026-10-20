@@ -14,7 +14,7 @@ struct __declspec(align(8)) fshCacheFileDetails_t // sizeof=0x840
 
 struct __declspec(align(8)) fshCacheRatingDetails_t // sizeof=0xD8
 {
-    unsigned __int64 fileID;
+    BO1_ALIGN8 unsigned __int64 fileID;
     bdVoteRankStatsInfo rating;
     fileShareLocation location;
     // padding byte

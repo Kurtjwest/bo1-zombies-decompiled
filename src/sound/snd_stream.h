@@ -33,7 +33,7 @@ struct snd_stream_file // sizeof=0x120
     // padding byte
     // padding byte
     // padding byte
-    unsigned __int64 base_offset;
+    BO1_ALIGN8 unsigned __int64 base_offset;
 };
 
 struct __declspec(align(8)) snd_pack_file // sizeof=0x140
@@ -96,7 +96,7 @@ struct __declspec(align(8)) scoped_performance_error // sizeof=0x18
                                         // ?Snd_StreamClose@@YAXI@Z/r ...
     long double threshold;              // XREF: Snd_StreamOpen(uint,char const *,bool,uint,char *)+E/w
                                         // Snd_StreamClose(uint)+E/w ...
-    unsigned __int64 start;             // XREF: Snd_StreamOpen(uint,char const *,bool,uint,char *)+1F/w
+    BO1_ALIGN8 unsigned __int64 start;             // XREF: Snd_StreamOpen(uint,char const *,bool,uint,char *)+1F/w
                                         // Snd_StreamOpen(uint,char const *,bool,uint,char *)+22/w ...
     Ptr32<const char> what;                   // XREF: Snd_StreamOpen(uint,char const *,bool,uint,char *)+13/w
                                         // Snd_StreamClose(uint)+13/w ...
