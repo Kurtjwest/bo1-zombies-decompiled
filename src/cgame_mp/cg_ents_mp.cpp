@@ -2064,6 +2064,12 @@ void __cdecl CG_PrimaryLight(int localClientNum, centity_s *cent)
     cgameGlob = CG_GetLocalClientGlobals(localClientNum);
     light = &cgameGlob->refdef.primaryLights[cent->nextState.index.brushmodel];
     refLight = Com_GetPrimaryLight(cent->nextState.index.brushmodel);
+    // zombies: a light a client script made (CScr_CreateLight, ...) is a client-side entity: no snapshot moves its
+    // nextState into currentState, which keeps the light as it was made, and its script (SetLightIntensity, ...)
+    // writes nextState only. Lerping the two by frameInterpolation ran from the light as made to the script's value
+    // within every snapshot: Kino's scripted lights (off before the power, flickering) pulsed 20 times a second.
+    // A client-side light is the script's value.
+    const float lightLerp = EntNum_IsCsc(cent->nextState.number) ? 1.0f : cgameGlob->frameInterpolation;
     Byte4UnpackRgba((const unsigned __int8 *)&cent->currentState.u, oldColor);
     Byte4UnpackRgba((const unsigned __int8 *)&cent->nextState.lerp.u, newColor);
     v6 = cent->currentState.u.turret.gunAngles[1];
@@ -2074,7 +2080,7 @@ void __cdecl CG_PrimaryLight(int localClientNum, centity_s *cent)
     newColor[0] = v5 * newColor[0];
     newColor[1] = v5 * newColor[1];
     newColor[2] = v5 * newColor[2];
-    Vec3Lerp(oldColor, newColor, cgameGlob->frameInterpolation, light->color);
+    Vec3Lerp(oldColor, newColor, lightLerp, light->color);
     light->diffuseColor[0] = light->color[0];
     light->diffuseColor[1] = light->color[1];
     light->diffuseColor[2] = light->color[2];
@@ -2100,18 +2106,18 @@ void __cdecl CG_PrimaryLight(int localClientNum, centity_s *cent)
         CG_ClampPrimaryLightOrigin(light, refLight);
     }
     light->radius = (float)((float)(cent->nextState.lerp.u.turret.gunAngles[2] - cent->currentState.u.turret.gunAngles[2])
-                                                * cgameGlob->frameInterpolation)
+                                                * lightLerp)
                                 + cent->currentState.u.turret.gunAngles[2];
     light->cosHalfFovOuter = (float)((float)(cent->nextState.lerp.u.primaryLight.cosHalfFovOuter
                                                                                  - cent->currentState.u.primaryLight.cosHalfFovOuter)
-                                                                 * cgameGlob->frameInterpolation)
+                                                                 * lightLerp)
                                                  + cent->currentState.u.primaryLight.cosHalfFovOuter;
     light->cosHalfFovInner = (float)((float)(cent->nextState.lerp.u.turret.heatVal - cent->currentState.u.turret.heatVal)
-                                                                 * cgameGlob->frameInterpolation)
+                                                                 * lightLerp)
                                                  + cent->currentState.u.turret.heatVal;
     light->exponent = (int)(float)((float)(cent->nextState.lerp.u.primaryLight.colorAndExp[3]
                                                                              - cent->currentState.u.primaryLight.colorAndExp[3])
-                                                             * cgameGlob->frameInterpolation)
+                                                             * lightLerp)
                                     + cent->currentState.u.primaryLight.colorAndExp[3];
     // zombies: SP CG_PrimaryLight (0x00775F40) stores the lerped pair unchecked. frameInterpolation is only clamped
     // below 0 (SP CG_SetFrameInterpolation 0x00556480, same as here) and is not recomputed when a snapshot transition
