@@ -99,9 +99,10 @@ game's own programs (BlackOps.exe, BlackOpsMP.exe), which this engine does not r
 
 The game starts in macOS full screen (a Space of its own; the game's own full-screen setting, `r_fullscreen`). The
 display's mode never changes: the game draws at the resolution chosen in its graphics options (`r_mode`), anything
-from 800x600 up to the display's full Retina resolution, and the screen shows it scaled. The default is the screen's
+from 640x480 up to the display's full Retina resolution, and the screen shows it scaled. The default is the screen's
 size in points (1440x900 on a 13" MacBook Pro); a higher one is sharper and costs the GPU more. With full screen off
-the game is in a window of that size in points (as large as the screen at most). The green button and Ctrl-Cmd-F
+the game is in a window of that size in points (as large as the screen at most); a 720x480 window shows a 4:3 picture,
+the way a standard-definition TV does, unless the aspect ratio option says otherwise. The green button and Ctrl-Cmd-F
 (Window > Enter Full Screen) take the game window in and out of full screen at any time.
 
 Metal compiles the game's shaders when they are first drawn. Instead of stalling the frame meanwhile, the game draws
@@ -162,7 +163,8 @@ it is. Started without arguments the game opens the zombies menu; engine argumen
 (`build-linux/BO1Zombies +set r_fullscreen 1 ...`).
 
 The game runs in a window or full screen (`r_fullscreen`, or the graphics options) on X11 and Wayland; the display's mode never
-changes, the game draws at the resolution of its graphics options (`r_mode`) and the picture is scaled to the window.
+changes, the game draws at the resolution of its graphics options (`r_mode`, 640x480 and up, 720x480 included) and the
+picture is scaled to the window.
 OpenGL compiles the game's shaders on background threads the way Metal does on the Mac (see above, `shadercache/`).
 
 Settings for the Linux build, besides `BO1_DUMP_FAILED_SHADERS`, `BO1_SYNC_SHADERS`, `BO1_SHADER_LOG` and

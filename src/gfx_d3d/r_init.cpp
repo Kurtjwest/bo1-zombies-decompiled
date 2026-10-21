@@ -1406,7 +1406,7 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
     modeText = dx.modeText;
     if ( !resolutionCount )
     {
-        unitScaleValue = va("No valid resolutions of %i x %i or above found", 800, 600);
+        unitScaleValue = va("No valid resolutions of %i x %i or above found", 640, 480);
         R_FatalInitError(unitScaleValue);
     }
     defaultResolutionIndex = 0;
@@ -1415,7 +1415,8 @@ void __cdecl R_EnumDisplayModes(unsigned int adapterIndex)
         dx.resolutionNameTable[resolutionIndex] = modeText;
         v2 = sprintf(modeText, "%ix%i", availableResolutions[resolutionIndex][0], availableResolutions[resolutionIndex][1]);
         modeText += v2 + 1;
-        if ( availableResolutions[defaultResolutionIndex][0] < 640 || availableResolutions[defaultResolutionIndex][1] < 480 )
+        // (the default stays the first of 800x600 or more, as when nothing smaller was offered)
+        if ( availableResolutions[defaultResolutionIndex][0] < 800 || availableResolutions[defaultResolutionIndex][1] < 600 )
             defaultResolutionIndex = resolutionIndex;
     }
     dx.resolutionNameTable[resolutionIndex] = 0;
@@ -1515,7 +1516,9 @@ int __cdecl R_AddValidResolution(int width, int height, int resolutionCount, int
     {
         return resolutionCount;
     }
-    if ( width < 800 || height < 600 )
+    // 640x480 and up. The PC game's smallest was 800x600; this also lets in 640x480 and 720x480 (the standard-definition
+    // TV sizes), which the macOS and Linux builds always list and Windows lists where the display has them.
+    if ( width < 640 || height < 480 )
         return resolutionCount;
     (*availableResolutions)[2 * resolutionCount] = width;
     (*availableResolutions)[2 * resolutionCount + 1] = height;
