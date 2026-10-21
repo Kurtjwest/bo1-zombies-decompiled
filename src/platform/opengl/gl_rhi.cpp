@@ -1,16 +1,21 @@
-// OpenGL 4.5 implementation of the rendering interface of the Direct3D 9 layer (../d3d9mtl/mtl_rhi.h), for Linux.
+// OpenGL implementation of the rendering interface of the Direct3D 9 layer (../d3d9mtl/mtl_rhi.h), for Linux.
 //
-// The interface is Metal's model; this maps it onto a core-profile OpenGL 4.5 context created through SDL:
+// The interface is Metal's model; this maps it onto a core-profile OpenGL 4.5 context created through SDL, or onto
+// OpenGL 3.1-3.3 with the extensions Mesa's drivers have there (the OpenGL 3.x path, for GPUs such as the Raspberry
+// Pi 4's: DetectFeatures says what it takes, the notes below what is done without clip control, persistent buffer
+// mapping and viewport arrays):
 //  - clip control: glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE) gives Direct3D's (and Metal's) depth range and puts
 //    clip-space +y at row 0 of a render target, so textures, viewports and scissor rectangles use the Direct3D layer's
 //    numbers unchanged (row 0 is the top of the picture). The back buffer is drawn into the window turned the right way
-//    up at Present, through the gamma ramp and scaled to the window (letterboxed when asked);
+//    up at Present, through the gamma ramp and scaled to the window (letterboxed when asked). Without clip control the
+//    vertex shaders end with the same conversion (kClipEpilogue), so everything else is as with it;
 //  - "command buffers" are spans of GL commands closed by a fence: their serials are what the Direct3D layer waits
 //    for (memory it reuses, frames in flight);
 //  - the state the layer sets is shadowed and applied to the context before each draw (only what changed);
 //  - buffers: OpenGL cannot draw from the layer's own memory as Metal does, so each one has a GL copy, updated before
 //    the next draw from the ranges the layer reports written (BufferWritten). Per-frame scratch memory (uniforms,
-//    DrawPrimitiveUP vertices, converted index lists) comes from persistently mapped buffers recycled by serial;
+//    DrawPrimitiveUP vertices, converted index lists) comes from persistently mapped buffers recycled by serial, or
+//    without persistent mapping from memory of the renderer's own copied to the GL buffers before each draw;
 //  - shaders are compiled on the Direct3D layer's compiler threads (d3d9_shadercache.cpp), each with a context of its
 //    own in the render context's share group (on a hidden window: some window systems bind a window to one thread);
 //  - occlusion queries are GL_SAMPLES_PASSED queries over the draws of the query (the renderer's own draws pause them).
@@ -31,6 +36,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdarg>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -66,10 +72,14 @@ namespace glfn
 {
 #define BO1_GL_DEFINE(type, name) type name;
 BO1_GL_FUNCTIONS(BO1_GL_DEFINE)
+BO1_GL_OPTIONAL_FUNCTIONS(BO1_GL_DEFINE)
 #undef BO1_GL_DEFINE
 
 bool Load(void *(*getProc)(const char *name), const char **missing)
 {
+#define BO1_GL_LOAD_OPTIONAL(type, name) name = (type)getProc(#name);
+    BO1_GL_OPTIONAL_FUNCTIONS(BO1_GL_LOAD_OPTIONAL)
+#undef BO1_GL_LOAD_OPTIONAL
 #define BO1_GL_LOAD(type, name)                                                                                        \
     name = (type)getProc(#name);                                                                                       \
     if (!name)                                                                                                         \
@@ -240,14 +250,20 @@ struct Buffer
 {
     GLuint id = 0;
     size_t length = 0;
-    uint8_t *cpu = nullptr; // NoCopy: the caller's memory; otherwise the persistent mapping
+    // NoCopy: the caller's memory; otherwise the persistent mapping, or without one (no GL_ARB_buffer_storage) memory
+    // of the renderer's own that the GL copy is updated from (shadow)
+    uint8_t *cpu = nullptr;
     bool noCopy = false;
+    bool shadow = false;
     void (*release)(void *, size_t, void *) = nullptr;
     void *user = nullptr;
     TransientChunk *chunk = nullptr; // scratch memory: the chunk this buffer is
     // NoCopy: ranges the CPU wrote that the GL copy does not have yet (under G->uploadLock)
     std::vector<std::pair<size_t, size_t>> dirty;
     bool queued = false;
+    // shadow: the bytes handed out since the last upload (render thread only)
+    size_t pendingLo = SIZE_MAX, pendingHi = 0;
+    bool pendingQueued = false;
 };
 
 struct ShaderObj
@@ -475,6 +491,24 @@ struct Globals
     GLint maxSamples = 4;
     float maxAnisotropy = 1;
     bool hasS3TC = true;
+    // the context's version (major * 10 + minor) and what it has of OpenGL 4.x; without a feature the renderer works
+    // around it (the OpenGL 3.x path, for drivers such as the Raspberry Pi 4's)
+    int glVersion = 45;
+    int glslVersion = 450; // the shaders' #version
+    bool clipControl = true;   // else the vertex shaders end with the conversion (ShaderSource)
+    bool bufferStorage = true; // else scratch memory is the renderer's own, uploaded before the draws that use it
+    bool viewportArray = true; // else glViewport / glDepthRange
+    bool seamlessCube = true, timerQuery = true, fbNoAttachments = true, multisample = true, debugOutput = true;
+    bool layeredAttach = true; // glNamedFramebufferTexture (layered attachments: OpenGL 3.2), else AttachTexture2D
+    bool provokingVertex = true;
+    bool formatQuery = true;   // glGetInternalformativ (render target support)
+    bool clearTexture = true;  // else FillTexture clears through a framebuffer
+    std::set<uint32_t> notRenderable; // (OpenGL 3.x) formats the driver samples but cannot draw into
+    std::string glslHeader;    // the shaders' first lines: version and extensions
+    // shadow buffers with bytes waiting for an upload
+    std::vector<Buffer *> pendingShadow;
+    // (no GL_ARB_framebuffer_no_attachments) the color texture of a framebuffer the layer gives none, by size
+    std::unordered_map<uint64_t, GLuint> dummyColor;
     // the GL front-face winding of a primitive Metal calls clockwise (the self-test at Init measures it)
     GLenum frontForCW = GL_CW;
 
@@ -806,13 +840,19 @@ void SetViewport(float x, float y, float w, float h, double n, double f)
     if (v[0] != x || v[1] != y || v[2] != w || v[3] != h)
     {
         v[0] = x, v[1] = y, v[2] = w, v[3] = h;
-        glViewportIndexedf(0, x, y, w, h);
+        if (G->viewportArray)
+            glViewportIndexedf(0, x, y, w, h);
+        else
+            glViewport((GLint)std::lround(x), (GLint)std::lround(y), (GLsizei)std::lround(w), (GLsizei)std::lround(h));
     }
     if (G->have.depthRange[0] != n || G->have.depthRange[1] != f)
     {
         G->have.depthRange[0] = n;
         G->have.depthRange[1] = f;
-        glDepthRangeIndexed(0, n, f);
+        if (G->viewportArray)
+            glDepthRangeIndexed(0, n, f);
+        else
+            glDepthRange(n, f);
     }
 }
 
@@ -1084,7 +1124,9 @@ void WaitSerial(uint64_t serial)
 }
 
 // ======================================================================================================================
-// scratch memory: persistently mapped buffers, recycled once the GPU is done with them
+// scratch memory: persistently mapped buffers, recycled once the GPU is done with them. Without GL_ARB_buffer_storage
+// the memory is the renderer's own (shadow buffers): the bytes handed out are copied to the GL buffer before the next
+// draw (FlushPendingUploads), and a recycled chunk's GL buffer is orphaned first.
 // ======================================================================================================================
 bool ChunkStillBound(const TransientChunk *ch)
 {
@@ -1099,6 +1141,21 @@ bool ChunkStillBound(const TransientChunk *ch)
 
 bool MapPersistent(Buffer *b, size_t size)
 {
+    if (!G->bufferStorage)
+    {
+        glCreateBuffers(1, &b->id);
+        glNamedBufferData(b->id, (GLsizeiptr)size, nullptr, GL_STREAM_DRAW);
+        b->cpu = (uint8_t *)calloc(1, size);
+        b->length = size;
+        b->shadow = true;
+        if (!b->cpu)
+        {
+            glDeleteBuffers(1, &b->id);
+            b->id = 0;
+            return false;
+        }
+        return true;
+    }
     const GLbitfield flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT | GL_MAP_COHERENT_BIT;
     glCreateBuffers(1, &b->id);
     glNamedBufferStorage(b->id, (GLsizeiptr)size, nullptr, flags);
@@ -1111,6 +1168,38 @@ bool MapPersistent(Buffer *b, size_t size)
         return false;
     }
     return true;
+}
+
+// a shadow buffer's bytes [offset, offset + length) are for the GPU: uploaded before the next draw
+void ShadowWritten(Buffer *b, size_t offset, size_t length)
+{
+    if (!b || !b->shadow || !length || offset >= b->length)
+        return;
+    b->pendingLo = std::min(b->pendingLo, offset);
+    b->pendingHi = std::max(b->pendingHi, std::min(b->length, offset + length));
+    if (!b->pendingQueued)
+    {
+        b->pendingQueued = true;
+        G->pendingShadow.push_back(b);
+    }
+}
+
+void FlushShadowBuffers()
+{
+    for (Buffer *b : G->pendingShadow)
+    {
+        if (b->pendingHi > b->pendingLo)
+        {
+            glNamedBufferSubData(b->id, (GLintptr)b->pendingLo, (GLsizeiptr)(b->pendingHi - b->pendingLo),
+                                 b->cpu + b->pendingLo);
+            ++G->perf.uploads;
+            G->perf.uploadBytes += b->pendingHi - b->pendingLo;
+        }
+        b->pendingLo = SIZE_MAX;
+        b->pendingHi = 0;
+        b->pendingQueued = false;
+    }
+    G->pendingShadow.clear();
 }
 
 void *Transient(size_t length, size_t alignment, Buffer **buf, uint32_t *offset)
@@ -1148,6 +1237,13 @@ void *Transient(size_t length, size_t alignment, Buffer **buf, uint32_t *offset)
             c = ch.get();
             G->chunks.push_back(std::move(ch));
         }
+        else if (c->buffer.shadow)
+        {
+            // (the GPU is done with it: new storage, so that the uploads into it never wait)
+            glNamedBufferData(c->buffer.id, (GLsizeiptr)c->size, nullptr, GL_STREAM_DRAW);
+            c->buffer.pendingLo = SIZE_MAX;
+            c->buffer.pendingHi = 0;
+        }
         c->used = 0;
         G->chunk = c;
     }
@@ -1157,6 +1253,7 @@ void *Transient(size_t length, size_t alignment, Buffer **buf, uint32_t *offset)
     G->perf.transientBytes += length;
     *buf = &c->buffer;
     *offset = (uint32_t)off;
+    ShadowWritten(&c->buffer, off, length);
     return c->buffer.cpu + off;
 }
 
@@ -1165,6 +1262,8 @@ void *Transient(size_t length, size_t alignment, Buffer **buf, uint32_t *offset)
 // ======================================================================================================================
 void FlushPendingUploads()
 {
+    if (!G->pendingShadow.empty())
+        FlushShadowBuffers();
     std::vector<Buffer *> list;
     {
         std::lock_guard<std::mutex> lock(G->uploadLock);
@@ -1193,9 +1292,27 @@ bool HasStencil(uint32_t f) { return f == PF_D32F_S8 || f == PF_DEPTH24_STENCIL8
 bool IsDepthFormat(uint32_t f) { return f == PF_D16 || f == PF_D32F || HasStencil(f) || f == PF_X32_STENCIL8; }
 bool IsCompressed(uint32_t f) { return f >= PF_BC1 && f <= 143; }
 
+// One image of a texture into a framebuffer without glNamedFramebufferTexture: that one can attach a whole layered
+// texture, which needs geometry shaders (OpenGL 3.2), and Mesa refuses it in an OpenGL 3.1 context ("unsupported
+// function"). OpenGL 3.0's glFramebufferTexture2D goes through the read framebuffer binding, which the renderer
+// otherwise leaves at 0 (its blits and reads name their framebuffers).
+void AttachTexture2D(GLuint fbo, GLenum attachment, GLenum target, GLuint tex, GLint level)
+{
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, fbo);
+    glFramebufferTexture2D(GL_READ_FRAMEBUFFER, attachment, target, tex, level);
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+}
+
 void AttachTexture(GLuint fbo, GLenum attachment, Texture *t, uint32_t level, uint32_t slice)
 {
-    if (t->samples > 1)
+    if (!G->layeredAttach && t->type != TEX_3D)
+    {
+        const GLenum target = t->samples > 1        ? GL_TEXTURE_2D_MULTISAMPLE
+                              : t->type == TEX_CUBE ? GL_TEXTURE_CUBE_MAP_POSITIVE_X + slice
+                                                    : GL_TEXTURE_2D;
+        AttachTexture2D(fbo, attachment, target, t->id, t->samples > 1 ? 0 : (GLint)level);
+    }
+    else if (t->samples > 1)
         glNamedFramebufferTexture(fbo, attachment, t->id, 0);
     else if (t->type == TEX_CUBE || t->type == TEX_3D)
         glNamedFramebufferTextureLayer(fbo, attachment, t->id, (GLint)level, (GLint)slice);
@@ -1253,10 +1370,28 @@ GLuint FboFor(const RenderTargets &rt, uint32_t emptyW = 1, uint32_t emptyH = 1)
     if (Texture *d = rt.depth)
         AttachTexture(fbo, HasStencil(d->format) ? GL_DEPTH_STENCIL_ATTACHMENT : GL_DEPTH_ATTACHMENT, d, rt.depthLevel,
                       rt.depthSlice);
-    if (!any)
+    if (!any && G->fbNoAttachments)
     {
         glNamedFramebufferParameteri(fbo, GL_FRAMEBUFFER_DEFAULT_WIDTH, (GLint)std::max<uint32_t>(emptyW, 1));
         glNamedFramebufferParameteri(fbo, GL_FRAMEBUFFER_DEFAULT_HEIGHT, (GLint)std::max<uint32_t>(emptyH, 1));
+    }
+    else if (!any)
+    {
+        // (no GL_ARB_framebuffer_no_attachments: a color texture of the size, which nothing reads)
+        const uint32_t w = std::max<uint32_t>(emptyW, 1), h = std::max<uint32_t>(emptyH, 1);
+        const uint64_t size = ((uint64_t)w << 32) | h;
+        GLuint &tex = G->dummyColor[size];
+        if (!tex)
+        {
+            glCreateTextures(GL_TEXTURE_2D, 1, &tex);
+            glTextureStorage2D(tex, 1, GL_RGBA8, (GLsizei)w, (GLsizei)h);
+        }
+        if (G->layeredAttach)
+            glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+        else
+            AttachTexture2D(fbo, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
+        bufs[0] = GL_COLOR_ATTACHMENT0;
+        glNamedFramebufferDrawBuffers(fbo, 4, bufs);
     }
     const GLenum status = glCheckNamedFramebufferStatus(fbo, GL_DRAW_FRAMEBUFFER);
     if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -1416,13 +1551,41 @@ void ResumeVisibility()
 // ======================================================================================================================
 // shaders
 // ======================================================================================================================
-// What the BO1 GLSL profile's output (mojoshader_profile_glsl.c) is compiled after: the version, and the Metal-style
-// type names its instruction emitters use.
-const char kShaderHeader[] = "#version 450 core\n"
-                             "#define float2 vec2\n#define float3 vec3\n#define float4 vec4\n"
+// What the BO1 GLSL profile's output (mojoshader_profile_glsl.c) is compiled after, past the version and extension
+// lines (G->glslHeader): the Metal-style type names its instruction emitters use.
+const char kShaderHeader[] = "#define float2 vec2\n#define float3 vec3\n#define float4 vec4\n"
                              "#define int2 ivec2\n#define int3 ivec3\n#define int4 ivec4\n"
                              "#define bool2 bvec2\n#define bool3 bvec3\n#define bool4 bvec4\n"
                              "#define FLT_MAX 3.402823466e+38\n";
+
+// Without GL_ARB_clip_control every vertex shader ends with what glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE) does:
+// clip-space +y to row 0 (y negated: the window transform then puts it where the upper-left origin would) and
+// Direct3D's depth range [0, w] onto OpenGL's [-w, w]. The shader's own main() is renamed and called first.
+const char kClipPrologue[] = "#define main bo1_shader_main\n";
+const char kClipEpilogue[] = "\n#undef main\n"
+                             "void main()\n"
+                             "{\n"
+                             "    bo1_shader_main();\n"
+                             "    gl_Position.y = -gl_Position.y;\n"
+                             "    gl_Position.z = 2.0 * gl_Position.z - gl_Position.w;\n"
+                             "}\n";
+
+// a shader's source strings: version and extensions, the type names (game shaders), the body, the clip-space
+// conversion (vertex shaders without clip control)
+int ShaderSources(bool vertex, bool typeNames, const char *body, const char *out[5])
+{
+    int n = 0;
+    out[n++] = G->glslHeader.c_str();
+    if (typeNames)
+        out[n++] = kShaderHeader;
+    const bool convert = vertex && !G->clipControl;
+    if (convert)
+        out[n++] = kClipPrologue;
+    out[n++] = body;
+    if (convert)
+        out[n++] = kClipEpilogue;
+    return n;
+}
 
 bool CompileShader(ShaderObj *s, char *err, size_t errSize)
 {
@@ -1431,8 +1594,9 @@ bool CompileShader(ShaderObj *s, char *err, size_t errSize)
     if (s->failed)
         return false;
     s->id = glCreateShader(s->pixel ? GL_FRAGMENT_SHADER : GL_VERTEX_SHADER);
-    const char *src[2] = {kShaderHeader, s->source.c_str()};
-    glShaderSource(s->id, 2, src, nullptr);
+    const char *src[5];
+    const int count = ShaderSources(!s->pixel, true, s->source.c_str(), src);
+    glShaderSource(s->id, count, src, nullptr);
     glCompileShader(s->id);
     GLint ok = 0;
     glGetShaderiv(s->id, GL_COMPILE_STATUS, &ok);
@@ -1536,8 +1700,7 @@ bool LinkPipeline(Pipeline *p, char *err, size_t errSize)
 
 // the utility programs: a full-viewport triangle; rect: source uv at the viewport's top-left (xy) and bottom-right
 // (zw); flip.x: 1 into a render target (row 0 at the top), -1 into the window (row 0 at the bottom)
-const char kUtilVS[] = "#version 450 core\n"
-                       "layout(location = 0) uniform vec4 rect;\n"
+const char kUtilVS[] = "layout(location = 0) uniform vec4 rect;\n"
                        "layout(location = 1) uniform vec4 flip;\n"
                        "out vec2 uv;\n"
                        "void main()\n"
@@ -1546,14 +1709,12 @@ const char kUtilVS[] = "#version 450 core\n"
                        "    gl_Position = vec4(t.x * 2.0 - 1.0, (1.0 - t.y * 2.0) * flip.x, 0.0, 1.0);\n"
                        "    uv = mix(rect.xy, rect.zw, t);\n"
                        "}\n";
-const char kBlitFS[] = "#version 450 core\n"
-                       "layout(binding = 0) uniform sampler2D src;\n"
+const char kBlitFS[] = "layout(binding = 0) uniform sampler2D src;\n"
                        "in vec2 uv;\n"
                        "layout(location = 0) out vec4 o;\n"
                        "void main() { o = texture(src, uv); }\n";
 // back buffer -> window through the gamma ramp (256 entries per channel, interpolated)
-const char kPresentFS[] = "#version 450 core\n"
-                          "layout(binding = 0) uniform sampler2D src;\n"
+const char kPresentFS[] = "layout(binding = 0) uniform sampler2D src;\n"
                           "layout(binding = 1) uniform sampler2D lut;\n"
                           "in vec2 uv;\n"
                           "layout(location = 0) out vec4 o;\n"
@@ -1565,18 +1726,18 @@ const char kPresentFS[] = "#version 450 core\n"
                           "             texture(lut, vec2(lc.b, 0.5)).b, 1.0);\n"
                           "}\n";
 // the self-test: a triangle at the given clip-space positions, writing (1, gl_FragCoord.y / 4, 0, 1)
-const char kTestVS[] = "#version 450 core\n"
-                       "layout(location = 0) uniform vec4 pts[3];\n"
+const char kTestVS[] = "layout(location = 0) uniform vec4 pts[3];\n"
                        "void main() { gl_Position = vec4(pts[gl_VertexID].xy, 0.0, 1.0); }\n";
-const char kTestFS[] = "#version 450 core\n"
-                       "layout(location = 0) out vec4 o;\n"
+const char kTestFS[] = "layout(location = 0) out vec4 o;\n"
                        "void main() { o = vec4(1.0, gl_FragCoord.y / 4.0, 0.0, 1.0); }\n";
 
 GLuint BuildProgram(const char *vsSrc, const char *fsSrc, const char *name)
 {
-    auto compile = [&](GLenum type, const char *src) -> GLuint {
+    auto compile = [&](GLenum type, const char *body) -> GLuint {
         GLuint s = glCreateShader(type);
-        glShaderSource(s, 1, &src, nullptr);
+        const char *src[5];
+        const int count = ShaderSources(type == GL_VERTEX_SHADER, false, body, src);
+        glShaderSource(s, count, src, nullptr);
         glCompileShader(s);
         GLint ok = 0;
         glGetShaderiv(s, GL_COMPILE_STATUS, &ok);
@@ -1664,7 +1825,10 @@ void SelfTest()
     glCreateTextures(GL_TEXTURE_2D, 1, &tex);
     glTextureStorage2D(tex, 1, GL_RGBA8, 4, 4);
     glCreateFramebuffers(1, &fbo);
-    glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+    if (G->layeredAttach)
+        glNamedFramebufferTexture(fbo, GL_COLOR_ATTACHMENT0, tex, 0);
+    else
+        AttachTexture2D(fbo, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0);
     UtilityState(prog, fbo);
     SetViewport(0, 0, 4, 4, 0, 1);
     const float black[4] = {0, 0, 0, 0};
@@ -1745,6 +1909,132 @@ bool EnvFlag(const char *name)
     return e && *e && strcmp(e, "0") != 0;
 }
 
+enum : uint32_t
+{
+    COMPAT_CLIP = 1,
+    COMPAT_BUFFERS = 2,
+    COMPAT_VIEWPORTS = 4,
+    COMPAT_ATTACHMENTS = 8,
+    COMPAT_LAYERS = 16,
+    COMPAT_ALL = 31
+};
+
+// BO1_GL_COMPAT: OpenGL 3.x path workarounds used on a driver that has the feature (for testing, or around a driver's
+// broken feature): "1" all of them, else a list of clip, buffers, viewports, attachments, layers
+uint32_t CompatFlags()
+{
+    const char *e = getenv("BO1_GL_COMPAT");
+    if (!e || !*e || !strcmp(e, "0"))
+        return 0;
+    static const struct
+    {
+        const char *name;
+        uint32_t flag;
+    } kNames[] = {{"clip", COMPAT_CLIP},
+                  {"buffers", COMPAT_BUFFERS},
+                  {"viewports", COMPAT_VIEWPORTS},
+                  {"attachments", COMPAT_ATTACHMENTS},
+                  {"layers", COMPAT_LAYERS}};
+    uint32_t flags = 0;
+    for (const auto &n : kNames)
+        if (strstr(e, n.name))
+            flags |= n.flag;
+    return flags ? flags : COMPAT_ALL;
+}
+
+// What the context has: its version, which OpenGL 4.x features it has (as extensions of an older version), and the
+// version and extension lines the shaders start with. What every path needs and the context lacks goes in 'lacks'.
+void DetectFeatures(uint32_t compat, char *lacks, size_t lacksSize)
+{
+    GLint major = 0, minor = 0;
+    glGetIntegerv(GL_MAJOR_VERSION, &major);
+    glGetIntegerv(GL_MINOR_VERSION, &minor);
+    const int v = major * 10 + minor;
+    G->glVersion = v;
+    std::set<std::string> ext;
+    GLint n = 0;
+    glGetIntegerv(GL_NUM_EXTENSIONS, &n);
+    for (GLint i = 0; i < n; ++i)
+        if (const char *e = (const char *)glGetStringi(GL_EXTENSIONS, (GLuint)i))
+            ext.insert(e);
+    // in the core of version 'since', or the extension
+    auto has = [&](int since, const char *name) { return v >= since || ext.count(name) != 0; };
+
+    std::string missing;
+    auto need = [&](bool ok, const char *name) {
+        if (ok)
+            return;
+        if (!missing.empty())
+            missing += ", ";
+        missing += name;
+    };
+    need(v >= 31, "OpenGL 3.1");
+    need(has(45, "GL_ARB_direct_state_access"), "GL_ARB_direct_state_access");
+    need(has(42, "GL_ARB_texture_storage"), "GL_ARB_texture_storage");
+    need(has(43, "GL_ARB_texture_view") && glTextureView, "GL_ARB_texture_view");
+    need(has(43, "GL_ARB_copy_image") && glCopyImageSubData, "GL_ARB_copy_image");
+    need(has(33, "GL_ARB_sampler_objects"), "GL_ARB_sampler_objects");
+    need(has(43, "GL_ARB_vertex_attrib_binding"), "GL_ARB_vertex_attrib_binding");
+    need(has(40, "GL_ARB_draw_buffers_blend"), "GL_ARB_draw_buffers_blend");
+    need(has(32, "GL_ARB_draw_elements_base_vertex"), "GL_ARB_draw_elements_base_vertex");
+    need(has(32, "GL_ARB_sync"), "GL_ARB_sync");
+    need(has(33, "GL_ARB_texture_swizzle") || ext.count("GL_EXT_texture_swizzle"), "GL_ARB_texture_swizzle");
+    need(has(45, "GL_ARB_get_texture_sub_image"), "GL_ARB_get_texture_sub_image");
+    need(has(41, "GL_ARB_separate_shader_objects"), "GL_ARB_separate_shader_objects");
+    need(has(42, "GL_ARB_shading_language_420pack"), "GL_ARB_shading_language_420pack");
+    need(has(33, "GL_ARB_explicit_attrib_location"), "GL_ARB_explicit_attrib_location");
+    need(has(43, "GL_ARB_explicit_uniform_location"), "GL_ARB_explicit_uniform_location");
+    if (!missing.empty())
+    {
+        snprintf(lacks, lacksSize, "%s", missing.c_str());
+        return;
+    }
+
+    // the 4.x features the renderer can do without
+    G->clipControl = !(compat & COMPAT_CLIP) && has(45, "GL_ARB_clip_control") && glClipControl;
+    G->bufferStorage = !(compat & COMPAT_BUFFERS) && has(44, "GL_ARB_buffer_storage") && glNamedBufferStorage &&
+                       glMapNamedBufferRange;
+    G->viewportArray = !(compat & COMPAT_VIEWPORTS) && has(41, "GL_ARB_viewport_array") && glViewportIndexedf &&
+                       glDepthRangeIndexed;
+    G->fbNoAttachments = !(compat & COMPAT_ATTACHMENTS) && has(43, "GL_ARB_framebuffer_no_attachments") &&
+                         glNamedFramebufferParameteri;
+    G->layeredAttach = !(compat & COMPAT_LAYERS) && v >= 32;
+    G->seamlessCube = has(32, "GL_ARB_seamless_cube_map");
+    G->provokingVertex = has(32, "GL_ARB_provoking_vertex") || ext.count("GL_EXT_provoking_vertex");
+    G->timerQuery = has(33, "GL_ARB_timer_query");
+    G->multisample = has(32, "GL_ARB_texture_multisample") && has(43, "GL_ARB_texture_storage_multisample") &&
+                     glTextureStorage2DMultisample;
+    G->debugOutput = has(43, "GL_KHR_debug");
+    G->formatQuery = has(43, "GL_ARB_internalformat_query2") && glGetInternalformativ;
+    G->clearTexture = has(44, "GL_ARB_clear_texture") && glClearTexSubImage;
+
+    // the shading language: 4.50, else the newest of 3.30 and 1.40 with the extensions the shaders use
+    const char *sl = (const char *)glGetString(GL_SHADING_LANGUAGE_VERSION);
+    int slMajor = 0, slMinor = 0;
+    if (sl)
+        sscanf(sl, "%d.%d", &slMajor, &slMinor);
+    const int glsl = slMajor * 100 + slMinor;
+    if (v >= 45 && glsl >= 450)
+    {
+        G->glslHeader = "#version 450 core\n";
+        G->glslVersion = 450;
+        return;
+    }
+    const int lang = glsl >= 330 ? 330 : 140;
+    G->glslVersion = lang;
+    G->glslHeader = lang == 330 ? "#version 330 core\n" : "#version 140\n";
+    G->glslHeader += "#extension GL_ARB_shading_language_420pack : require\n"; // (block and sampler bindings)
+    G->glslHeader += "#extension GL_ARB_explicit_uniform_location : require\n";
+    if (lang < 330)
+    {
+        G->glslHeader += "#extension GL_ARB_explicit_attrib_location : require\n"; // (input and output locations)
+        if (ext.count("GL_ARB_shader_bit_encoding"))
+            G->glslHeader += "#extension GL_ARB_shader_bit_encoding : enable\n";
+    }
+    if (ext.count("GL_EXT_shader_integer_mix"))
+        G->glslHeader += "#extension GL_EXT_shader_integer_mix : enable\n";
+}
+
 bool BuildUtilities(char *err, size_t errSize)
 {
     glCreateVertexArrays(1, &G->mainVao);
@@ -1774,12 +2064,14 @@ bool BuildUtilities(char *err, size_t errSize)
     G->zeroUniforms = new Buffer();
     if (!MapPersistent(G->zeroVertexBuffer, 256) || !MapPersistent(G->zeroUniforms, 256))
     {
-        SetErr(err, errSize, "cannot map OpenGL buffers (GL_ARB_buffer_storage)");
+        SetErr(err, errSize, "cannot create the renderer's OpenGL buffers");
         return false;
     }
     const float zero[4] = {0, 0, 0, 1};
     memcpy(G->zeroVertexBuffer->cpu, zero, sizeof(zero));
     memset(G->zeroUniforms->cpu, 0, 256);
+    ShadowWritten(G->zeroVertexBuffer, 0, 256);
+    ShadowWritten(G->zeroUniforms, 0, 256);
     G->ubo[UBO_VSFIX] = {G->zeroUniforms, 0, 16};
 
     glCreateTextures(GL_TEXTURE_2D, 1, &G->gammaLut);
@@ -1796,7 +2088,8 @@ bool BuildUtilities(char *err, size_t errSize)
     glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
     glTextureSubImage2D(G->gammaLut, 0, 0, 0, 256, 1, GL_RGBA, GL_UNSIGNED_SHORT, identity);
 
-    glCreateQueries(GL_TIME_ELAPSED, 4, G->timeQueries);
+    if (G->timerQuery)
+        glCreateQueries(GL_TIME_ELAPSED, 4, G->timeQueries);
     G->defaultDS.d.depthFunc = 7; // always, no writes
     return true;
 }
@@ -1820,17 +2113,35 @@ bool Init(void *layer, char *err, size_t errSize)
     G->window = surface->window;
     G->perfLog = EnvFlag("BO1_PERF_LOG");
     const bool debug = EnvFlag("BO1_GL_DEBUG");
+    const uint32_t compat = CompatFlags(); // (BO1_GL_COMPAT)
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 5);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, debug ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
-    SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
-    G->ctx = SDL_GL_CreateContext(G->window);
+    // OpenGL 4.5 core, else the newest 3.x the driver makes (3.1 has no profiles)
+    struct Want
+    {
+        int major, minor, profile;
+    };
+    static const Want kVersions[] = {{4, 5, SDL_GL_CONTEXT_PROFILE_CORE},
+                                     {3, 3, SDL_GL_CONTEXT_PROFILE_CORE},
+                                     {3, 2, SDL_GL_CONTEXT_PROFILE_CORE},
+                                     {3, 1, 0}};
+    std::string firstError;
+    for (const Want &v : kVersions)
+    {
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, v.major);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, v.minor);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, v.profile);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, debug ? SDL_GL_CONTEXT_DEBUG_FLAG : 0);
+        SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 0);
+        G->ctx = SDL_GL_CreateContext(G->window);
+        if (G->ctx)
+            break;
+        if (firstError.empty())
+            firstError = SDL_GetError();
+    }
     if (!G->ctx)
     {
         char msg[512];
-        snprintf(msg, sizeof(msg), "this computer has no OpenGL 4.5 (core profile) driver: %s", SDL_GetError());
+        snprintf(msg, sizeof(msg), "this computer has no OpenGL 3.1 or later driver: %s", firstError.c_str());
         SetErr(err, errSize, msg);
         delete G;
         G = nullptr;
@@ -1847,10 +2158,19 @@ bool Init(void *layer, char *err, size_t errSize)
     t_ctx = 1;
     G->renderThread = std::this_thread::get_id();
     const char *missing = nullptr;
-    if (!glfn::Load([](const char *n) { return SDL_GL_GetProcAddress(n); }, &missing))
+    const bool loaded = glfn::Load([](const char *n) { return SDL_GL_GetProcAddress(n); }, &missing);
+    char lacks[256] = "";
+    if (!loaded)
+        snprintf(lacks, sizeof(lacks), "%s", missing ? missing : "?");
+    else
+        DetectFeatures(compat, lacks, sizeof(lacks));
+    if (lacks[0])
     {
-        char msg[256];
-        snprintf(msg, sizeof(msg), "the OpenGL driver lacks %s (OpenGL 4.5 is needed)", missing ? missing : "?");
+        char msg[512];
+        snprintf(msg, sizeof(msg),
+                 "the OpenGL driver lacks %s (OpenGL 4.5, or 3.1 with direct state access, texture views and storage, "
+                 "sampler objects and GL_ARB_shading_language_420pack, is needed)",
+                 lacks);
         SetErr(err, errSize, msg);
         SDL_GL_MakeCurrent(G->window, nullptr);
         SDL_GL_DeleteContext(G->ctx);
@@ -1859,7 +2179,7 @@ bool Init(void *layer, char *err, size_t errSize)
         G = nullptr;
         return false;
     }
-    if (debug && glDebugMessageCallback)
+    if (debug && G->debugOutput && glDebugMessageCallback)
     {
         glEnable(GL_DEBUG_OUTPUT);
         glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
@@ -1892,23 +2212,66 @@ bool Init(void *layer, char *err, size_t errSize)
     G->uboAlign = std::max(G->uboAlign, 16);
     GLint ms[3] = {4, 4, 4};
     glGetIntegerv(GL_MAX_SAMPLES, &ms[0]);
-    glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, &ms[1]);
-    glGetIntegerv(GL_MAX_DEPTH_TEXTURE_SAMPLES, &ms[2]);
-    G->maxSamples = std::min(ms[0], std::min(ms[1], ms[2]));
+    if (G->multisample)
+    {
+        glGetIntegerv(GL_MAX_COLOR_TEXTURE_SAMPLES, &ms[1]);
+        glGetIntegerv(GL_MAX_DEPTH_TEXTURE_SAMPLES, &ms[2]);
+        G->maxSamples = std::min(ms[0], std::min(ms[1], ms[2]));
+    }
+    else
+        G->maxSamples = 1; // (no multisample textures: no anti-aliasing)
     if (HasExtension("GL_ARB_texture_filter_anisotropic") || HasExtension("GL_EXT_texture_filter_anisotropic"))
         glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &G->maxAnisotropy);
     if (G->maxAnisotropy < 1)
         G->maxAnisotropy = 1;
     if (!G->hasS3TC)
         fprintf(stderr, "[gl] warning: the driver has no S3TC (DXT) texture compression: textures will be missing\n");
+    if (G->glVersion < 45 && G->formatQuery)
+    {
+        // an OpenGL 3.x driver need not draw into every format it samples (the Raspberry Pi's has no 16-bit
+        // normalized render targets): those are not offered as render targets
+        for (const GlFormat &f : kFormats)
+        {
+            if (f.compressed || f.depth)
+                continue;
+            GLint renderable = GL_FULL_SUPPORT;
+            glGetInternalformativ(GL_TEXTURE_2D, f.internal, GL_FRAMEBUFFER_RENDERABLE, 1, &renderable);
+            if (renderable == GL_NONE)
+                G->notRenderable.insert(f.pf);
+        }
+    }
     fprintf(stderr, "[gl] %s, OpenGL %s\n", renderer ? renderer : "?", version ? version : "?");
+    {
+        // what the OpenGL 3.x path does differently on this driver
+        std::string path;
+        auto add = [&](bool lacking, const char *what) {
+            if (lacking)
+                path += path.empty() ? what : std::string(", ") + what;
+        };
+        add(!G->clipControl, "clip space converted in the shaders");
+        add(!G->bufferStorage, "scratch memory uploaded");
+        add(!G->viewportArray, "integer viewports");
+        add(!G->fbNoAttachments, "placeholder attachments");
+        add(!G->layeredAttach, "single-image attachments");
+        add(!G->clearTexture, "clears through framebuffers");
+        add(!G->timerQuery, "no GPU timing");
+        add(!G->seamlessCube, "cube map seams");
+        add(!G->multisample, "no anti-aliasing");
+        add(!G->notRenderable.empty(), "some render target formats unavailable");
+        if (!path.empty())
+            fprintf(stderr, "[gl] OpenGL 3.x path (GLSL %d.%02d): %s\n", G->glslVersion / 100, G->glslVersion % 100,
+                    path.c_str());
+    }
 
     // fixed state
-    glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
-    glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    if (G->clipControl)
+        glClipControl(GL_UPPER_LEFT, GL_ZERO_TO_ONE);
+    if (G->seamlessCube)
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     glEnable(GL_MULTISAMPLE);
     glEnable(GL_PROGRAM_POINT_SIZE);
-    glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
+    if (G->provokingVertex && glProvokingVertex)
+        glProvokingVertex(GL_FIRST_VERTEX_CONVENTION);
     SetCap(CAP_SRGB, true);
     SetCap(CAP_DEPTH, true);
     if (!BuildUtilities(err, errSize))
@@ -1989,6 +2352,8 @@ bool SupportsFormat(uint32_t pixelFormat, uint32_t usage)
     if ((usage & USAGE_RENDER_TARGET) &&
         (pixelFormat == PF_RGBA8_SNORM || pixelFormat == PF_R8_SNORM || pixelFormat == PF_RG8_SNORM))
         return false; // (Direct3D 9 has no such render targets)
+    if ((usage & USAGE_RENDER_TARGET) && G->notRenderable.count(pixelFormat))
+        return false;
     return true;
 }
 
@@ -2148,7 +2513,8 @@ Texture *CreateTexture(const TextureDesc &desc)
         LogOnce(key, "texture format %u has no OpenGL equivalent", desc.format);
         return nullptr;
     }
-    const uint32_t samples = std::max<uint32_t>(desc.sampleCount, 1);
+    // (without multisample textures, OpenGL 3.x: one sample; SupportsSampleCount offers no more)
+    const uint32_t samples = G->multisample ? std::max<uint32_t>(desc.sampleCount, 1) : 1;
     Texture *t = new Texture();
     t->format = desc.format;
     t->gf = f;
@@ -2180,7 +2546,7 @@ Texture *CreateTexture(const TextureDesc &desc)
         glTextureParameteri(t->id, GL_TEXTURE_MAX_LEVEL, (GLint)t->levels - 1);
         ApplySwizzle(t->id, t->format, nullptr);
     }
-    if (desc.label && EnvFlag("BO1_GL_DEBUG"))
+    if (desc.label && glObjectLabel && G->debugOutput && EnvFlag("BO1_GL_DEBUG"))
         glObjectLabel(GL_TEXTURE, t->id, -1, desc.label);
     FinishIfShared();
     return t;
@@ -2418,8 +2784,20 @@ void FillTexture(Texture *dst, uint32_t slice, uint32_t level, int x0, int y0, i
     if (OnRenderThread())
         EnsureCmdBuf();
     const GLint z = (dst->type == TEX_CUBE || dst->type == TEX_3D) ? (GLint)slice : 0;
-    glClearTexSubImage(dst->id, dst->samples > 1 ? 0 : (GLint)level, x0, y0, z, x1 - x0, y1 - y0, 1, GL_RGBA, GL_FLOAT,
-                       color);
+    if (G->clearTexture)
+        glClearTexSubImage(dst->id, dst->samples > 1 ? 0 : (GLint)level, x0, y0, z, x1 - x0, y1 - y0, 1, GL_RGBA,
+                           GL_FLOAT, color);
+    else if (OnRenderThread())
+    {
+        // (no GL_ARB_clear_texture: a scissored clear of a framebuffer with the texture)
+        const GLuint fbo = FboForTexture(dst, dst->samples > 1 ? 0 : level, (GLuint)z);
+        OpenMasks();
+        SetCap(CAP_SCISSOR, true);
+        SetScissorRect(x0, y0, x1 - x0, y1 - y0);
+        glClearNamedFramebufferfv(fbo, GL_COLOR, 0, color);
+    }
+    else
+        LogOnce("filltex", "FillTexture off the render thread without GL_ARB_clear_texture: skipped");
     FinishIfShared();
 }
 
@@ -2437,7 +2815,10 @@ Buffer *CreateBufferNoCopy(void *ptr, size_t length, void (*release)(void *ptr, 
     b->release = release;
     b->user = user;
     glCreateBuffers(1, &b->id);
-    glNamedBufferStorage(b->id, (GLsizeiptr)length, nullptr, GL_DYNAMIC_STORAGE_BIT);
+    if (G->bufferStorage)
+        glNamedBufferStorage(b->id, (GLsizeiptr)length, nullptr, GL_DYNAMIC_STORAGE_BIT);
+    else
+        glNamedBufferData(b->id, (GLsizeiptr)length, nullptr, GL_DYNAMIC_DRAW);
     FinishIfShared();
     return b;
 }
@@ -2453,6 +2834,7 @@ Buffer *CreateBuffer(size_t length)
         return nullptr;
     }
     FinishIfShared();
+    // (without persistent mapping, the contents reach the GL buffer as they do for NoCopy buffers: BufferWritten)
     return b;
 }
 
@@ -2460,7 +2842,7 @@ void *BufferContents(Buffer *buf) { return buf ? buf->cpu : nullptr; }
 
 void BufferWritten(Buffer *buf, size_t offset, size_t length)
 {
-    if (!buf || !buf->noCopy || !length || !G || offset >= buf->length)
+    if (!buf || !(buf->noCopy || (buf->shadow && !buf->chunk)) || !length || !G || offset >= buf->length)
         return;
     const size_t end = std::min(buf->length, offset + length);
     std::lock_guard<std::mutex> lock(G->uploadLock);
@@ -2496,10 +2878,15 @@ void ReleaseBuffer(Buffer *buf)
     for (BoundBuffer &b : G->ubo)
         if (b.buf == buf)
             b = BoundBuffer{};
+    if (buf->pendingQueued && OnRenderThread())
+        G->pendingShadow.erase(std::remove(G->pendingShadow.begin(), G->pendingShadow.end(), buf),
+                               G->pendingShadow.end());
     DeleteGL(DEL_BUFFER, buf->id);
     // (the GL buffer holds its own copy: the caller's memory is free at once)
     if (buf->noCopy && buf->release)
         buf->release(buf->cpu, buf->length, buf->user);
+    if (buf->shadow)
+        free(buf->cpu);
     delete buf;
 }
 
@@ -3093,9 +3480,18 @@ bool GetVisibilityResult(Visibility *v, uint64_t *count, bool flush)
         uint64_t total = 0;
         for (GLuint q : v->segments)
         {
-            GLuint64 n = 0;
-            glGetQueryObjectui64v(q, GL_QUERY_RESULT, &n);
-            total += n;
+            if (G->timerQuery)
+            {
+                GLuint64 n = 0;
+                glGetQueryObjectui64v(q, GL_QUERY_RESULT, &n);
+                total += n;
+            }
+            else
+            {
+                GLuint n = 0; // (the 64-bit query is GL_ARB_timer_query's)
+                glGetQueryObjectuiv(q, GL_QUERY_RESULT, &n);
+                total += n;
+            }
         }
         ReleaseQueries(v);
         v->resolved = true;
@@ -3181,6 +3577,8 @@ void PerfFrame()
 // the GPU time of a frame: a GL_TIME_ELAPSED query from one Present to the next, read a few frames later
 void FrameTimer()
 {
+    if (!G->timerQuery)
+        return;
     if (G->timeQueryActive)
     {
         glEndQuery(GL_TIME_ELAPSED);
@@ -3283,8 +3681,11 @@ void Present(Texture *backBuffer, const uint16_t *gammaRamp)
     CommitCurrent();
     G->frameSerials[frame % (kMaxFramesInFlight + 1)] = G->lastCommittedSerial;
     ++G->frameIndex;
-    glBeginQuery(GL_TIME_ELAPSED, G->timeQueries[G->frameIndex & 3]);
-    G->timeQueryActive = true;
+    if (G->timerQuery)
+    {
+        glBeginQuery(GL_TIME_ELAPSED, G->timeQueries[G->frameIndex & 3]);
+        G->timeQueryActive = true;
+    }
     // at most kMaxFramesInFlight frames queued on the GPU
     if (frame + 1 > (uint64_t)kMaxFramesInFlight)
     {

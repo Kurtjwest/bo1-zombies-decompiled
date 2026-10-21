@@ -10,7 +10,8 @@
 #define __MOJOSHADER_INTERNAL__ 1
 #include "mojoshader_profile.h"
 
-// BO1 Linux port: GLSL 4.50 for the Direct3D 9 layer's OpenGL renderer (src/platform/opengl/gl_rhi.cpp). This is
+// BO1 Linux port: GLSL for the Direct3D 9 layer's OpenGL renderer (src/platform/opengl/gl_rhi.cpp), valid as GLSL 4.50
+// and, with GL_ARB_shading_language_420pack and explicit locations, as 3.30 and 1.40 (its OpenGL 3.x path). This is
 // not MojoShader's own GLSL profile: it is the BO1 port's Metal profile (mojoshader_profile_metal.c, with its fixes
 // for the game's shaders: predication, subroutines, relative addressing, texldl/texldp/texldb, the D3D9 rules for
 // pow, log, nrm, texkill, cmp/cnd, ...) emitting GLSL, so both renderers translate every instruction the same way.
@@ -18,14 +19,15 @@
 // sampling modes (depth/shadow textures), alpha test, the extra vertex outputs a pixel shader reads, centroid
 // interpolation and D3D9 pixel-center vPos.
 //
-// The renderer compiles the output after a header of its own (gl_rhi.cpp) that starts it with "#version 450 core"
-// and maps the Metal-style names the instruction emitters use to GLSL ones (float4 -> vec4, int4 -> ivec4,
+// The renderer compiles the output after a header of its own (gl_rhi.cpp) that starts it with the version and
+// extension lines and maps the Metal-style names the instruction emitters use to GLSL ones (float4 -> vec4, int4 -> ivec4,
 // bool4 -> bvec4, FLT_MAX). Interface (layout matches the Metal profile's, see d3d9_shaders.cpp):
 //   - vertex inputs: layout(location = n) in vec4 v<n> (the input register number; integer vertex formats are
 //     converted to float by the vertex fetch)
 //   - varyings: named after their usage and index (bo1v_texcoord0, bo1v_color1, ...), matched by name
 //   - uniforms: one std140 block per stage (binding 0 vertex, 1 pixel): vec4 float registers, ivec4 int registers,
-//     then the bool registers as bytes in uvec4s; binding 2: the vertex shaders' per-draw values (bo1_vsfix)
+//     then the bool registers as bytes in uvec4s (bo1_vs_float4, bo1_ps_int4, ...: no instance name, which GLSL 1.40
+//     does not have); binding 2: the vertex shaders' per-draw values (bo1_vsfix)
 //   - samplers: texture unit = sampler register (pixel shaders), 16 + register (vertex shaders)
 //   - pixel outputs: layout(location = n) out vec4 for oC<n>; oDepth is gl_FragDepth
 
@@ -115,7 +117,9 @@ const char *get_GLSL_uniform_array_varname(Context *ctx,
                                             char *buf, const size_t len)
 {
     const char *type = get_GLSL_uniform_type(ctx, regtype);
-    snprintf(buf, len, "uniforms.uniforms_%s", type);
+    // BO1: members of a block without an instance name (GLSL 1.40 has none), named for the stage so that the two
+    // stages' blocks do not share member names
+    snprintf(buf, len, "bo1_%s_%s", shader_is_vertex(ctx) ? "vs" : "ps", type);
     return buf;
 } // get_GLSL_uniform_array_varname
 
@@ -273,7 +277,7 @@ const char *make_GLSL_destarg_assign(Context *ctx, char *buf,
              clampleft, leftparen, operation, rightparen, result_shift_str,
              clampright);
     // BO1: a truncated line is broken GLSL; say so instead of emitting it (relative-addressed constants are long:
-    // "uniforms.uniforms_float4[(ARRAYBASE_0 + 120) + aL]", and the buffers above used to be 64/128 bytes)
+    // "bo1_vs_float4[(ARRAYBASE_0 + 120) + aL]", and the buffers above used to be 64/128 bytes)
     if ((written < 0) || ((size_t) written >= buflen))
         fail(ctx, "BUG: GLSL expression too long for its buffer");
     return buf;
@@ -727,16 +731,16 @@ void emit_GLSL_finalize(Context *ctx)
         output_line(ctx, "{");
         ctx->indent++;
         if (ctx->uniform_float4_count > 0)
-            output_line(ctx, "float4 uniforms_float4[%d];", ctx->uniform_float4_count);
+            output_line(ctx, "float4 bo1_%s_float4[%d];", vs ? "vs" : "ps", ctx->uniform_float4_count);
         if (ctx->uniform_int4_count > 0)
-            output_line(ctx, "int4 uniforms_int4[%d];", ctx->uniform_int4_count);
+            output_line(ctx, "int4 bo1_%s_int4[%d];", vs ? "vs" : "ps", ctx->uniform_int4_count);
         if (ctx->uniform_bool_count > 0)
-            output_line(ctx, "uvec4 uniforms_bool4[%d];", (ctx->uniform_bool_count + 15) / 16);
+            output_line(ctx, "uvec4 bo1_%s_bool4[%d];", vs ? "vs" : "ps", (ctx->uniform_bool_count + 15) / 16);
         ctx->indent--;
-        output_line(ctx, "} uniforms;");
+        output_line(ctx, "};"); // (no instance name: GLSL 1.40 has none)
         if (ctx->uniform_bool_count > 0)
         {
-            output_line(ctx, "bool bo1_bool(const int i) { return ((uniforms.uniforms_bool4[i >> 4][(i >> 2) & 3] >> uint((i & 3) * 8)) & 0xFFu) != 0u; }");
+            output_line(ctx, "bool bo1_bool(const int i) { return ((bo1_%s_bool4[i >> 4][(i >> 2) & 3] >> uint((i & 3) * 8)) & 0xFFu) != 0u; }", vs ? "vs" : "ps");
         } // if
     } // if
     // BO1: per-draw values of the Direct3D 9 layer for vertex shaders: .x is D3DRS_DEPTHBIAS in clip-space units,
@@ -915,7 +919,7 @@ void emit_GLSL_uniform(Context *ctx, RegisterType regtype, int regnum,
 {
     // Now that we're pushing all the uniforms as one struct, pack these
     //  down, so if we only use register c439, it'll actually map to
-    //  uniforms.uniforms_float4[0]. As we push one big struct, this will
+    //  bo1_vs_float4[0]. As we push one big struct, this will
     //  prevent uploading unused data.
 
     char varname[512];

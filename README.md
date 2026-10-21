@@ -131,14 +131,15 @@ Cross-compiling from Linux (clang, lld and a macOS SDK) works too: see `cmake/to
 
 The same engine builds as a native Linux executable for 64-bit and 32-bit x86 and ARM. As on macOS nothing is emulated:
 the Win32 calls go to `src/platform/win32compat` (POSIX), the window, keyboard, mouse, controllers and sound to SDL2
-(`src/platform/linux`), and Direct3D 9 runs on OpenGL 4.5 (`src/platform/d3d9mtl` over `src/platform/opengl`, with
-the game's shaders translated to GLSL by MojoShader). Bink videos and xWMA sounds are decoded with FFmpeg.
+(`src/platform/linux`), and Direct3D 9 runs on OpenGL 4.5, or 3.1 and later (`src/platform/d3d9mtl` over
+`src/platform/opengl`, with the game's shaders translated to GLSL by MojoShader). Bink videos and xWMA sounds are
+decoded with FFmpeg.
 
 Needs clang 14 or later, CMake 3.16+, Ninja, pkg-config and the SDL2 development files, git and make (Debian/Ubuntu:
 `sudo apt install clang cmake ninja-build pkg-config libsdl2-dev git make`; Fedora:
 `sudo dnf install clang cmake ninja-build pkgconf SDL2-devel git make`; Arch: `sudo pacman -S clang cmake ninja pkgconf
-sdl2 git make`), an OpenGL 4.5 driver to run (Mesa 20 or later for Intel, AMD and the software renderer, or NVIDIA's),
-and the game files of a Call of Duty: Black Ops PC install (Steam or retail).
+sdl2 git make`), an OpenGL driver to run (OpenGL 4.5: Mesa 20 or later for Intel, AMD and the software renderer, or
+NVIDIA's; or OpenGL 3.1 and up, see below), and the game files of a Call of Duty: Black Ops PC install (Steam or retail).
 
 ```sh
 ./build-linux.sh                                       # builds build-linux/BO1Zombies for this computer's processor
@@ -150,9 +151,18 @@ build-linux/BO1Zombies
 `build-linux-<arch>`, with clang and that processor's SDL2 development files: on Debian and Ubuntu its multiarch
 packages (`sudo dpkg --add-architecture i386 && sudo apt update && sudo apt install libsdl2-dev:i386 libstdc++-14-dev:i386`
 for x86, `arm64` / `armhf` likewise), or a sysroot named by `BO1_SYSROOT` (see `cmake/toolchain-linux.cmake`). On a
-Raspberry Pi or another ARM computer `./build-linux.sh` builds for it directly. To run there, the GPU's driver has to
-offer OpenGL 4.5 too: Mesa's freedreno (Adreno 6xx) and asahi (Apple M1/M2) do, the Raspberry Pi's v3d and Mali's
-Panfrost don't, and without one the game runs on Mesa's software renderer (llvmpipe), slowly.
+Raspberry Pi or another ARM computer `./build-linux.sh` builds for it directly. Mesa's freedreno (Adreno 6xx) and asahi
+(Apple M1/M2) offer OpenGL 4.5; the Raspberry Pi 4's v3d offers OpenGL 3.1, which the OpenGL 3.x path below runs on.
+Without a GPU driver the game runs on Mesa's software renderer (llvmpipe), slowly.
+
+On a driver without OpenGL 4.5 the renderer takes the newest of OpenGL 3.3, 3.2 and 3.1 (the OpenGL 3.x path) and does
+without what 4.x adds: the vertex shaders convert Direct3D's clip space themselves (no `GL_ARB_clip_control`), the
+per-draw scratch memory is the renderer's own and is uploaded before each draw (no persistent buffer mapping),
+viewports are whole pixels, and cube maps have seams without `GL_ARB_seamless_cube_map`. The log names what it does
+without (`[gl] OpenGL 3.x path ...`). It still needs direct state access, texture storage, texture views, copy image,
+sampler objects, vertex attribute binding, per-target blending, `GL_ARB_shading_language_420pack` and explicit uniform
+locations, which Mesa's v3d has (the start-up error names whatever a driver lacks). The Raspberry
+Pi 4's GPU is slow for this game: 640x480 or 720x480, low settings and no anti-aliasing are the place to start.
 
 The game folder is `~/.local/share/BO1Zombies` (`$XDG_DATA_HOME/BO1Zombies`). As on macOS the game reads the original
 game's files and writes everything there (settings, saves, logs, screenshots, the shader cache), and the repository's
@@ -174,5 +184,6 @@ Settings for the Linux build, besides `BO1_DUMP_FAILED_SHADERS`, `BO1_SYNC_SHADE
 | --- | --- |
 | `BO1_GL_DEBUG=1` | an OpenGL debug context; the driver's errors and warnings go to the log (`2`: its performance hints too) |
 | `BO1_GL_LOG=1` | log what the renderer's start-up self-test measured (clip space and winding conventions) |
+| `BO1_GL_COMPAT=1` | the OpenGL 3.x path's workarounds on any driver (for testing them, or around a driver's broken 4.x feature); or some of them: a list of `clip`, `buffers`, `viewports`, `attachments`, `layers` |
 | `SDL_VIDEODRIVER=wayland` / `x11` | the window system SDL uses (SDL's own setting) |
 | `SDL_AUDIODRIVER=pipewire` / `pulseaudio` / `alsa` | the sound system SDL uses (SDL's own setting) |

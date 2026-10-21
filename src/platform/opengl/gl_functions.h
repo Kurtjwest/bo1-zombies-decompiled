@@ -1,6 +1,7 @@
 #pragma once
-// The OpenGL 4.5 core functions the renderer uses (gl_rhi.cpp), loaded through SDL_GL_GetProcAddress once the first
-// context exists. One list: the function pointers are declared, defined and loaded from it.
+// The OpenGL functions the renderer uses (gl_rhi.cpp), loaded through SDL_GL_GetProcAddress once the first context
+// exists: what OpenGL 3.1 with direct state access has, and the 4.x functions of the features it works around without.
+// The function pointers are declared, defined and loaded from the lists.
 
 #include <GL/glcorearb.h>
 
@@ -18,49 +19,38 @@
     X(PFNGLFLUSHPROC, glFlush)                                                                                         \
     X(PFNGLFINISHPROC, glFinish)                                                                                       \
     X(PFNGLPIXELSTOREIPROC, glPixelStorei)                                                                             \
-    X(PFNGLCLIPCONTROLPROC, glClipControl)                                                                             \
-    X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)                                                           \
-    X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl)                                                             \
-    X(PFNGLOBJECTLABELPROC, glObjectLabel)                                                                             \
     /* textures */                                                                                                     \
     X(PFNGLCREATETEXTURESPROC, glCreateTextures)                                                                       \
     X(PFNGLGENTEXTURESPROC, glGenTextures)                                                                             \
     X(PFNGLDELETETEXTURESPROC, glDeleteTextures)                                                                       \
     X(PFNGLTEXTURESTORAGE2DPROC, glTextureStorage2D)                                                                   \
     X(PFNGLTEXTURESTORAGE3DPROC, glTextureStorage3D)                                                                   \
-    X(PFNGLTEXTURESTORAGE2DMULTISAMPLEPROC, glTextureStorage2DMultisample)                                             \
     X(PFNGLTEXTURESUBIMAGE2DPROC, glTextureSubImage2D)                                                                 \
     X(PFNGLTEXTURESUBIMAGE3DPROC, glTextureSubImage3D)                                                                 \
     X(PFNGLCOMPRESSEDTEXTURESUBIMAGE2DPROC, glCompressedTextureSubImage2D)                                             \
     X(PFNGLCOMPRESSEDTEXTURESUBIMAGE3DPROC, glCompressedTextureSubImage3D)                                             \
     X(PFNGLTEXTUREPARAMETERIPROC, glTextureParameteri)                                                                 \
     X(PFNGLTEXTUREPARAMETERIVPROC, glTextureParameteriv)                                                               \
-    X(PFNGLTEXTUREVIEWPROC, glTextureView)                                                                             \
     X(PFNGLGETTEXTURESUBIMAGEPROC, glGetTextureSubImage)                                                               \
     X(PFNGLGETCOMPRESSEDTEXTURESUBIMAGEPROC, glGetCompressedTextureSubImage)                                           \
     X(PFNGLGENERATETEXTUREMIPMAPPROC, glGenerateTextureMipmap)                                                         \
-    X(PFNGLCOPYIMAGESUBDATAPROC, glCopyImageSubData)                                                                   \
     X(PFNGLBINDTEXTUREUNITPROC, glBindTextureUnit)                                                                     \
-    X(PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ)                                                             \
-    X(PFNGLCLEARTEXSUBIMAGEPROC, glClearTexSubImage)                                                                   \
     /* buffers */                                                                                                      \
     X(PFNGLCREATEBUFFERSPROC, glCreateBuffers)                                                                         \
     X(PFNGLDELETEBUFFERSPROC, glDeleteBuffers)                                                                         \
-    X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage)                                                               \
+    X(PFNGLNAMEDBUFFERDATAPROC, glNamedBufferData)                                                                     \
     X(PFNGLNAMEDBUFFERSUBDATAPROC, glNamedBufferSubData)                                                               \
-    X(PFNGLMAPNAMEDBUFFERRANGEPROC, glMapNamedBufferRange)                                                             \
-    X(PFNGLUNMAPNAMEDBUFFERPROC, glUnmapNamedBuffer)                                                                   \
     X(PFNGLBINDBUFFERRANGEPROC, glBindBufferRange)                                                                     \
     /* framebuffers */                                                                                                 \
     X(PFNGLCREATEFRAMEBUFFERSPROC, glCreateFramebuffers)                                                               \
     X(PFNGLDELETEFRAMEBUFFERSPROC, glDeleteFramebuffers)                                                               \
     X(PFNGLNAMEDFRAMEBUFFERTEXTUREPROC, glNamedFramebufferTexture)                                                     \
     X(PFNGLNAMEDFRAMEBUFFERTEXTURELAYERPROC, glNamedFramebufferTextureLayer)                                           \
+    X(PFNGLFRAMEBUFFERTEXTURE2DPROC, glFramebufferTexture2D)                                                           \
     X(PFNGLNAMEDFRAMEBUFFERDRAWBUFFERSPROC, glNamedFramebufferDrawBuffers)                                             \
     X(PFNGLNAMEDFRAMEBUFFERDRAWBUFFERPROC, glNamedFramebufferDrawBuffer)                                               \
     X(PFNGLNAMEDFRAMEBUFFERREADBUFFERPROC, glNamedFramebufferReadBuffer)                                               \
     X(PFNGLCHECKNAMEDFRAMEBUFFERSTATUSPROC, glCheckNamedFramebufferStatus)                                             \
-    X(PFNGLNAMEDFRAMEBUFFERPARAMETERIPROC, glNamedFramebufferParameteri)                                               \
     X(PFNGLBINDFRAMEBUFFERPROC, glBindFramebuffer)                                                                     \
     X(PFNGLBLITNAMEDFRAMEBUFFERPROC, glBlitNamedFramebuffer)                                                           \
     X(PFNGLCLEARNAMEDFRAMEBUFFERFVPROC, glClearNamedFramebufferfv)                                                     \
@@ -105,8 +95,8 @@
     X(PFNGLSAMPLERPARAMETERFVPROC, glSamplerParameterfv)                                                               \
     X(PFNGLBINDSAMPLERPROC, glBindSampler)                                                                             \
     /* fixed-function state */                                                                                         \
-    X(PFNGLVIEWPORTINDEXEDFPROC, glViewportIndexedf)                                                                   \
-    X(PFNGLDEPTHRANGEINDEXEDPROC, glDepthRangeIndexed)                                                                 \
+    X(PFNGLVIEWPORTPROC, glViewport)                                                                                   \
+    X(PFNGLDEPTHRANGEPROC, glDepthRange)                                                                               \
     X(PFNGLSCISSORPROC, glScissor)                                                                                     \
     X(PFNGLCULLFACEPROC, glCullFace)                                                                                   \
     X(PFNGLFRONTFACEPROC, glFrontFace)                                                                                 \
@@ -121,7 +111,6 @@
     X(PFNGLBLENDFUNCSEPARATEIPROC, glBlendFuncSeparatei)                                                               \
     X(PFNGLBLENDEQUATIONSEPARATEIPROC, glBlendEquationSeparatei)                                                       \
     X(PFNGLBLENDCOLORPROC, glBlendColor)                                                                               \
-    X(PFNGLPROVOKINGVERTEXPROC, glProvokingVertex)                                                                     \
     /* draws */                                                                                                        \
     X(PFNGLDRAWARRAYSPROC, glDrawArrays)                                                                               \
     X(PFNGLDRAWELEMENTSBASEVERTEXPROC, glDrawElementsBaseVertex)                                                       \
@@ -137,11 +126,32 @@
     X(PFNGLWAITSYNCPROC, glWaitSync)                                                                                   \
     X(PFNGLDELETESYNCPROC, glDeleteSync)
 
+// OpenGL 4.x functions a 3.x driver may not have (the extensions are checked before they are called): loaded when
+// there, null otherwise
+#define BO1_GL_OPTIONAL_FUNCTIONS(X)                                                                                   \
+    X(PFNGLCLIPCONTROLPROC, glClipControl)                                                                             \
+    X(PFNGLDEBUGMESSAGECALLBACKPROC, glDebugMessageCallback)                                                           \
+    X(PFNGLDEBUGMESSAGECONTROLPROC, glDebugMessageControl)                                                             \
+    X(PFNGLOBJECTLABELPROC, glObjectLabel)                                                                             \
+    X(PFNGLNAMEDBUFFERSTORAGEPROC, glNamedBufferStorage)                                                               \
+    X(PFNGLMAPNAMEDBUFFERRANGEPROC, glMapNamedBufferRange)                                                             \
+    X(PFNGLUNMAPNAMEDBUFFERPROC, glUnmapNamedBuffer)                                                                   \
+    X(PFNGLNAMEDFRAMEBUFFERPARAMETERIPROC, glNamedFramebufferParameteri)                                               \
+    X(PFNGLVIEWPORTINDEXEDFPROC, glViewportIndexedf)                                                                   \
+    X(PFNGLDEPTHRANGEINDEXEDPROC, glDepthRangeIndexed)                                                                 \
+    X(PFNGLPROVOKINGVERTEXPROC, glProvokingVertex)                                                                     \
+    X(PFNGLTEXTUREVIEWPROC, glTextureView)                                                                             \
+    X(PFNGLCOPYIMAGESUBDATAPROC, glCopyImageSubData)                                                                   \
+    X(PFNGLCLEARTEXSUBIMAGEPROC, glClearTexSubImage)                                                                   \
+    X(PFNGLTEXTURESTORAGE2DMULTISAMPLEPROC, glTextureStorage2DMultisample)                                             \
+    X(PFNGLGETINTERNALFORMATIVPROC, glGetInternalformativ)
+
 namespace glfn
 {
 #define BO1_GL_DECLARE(type, name) extern type name;
 BO1_GL_FUNCTIONS(BO1_GL_DECLARE)
+BO1_GL_OPTIONAL_FUNCTIONS(BO1_GL_DECLARE)
 #undef BO1_GL_DECLARE
-// loads every function of the list (a context must be current); false names the first one missing
+// loads the functions of both lists (a context must be current); false names the first one of the required list missing
 bool Load(void *(*getProc)(const char *name), const char **missing);
 } // namespace glfn
