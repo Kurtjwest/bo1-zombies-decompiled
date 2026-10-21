@@ -149,7 +149,9 @@ build-linux/BO1Zombies
 `build-linux-<arch>`, with clang and that processor's SDL2 development files: on Debian and Ubuntu its multiarch
 packages (`sudo dpkg --add-architecture i386 && sudo apt update && sudo apt install libsdl2-dev:i386 libstdc++-14-dev:i386`
 for x86, `arm64` / `armhf` likewise), or a sysroot named by `BO1_SYSROOT` (see `cmake/toolchain-linux.cmake`). On a
-Raspberry Pi or another ARM computer `./build-linux.sh` builds for it directly.
+Raspberry Pi or another ARM computer `./build-linux.sh` builds for it directly. To run there, the GPU's driver has to
+offer OpenGL 4.5 too: Mesa's freedreno (Adreno 6xx) and asahi (Apple M1/M2) do, the Raspberry Pi's v3d and Mali's
+Panfrost don't, and without one the game runs on Mesa's software renderer (llvmpipe), slowly.
 
 The game folder is `~/.local/share/BO1Zombies` (`$XDG_DATA_HOME/BO1Zombies`). As on macOS the game reads the original
 game's files and writes everything there (settings, saves, logs, screenshots, the shader cache), and the repository's
