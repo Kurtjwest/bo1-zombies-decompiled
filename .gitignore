@@ -29,6 +29,10 @@ build/
 build-dedi/
 build-mp/
 build-sp/
+# build-mac.sh, build-linux.sh and build-windows.sh
+build-mac*/
+build-linux*/
+build-windows*/
 [Oo]bj/
 [Oo]ut/
 [Ll]og/
