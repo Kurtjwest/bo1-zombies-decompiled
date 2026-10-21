@@ -46,6 +46,7 @@ elseif(CMAKE_CROSSCOMPILING)
     message(STATUS "No SDL2 development files for ${BO1_LINUX_ARCH}: building SDL2 to link against")
     include("${CMAKE_CURRENT_LIST_DIR}/sdl2.cmake")
     set(BO1_SDL2_TARGET bo1_sdl2_lib)
+    set(BO1_SDL2_LINK_ONLY TRUE)
 else()
     message(FATAL_ERROR "No SDL2 development files: install them (Debian/Ubuntu: sudo apt install libsdl2-dev; Fedora: "
                         "SDL2-devel; Arch: sdl2)")
@@ -57,6 +58,11 @@ file(GLOB BO1_PORT_PLATFORM_SOURCES CONFIGURE_DEPENDS
     "${SRC_DIR}/platform/opengl/*.cpp"
 )
 set(BO1_PORT_MOJOSHADER_PROFILE GLSL)
+# 32-bit processes: the C library's 64-bit file interfaces, so a file size, offset or inode number past 32 bits (a
+# large disk, XFS, btrfs, network and FUSE file systems) doesn't fail the game's stat and readdir calls with EOVERFLOW
+if(CMAKE_SIZEOF_VOID_P EQUAL 4)
+    add_compile_definitions(_FILE_OFFSET_BITS=64)
+endif()
 include("${CMAKE_CURRENT_LIST_DIR}/port.cmake")
 
 set_target_properties(${BIN_NAME} PROPERTIES OUTPUT_NAME "BO1Zombies")
@@ -92,6 +98,11 @@ if(CMAKE_SIZEOF_VOID_P EQUAL 8)
 endif()
 # libraries next to the executable (the Steam API)
 target_link_options(${BIN_NAME} PRIVATE "-Wl,-rpath,$ORIGIN")
+if(BO1_SDL2_LINK_ONLY)
+    # (and only there: the SDL2 built to link against has no video or audio drivers, the target system's is the one
+    # to load)
+    set_target_properties(${BIN_NAME} PROPERTIES SKIP_BUILD_RPATH TRUE)
+endif()
 
 # ---- Steamworks: the SDK's libsteam_api.so for the processor, next to the executable. Valve ships none for 32-bit
 # ARM, and the 32-bit x86 one is not in the SDK copy here: those builds use the stand-in (src/platform/common/steam_stub)

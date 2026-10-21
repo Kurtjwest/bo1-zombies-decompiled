@@ -2,6 +2,7 @@
 
 #include <game/teams.h>
 #include <cgame_mp/cg_scoreboard_mp.h>
+#include <universal/bo1_layout.h>
 
 union $4EE974FEE7F16CD9507A14B5D3A2E3FF // sizeof=0x8
 {                                                                             // XREF: clientState_s/r
@@ -41,7 +42,7 @@ struct clientState_s // sizeof=0xD0
         //$4EE974FEE7F16CD9507A14B5D3A2E3FF ___u12;
         union //$4EE974FEE7F16CD9507A14B5D3A2E3FF // sizeof=0x8
         {                                                                             // XREF: clientState_s/r
-                unsigned __int64 xuid;
+                BO1_ALIGN8 unsigned __int64 xuid;
                 unsigned int xuid32[2];
         };
 
@@ -54,3 +55,7 @@ struct clientState_s // sizeof=0xD0
         score_s score;
         int clientUIVisibilityFlags;
 };
+// (clientStateFields in msg_mp.cpp sends the fields at the 32-bit Windows offsets)
+static_assert(sizeof(clientState_s) == 0xD0 && offsetof(clientState_s, xuid) == 0x78 &&
+                  offsetof(clientState_s, score) == 0xA0,
+              "clientState_s must keep the Windows layout");

@@ -22,7 +22,7 @@ enum jqProcessor : __int32
 
 struct tlAtomicMutex // sizeof=0x10
 {                                       // XREF: .data:tlAtomicMutex g_prolog_task_mutex/r
-    volatile LONG64 ThreadId;          // XREF: jqInit(void)+58/w
+    BO1_ALIGN8 volatile LONG64 ThreadId; // XREF: jqInit(void)+58/w
     int LockCount;                      // XREF: jqInit(void)+64/w
     Ptr32<tlAtomicMutex> ThisPtr;             // XREF: jqInit(void)+4E/w
 
@@ -107,7 +107,7 @@ struct jqAtomicHeap // sizeof=0x110
 
 struct tlSharedAtomicMutex // sizeof=0x10
 {                                       // XREF: jqAtomicQueue<jqBatch,32>/r
-    volatile unsigned __int64 ThreadId; // XREF: jqInit(void)+31/w
+    BO1_ALIGN8 volatile unsigned __int64 ThreadId; // XREF: jqInit(void)+31/w
                                         // jqInit(void)+37/w ...
     volatile int LockCount;             // XREF: jqInit(void)+42/w
                                         // _dynamic_initializer_for__jqPool__+11/w ...
@@ -392,7 +392,7 @@ struct jqWorker : _jqWorker // sizeof=0xA8
     jqQueue WorkerSpecific;             // XREF: _dynamic_initializer_for__jqMainThreadWorker__+2/w
                                         // _dynamic_initializer_for__jqMainThreadWorker__+7/w ...
     Ptr32<jqQueue> Queues[8];
-    unsigned __int64 WorkTime;
+    BO1_ALIGN8 unsigned __int64 WorkTime;
 };
 
 struct jqBatchPool // sizeof=0x180

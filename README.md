@@ -14,8 +14,8 @@ armhf), each a native program of its platform; the sections below say how.
 | Platform | Script | Output |
 | --- | --- | --- |
 | Windows x64 / x86 | `./build-windows.sh [--arch i686]` (clang and MinGW-w64), or the Visual Studio project (32-bit) | `build-windows-x64/BO1Zombies.exe`, `build-windows-x86/`, `build/Release/` |
-| macOS Apple silicon / Intel / both | `./build-mac.sh [--arch x86_64 \| --universal]` | `build-mac/BO1Zombies.app` |
-| Linux x86_64 / x86 / arm64 / armhf | `./build-linux.sh [--arch i686 \| aarch64 \| armhf]` | `build-linux/BO1Zombies` |
+| macOS Apple silicon / Intel / both | `./build-mac.sh [--arch x86_64 \| --universal]` | `build-mac/BO1Zombies.app` (`build-mac-x86_64/`, `build-mac-universal/`) |
+| Linux x86_64 / x86 / arm64 / armhf | `./build-linux.sh [--arch i686 \| aarch64 \| armhf]` | `build-linux/BO1Zombies` (`build-linux-<arch>/` for another processor) |
 
 ## Windows (64-bit and 32-bit)
 

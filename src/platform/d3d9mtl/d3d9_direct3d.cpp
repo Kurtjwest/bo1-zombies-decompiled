@@ -1,4 +1,5 @@
-// IDirect3D9: the adapter (the Mac's GPU through Metal), its display modes, capabilities and format support.
+// IDirect3D9: the adapter (the GPU, through Metal on the Mac and OpenGL on Linux), its display modes, capabilities
+// and format support.
 #include "d3d9_internal.h"
 
 #include "../common/platform_bridge.h"
@@ -10,6 +11,13 @@ namespace d3d9mtl
 {
 namespace
 {
+// the graphics API under the layer: Metal on the Mac, OpenGL on Linux (src/platform/opengl/gl_rhi.cpp)
+#if defined(BO1_RHI_OPENGL)
+const char kRhiApi[] = "OpenGL";
+#else
+const char kRhiApi[] = "Metal";
+#endif
+
 // Metal is brought up when the first device is created; capability queries before that use static answers.
 bool g_rhiReady = false;
 
@@ -38,7 +46,13 @@ HRESULT Direct3D::GetAdapterIdentifier(UINT Adapter, DWORD, D3DADAPTER_IDENTIFIE
     if (Adapter != 0 || !pIdentifier)
         return D3DERR_INVALIDCALL;
     memset(pIdentifier, 0, sizeof(*pIdentifier));
+#if defined(BO1_RHI_OPENGL)
+    static const char kDriver[] = "d3d9gl";
+    char name[128] = "GPU";
+#else
+    static const char kDriver[] = "d3d9mtl";
     char name[128] = "Apple GPU";
+#endif
     if (g_rhiReady)
     {
         rhi::DeviceInfo info;
@@ -46,8 +60,8 @@ HRESULT Direct3D::GetAdapterIdentifier(UINT Adapter, DWORD, D3DADAPTER_IDENTIFIE
         if (info.name[0])
             snprintf(name, sizeof(name), "%s", info.name);
     }
-    snprintf(pIdentifier->Driver, sizeof(pIdentifier->Driver), "d3d9mtl");
-    snprintf(pIdentifier->Description, sizeof(pIdentifier->Description), "%s (Metal)", name);
+    snprintf(pIdentifier->Driver, sizeof(pIdentifier->Driver), "%s", kDriver);
+    snprintf(pIdentifier->Description, sizeof(pIdentifier->Description), "%s (%s)", name, kRhiApi);
     snprintf(pIdentifier->DeviceName, sizeof(pIdentifier->DeviceName), "\\\\.\\DISPLAY1");
     // A vendor id the engine has no special paths for (it keys NVAPI and vendor workarounds off NVIDIA 0x10DE and
     // ATI 0x1002); 0x106B is Apple's PCI vendor id.
@@ -444,7 +458,7 @@ HRESULT Direct3D::CreateDevice(UINT Adapter, D3DDEVTYPE DeviceType, HWND hFocusW
     char err[512] = "";
     if (!EnsureRhi(GetMetalLayerForWindow(window), err, sizeof(err)))
     {
-        Log("Metal initialization failed: %s", err);
+        Log("%s initialization failed: %s", kRhiApi, err);
         return D3DERR_NOTAVAILABLE;
     }
     Device *dev = new Device(this, hFocusWindow, BehaviorFlags);
