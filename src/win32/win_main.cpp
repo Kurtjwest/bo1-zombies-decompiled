@@ -2007,8 +2007,9 @@ void __cdecl Sys_Init()
         Com_Printf(16, "%i physical CPU%s detected\n", 1, "");
     else
         Com_Printf(16, "%i physical CPU%s detected\n", sys_info.physicalCpuCount, "s");
-    Com_Printf(16, "Measured CPU speed is %.2lf GHz\n", sys_info.cpuGHz);
-    Com_Printf(16, "Total CPU performance is estimated as %.2lf GHz\n", sys_info.configureGHz);
+    // (long double is double only with MSVC: %lf takes a double)
+    Com_Printf(16, "Measured CPU speed is %.2lf GHz\n", (double)sys_info.cpuGHz);
+    Com_Printf(16, "Total CPU performance is estimated as %.2lf GHz\n", (double)sys_info.configureGHz);
     Com_Printf(16, "System memory is %i MB (capped at 1 GB)\n", sys_info.sysMB);
     Com_Printf(16, "Video card is \"%s\"\n", sys_info.gpuDescription);
     if ( sys_info.SSE )

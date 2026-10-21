@@ -307,8 +307,13 @@ static KFind *FindOpen(const char *spec)
         return nullptr;
     KFind *f = new KFind();
     f->dir = rdir;
+    // (macOS's AppleDouble files, "._<name>", which copying from a Mac to another file system leaves next to every
+    // file, are not listed unless asked for by name: the game would take "._iw_00.iwd" for one of its own)
+    const bool appleDouble = pattern.compare(0, 2, "._") == 0;
     while (dirent *e = readdir(d))
     {
+        if (!appleDouble && e->d_name[0] == '.' && e->d_name[1] == '_')
+            continue;
         if (WildMatch(pattern.c_str(), e->d_name))
             f->names.push_back(e->d_name);
     }
