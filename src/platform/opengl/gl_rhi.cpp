@@ -2193,7 +2193,7 @@ bool Init(void *layer, char *err, size_t errSize)
     GLint maxTex = 8192;
     glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTex);
     G->info.maxTextureSize = (uint32_t)maxTex;
-    G->info.supportsDepth24 = false; // (32-bit float depth, as on Apple GPUs: the path the layer's depth bias is made for)
+    G->info.supportsDepth24 = true; // (the layer stores the engine's D24S8 as such: d3d9_format.cpp)
     G->hasS3TC = HasExtension("GL_EXT_texture_compression_s3tc");
     G->info.supportsBC = G->hasS3TC;
     if (HasExtension("GL_NVX_gpu_memory_info"))

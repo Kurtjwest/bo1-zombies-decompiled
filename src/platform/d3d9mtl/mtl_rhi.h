@@ -60,6 +60,7 @@ enum PixelFormat : uint32_t
     PF_BC5 = 142,
     PF_D16 = 250,
     PF_D32F = 252,
+    PF_D24S8 = 255, // (the OpenGL renderer's, d3d9_format.cpp)
     PF_D32F_S8 = 260,
 };
 

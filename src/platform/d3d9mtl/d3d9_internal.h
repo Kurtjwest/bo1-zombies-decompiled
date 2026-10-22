@@ -454,15 +454,6 @@ struct BufferStorage
     // reaches the buffer's GL copy only when a draw reads that instead (SyncGL)
     bool streamed = false;
     UINT staleStart = 0, staleEnd = 0; // written since the GL copy was last brought up to date
-    uint32_t generation = 0;           // bumped by every lock: copies of older contents are not reused
-    struct StreamedCopy
-    {
-        uint64_t serial = 0;
-        uint32_t generation = 0;
-        UINT from = 0, to = 0;
-        rhi::Buffer *buffer = nullptr;
-        uint32_t offset = 0;
-    } lastCopy; // the latest copy, which the draws of the same command buffer share
 
     bool Init(UINT length, DWORD usage, D3DPOOL pool);
     void Destroy();

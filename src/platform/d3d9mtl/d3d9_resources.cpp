@@ -971,8 +971,6 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
         return D3DERR_INVALIDCALL;
     const UINT end = size ? std::min<UINT>(offset + size, length) : length;
     UINT dirtyFrom = offset, dirtyTo = end;
-    if (!(flags & D3DLOCK_READONLY))
-        ++generation;
     if (GpuMayUse(lastUse) && !(flags & (D3DLOCK_NOOVERWRITE | D3DLOCK_READONLY)))
     {
         // The GPU may still read the current contents: give the CPU fresh memory instead of waiting (DISCARD), keeping

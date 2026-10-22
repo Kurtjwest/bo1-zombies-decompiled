@@ -68,13 +68,22 @@ const Entry kFormats[] = {
     {D3DFMT_ATI1, PF_BC4, 0, {R, R, R, R}, 8, 8, true, false, false, false, true, CONV_NONE},
     // ATI2N (3Dc): the first block holds the Y channel, the second the X channel
     {D3DFMT_ATI2, PF_BC5, 0, {G, R, ONE, ONE}, 16, 16, true, false, false, false, true, CONV_NONE},
-    // depth formats: no 24-bit depth on Apple GPUs; 32-bit float depth (+ 8-bit stencil) holds them all
+    // depth formats: no 24-bit depth on Apple GPUs; 32-bit float depth (+ 8-bit stencil) holds them all. OpenGL keeps
+    // the engine's 24-bit depth and stencil: one 32-bit value a pixel, where 32-bit float depth with stencil is two
+    // buffers on GPUs such as the Raspberry Pi's, both written out and read back at every change of render target.
     {D3DFMT_D16, PF_D16, 0, {R, R, R, ONE}, 2, 2, false, true, false, false, true, CONV_NONE},
     {D3DFMT_D16_LOCKABLE, PF_D16, 0, {R, R, R, ONE}, 2, 2, false, true, false, false, true, CONV_NONE},
+#if defined(BO1_RHI_OPENGL)
+    {D3DFMT_D24S8, PF_D24S8, 0, {R, R, R, ONE}, 4, 4, false, true, true, false, true, CONV_NONE},
+    {D3DFMT_D24X4S4, PF_D24S8, 0, {R, R, R, ONE}, 4, 4, false, true, true, false, true, CONV_NONE},
+    {D3DFMT_D15S1, PF_D24S8, 0, {R, R, R, ONE}, 2, 4, false, true, true, false, true, CONV_NONE},
+    {D3DFMT_D24X8, PF_D24S8, 0, {R, R, R, ONE}, 4, 4, false, true, true, false, true, CONV_NONE},
+#else
     {D3DFMT_D24S8, PF_D32F_S8, 0, {R, R, R, ONE}, 4, 8, false, true, true, false, true, CONV_NONE},
     {D3DFMT_D24X4S4, PF_D32F_S8, 0, {R, R, R, ONE}, 4, 8, false, true, true, false, true, CONV_NONE},
     {D3DFMT_D15S1, PF_D32F_S8, 0, {R, R, R, ONE}, 2, 8, false, true, true, false, true, CONV_NONE},
     {D3DFMT_D24X8, PF_D32F, 0, {R, R, R, ONE}, 4, 4, false, true, false, false, true, CONV_NONE},
+#endif
     {D3DFMT_D32, PF_D32F, 0, {R, R, R, ONE}, 4, 4, false, true, false, false, true, CONV_NONE},
     {D3DFMT_D32F_LOCKABLE, PF_D32F, 0, {R, R, R, ONE}, 4, 4, false, true, false, false, true, CONV_NONE},
     {D3DFMT_D32_LOCKABLE, PF_D32F, 0, {R, R, R, ONE}, 4, 4, false, true, false, false, true, CONV_NONE},

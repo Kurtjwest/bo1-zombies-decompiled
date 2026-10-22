@@ -2717,26 +2717,17 @@ void Device::BindStreams()
 
 static bool HasRestartIndex16(const uint16_t *p, uint32_t n);
 
-// bytes [from, to) of a streamed buffer in scratch memory: the copy an earlier draw of this command buffer made of
-// the same contents if it covers them, else a new one
+// bytes [from, to) of a streamed buffer, copied to scratch memory for this draw (each draw makes its own: scratch
+// memory is recycled by command buffer, and a later draw may be in the next one)
 static bool StreamCopy(BufferStorage &b, uint64_t from, uint64_t to, rhi::Buffer **buf, uint32_t *off)
 {
     to = std::min<uint64_t>(to, b.length);
     if (!b.cur.ptr || from >= to)
         return false;
-    const uint64_t serial = rhi::CurrentSerial();
-    BufferStorage::StreamedCopy &c = b.lastCopy;
-    if (c.buffer && c.serial == serial && c.generation == b.generation && from >= c.from && to <= c.to)
-    {
-        *buf = c.buffer;
-        *off = c.offset + (uint32_t)(from - c.from);
-        return true;
-    }
     void *dst = rhi::AllocTransient((size_t)(to - from), 16, buf, off);
     if (!dst || !*buf)
         return false;
     memcpy(dst, b.cur.ptr + from, (size_t)(to - from));
-    c = {serial, b.generation, (UINT)from, (UINT)to, *buf, *off};
     return true;
 }
 
