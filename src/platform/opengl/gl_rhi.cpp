@@ -573,8 +573,8 @@ struct Globals
     // BO1_PERF_LOG=1: once a second, where the frames' time went
     struct Perf
     {
-        uint32_t frames = 0, draws = 0, uploads = 0, commits = 0;
-        uint64_t uploadBytes = 0, transientBytes = 0;
+        uint32_t frames = 0, draws = 0, uploads = 0, commits = 0, texUploads = 0;
+        uint64_t uploadBytes = 0, transientBytes = 0, texUploadBytes = 0;
         double frameMax = 0, gpuWait = 0, swapWait = 0;
     } perf;
     bool perfLog = false;
@@ -2450,6 +2450,11 @@ void Upload(Texture *t, uint32_t slice, uint32_t level, uint32_t x, uint32_t y, 
         }
     }
     const GLsizei imageSize = (GLsizei)((size_t)tight * rows * d);
+    if (OnRenderThread())
+    {
+        ++G->perf.texUploads;
+        G->perf.texUploadBytes += (uint64_t)imageSize;
+    }
     const bool layered = t->type == TEX_CUBE || t->type == TEX_3D;
     const GLint zz = t->type == TEX_CUBE ? (GLint)slice : (GLint)z;
     if (f->compressed)
@@ -3566,10 +3571,11 @@ void PerfFrame()
     const double n = p.frames ? (double)p.frames : 1.0;
     fprintf(stderr,
             "[gl] %.0f fps, worst frame %.1f ms | GPU %.1f ms a frame | waited for the GPU %.1f ms a frame, in the swap "
-            "%.1f | a frame: %.0f draws, %.0f buffer uploads (%.0f KiB), %.0f KiB scratch, %.1f fences\n",
+            "%.1f | a frame: %.0f draws, %.0f buffer uploads (%.0f KiB), %.0f texture uploads (%.0f KiB), %.0f KiB "
+            "scratch, %.1f fences\n",
             p.frames / span, p.frameMax * 1000.0, G->lastFrameGpuTime * 1000.0, p.gpuWait / n * 1000.0,
-            p.swapWait / n * 1000.0, p.draws / n, p.uploads / n, p.uploadBytes / n / 1024.0, p.transientBytes / n / 1024.0,
-            p.commits / n);
+            p.swapWait / n * 1000.0, p.draws / n, p.uploads / n, p.uploadBytes / n / 1024.0, p.texUploads / n,
+            p.texUploadBytes / n / 1024.0, p.transientBytes / n / 1024.0, p.commits / n);
     p = Globals::Perf{};
     G->perfStart = now;
 }

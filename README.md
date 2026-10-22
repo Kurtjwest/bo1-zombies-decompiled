@@ -162,7 +162,13 @@ viewports are whole pixels, and cube maps have seams without `GL_ARB_seamless_cu
 without (`[gl] OpenGL 3.x path ...`). It still needs direct state access, texture storage, texture views, copy image,
 sampler objects, vertex attribute binding, per-target blending, `GL_ARB_shading_language_420pack` and explicit uniform
 locations, which Mesa's v3d has (the start-up error names whatever a driver lacks). The Raspberry
-Pi 4's GPU is slow for this game: 640x480 or 720x480, low settings and no anti-aliasing are the place to start.
+Pi 4's GPU is slow for this game: 640x480 or 720x480, low settings and no anti-aliasing are the place to start, and
+`BO1_PERF_LOG=1` logs where the frames' time goes.
+
+The draws of the engine's dynamic vertex and index buffers (written anew every frame: the menus, effects, text) read
+copies of the bytes they use, made at the draw in the renderer's scratch memory, instead of each buffer's OpenGL copy:
+updating a buffer the GPU may still be reading (`glBufferSubData`) makes drivers such as the Raspberry Pi's wait for
+the GPU, and the engine updates them hundreds of times a frame.
 
 The game folder is `~/.local/share/BO1Zombies` (`$XDG_DATA_HOME/BO1Zombies`). As on macOS the game reads the original
 game's files and writes everything there (settings, saves, logs, screenshots, the shader cache), and the repository's
@@ -185,5 +191,6 @@ Settings for the Linux build, besides `BO1_DUMP_FAILED_SHADERS`, `BO1_SYNC_SHADE
 | `BO1_GL_DEBUG=1` | an OpenGL debug context; the driver's errors and warnings go to the log (`2`: its performance hints too) |
 | `BO1_GL_LOG=1` | log what the renderer's start-up self-test measured (clip space and winding conventions) |
 | `BO1_GL_COMPAT=1` | the OpenGL 3.x path's workarounds on any driver (for testing them, or around a driver's broken 4.x feature); or some of them: a list of `clip`, `buffers`, `viewports`, `attachments`, `layers` |
+| `BO1_GL_STREAM=0` | dynamic buffers drawn from their OpenGL copies, updated with `glBufferSubData`, instead of per-draw copies |
 | `SDL_VIDEODRIVER=wayland` / `x11` | the window system SDL uses (SDL's own setting) |
 | `SDL_AUDIODRIVER=pipewire` / `pulseaudio` / `alsa` | the sound system SDL uses (SDL's own setting) |

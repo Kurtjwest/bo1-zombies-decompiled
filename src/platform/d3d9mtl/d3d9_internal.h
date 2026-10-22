@@ -450,12 +450,29 @@ struct BufferStorage
     bool locked = false;
     // the bytes of 'cur' the CPU may have written since the lock (rhi::BufferWritten at Unlock)
     UINT dirtyStart = 0, dirtyEnd = 0;
+    // (OpenGL) a dynamic buffer whose draws read copies of the bytes they use (Device::StreamCopy): what the CPU writes
+    // reaches the buffer's GL copy only when a draw reads that instead (SyncGL)
+    bool streamed = false;
+    UINT staleStart = 0, staleEnd = 0; // written since the GL copy was last brought up to date
+    uint32_t generation = 0;           // bumped by every lock: copies of older contents are not reused
+    struct StreamedCopy
+    {
+        uint64_t serial = 0;
+        uint32_t generation = 0;
+        UINT from = 0, to = 0;
+        rhi::Buffer *buffer = nullptr;
+        uint32_t offset = 0;
+    } lastCopy; // the latest copy, which the draws of the same command buffer share
 
     bool Init(UINT length, DWORD usage, D3DPOOL pool);
     void Destroy();
     HRESULT Lock(UINT offset, UINT size, void **ppbData, DWORD flags);
     HRESULT Unlock();
+    void SyncGL();
 };
+
+// (OpenGL) whether dynamic buffers are streamed (BufferStorage::streamed; BO1_GL_STREAM=0 turns it off)
+bool StreamDynamicBuffers();
 
 class VertexBuffer final : public ComObject<IDirect3DVertexBuffer9>
 {
@@ -1008,6 +1025,13 @@ private:
     void ApplyRenderTargets();
     bool PrepareDraw(D3DPRIMITIVETYPE prim);
     void AfterDraw();
+    // (OpenGL) draws of streamed (dynamic) buffers: see d3d9_device.cpp
+    bool AnyStreamed(bool indexed) const;
+    bool BindStreamCopies(uint32_t first, uint32_t count);
+    bool StreamedDraw(D3DPRIMITIVETYPE prim, UINT startVertex, uint32_t count);
+    bool StreamedDrawIndexed(D3DPRIMITIVETYPE prim, INT baseVertex, UINT minVertex, UINT numVertices, UINT startIndex,
+                             uint32_t count);
+    bool m_streamingDraw = false; // BindStreams leaves streamed buffers to the draw
     ShaderVariant *VertexVariant();
     ShaderVariant *PixelVariant();
     ShaderVariant *VariantFor(ShaderCode *c, uint64_t key, bool urgent);

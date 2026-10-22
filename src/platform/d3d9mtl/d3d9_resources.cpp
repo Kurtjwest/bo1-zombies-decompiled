@@ -3,6 +3,8 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include <deque>
 #include <map>
 #include <chrono>
@@ -931,11 +933,25 @@ void FreeBufferMemory(const BufferAlloc &a, uint64_t lastUse)
 // ======================================================================================================================
 // vertex and index buffers
 // ======================================================================================================================
+bool StreamDynamicBuffers()
+{
+#if defined(BO1_RHI_OPENGL)
+    static const bool on = [] {
+        const char *e = getenv("BO1_GL_STREAM");
+        return !e || !*e || strcmp(e, "0") != 0;
+    }();
+    return on;
+#else
+    return false; // (Metal draws from the buffers' own memory)
+#endif
+}
+
 bool BufferStorage::Init(UINT len, DWORD use, D3DPOOL p)
 {
     length = len;
     usage = use;
     pool = p;
+    streamed = (use & D3DUSAGE_DYNAMIC) && StreamDynamicBuffers();
     if (!AllocBufferMemory(std::max<UINT>(len, 4), &cur))
         return false;
     return true;
@@ -955,6 +971,8 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
         return D3DERR_INVALIDCALL;
     const UINT end = size ? std::min<UINT>(offset + size, length) : length;
     UINT dirtyFrom = offset, dirtyTo = end;
+    if (!(flags & D3DLOCK_READONLY))
+        ++generation;
     if (GpuMayUse(lastUse) && !(flags & (D3DLOCK_NOOVERWRITE | D3DLOCK_READONLY)))
     {
         // The GPU may still read the current contents: give the CPU fresh memory instead of waiting (DISCARD), keeping
@@ -970,6 +988,7 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
             FreeBufferMemory(cur, lastUse);
             cur = n;
             lastUse = 0;
+            staleStart = staleEnd = 0; // (the GL copy of the new memory: what is written from now on)
         }
         else
         {
@@ -992,11 +1011,27 @@ HRESULT BufferStorage::Lock(UINT offset, UINT size, void **ppbData, DWORD flags)
 HRESULT BufferStorage::Unlock()
 {
     locked = false;
-    // the renderer learns which bytes the CPU wrote (OpenGL copies them to its buffer; Metal reads this memory)
+    // the renderer learns which bytes the CPU wrote (OpenGL copies them to its buffer; Metal reads this memory); a
+    // streamed buffer's GL copy waits until a draw reads it
     if (dirtyEnd > dirtyStart && cur.buffer)
-        rhi::BufferWritten(cur.buffer, cur.offset + dirtyStart, dirtyEnd - dirtyStart);
+    {
+        if (streamed)
+        {
+            staleStart = staleEnd > staleStart ? std::min(staleStart, dirtyStart) : dirtyStart;
+            staleEnd = std::max(staleEnd, dirtyEnd);
+        }
+        else
+            rhi::BufferWritten(cur.buffer, cur.offset + dirtyStart, dirtyEnd - dirtyStart);
+    }
     dirtyStart = dirtyEnd = 0;
     return D3D_OK;
+}
+
+void BufferStorage::SyncGL()
+{
+    if (staleEnd > staleStart && cur.buffer)
+        rhi::BufferWritten(cur.buffer, cur.offset + staleStart, staleEnd - staleStart);
+    staleStart = staleEnd = 0;
 }
 
 VertexBuffer::~VertexBuffer() { m_buf.Destroy(); }

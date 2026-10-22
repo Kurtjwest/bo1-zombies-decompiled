@@ -2694,9 +2694,213 @@ void Device::BindStreams()
         }
         VertexBuffer *vb = m_streams[s].vb;
         if (vb && vb->m_buf.cur.buffer)
+        {
+            if (vb->m_buf.streamed)
+            {
+                if (m_streamingDraw)
+                    continue; // (BindStreamCopies)
+                vb->m_buf.SyncGL();
+            }
             rhi::SetVertexBuffer(rhi::VERTEX_BUFFER_BASE + s, vb->m_buf.cur.buffer,
                                  vb->m_buf.cur.offset + m_streams[s].offset);
+        }
     }
+}
+
+// ======================================================================================================================
+// OpenGL: draws of dynamic buffers read copies of the bytes they use, made at the draw in the renderer's scratch
+// memory, instead of the buffers' GL copies. Bringing a GL copy up to date (glBufferSubData) while the GPU may still
+// read the buffer makes tile-based drivers (Mesa's v3d on the Raspberry Pi, llvmpipe) finish the GPU's work first, and
+// the engine locks its dynamic vertex and index buffers hundreds of times a frame, writing megabytes. Draws the copies
+// cannot serve bring the GL copy up to date first (BufferStorage::SyncGL, from BindStreams and the draws).
+// ======================================================================================================================
+
+static bool HasRestartIndex16(const uint16_t *p, uint32_t n);
+
+// bytes [from, to) of a streamed buffer in scratch memory: the copy an earlier draw of this command buffer made of
+// the same contents if it covers them, else a new one
+static bool StreamCopy(BufferStorage &b, uint64_t from, uint64_t to, rhi::Buffer **buf, uint32_t *off)
+{
+    to = std::min<uint64_t>(to, b.length);
+    if (!b.cur.ptr || from >= to)
+        return false;
+    const uint64_t serial = rhi::CurrentSerial();
+    BufferStorage::StreamedCopy &c = b.lastCopy;
+    if (c.buffer && c.serial == serial && c.generation == b.generation && from >= c.from && to <= c.to)
+    {
+        *buf = c.buffer;
+        *off = c.offset + (uint32_t)(from - c.from);
+        return true;
+    }
+    void *dst = rhi::AllocTransient((size_t)(to - from), 16, buf, off);
+    if (!dst || !*buf)
+        return false;
+    memcpy(dst, b.cur.ptr + from, (size_t)(to - from));
+    c = {serial, b.generation, (UINT)from, (UINT)to, *buf, *off};
+    return true;
+}
+
+bool Device::AnyStreamed(bool indexed) const
+{
+    if (indexed && m_ib && m_ib->m_buf.streamed)
+        return true;
+    if (!m_decl)
+        return false;
+    for (const D3DVERTEXELEMENT9 &e : m_decl->m_elements)
+    {
+        const UINT s = e.Stream;
+        if (s < (UINT)kMaxStreams && !(s == 0 && m_upActive) && m_streams[s].vb && m_streams[s].vb->m_buf.streamed)
+            return true;
+    }
+    return false;
+}
+
+// The streams for vertices [first, first + count) as vertices 0 to count - 1: streamed buffers' bytes copied, the
+// others bound that many vertices further on. False if a copy could not be made (nothing has been bound then).
+bool Device::BindStreamCopies(uint32_t first, uint32_t count)
+{
+    struct Bind
+    {
+        UINT stream;
+        rhi::Buffer *buf;
+        uint32_t off;
+    } binds[kMaxStreams];
+    int n = 0;
+    uint32_t done = 0;
+    for (const D3DVERTEXELEMENT9 &e : m_decl->m_elements)
+    {
+        const UINT s = e.Stream;
+        if (s >= (UINT)kMaxStreams || (done & (1u << s)) || (s == 0 && m_upActive))
+            continue;
+        done |= 1u << s;
+        const StreamBinding &sb = m_streams[s];
+        VertexBuffer *vb = sb.vb;
+        if (!vb || !vb->m_buf.cur.buffer)
+            continue;
+        const uint64_t from = (uint64_t)sb.offset + (uint64_t)first * sb.stride;
+        if (vb->m_buf.streamed)
+        {
+            // (a stride of 0 reads one vertex for all: its bytes, generously)
+            const uint64_t bytes = std::max<uint64_t>((uint64_t)count * sb.stride, 256);
+            rhi::Buffer *buf;
+            uint32_t off;
+            if (!StreamCopy(vb->m_buf, from, from + bytes, &buf, &off))
+                return false;
+            binds[n++] = {s, buf, off};
+        }
+        else
+        {
+            if (from > 0xFFFFFFFFull - vb->m_buf.cur.offset)
+                return false;
+            binds[n++] = {s, vb->m_buf.cur.buffer, vb->m_buf.cur.offset + (uint32_t)from};
+        }
+    }
+    for (int i = 0; i < n; ++i)
+        rhi::SetVertexBuffer(rhi::VERTEX_BUFFER_BASE + binds[i].stream, binds[i].buf, binds[i].off);
+    return true;
+}
+
+// a draw whose vertex or index buffers are streamed; false if it is to be drawn from the GL copies instead (nothing has
+// been drawn then)
+bool Device::StreamedDraw(D3DPRIMITIVETYPE prim, UINT startVertex, uint32_t count)
+{
+    m_streamingDraw = true;
+    const bool ready = PrepareDraw(prim);
+    m_streamingDraw = false;
+    if (!ready)
+        return true;
+    if (!BindStreamCopies(startVertex, count))
+    {
+        BindStreams();
+        return false;
+    }
+    rhi::Draw(PrimType(prim), 0, count);
+    AfterDraw();
+    return true;
+}
+
+bool Device::StreamedDrawIndexed(D3DPRIMITIVETYPE prim, INT baseVertex, UINT minVertex, UINT numVertices,
+                                 UINT startIndex, uint32_t count)
+{
+    const bool index32 = m_ib->m_format == D3DFMT_INDEX32;
+    const uint32_t isize = index32 ? 4 : 2;
+    BufferStorage &ib = m_ib->m_buf;
+    if (!ib.cur.ptr || (uint64_t)startIndex + count > ib.length / isize)
+        return false;
+    m_streamingDraw = true;
+    const bool ready = PrepareDraw(prim);
+    m_streamingDraw = false;
+    if (!ready)
+        return true;
+    const uint8_t *src = ib.cur.ptr + (size_t)startIndex * isize;
+    auto index = [&](uint32_t i) -> uint32_t {
+        return index32 ? ((const uint32_t *)src)[i] : ((const uint16_t *)src)[i];
+    };
+    bool drawn = false;
+    if (AnyStreamed(false))
+    {
+        // the vertices the indices use, copied; the indices rebased onto them (16-bit while they fit, 0xFFFF left
+        // out: Metal's restart index, kept for the same draws on both renderers)
+        uint32_t lo = 0xFFFFFFFFu, hi = 0;
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            const uint32_t v = index(i);
+            lo = std::min(lo, v);
+            hi = std::max(hi, v);
+        }
+        const int64_t first = (int64_t)baseVertex + lo;
+        const uint32_t span = hi - lo + 1;
+        if (first >= 0 && first <= 0xFFFFFFFFll)
+        {
+            const bool wide = span > 0xFFFF;
+            rhi::Buffer *ibuf;
+            uint32_t ioff;
+            void *dst = rhi::AllocTransient(std::max<size_t>((size_t)count * (wide ? 4 : 2), 16), 16, &ibuf, &ioff);
+            if (dst && ibuf && BindStreamCopies((uint32_t)first, span))
+            {
+                if (wide)
+                    for (uint32_t i = 0; i < count; ++i)
+                        ((uint32_t *)dst)[i] = index(i) - lo;
+                else
+                    for (uint32_t i = 0; i < count; ++i)
+                        ((uint16_t *)dst)[i] = (uint16_t)(index(i) - lo);
+                rhi::DrawIndexed(PrimType(prim), count, wide, ibuf, ioff, 0);
+                drawn = true;
+            }
+        }
+    }
+    else
+    {
+        // only the indices are streamed (16-bit ones holding 0xFFFF widened, as DrawIndexedPrimitive does)
+        rhi::Buffer *ibuf;
+        uint32_t ioff;
+        if (!index32 && (uint64_t)minVertex + numVertices > 0xFFFF && HasRestartIndex16((const uint16_t *)src, count))
+        {
+            uint32_t *dst = (uint32_t *)rhi::AllocTransient(std::max<size_t>((size_t)count * 4, 16), 16, &ibuf, &ioff);
+            if (dst && ibuf)
+            {
+                for (uint32_t i = 0; i < count; ++i)
+                    dst[i] = ((const uint16_t *)src)[i];
+                BindStreams();
+                rhi::DrawIndexed(PrimType(prim), count, true, ibuf, ioff, baseVertex);
+                drawn = true;
+            }
+        }
+        else if (StreamCopy(ib, (uint64_t)startIndex * isize, ((uint64_t)startIndex + count) * isize, &ibuf, &ioff))
+        {
+            BindStreams();
+            rhi::DrawIndexed(PrimType(prim), count, index32, ibuf, ioff, baseVertex);
+            drawn = true;
+        }
+    }
+    if (!drawn)
+    {
+        BindStreams(); // (the GL copies, brought up to date)
+        return false;
+    }
+    ib.lastUse = rhi::CurrentSerial();
+    AfterDraw();
+    return true;
 }
 
 void Device::ApplyRasterState()
@@ -2854,6 +3058,8 @@ HRESULT Device::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType, UINT StartVertex, 
         return D3D_OK;
     if (PrimitiveType == D3DPT_TRIANGLEFAN)
         return DrawConverted(PrimitiveType, PrimitiveCount, StartVertex, 0, 0, false, nullptr, D3DFMT_INDEX16);
+    if (AnyStreamed(false) && StreamedDraw(PrimitiveType, StartVertex, count))
+        return D3D_OK;
     if (!PrepareDraw(PrimitiveType))
         return D3D_OK;
     rhi::Draw(PrimType(PrimitiveType), StartVertex, count);
@@ -2899,8 +3105,12 @@ HRESULT Device::DrawIndexedPrimitive(D3DPRIMITIVETYPE PrimitiveType, INT BaseVer
         return D3D_OK;
     if (PrimitiveType == D3DPT_TRIANGLEFAN)
         return DrawConverted(PrimitiveType, primCount, 0, BaseVertexIndex, startIndex, true, nullptr, D3DFMT_INDEX16);
+    if (AnyStreamed(true) &&
+        StreamedDrawIndexed(PrimitiveType, BaseVertexIndex, MinVertexIndex, NumVertices, startIndex, count))
+        return D3D_OK;
     if (!PrepareDraw(PrimitiveType))
         return D3D_OK;
+    m_ib->m_buf.SyncGL();
     const bool index32 = m_ib->m_format == D3DFMT_INDEX32;
     const uint32_t isize = index32 ? 4 : 2;
     // a draw over 65536 vertices can use index 0xFFFF (the static model cache's 64K-vertex windows do), which Metal
@@ -3027,12 +3237,25 @@ HRESULT Device::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType, UINT MinV
 HRESULT Device::DrawConverted(D3DPRIMITIVETYPE, UINT primCount, UINT startVertex, int baseVertex, UINT startIndex,
                               bool indexed, const void *upIndices, D3DFORMAT upIndexFormat)
 {
-    if (!primCount || !PrepareDraw(D3DPT_TRIANGLELIST))
+    if (!primCount)
+        return D3D_OK;
+    // (streamed buffers: the vertices the list uses are copied, the list rebased onto them)
+    const bool streamed = AnyStreamed(indexed && !upIndices);
+    m_streamingDraw = streamed;
+    const bool ready = PrepareDraw(D3DPT_TRIANGLELIST);
+    m_streamingDraw = false;
+    if (!ready)
         return D3D_OK;
     const uint32_t count = primCount * 3;
     rhi::Buffer *buf;
     uint32_t off;
     uint32_t *out = (uint32_t *)rhi::AllocTransient(count * 4, 16, &buf, &off);
+    if (!out || !buf)
+    {
+        if (streamed)
+            BindStreams();
+        return D3D_OK;
+    }
     auto source = [&](uint32_t i) -> uint32_t {
         if (!indexed)
             return startVertex + i;
@@ -3049,7 +3272,28 @@ HRESULT Device::DrawConverted(D3DPRIMITIVETYPE, UINT primCount, UINT startVertex
         out[t * 3 + 1] = source(t + 1);
         out[t * 3 + 2] = source(t + 2);
     }
-    rhi::DrawIndexed(rhi::PRIM_TRIANGLE, count, true, buf, off, baseVertex);
+    bool drawn = false;
+    if (streamed)
+    {
+        uint32_t lo = 0xFFFFFFFFu, hi = 0;
+        for (uint32_t i = 0; i < count; ++i)
+        {
+            lo = std::min(lo, out[i]);
+            hi = std::max(hi, out[i]);
+        }
+        const int64_t first = (int64_t)baseVertex + lo;
+        if (first >= 0 && first <= 0xFFFFFFFFll && BindStreamCopies((uint32_t)first, hi - lo + 1))
+        {
+            for (uint32_t i = 0; i < count; ++i)
+                out[i] -= lo;
+            rhi::DrawIndexed(rhi::PRIM_TRIANGLE, count, true, buf, off, 0);
+            drawn = true;
+        }
+        else
+            BindStreams(); // (the GL copies, brought up to date)
+    }
+    if (!drawn)
+        rhi::DrawIndexed(rhi::PRIM_TRIANGLE, count, true, buf, off, baseVertex);
     if (indexed && !upIndices && m_ib)
         m_ib->m_buf.lastUse = rhi::CurrentSerial();
     AfterDraw();
