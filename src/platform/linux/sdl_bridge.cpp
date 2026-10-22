@@ -337,7 +337,13 @@ void HandleWindowEvent(const SDL_WindowEvent &we)
 {
     BridgeWindow *w = FindWindow(we.windowID);
     if (!w)
+    {
+        // One of the process's own other windows (the renderer's hidden ones for its shader compiler contexts): on the
+        // console (KMSDRM) SDL gives every new window the keyboard, which is no reason to think the game inactive.
+        if (we.event == SDL_WINDOWEVENT_FOCUS_GAINED)
+            SetActive(true);
         return;
+    }
     RefreshWindowState(w);
     BridgeEvent ev = {};
     ev.window = w;
@@ -377,7 +383,11 @@ void HandleWindowEvent(const SDL_WindowEvent &we)
         Emit(ev);
         break;
     case SDL_WINDOWEVENT_FOCUS_GAINED: SetActive(true); break;
-    case SDL_WINDOWEVENT_FOCUS_LOST: SetActive(false); break;
+    case SDL_WINDOWEVENT_FOCUS_LOST:
+        // (inactive unless the keyboard went to another window of the process, see above)
+        if (!SDL_GetKeyboardFocus())
+            SetActive(false);
+        break;
     default: break;
     }
 }
@@ -840,8 +850,17 @@ void Bridge_Init(BridgeEventHandler handler)
     }
     g_videoReady = true;
     g_wakeEvent = SDL_RegisterEvents(1);
+    {
+        SDL_version v;
+        SDL_GetVersion(&v);
+        const char *video = SDL_GetCurrentVideoDriver();
+        fprintf(stderr, "[sdl] SDL %d.%d.%d, %s video\n", v.major, v.minor, v.patch, video ? video : "?");
+    }
     // controllers (XInput, sdl_gamepad.cpp) and sound (sdl_audio.cpp): on this thread, whose event loop pumps them;
-    // the game runs without either when the system has none
+    // the game runs without either when the system has none. The controllers' input counts whichever window SDL thinks
+    // has the keyboard (on the console, KMSDRM, it can think none has: SDL then drops every button press); the engine
+    // reads the controllers only while its window is in front anyway (IN_Frame).
+    SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
     if (SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0)
         fprintf(stderr, "[sdl] no game controller support: %s\n", SDL_GetError());
     if (SDL_InitSubSystem(SDL_INIT_AUDIO) != 0)

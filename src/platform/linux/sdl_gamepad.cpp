@@ -2,16 +2,25 @@
 // Pro, Steam and the other controllers SDL knows show up as XInput user indices 0-3, with rumble where the controller
 // has it. The Linux counterpart of macos/gamepad_mac.mm.
 //
+// A controller SDL has no layout for is a plain joystick to it and is left out: the log names it, and a layout line
+// for it (SDL's format, as made by the SDL2 Gamepad Tool or found in the community's gamecontrollerdb.txt) in
+// gamecontrollerdb.txt in the game folder, or in the SDL_GAMECONTROLLERCONFIG environment variable, makes it usable.
+//
 // Written without the Win32 headers, like the macOS file: the XInput structures are declared here again with the
 // same layout.
+
+#include "../win32compat/w32_platform.h"
 
 #include <SDL.h>
 
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <set>
+#include <string>
 
 namespace
 {
@@ -102,11 +111,52 @@ bool Ready()
     // (brought up by the bridge on the main thread, whose event loop pumps the controllers' state)
     if (!SDL_WasInit(SDL_INIT_GAMECONTROLLER) && SDL_InitSubSystem(SDL_INIT_GAMECONTROLLER) != 0)
     {
+        fprintf(stderr, "[input] no controller support: %s\n", SDL_GetError());
         g_failed = true;
         return false;
     }
+    // layouts of the user's own for controllers SDL does not know (see the top)
+    const char *dir = w32::GameDirectory();
+    if (dir && *dir)
+    {
+        const std::string db = std::string(dir) + "/gamecontrollerdb.txt";
+        if (FILE *f = fopen(db.c_str(), "rb"))
+        {
+            fclose(f);
+            const int n = SDL_GameControllerAddMappingsFromFile(db.c_str());
+            if (n < 0)
+                fprintf(stderr, "[input] %s: %s\n", db.c_str(), SDL_GetError());
+            else
+                fprintf(stderr, "[input] %d controller layouts from %s\n", n, db.c_str());
+        }
+    }
     g_ready = true;
     return true;
+}
+
+// the log's line about each controller or joystick, once
+std::set<SDL_JoystickID> g_logged;
+bool g_loggedNone = false;
+
+void LogDevice(int index, SDL_JoystickID id)
+{
+    if (!g_logged.insert(id).second)
+        return;
+    char guid[64] = "";
+    SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(index), guid, sizeof(guid));
+    if (SDL_IsGameController(index))
+    {
+        const char *name = SDL_GameControllerNameForIndex(index);
+        fprintf(stderr, "[input] controller: %s\n", name ? name : "?");
+    }
+    else
+    {
+        const char *name = SDL_JoystickNameForIndex(index);
+        fprintf(stderr,
+                "[input] %s (%s): a joystick SDL has no controller layout for, left out (a layout line for it in "
+                "gamecontrollerdb.txt in the game folder makes it usable)\n",
+                name ? name : "joystick", guid);
+    }
 }
 
 void ReleaseSlot(Slot &s)
@@ -127,11 +177,19 @@ void AssignControllers()
         if (s.controller && !SDL_GameControllerGetAttached(s.controller))
             ReleaseSlot(s);
     const int n = SDL_NumJoysticks();
+    if (n <= 0 && !g_loggedNone)
+    {
+        // (once: a controller plugged in later is logged when it appears)
+        g_loggedNone = true;
+        fprintf(stderr, "[input] no controllers found%s\n",
+                n < 0 ? "" : " (they are read through /dev/input/event*, which the user must be able to read)");
+    }
     for (int i = 0; i < n; ++i)
     {
+        const SDL_JoystickID id = SDL_JoystickGetDeviceInstanceID(i);
+        LogDevice(i, id);
         if (!SDL_IsGameController(i))
             continue;
-        const SDL_JoystickID id = SDL_JoystickGetDeviceInstanceID(i);
         bool have = false;
         for (const Slot &s : g_slots)
             have |= s.controller && s.id == id;
@@ -148,6 +206,8 @@ void AssignControllers()
                 s.last = {};
                 ++s.packet;
             }
+            else
+                fprintf(stderr, "[input] cannot open the controller: %s\n", SDL_GetError());
             break;
         }
     }

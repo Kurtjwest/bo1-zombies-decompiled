@@ -178,9 +178,18 @@ game on another folder. Names in the game files are found whatever their case, s
 it is. Started without arguments the game opens the zombies menu; engine arguments work as on Windows
 (`build-linux/BO1Zombies +set r_fullscreen 1 ...`).
 
-The game runs in a window or full screen (`r_fullscreen`, or the graphics options) on X11 and Wayland; the display's mode never
-changes, the game draws at the resolution of its graphics options (`r_mode`, 640x480 and up, 720x480 included) and the
-picture is scaled to the window.
+The game runs in a window or full screen (`r_fullscreen`, or the graphics options) on X11 and Wayland, or on the console
+(SDL's KMSDRM); the display's mode never changes, the game draws at the resolution of its graphics options (`r_mode`,
+640x480 and up, 720x480 included) and the picture is scaled to the window.
+
+Controllers are the ones SDL has a layout for (Xbox, PlayStation, Switch Pro, 8BitDo, Steam and many more): the log
+names each one it finds (`[input] controller: ...`), and a joystick SDL has no layout for is named there and left out.
+A layout line for it in SDL's format (from the SDL2 Gamepad Tool, or the community's `gamecontrollerdb.txt`) put in
+`gamecontrollerdb.txt` in the game folder makes it usable. Controllers are read through `/dev/input`, which the user
+must be able to read: a login on the computer itself is granted that, otherwise (started over SSH, say) the user needs
+to be in the `input` group (`[input] no controllers found`). Sound goes through PipeWire or PulseAudio when
+one runs, else straight to the ALSA device, then with 20 ms periods (`BO1_AUDIO_SAMPLES` sets the period in frames if
+it still crackles); the log names which (`[audio] ...`).
 OpenGL compiles the game's shaders on background threads the way Metal does on the Mac (see above, `shadercache/`).
 
 Settings for the Linux build, besides `BO1_DUMP_FAILED_SHADERS`, `BO1_SYNC_SHADERS`, `BO1_SHADER_LOG` and
@@ -192,5 +201,6 @@ Settings for the Linux build, besides `BO1_DUMP_FAILED_SHADERS`, `BO1_SYNC_SHADE
 | `BO1_GL_LOG=1` | log what the renderer's start-up self-test measured (clip space and winding conventions) |
 | `BO1_GL_COMPAT=1` | the OpenGL 3.x path's workarounds on any driver (for testing them, or around a driver's broken 4.x feature); or some of them: a list of `clip`, `buffers`, `viewports`, `attachments`, `layers` |
 | `BO1_GL_STREAM=0` | dynamic buffers drawn from their OpenGL copies, updated with `glBufferSubData`, instead of per-draw copies |
-| `SDL_VIDEODRIVER=wayland` / `x11` | the window system SDL uses (SDL's own setting) |
+| `BO1_AUDIO_SAMPLES=n` | the sound output's period in frames (default about 10 ms, 20 ms straight to ALSA) |
+| `SDL_VIDEODRIVER=wayland` / `x11` / `kmsdrm` | the window system SDL uses (SDL's own setting) |
 | `SDL_AUDIODRIVER=pipewire` / `pulseaudio` / `alsa` | the sound system SDL uses (SDL's own setting) |

@@ -124,6 +124,9 @@ static void SDLCALL OutputCallback(void *ref, Uint8 *stream, int len)
 static void MixerThread(AudioOut *o)
 {
     pthread_setname_np(pthread_self(), "BO1 audio mixer");
+    // a raised priority where the system grants it (RealtimeKit, a nice limit), so that a busy computer does not
+    // starve the sound (not real time as SDL's own audio thread, which only copies: the engine's mixing runs here)
+    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
     o->scratch.assign((size_t)o->quantum * o->channels, 0.0f);
     int stalls = 0;
     while (!o->quit.load())
@@ -242,14 +245,27 @@ AudioOut *AudioOut_Open(const char *deviceUID, int channels, int sampleRate, int
 
     if (AudioReady())
     {
+        // SDL's audio thread real-time where the system allows (RealtimeKit, an rtprio limit)
+        SDL_SetHint(SDL_HINT_THREAD_FORCE_REALTIME_TIME_CRITICAL, "1");
         SDL_AudioSpec want{}, have{};
         want.freq = o->sampleRate;
         want.format = AUDIO_F32SYS;
         want.channels = (Uint8)o->channels;
-        // about 10 ms (a power of two, as some backends want)
+        // about 10 ms (a power of two, as some backends want) through a sound server; straight to an ALSA device (no
+        // PipeWire or PulseAudio running: a console, a Raspberry Pi without a desktop) about 20 ms, ALSA's buffer
+        // being only two of them, which a busy computer misses at 10 (underruns: crackling); BO1_AUDIO_SAMPLES sets it
+        const char *driver = SDL_GetCurrentAudioDriver();
+        const bool alsa = driver && strcmp(driver, "alsa") == 0;
+        const int ms = alsa ? 20 : 10;
         Uint16 samples = 256;
-        while (samples < (Uint16)std::min(o->sampleRate / 100, 4096))
+        while (samples < (Uint16)std::min(o->sampleRate * ms / 1000, 4096))
             samples = (Uint16)(samples * 2);
+        if (const char *e = getenv("BO1_AUDIO_SAMPLES"))
+        {
+            const int n = atoi(e);
+            if (n >= 64 && n <= 16384)
+                samples = (Uint16)n;
+        }
         want.samples = samples;
         want.callback = OutputCallback;
         want.userdata = o;
@@ -262,7 +278,11 @@ AudioOut *AudioOut_Open(const char *deviceUID, int channels, int sampleRate, int
         if (!o->device)
             fprintf(stderr, "[audio] cannot open the audio output: %s (the game runs silent)\n", SDL_GetError());
         else
+        {
             o->bufferFrames = have.samples ? have.samples : samples;
+            fprintf(stderr, "[audio] %s output%s%s: %d Hz, %d channels, %u-frame periods\n", driver ? driver : "?",
+                    name ? " " : "", name ? name : "", have.freq, have.channels, (unsigned)o->bufferFrames);
+        }
     }
     if (!o->bufferFrames)
         o->bufferFrames = (uint32_t)o->quantum * 2;
