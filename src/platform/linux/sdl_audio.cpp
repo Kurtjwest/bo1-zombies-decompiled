@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <chrono>
 #include <condition_variable>
 #include <cstdio>
@@ -25,6 +26,11 @@ namespace
 {
 // the identifier of the "system default output" entry
 constexpr const char *kDefaultUID = "@default";
+
+const bool g_perfLog = [] {
+    const char *e = getenv("BO1_PERF_LOG");
+    return e && *e && strcmp(e, "0") != 0;
+}();
 
 // SDL's audio subsystem, brought up once (the bridge has already initialized video on the main thread)
 bool AudioReady()
@@ -88,6 +94,9 @@ struct AudioOut
     std::atomic<bool> rendering{true};
     std::atomic<bool> quit{false};
     std::atomic<uint32_t> glitches{0};
+    // (BO1_PERF_LOG) the loudest sample played since the last report, and what the reports call the output
+    std::atomic<float> peak{0.0f};
+    std::string label;
     Wake wake;
     std::thread thread;
     std::vector<float> scratch;
@@ -110,6 +119,13 @@ static void SDLCALL OutputCallback(void *ref, Uint8 *stream, int len)
         memcpy(dst + (size_t)i * ch, &o->ring[(size_t)idx * ch], (size_t)run * ch * sizeof(float));
         i += run;
     }
+    if (g_perfLog)
+    {
+        float p = o->peak.load(std::memory_order_relaxed);
+        for (uint32_t i = 0; i < n * (uint32_t)ch; ++i)
+            p = std::max(p, std::fabs(dst[i]));
+        o->peak.store(p, std::memory_order_relaxed);
+    }
     if (n < frames)
     {
         memset(dst + (size_t)n * ch, 0, (size_t)(frames - n) * ch * sizeof(float));
@@ -121,6 +137,25 @@ static void SDLCALL OutputCallback(void *ref, Uint8 *stream, int len)
     o->wake.Signal();
 }
 
+// (BO1_PERF_LOG) once a second, how loud each output that plays is: tells silence from a muted or wrong device
+static void ReportLevel(AudioOut *o, std::chrono::steady_clock::time_point &last, uint32_t &lastGlitches)
+{
+    const auto now = std::chrono::steady_clock::now();
+    if (now - last < std::chrono::seconds(1))
+        return;
+    last = now;
+    const float peak = o->peak.exchange(0.0f, std::memory_order_relaxed);
+    const uint32_t glitches = o->glitches.load(std::memory_order_relaxed);
+    if (!o->device || !o->rendering.load(std::memory_order_relaxed))
+        return;
+    if (peak > 0.0f)
+        fprintf(stderr, "[audio] %s: peak %.1f dBFS, %u gaps\n", o->label.c_str(), 20.0 * std::log10(peak),
+                glitches - lastGlitches);
+    else
+        fprintf(stderr, "[audio] %s: silent, %u gaps\n", o->label.c_str(), glitches - lastGlitches);
+    lastGlitches = glitches;
+}
+
 static void MixerThread(AudioOut *o)
 {
     pthread_setname_np(pthread_self(), "BO1 audio mixer");
@@ -129,8 +164,12 @@ static void MixerThread(AudioOut *o)
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
     o->scratch.assign((size_t)o->quantum * o->channels, 0.0f);
     int stalls = 0;
+    auto lastReport = std::chrono::steady_clock::now();
+    uint32_t lastGlitches = 0;
     while (!o->quit.load())
     {
+        if (g_perfLog)
+            ReportLevel(o, lastReport, lastGlitches);
         if (o->device)
         {
             // keep enough queued for the device's next pull
@@ -280,8 +319,9 @@ AudioOut *AudioOut_Open(const char *deviceUID, int channels, int sampleRate, int
         else
         {
             o->bufferFrames = have.samples ? have.samples : samples;
-            fprintf(stderr, "[audio] %s output%s%s: %d Hz, %d channels, %u-frame periods\n", driver ? driver : "?",
-                    name ? " " : "", name ? name : "", have.freq, have.channels, (unsigned)o->bufferFrames);
+            o->label = std::string(driver ? driver : "?") + " " + (name ? name : "default output");
+            fprintf(stderr, "[audio] %s: %d Hz, %d channels, %u-frame periods\n", o->label.c_str(), have.freq,
+                    have.channels, (unsigned)o->bufferFrames);
         }
     }
     if (!o->bufferFrames)

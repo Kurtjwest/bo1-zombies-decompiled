@@ -189,7 +189,10 @@ A layout line for it in SDL's format (from the SDL2 Gamepad Tool, or the communi
 must be able to read: a login on the computer itself is granted that, otherwise (started over SSH, say) the user needs
 to be in the `input` group (`[input] no controllers found`). Sound goes through PipeWire or PulseAudio when
 one runs, else straight to the ALSA device, then with 20 ms periods (`BO1_AUDIO_SAMPLES` sets the period in frames if
-it still crackles); the log names which (`[audio] ...`).
+it still crackles); the log names which (`[audio] ...`), and with `BO1_PERF_LOG=1` how loud each output plays once a
+second (`peak -18.0 dBFS`, or `silent`): sound in the log but none heard is the computer's sound setup (the output
+device, its volume: `speaker-test`, `alsamixer`; SDL's `AUDIODEV` picks the ALSA device, `AUDIODEV=plughw:CARD=Headphones`
+the Raspberry Pi's headphone jack).
 OpenGL compiles the game's shaders on background threads the way Metal does on the Mac (see above, `shadercache/`).
 
 Settings for the Linux build, besides `BO1_DUMP_FAILED_SHADERS`, `BO1_SYNC_SHADERS`, `BO1_SHADER_LOG` and
